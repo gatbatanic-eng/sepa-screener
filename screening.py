@@ -36,6 +36,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
+from zoneinfo import ZoneInfo
 
 import numpy as np
 import pandas as pd
@@ -513,7 +514,8 @@ def main():
     args = parser.parse_args()
 
     t0 = time.time()
-    run_date = datetime.now().strftime("%Y-%m-%d")
+    # 실행 서버의 로컬 시간대(GitHub Actions는 UTC)와 무관하게 한국 날짜로 고정
+    run_date = datetime.now(ZoneInfo("Asia/Seoul")).strftime("%Y-%m-%d")
     logger.info("=== SEPA 추세 템플릿 스크리닝 시작 (%s) ===", run_date)
 
     df = run_screening(top_n=args.top_n, max_workers=args.workers, limit=args.limit)
