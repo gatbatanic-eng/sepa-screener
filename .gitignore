@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+# 스크리닝 결과물 (자동 생성, 저장소에 커밋하지 않음)
+output/
+
+# 민감정보 - 절대 커밋 금지
+*.json
+!package.json
+.env
+service_account*.json
+credentials*.json
+
+.DS_Store
