@@ -473,7 +473,8 @@ def upload_to_google_sheets(df: pd.DataFrame, run_date: str) -> bool:
         return False
 
     try:
-        creds_dict = json.loads(creds_json)
+        # Windows/PowerShell에서 Secret 값에 UTF-8 BOM이 섞여 들어오는 경우 방어
+        creds_dict = json.loads(creds_json.lstrip("﻿"))
         scopes = ["https://www.googleapis.com/auth/spreadsheets"]
         credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
         gc = gspread.authorize(credentials)
