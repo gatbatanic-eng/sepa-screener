@@ -510,6 +510,95 @@ def _apply_sheet_formatting(ws, df: pd.DataFrame) -> None:
         ws.spreadsheet.batch_update(rule)
 
 
+SUMMARY_SHEET_NAME = "일별요약"
+SUMMARY_HEADER = [
+    "날짜", "스크리닝종목수", "정상판정", "확인불가", "8개조건전부통과",
+    "평균RS백분위_정상판정종목", "평균충족조건수_정상판정종목",
+]
+
+
+def _upsert_daily_summary(sh, df: pd.DataFrame, run_date: str) -> None:
+    """'일별요약' 탭에 오늘 자 요약 한 줄을 추가/갱신하고, 추세 차트를 붙여둔다."""
+    import gspread
+
+    ok_df = df[df["상태"] == "OK"]
+    row = [
+        run_date,
+        int(len(df)),
+        int(len(ok_df)),
+        int((df["상태"] == "확인불가").sum()),
+        int((df["전체통과(8개AND)"] == True).sum()),  # noqa: E712
+        round(float(ok_df["RS_백분위랭킹"].mean()), 2) if len(ok_df) else "",
+        round(float(ok_df["충족조건수(8개중, 참고용)"].mean()), 2) if len(ok_df) else "",
+    ]
+
+    try:
+        ws = sh.worksheet(SUMMARY_SHEET_NAME)
+        is_new = False
+    except gspread.exceptions.WorksheetNotFound:
+        ws = sh.add_worksheet(title=SUMMARY_SHEET_NAME, rows="3000", cols=str(len(SUMMARY_HEADER) + 2))
+        ws.update([SUMMARY_HEADER], "A1")
+        ws.freeze(rows=1)
+        ws.format(f"A1:{chr(ord('A') + len(SUMMARY_HEADER) - 1)}1", {"textFormat": {"bold": True}})
+        is_new = True
+
+    existing_dates = ws.col_values(1)  # 1행은 헤더
+    if run_date in existing_dates:
+        row_idx = existing_dates.index(run_date) + 1
+        ws.update([row], f"A{row_idx}")
+        logger.info("'%s' 탭의 %s 요약 행을 갱신했습니다.", SUMMARY_SHEET_NAME, run_date)
+    else:
+        ws.append_row(row, value_input_option="USER_ENTERED")
+        logger.info("'%s' 탭에 %s 요약 행을 추가했습니다.", SUMMARY_SHEET_NAME, run_date)
+
+    if is_new:
+        _add_summary_chart(sh, ws)
+
+
+def _add_summary_chart(sh, ws) -> None:
+    """일별요약 탭에 '8개조건전부통과' 추이를 보여주는 꺾은선 차트를 한 번만 추가한다."""
+    max_rows = int(ws.row_count)
+    request = {
+        "requests": [{
+            "addChart": {
+                "chart": {
+                    "spec": {
+                        "title": "일별 8개 조건 전부 통과 종목 수 추이",
+                        "basicChart": {
+                            "chartType": "LINE",
+                            "legendPosition": "BOTTOM_LEGEND",
+                            "axis": [
+                                {"position": "BOTTOM_AXIS", "title": "날짜"},
+                                {"position": "LEFT_AXIS", "title": "통과 종목 수"},
+                            ],
+                            "domains": [{
+                                "domain": {"sourceRange": {"sources": [{
+                                    "sheetId": ws.id, "startRowIndex": 0, "endRowIndex": max_rows,
+                                    "startColumnIndex": 0, "endColumnIndex": 1,
+                                }]}},
+                            }],
+                            "series": [{
+                                "series": {"sourceRange": {"sources": [{
+                                    "sheetId": ws.id, "startRowIndex": 0, "endRowIndex": max_rows,
+                                    "startColumnIndex": 4, "endColumnIndex": 5,
+                                }]}},
+                                "targetAxis": "LEFT_AXIS",
+                            }],
+                            "headerCount": 1,
+                        },
+                    },
+                    "position": {
+                        "overlayPosition": {
+                            "anchorCell": {"sheetId": ws.id, "rowIndex": 0, "columnIndex": len(SUMMARY_HEADER) + 1},
+                        },
+                    },
+                },
+            },
+        }],
+    }
+    sh.batch_update(request)
+
+
 def upload_to_google_sheets(df: pd.DataFrame, run_date: str) -> bool:
     creds_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
     sheet_id = os.environ.get("GOOGLE_SHEET_ID")
@@ -551,6 +640,12 @@ def upload_to_google_sheets(df: pd.DataFrame, run_date: str) -> bool:
         ws.update(values, "A1")
         _apply_sheet_formatting(ws, df)
         logger.info("구글시트 업로드 완료: 탭 '%s' (%d행)", sheet_name, len(df))
+
+        try:
+            _upsert_daily_summary(sh, df, run_date)
+        except Exception as exc:  # noqa: BLE001 - 요약 탭 실패가 본 업로드 성공을 덮지 않도록
+            logger.warning("'%s' 요약 탭 갱신 실패 (본 결과 업로드는 정상 완료됨): %s", SUMMARY_SHEET_NAME, exc)
+
         return True
     except Exception as exc:  # noqa: BLE001
         logger.error("구글시트 업로드 실패: %s", exc)
