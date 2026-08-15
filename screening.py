@@ -138,6 +138,7 @@ class StockResult:
     rs_percentile: Optional[float] = None
     cond8_rs_rank: Optional[bool] = None
 
+    met_count: Optional[int] = None  # 참고용: 8개 중 몇 개를 충족했는지 (통과 판정은 여전히 8개 AND)
     pass_all: Optional[bool] = None
 
 
@@ -413,6 +414,7 @@ def run_screening(top_n: int, max_workers: int, limit: Optional[int] = None) -> 
             r.exclude_reason = r.exclude_reason or "조건 판정 불완전"
             r.pass_all = False
         else:
+            r.met_count = sum(conds)
             r.pass_all = all(conds)
 
     return results_to_dataframe(results)
@@ -447,16 +449,67 @@ def results_to_dataframe(results: list[StockResult]) -> pd.DataFrame:
             "RS_원점수": r.rs_raw,
             "RS_백분위랭킹": r.rs_percentile,
             "조건8_RS랭킹70이상_대체지표": r.cond8_rs_rank,
+            "충족조건수(8개중, 참고용)": r.met_count,
             "전체통과(8개AND)": r.pass_all,
         })
     df = pd.DataFrame(rows)
-    df = df.sort_values(["전체통과(8개AND)", "RS_백분위랭킹"], ascending=[False, False], na_position="last")
+    df = df.sort_values(
+        ["전체통과(8개AND)", "충족조건수(8개중, 참고용)", "RS_백분위랭킹"],
+        ascending=[False, False, False], na_position="last",
+    )
     return df.reset_index(drop=True)
 
 
 # ----------------------------------------------------------------------------
 # 구글시트 업로드 (연동 정보 없으면 조용히 건너뜀)
 # ----------------------------------------------------------------------------
+def _apply_sheet_formatting(ws, df: pd.DataFrame) -> None:
+    """가독성을 위한 서식: 헤더 고정/굵게, 기본 필터, 전체통과 행 하이라이트."""
+    import gspread.utils as gutils
+
+    n_rows, n_cols = len(df), len(df.columns)
+    last_col = gutils.rowcol_to_a1(1, n_cols).rstrip("1")  # 예: 3 -> "C"
+    header_row = 2  # 1행: 안내문구, 2행: 실제 헤더
+    first_data_row = header_row + 1
+    last_data_row = header_row + n_rows
+
+    pass_col_idx = list(df.columns).index("전체통과(8개AND)") + 1
+    pass_col_letter = gutils.rowcol_to_a1(1, pass_col_idx).rstrip("1")
+
+    ws.freeze(rows=header_row)
+    ws.format(f"A{header_row}:{last_col}{header_row}", {
+        "textFormat": {"bold": True},
+        "backgroundColor": {"red": 0.90, "green": 0.90, "blue": 0.90},
+    })
+    ws.set_basic_filter(f"A{header_row}:{last_col}{last_data_row}")
+
+    if n_rows > 0:
+        rule = {
+            "requests": [{
+                "addConditionalFormatRule": {
+                    "rule": {
+                        "ranges": [{
+                            "sheetId": ws.id,
+                            "startRowIndex": first_data_row - 1,
+                            "endRowIndex": last_data_row,
+                            "startColumnIndex": 0,
+                            "endColumnIndex": n_cols,
+                        }],
+                        "booleanRule": {
+                            "condition": {
+                                "type": "CUSTOM_FORMULA",
+                                "values": [{"userEnteredValue": f"=${pass_col_letter}{first_data_row}=TRUE"}],
+                            },
+                            "format": {"backgroundColor": {"red": 0.80, "green": 0.94, "blue": 0.80}},
+                        },
+                    },
+                    "index": 0,
+                },
+            }],
+        }
+        ws.spreadsheet.batch_update(rule)
+
+
 def upload_to_google_sheets(df: pd.DataFrame, run_date: str) -> bool:
     creds_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
     sheet_id = os.environ.get("GOOGLE_SHEET_ID")
@@ -491,10 +544,12 @@ def upload_to_google_sheets(df: pd.DataFrame, run_date: str) -> bool:
 
         ws = sh.add_worksheet(title=sheet_name, rows=str(len(df) + 10), cols=str(len(df.columns) + 2))
 
-        header = ["※ 8번 RS는 IBD RS가 없는 한국 시장 대체 지표(코스피/코스닥 지수 대비 3·6·12개월 초과수익률의 유니버스 내 백분위)입니다."]
+        header = ["※ 8번 RS는 IBD RS가 없는 한국 시장 대체 지표(코스피/코스닥 지수 대비 3·6·12개월 초과수익률의 유니버스 내 백분위)입니다. "
+                   "'충족조건수'는 참고용이며, '전체통과'만 8개 조건 전부 충족(AND) 여부의 공식 판정입니다."]
         values = [header, list(df.columns)] + df.astype(object).where(pd.notnull(df), "").values.tolist()
 
         ws.update(values, "A1")
+        _apply_sheet_formatting(ws, df)
         logger.info("구글시트 업로드 완료: 탭 '%s' (%d행)", sheet_name, len(df))
         return True
     except Exception as exc:  # noqa: BLE001
