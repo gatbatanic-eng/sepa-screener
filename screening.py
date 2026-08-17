@@ -16,8 +16,14 @@ SEPA(미너비니) 추세 템플릿 1차 스크리너
 4. 8번 조건(상대강도)은 IBD RS가 없어 각 시장 지수(한국: 코스피/코스닥,
    미국: S&P500) 대비 3·6·12개월 초과수익률로 계산한 "대체 지표"이며,
    반드시 그렇게 표기한다.
-5. 이 스크리너는 1차 필터일 뿐이다. 스테이지(와인스타인 4단계) 확정, VCP
-   패턴, 피벗 돌파, 펀더멘털, 촉매 판단, 매매 신호/자동매매는 다루지 않는다.
+5. 이 스크리너는 1차 필터(8개 조건 AND)가 본체다. 스테이지(와인스타인
+   4단계) 확정, 베이스 단계 카운트, 펀더멘털, 촉매 판단, 매매 신호/
+   자동매매는 여전히 다루지 않는다.
+6. 거래량 기반 지표(Dry-up/돌파거래량), VCP 수축, 피벗 근접도, 컨빅션
+   스코어는 "진입 타이밍 참고용" 부가 지표이며 8개 조건 판정에는 전혀
+   관여하지 않는다. VCP는 실제 미너비니 방법론(스윙 고점/저점 기반 다중
+   파동 탐지)이 아닌 고정 4주 구간 비교 근사치이므로 반드시 그렇게
+   표기한다. 이 지표들은 매수 신호가 아니다.
 
 실행 방법
 ---------
@@ -100,6 +106,33 @@ US_INDEX_CODE = "US500"  # S&P500 지수
 
 OUTPUT_DIR = Path(__file__).resolve().parent / "output"
 
+# ----------------------------------------------------------------------------
+# 진입 타이밍 참고 지표 (거래량 / VCP 근사치 / 피벗) 설정
+# ----------------------------------------------------------------------------
+# 아래 지표들은 8개 조건(추세 템플릿) 판정과는 완전히 별개인 "참고용 부가 정보"다.
+# "전체통과(8개AND)" 판정에는 어떤 영향도 주지 않는다.
+# VCP(변동성 수축)는 실제 미너비니 방법론(스윙 고점/저점 기반 다중 파동 탐지)의
+# 근사치일 뿐이며, 반드시 그렇게 표기한다 (RS를 "대체 지표"로 표기한 것과 동일한 원칙).
+
+VOL_SMA_WINDOW = 50            # 평균 거래량 기준 일수
+DRYUP_SHORT_WINDOW = 10        # Dry-up 비율 계산용 단기 평균거래량 일수
+
+VCP_WINDOW_DAYS = 20           # VCP 비교 구간 길이 (4주 = 20거래일)
+VCP_CONTRACTION_THRESHOLD = 0.90  # 직전 구간 대비 이 비율 이하로 줄어야 "수축"으로 인정
+
+PIVOT_LOOKBACK_DAYS = 50       # 피벗(베이스 내부 저항선) 탐색 기간 (10주, 당일 제외)
+PIVOT_NEAR_LOW = -0.05         # "피벗임박"으로 볼 하한 (피벗 대비 -5%)
+PIVOT_NEAR_HIGH = 0.0          # "피벗임박"으로 볼 상한 (피벗 대비 0%, 즉 아직 안 뚫음)
+
+# 컨빅션 스코어 가중치 (초기값 - 임의 설정, 추후 성과 데이터로 튜닝 예정)
+CONVICTION_WEIGHTS = {
+    "vcp": 0.25,
+    "pivot": 0.25,
+    "breakout_vol": 0.20,
+    "dryup": 0.15,
+    "rs": 0.15,
+}
+
 
 @dataclass(frozen=True)
 class MarketConfig:
@@ -170,6 +203,18 @@ class StockResult:
 
     met_count: Optional[int] = None  # 참고용: 8개 중 몇 개를 충족했는지 (통과 판정은 여전히 8개 AND)
     pass_all: Optional[bool] = None
+
+    # --- 진입 타이밍 참고 지표 (8개 조건 판정과 무관, 참고용) ---
+    volume: Optional[float] = None
+    vol_sma50: Optional[float] = None
+    dryup_ratio: Optional[float] = None
+    breakout_vol_ratio: Optional[float] = None
+    vcp_ratio: Optional[float] = None          # 근사치 (스윙 파동 탐지가 아닌 고정 4주 구간 비교)
+    vcp_forming: Optional[bool] = None
+    pivot: Optional[float] = None
+    pivot_position: Optional[float] = None
+    pivot_near: Optional[bool] = None
+    conviction_score: Optional[float] = None   # 참고용 진입 타이밍 점수(0~10), 매수 신호 아님
 
 
 # ----------------------------------------------------------------------------
@@ -347,7 +392,111 @@ def evaluate_stock(code: str, name: str, market: str, marcap: float, start_date:
     result.cond6_30pct_above_low = last_close >= low_52w * 1.30
     result.cond7_within_25pct_high = last_close <= high_52w * 1.25
 
+    # --- 진입 타이밍 참고 지표 (8개 조건과 무관, 참고용) ---
+    if "Volume" in df.columns:
+        volume = df["Volume"].astype(float)
+        compute_timing_metrics(result, high, low, close, volume)
+
     return result, close
+
+
+def compute_timing_metrics(result: StockResult, high: pd.Series, low: pd.Series,
+                            close: pd.Series, volume: pd.Series) -> None:
+    """거래량/VCP(근사치)/피벗 등 진입 타이밍 참고 지표를 계산해 result에 채운다.
+    여기서 계산되는 값들은 8개 조건 판정에 전혀 관여하지 않는 부가 정보다."""
+    n = len(close)
+
+    # 거래량이 0이거나 결측인 구간이 있으면(일부 종목의 저유동성 구간 등) 계산을 건너뛴다.
+    if volume.iloc[-VOL_SMA_WINDOW:].isna().any() or (volume.iloc[-VOL_SMA_WINDOW:] <= 0).all():
+        return
+
+    last_volume = float(volume.iloc[-1])
+    vol_sma50 = float(volume.rolling(VOL_SMA_WINDOW).mean().iloc[-1])
+    result.volume = last_volume
+    result.vol_sma50 = vol_sma50
+
+    if vol_sma50 > 0:
+        vol_sma_short = float(volume.rolling(DRYUP_SHORT_WINDOW).mean().iloc[-1])
+        result.dryup_ratio = vol_sma_short / vol_sma50
+        result.breakout_vol_ratio = last_volume / vol_sma50
+
+    # --- VCP 수축 근사치: 4주(20거래일) 구간 3개의 고저폭(%)을 순차 비교 ---
+    if n >= VCP_WINDOW_DAYS * 3:
+        def range_pct(lo: int, hi: int) -> Optional[float]:
+            seg_high = float(high.iloc[lo:hi].max())
+            seg_low = float(low.iloc[lo:hi].min())
+            if seg_high <= 0:
+                return None
+            return (seg_high - seg_low) / seg_high
+
+        range0 = range_pct(n - VCP_WINDOW_DAYS, n)                        # 최근 4주
+        range1 = range_pct(n - VCP_WINDOW_DAYS * 2, n - VCP_WINDOW_DAYS)  # 직전 4주
+        range2 = range_pct(n - VCP_WINDOW_DAYS * 3, n - VCP_WINDOW_DAYS * 2)  # 그 직전 4주
+
+        if range0 is not None and range1 is not None and range2 is not None and range1 > 0 and range2 > 0:
+            result.vcp_ratio = range0 / range1
+            result.vcp_forming = (range0 <= range1 * VCP_CONTRACTION_THRESHOLD) and \
+                                  (range1 <= range2 * VCP_CONTRACTION_THRESHOLD)
+
+    # --- 피벗(베이스 내부 저항선) 근사치: 당일 제외 최근 10주 내 최고가 ---
+    if n >= PIVOT_LOOKBACK_DAYS + 1:
+        pivot = float(high.iloc[-(PIVOT_LOOKBACK_DAYS + 1):-1].max())
+        if pivot > 0:
+            result.pivot = pivot
+            result.pivot_position = float(close.iloc[-1]) / pivot - 1.0
+            result.pivot_near = PIVOT_NEAR_LOW <= result.pivot_position <= PIVOT_NEAR_HIGH
+
+
+def _clamp01(x: float) -> float:
+    return max(0.0, min(1.0, x))
+
+
+def _score_dryup(ratio: float) -> float:
+    """낮을수록(거래량이 마를수록) 높은 점수. 0.5 이하=10점, 1.2 이상=0점."""
+    lo, hi = 0.5, 1.2
+    return 10.0 * _clamp01((hi - ratio) / (hi - lo))
+
+
+def _score_breakout(ratio: float) -> float:
+    """높을수록(거래량이 실린 돌파일수록) 높은 점수. 1.0 이하=0점, 2.0 이상=10점."""
+    lo, hi = 1.0, 2.0
+    return 10.0 * _clamp01((ratio - lo) / (hi - lo))
+
+
+def _score_vcp(ratio: float) -> float:
+    """VCP수축비율이 낮을수록(더 수축했을수록) 높은 점수. 0.3 이하=10점, 1.0 이상=0점."""
+    lo, hi = 0.3, 1.0
+    return 10.0 * _clamp01((hi - ratio) / (hi - lo))
+
+
+def _score_pivot(position: float) -> float:
+    """피벗 대비 -5%~0% 구간이 10점(가장 좋음). 그 구간을 벗어날수록 점수가 줄어든다."""
+    if PIVOT_NEAR_LOW <= position <= PIVOT_NEAR_HIGH:
+        return 10.0
+    if position > PIVOT_NEAR_HIGH:
+        return 10.0 * _clamp01(1.0 - position / 0.10)  # +10% 이상이면 0점
+    return 10.0 * _clamp01(1.0 - (PIVOT_NEAR_LOW - position) / 0.15)  # -20% 이하면 0점
+
+
+def compute_conviction_score(r: "StockResult") -> Optional[float]:
+    """
+    참고용 진입 타이밍 점수(0~10). 8개 조건 판정과 무관하며 매수 신호가 아니다.
+    구성 지표 중 하나라도 계산이 안 된 종목은 (추정으로 채우지 않고) None으로 둔다.
+    가중치는 초기값이며, 실거래 성과가 쌓이면 재조정할 예정이다.
+    """
+    if (r.dryup_ratio is None or r.breakout_vol_ratio is None or
+            r.vcp_ratio is None or r.pivot_position is None or r.rs_percentile is None):
+        return None
+
+    sub_scores = {
+        "dryup": _score_dryup(r.dryup_ratio),
+        "breakout_vol": _score_breakout(r.breakout_vol_ratio),
+        "vcp": _score_vcp(r.vcp_ratio),
+        "pivot": _score_pivot(r.pivot_position),
+        "rs": r.rs_percentile / 10.0,
+    }
+    score = sum(sub_scores[k] * w for k, w in CONVICTION_WEIGHTS.items())
+    return round(score, 2)
 
 
 # ----------------------------------------------------------------------------
@@ -500,6 +649,11 @@ def run_screening(market_key: str, top_n: int, max_workers: int, limit: Optional
             r.met_count = sum(conds)
             r.pass_all = all(conds)
 
+    # --- 컨빅션 스코어 (참고용 진입 타이밍 점수, 전체 스크리닝 대상 종목에 계산) ---
+    for r in results:
+        if r.status == "OK":
+            r.conviction_score = compute_conviction_score(r)
+
     return results_to_dataframe(results)
 
 
@@ -534,11 +688,21 @@ def results_to_dataframe(results: list[StockResult]) -> pd.DataFrame:
             "조건8_RS랭킹70이상_대체지표": r.cond8_rs_rank,
             "충족조건수(8개중, 참고용)": r.met_count,
             "전체통과(8개AND)": r.pass_all,
+            "거래량": r.volume,
+            "SMA50거래량": r.vol_sma50,
+            "Dryup비율_참고용": r.dryup_ratio,
+            "돌파거래량배율_참고용": r.breakout_vol_ratio,
+            "VCP수축비율_근사치": r.vcp_ratio,
+            "VCP형성중_근사치": r.vcp_forming,
+            "피벗": r.pivot,
+            "피벗대비위치_참고용": r.pivot_position,
+            "피벗임박_참고용": r.pivot_near,
+            "컨빅션스코어_참고용_매수신호아님": r.conviction_score,
         })
     df = pd.DataFrame(rows)
     df = df.sort_values(
-        ["전체통과(8개AND)", "충족조건수(8개중, 참고용)", "RS_백분위랭킹"],
-        ascending=[False, False, False], na_position="last",
+        ["전체통과(8개AND)", "컨빅션스코어_참고용_매수신호아님", "충족조건수(8개중, 참고용)", "RS_백분위랭킹"],
+        ascending=[False, False, False, False], na_position="last",
     )
     return df.reset_index(drop=True)
 
@@ -717,7 +881,10 @@ def upload_to_google_sheets(df: pd.DataFrame, run_date: str, cfg: MarketConfig) 
         ws = sh.add_worksheet(title=sheet_name, rows=str(len(df) + 10), cols=str(len(df.columns) + 2))
 
         header = [f"※ [{cfg.label}] 8번 RS는 IBD RS가 없어 {cfg.rs_note}로 계산한 대체 지표입니다. "
-                   "'충족조건수'는 참고용이며, '전체통과'만 8개 조건 전부 충족(AND) 여부의 공식 판정입니다."]
+                   "'충족조건수'는 참고용이며, '전체통과'만 8개 조건 전부 충족(AND) 여부의 공식 판정입니다. "
+                   "VCP/피벗/컨빅션스코어는 8개 조건 판정과 무관한 진입 타이밍 참고 지표이며, "
+                   "VCP는 실제 미너비니 방법론(스윙 고점/저점 기반 다중 파동 탐지)이 아닌 "
+                   "고정 4주 구간 비교 근사치입니다. 매수 신호가 아닙니다."]
         values = [header, list(df.columns)] + df.astype(object).where(pd.notnull(df), "").values.tolist()
 
         ws.update(values, "A1")

@@ -49,6 +49,11 @@ COLUMN_MAP = {
     "RS_백분위랭킹": "rsRank",
     "충족조건수(8개중, 참고용)": "metCount",
     "전체통과(8개AND)": "passAll",
+    "거래량": "volume", "SMA50거래량": "volSma50",
+    "Dryup비율_참고용": "dryupRatio", "돌파거래량배율_참고용": "breakoutVolRatio",
+    "VCP수축비율_근사치": "vcpRatio", "VCP형성중_근사치": "vcpForming",
+    "피벗": "pivot", "피벗대비위치_참고용": "pivotPosition", "피벗임박_참고용": "pivotNear",
+    "컨빅션스코어_참고용_매수신호아님": "conviction",
 }
 
 
@@ -224,7 +229,7 @@ HTML_TEMPLATE = r"""<!doctype html>
 <div class="wrap">
   <header>
     <h1>SEPA 추세 템플릿 스크리너</h1>
-    <div class="subtitle" id="subtitle">미너비니 추세 템플릿 8개 조건 1차 필터 · 스테이지/VCP/피벗/펀더멘털/매매신호는 다루지 않음</div>
+    <div class="subtitle" id="subtitle">미너비니 추세 템플릿 8개 조건 1차 필터 + 타이밍 참고 지표 · 스테이지/베이스단계/펀더멘털/매매신호는 다루지 않음</div>
   </header>
 
   <div class="tabs" id="tabs"></div>
@@ -243,6 +248,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <button class="filter-btn" data-filter="pass">8개 통과만</button>
       <button class="filter-btn" data-filter="na">확인불가만</button>
       <select id="sortSelect">
+        <option value="conviction">컨빅션스코어순</option>
         <option value="metCount">충족조건수순</option>
         <option value="rsRank">RS백분위순</option>
         <option value="marcap">시가총액순</option>
@@ -261,7 +267,8 @@ HTML_TEMPLATE = r"""<!doctype html>
   <footer>
     ※ 8번 조건(상대강도, RS)은 IBD RS가 없는 시장 특성상 각 시장 지수 대비 3·6·12개월 초과수익률을 유니버스 내 백분위로 환산한 대체 지표입니다.<br>
     ※ "충족조건수"는 참고용이며, "전체통과" 배지만 8개 조건을 전부 동시 충족(AND)했다는 공식 판정입니다.<br>
-    ※ 이 페이지는 1차 필터 결과만 보여줍니다. 스테이지(와인스타인 4단계) 확정, VCP 패턴, 피벗 돌파, 펀더멘털, 촉매, 매매 신호는 별도로 직접 판단해야 합니다.
+    ※ "컨빅션", "타이밍신호(VCP/피벗임박)"는 8개 조건 판정과 무관한 진입 타이밍 참고 지표입니다. VCP는 실제 미너비니 방법론(스윙 고점/저점 기반 다중 파동 탐지)이 아닌 고정 4주 구간 비교 근사치이며, 매수 신호가 아닙니다.<br>
+    ※ 이 페이지는 1차 필터 + 타이밍 참고 지표까지만 보여줍니다. 스테이지(와인스타인 4단계) 확정, 베이스 단계, 펀더멘털, 촉매는 별도로 직접 판단해야 합니다.
   </footer>
 </div>
 
@@ -313,8 +320,8 @@ function renderCards() {
   const dates = marketKeys.map(k => DATA[k].asOf).filter(Boolean);
   const uniqueDates = [...new Set(dates)];
   document.getElementById("subtitle").textContent = uniqueDates.length
-    ? `기준일(KST): ${marketKeys.map(k => `${DATA[k].label.split(" ")[0]} ${DATA[k].asOf || "-"}`).join(" · ")} · 미너비니 추세 템플릿 8개 조건 1차 필터 · 스테이지/VCP/피벗/펀더멘털/매매신호는 다루지 않음`
-    : "미너비니 추세 템플릿 8개 조건 1차 필터 · 스테이지/VCP/피벗/펀더멘털/매매신호는 다루지 않음";
+    ? `기준일(KST): ${marketKeys.map(k => `${DATA[k].label.split(" ")[0]} ${DATA[k].asOf || "-"}`).join(" · ")} · 미너비니 추세 템플릿 8개 조건 1차 필터 + 타이밍 참고 지표 · 스테이지/베이스단계/펀더멘털/매매신호는 다루지 않음`
+    : "미너비니 추세 템플릿 8개 조건 1차 필터 + 타이밍 참고 지표 · 스테이지/베이스단계/펀더멘털/매매신호는 다루지 않음";
 }
 
 function renderTrend() {
@@ -360,8 +367,26 @@ function getCols() {
   if (hasMarcap()) {
     cols.push({ key: "marcap", label: "시가총액", fmt: v => v ? fmtNum(v / 1e8, 0) + "억" : "-" });
   }
-  cols.push({ key: "passAll", label: "판정", fmt: (v, r) => statusBadge(r) });
+  cols.push(
+    { key: "conviction", label: "컨빅션", fmt: v => convictionBadge(v) },
+    { key: "signals", label: "타이밍신호", fmt: (v, r) => timingSignals(r) },
+    { key: "passAll", label: "판정", fmt: (v, r) => statusBadge(r) },
+  );
   return cols;
+}
+
+function convictionBadge(v) {
+  if (v === null || v === undefined) return "-";
+  const pct = Math.max(0, Math.min(100, v * 10));
+  const hue = 4 + (pct / 100) * 146; // 낮으면 빨강 계열, 높으면 초록 계열
+  return `<span style="display:inline-block;min-width:34px;padding:2px 6px;border-radius:6px;font-weight:700;background:hsl(${hue},70%,92%);color:hsl(${hue},60%,32%);">${fmtNum(v, 1)}</span>`;
+}
+
+function timingSignals(r) {
+  const badges = [];
+  if (r.vcpForming === true) badges.push(`<span class="badge pass" title="VCP 수축 근사치 조건 충족">VCP</span>`);
+  if (r.pivotNear === true) badges.push(`<span class="badge pass" title="피벗 대비 -5%~0% 구간">피벗임박</span>`);
+  return badges.length ? badges.join(" ") : "-";
 }
 
 function metBar(v) {
@@ -403,9 +428,9 @@ function renderTable() {
   thead.querySelectorAll("th").forEach(th => {
     th.addEventListener("click", () => {
       const key = th.dataset.key;
-      if (key === "rank") return;
+      if (key === "rank" || key === "signals") return;
       if (sortKey === key) sortDir *= -1; else { sortKey = key; sortDir = -1; }
-      document.getElementById("sortSelect").value = ["metCount","rsRank","marcap","code"].includes(key) ? key : sortKey;
+      document.getElementById("sortSelect").value = ["conviction","metCount","rsRank","marcap","code"].includes(key) ? key : sortKey;
       renderTable();
     });
   });
