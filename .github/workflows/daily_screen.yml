@@ -2,9 +2,18 @@ name: SEPA Trend Template Daily Screening
 
 on:
   schedule:
-    # 평일(월~금) 20:00 KST = UTC 11:00
+    # 한국: 평일(월~금) 20:00 KST = UTC 11:00
     - cron: "0 11 * * 1-5"
-  workflow_dispatch: {}
+    # 미국: 평일 장마감(4:00pm ET) 후 약 1~2시간 뒤 = UTC 22:00 (=KST 07:00, 다음날)
+    - cron: "0 22 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      market:
+        description: "실행할 시장"
+        required: false
+        default: "ALL"
+        type: choice
+        options: [KR, US, ALL]
 
 permissions:
   contents: read
@@ -25,11 +34,24 @@ jobs:
       - name: 의존성 설치
         run: pip install -r requirements.txt
 
-      - name: 스크리닝 실행 (한국 + 미국)
+      - name: 실행 시장 결정
+        id: market
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            if [ "${{ github.event.schedule }}" = "0 11 * * 1-5" ]; then
+              echo "market=KR" >> "$GITHUB_OUTPUT"
+            else
+              echo "market=US" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "market=${{ github.event.inputs.market || 'ALL' }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 스크리닝 실행 (${{ steps.market.outputs.market }})
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
-        run: python screening.py --market ALL
+        run: python screening.py --market ${{ steps.market.outputs.market }}
 
       - name: 결과 CSV 아티팩트 업로드
         if: always()
