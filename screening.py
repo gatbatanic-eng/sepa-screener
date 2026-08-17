@@ -19,11 +19,11 @@ SEPA(미너비니) 추세 템플릿 1차 스크리너
 5. 이 스크리너는 1차 필터(8개 조건 AND)가 본체다. 스테이지(와인스타인
    4단계) 확정, 베이스 단계 카운트, 펀더멘털, 촉매 판단, 매매 신호/
    자동매매는 여전히 다루지 않는다.
-6. 거래량 기반 지표(Dry-up/돌파거래량), VCP 수축, 피벗 근접도, 컨빅션
-   스코어는 "진입 타이밍 참고용" 부가 지표이며 8개 조건 판정에는 전혀
-   관여하지 않는다. VCP는 실제 미너비니 방법론(스윙 고점/저점 기반 다중
-   파동 탐지)이 아닌 고정 4주 구간 비교 근사치이므로 반드시 그렇게
-   표기한다. 이 지표들은 매수 신호가 아니다.
+6. 거래량 기반 지표(Dry-up/돌파거래량), VCP 수축, 피벗 근접도, RS방향,
+   52주고점대비, 셋업점수, 관찰후보, 돌파는 "진입 타이밍 참고용" 부가
+   지표이며 8개 조건 판정에는 전혀 관여하지 않는다. VCP는 실제 미너비니
+   방법론(스윙 고점/저점 기반 다중 파동 탐지)이 아닌 고정 4주 구간 비교
+   근사치이므로 반드시 그렇게 표기한다. 이 지표들은 매수 신호가 아니다.
 
 실행 방법
 ---------
@@ -124,14 +124,22 @@ PIVOT_LOOKBACK_DAYS = 50       # 피벗(베이스 내부 저항선) 탐색 기�
 PIVOT_NEAR_LOW = -0.05         # "피벗임박"으로 볼 하한 (피벗 대비 -5%)
 PIVOT_NEAR_HIGH = 0.0          # "피벗임박"으로 볼 상한 (피벗 대비 0%, 즉 아직 안 뚫음)
 
-# 컨빅션 스코어 가중치 (초기값 - 임의 설정, 추후 성과 데이터로 튜닝 예정)
-CONVICTION_WEIGHTS = {
-    "vcp": 0.25,
-    "pivot": 0.25,
-    "breakout_vol": 0.20,
-    "dryup": 0.15,
-    "rs": 0.15,
+# 셋업 점수 가중치 (초기값 - 임의 설정, 추후 성과 데이터로 튜닝 예정)
+# 돌파거래량은 점수에 포함하지 않고, "돌파" 여부를 별도 플래그로 판단한다.
+SETUP_SCORE_WEIGHTS = {
+    "vcp": 0.30,
+    "pivot": 0.30,
+    "dryup": 0.20,
+    "rs": 0.20,
 }
+
+# "관찰후보" 판정 기준
+WATCH_RS_THRESHOLD = 85
+WATCH_HIGH52W_POSITION_MIN = -0.10  # 52주 고점 대비 -10% 이내
+WATCH_SETUP_SCORE_MIN = 8.0
+
+# "돌파" 판정 기준 (피벗 상향 돌파 + 거래량 급증)
+BREAKOUT_VOL_RATIO_MIN = 1.5
 
 
 @dataclass(frozen=True)
@@ -185,6 +193,7 @@ class StockResult:
     sma200: Optional[float] = None
     high_52w: Optional[float] = None
     low_52w: Optional[float] = None
+    high52w_position: Optional[float] = None  # 종가/52주최고가 - 1 (참고용)
 
     cond1_above_150_200: Optional[bool] = None
     cond2_150_above_200: Optional[bool] = None
@@ -200,6 +209,8 @@ class StockResult:
     rs_raw: Optional[float] = None
     rs_percentile: Optional[float] = None
     cond8_rs_rank: Optional[bool] = None
+    rs_momentum_diff: Optional[float] = None  # RS_3M - RS_12M (참고용)
+    rs_rising: Optional[bool] = None          # RS_3M > RS_6M > RS_12M (참고용)
 
     met_count: Optional[int] = None  # 참고용: 8개 중 몇 개를 충족했는지 (통과 판정은 여전히 8개 AND)
     pass_all: Optional[bool] = None
@@ -214,7 +225,9 @@ class StockResult:
     pivot: Optional[float] = None
     pivot_position: Optional[float] = None
     pivot_near: Optional[bool] = None
-    conviction_score: Optional[float] = None   # 참고용 진입 타이밍 점수(0~10), 매수 신호 아님
+    setup_score: Optional[float] = None        # 참고용 셋업 점수(0~10) = VCP30%+Pivot30%+Dryup20%+RS20%. 매수 신호 아님
+    watch_candidate: Optional[bool] = None      # "관찰후보" 표시 (8/8 통과 + RS85+ + RS상승중 + 52주고점-10%이내 + 셋업8+ + 피벗임박)
+    breakout_signal: Optional[bool] = None      # "돌파" 표시 (피벗 상향 돌파 + 거래량 1.5배 이상)
 
 
 # ----------------------------------------------------------------------------
@@ -382,6 +395,7 @@ def evaluate_stock(code: str, name: str, market: str, marcap: float, start_date:
     result.sma200 = last_sma200
     result.high_52w = high_52w
     result.low_52w = low_52w
+    result.high52w_position = last_close / high_52w - 1.0  # 예: -0.042 = 52주 고점 대비 -4.2%
 
     # --- 조건 1~7 ---
     result.cond1_above_150_200 = (last_close > last_sma150) and (last_close > last_sma200)
@@ -390,7 +404,9 @@ def evaluate_stock(code: str, name: str, market: str, marcap: float, start_date:
     result.cond4_50_above_150_200 = (last_sma50 > last_sma150) and (last_sma50 > last_sma200)
     result.cond5_above_50 = last_close > last_sma50
     result.cond6_30pct_above_low = last_close >= low_52w * 1.30
-    result.cond7_within_25pct_high = last_close <= high_52w * 1.25
+    # 52주 고가 대비 25% 이내(=고가의 75% 이상). 이전 코드의 "<= high*1.25"는
+    # close가 high_52w를 넘을 수 없어 사실상 항상 참인 트리비얼 조건이었음(버그 수정).
+    result.cond7_within_25pct_high = last_close >= high_52w * 0.75
 
     # --- 진입 타이밍 참고 지표 (8개 조건과 무관, 참고용) ---
     if "Volume" in df.columns:
@@ -457,12 +473,6 @@ def _score_dryup(ratio: float) -> float:
     return 10.0 * _clamp01((hi - ratio) / (hi - lo))
 
 
-def _score_breakout(ratio: float) -> float:
-    """높을수록(거래량이 실린 돌파일수록) 높은 점수. 1.0 이하=0점, 2.0 이상=10점."""
-    lo, hi = 1.0, 2.0
-    return 10.0 * _clamp01((ratio - lo) / (hi - lo))
-
-
 def _score_vcp(ratio: float) -> float:
     """VCP수축비율이 낮을수록(더 수축했을수록) 높은 점수. 0.3 이하=10점, 1.0 이상=0점."""
     lo, hi = 0.3, 1.0
@@ -478,25 +488,45 @@ def _score_pivot(position: float) -> float:
     return 10.0 * _clamp01(1.0 - (PIVOT_NEAR_LOW - position) / 0.15)  # -20% 이하면 0점
 
 
-def compute_conviction_score(r: "StockResult") -> Optional[float]:
+def compute_setup_score(r: "StockResult") -> Optional[float]:
     """
-    참고용 진입 타이밍 점수(0~10). 8개 조건 판정과 무관하며 매수 신호가 아니다.
+    참고용 셋업 점수(0~10) = VCP30% + Pivot30% + Dryup20% + RS20%.
+    8개 조건 판정과 무관하며 매수 신호가 아니다. 돌파거래량은 여기 포함하지
+    않고 "돌파" 여부를 별도 플래그(compute_breakout_signal)로 판단한다.
     구성 지표 중 하나라도 계산이 안 된 종목은 (추정으로 채우지 않고) None으로 둔다.
     가중치는 초기값이며, 실거래 성과가 쌓이면 재조정할 예정이다.
     """
-    if (r.dryup_ratio is None or r.breakout_vol_ratio is None or
-            r.vcp_ratio is None or r.pivot_position is None or r.rs_percentile is None):
+    if (r.dryup_ratio is None or r.vcp_ratio is None or
+            r.pivot_position is None or r.rs_percentile is None):
         return None
 
     sub_scores = {
         "dryup": _score_dryup(r.dryup_ratio),
-        "breakout_vol": _score_breakout(r.breakout_vol_ratio),
         "vcp": _score_vcp(r.vcp_ratio),
         "pivot": _score_pivot(r.pivot_position),
         "rs": r.rs_percentile / 10.0,
     }
-    score = sum(sub_scores[k] * w for k, w in CONVICTION_WEIGHTS.items())
+    score = sum(sub_scores[k] * w for k, w in SETUP_SCORE_WEIGHTS.items())
     return round(score, 2)
+
+
+def compute_watch_candidate(r: "StockResult") -> bool:
+    """'관찰후보': 8/8 통과 + RS85+ + RS상승중 + 52주고점-10%이내 + 셋업점수8+ + 피벗임박(-5%~0%)."""
+    return (
+        r.pass_all is True
+        and r.rs_percentile is not None and r.rs_percentile >= WATCH_RS_THRESHOLD
+        and r.rs_rising is True
+        and r.high52w_position is not None and r.high52w_position >= WATCH_HIGH52W_POSITION_MIN
+        and r.setup_score is not None and r.setup_score >= WATCH_SETUP_SCORE_MIN
+        and r.pivot_near is True
+    )
+
+
+def compute_breakout_signal(r: "StockResult") -> Optional[bool]:
+    """'돌파': 피벗을 상향 돌파(피벗대비위치 > 0) + 거래량이 50일 평균의 1.5배 이상."""
+    if r.pivot_position is None or r.breakout_vol_ratio is None:
+        return None
+    return r.pivot_position > 0 and r.breakout_vol_ratio >= BREAKOUT_VOL_RATIO_MIN
 
 
 # ----------------------------------------------------------------------------
@@ -621,6 +651,8 @@ def run_screening(market_key: str, top_n: int, max_workers: int, limit: Optional
         # 동일가중 평균. (IBD RS처럼 최근 구간에 가중치를 더 주는 방식이 아니라
         # 3/6/12개월을 단순 평균한 값이며, 이는 설계상 임의 선택임을 명시)
         r.rs_raw = float(np.mean([r.rs_3m, r.rs_6m, r.rs_12m]))
+        r.rs_momentum_diff = r.rs_3m - r.rs_12m
+        r.rs_rising = r.rs_3m > r.rs_6m > r.rs_12m
 
     # --- RS 백분위 랭킹 (유니버스 내에서, OK 상태 + rs_raw 유효한 종목 대상) ---
     valid_rs = [r for r in results if r.status == "OK" and r.rs_raw is not None]
@@ -649,10 +681,12 @@ def run_screening(market_key: str, top_n: int, max_workers: int, limit: Optional
             r.met_count = sum(conds)
             r.pass_all = all(conds)
 
-    # --- 컨빅션 스코어 (참고용 진입 타이밍 점수, 전체 스크리닝 대상 종목에 계산) ---
+    # --- 셋업 점수 / 관찰후보 / 돌파 (참고용, 전체 스크리닝 대상 종목에 계산) ---
     for r in results:
         if r.status == "OK":
-            r.conviction_score = compute_conviction_score(r)
+            r.setup_score = compute_setup_score(r)
+            r.watch_candidate = compute_watch_candidate(r)
+            r.breakout_signal = compute_breakout_signal(r)
 
     return results_to_dataframe(results)
 
@@ -673,6 +707,7 @@ def results_to_dataframe(results: list[StockResult]) -> pd.DataFrame:
             "SMA200": r.sma200,
             "52주최고가": r.high_52w,
             "52주최저가": r.low_52w,
+            "52주고점대비_참고용": r.high52w_position,
             "조건1_150200위": r.cond1_above_150_200,
             "조건2_150위200": r.cond2_150_above_200,
             "조건3_200상승중": r.cond3_200_rising,
@@ -686,6 +721,8 @@ def results_to_dataframe(results: list[StockResult]) -> pd.DataFrame:
             "RS_원점수": r.rs_raw,
             "RS_백분위랭킹": r.rs_percentile,
             "조건8_RS랭킹70이상_대체지표": r.cond8_rs_rank,
+            "RS_3개월-12개월차_참고용": r.rs_momentum_diff,
+            "RS상승중_참고용": r.rs_rising,
             "충족조건수(8개중, 참고용)": r.met_count,
             "전체통과(8개AND)": r.pass_all,
             "거래량": r.volume,
@@ -697,11 +734,13 @@ def results_to_dataframe(results: list[StockResult]) -> pd.DataFrame:
             "피벗": r.pivot,
             "피벗대비위치_참고용": r.pivot_position,
             "피벗임박_참고용": r.pivot_near,
-            "컨빅션스코어_참고용_매수신호아님": r.conviction_score,
+            "셋업점수_참고용_매수신호아님": r.setup_score,
+            "관찰후보_참고용_매수신호아님": r.watch_candidate,
+            "돌파_참고용_매수신호아님": r.breakout_signal,
         })
     df = pd.DataFrame(rows)
     df = df.sort_values(
-        ["전체통과(8개AND)", "컨빅션스코어_참고용_매수신호아님", "충족조건수(8개중, 참고용)", "RS_백분위랭킹"],
+        ["전체통과(8개AND)", "셋업점수_참고용_매수신호아님", "충족조건수(8개중, 참고용)", "RS_백분위랭킹"],
         ascending=[False, False, False, False], na_position="last",
     )
     return df.reset_index(drop=True)
@@ -846,6 +885,61 @@ def _add_summary_chart(sh, ws, cfg: MarketConfig) -> None:
     sh.batch_update(request)
 
 
+STOCK_HISTORY_HEADER = [
+    "날짜", "종목코드", "종목명",
+    "조건1", "조건2", "조건3", "조건4", "조건5", "조건6", "조건7", "조건8",
+    "전체통과", "RS백분위", "RS상승중", "52주고점대비",
+    "VCP수축비율", "Dryup비율", "피벗대비위치", "셋업점수", "돌파",
+]
+
+
+def _clean_cell(v):
+    if v is None or (isinstance(v, float) and pd.isna(v)):
+        return ""
+    if isinstance(v, (np.bool_, bool)):
+        return bool(v)
+    if isinstance(v, (np.floating, np.integer)):
+        return float(v)
+    return v
+
+
+def _append_daily_stock_history(sh, df: pd.DataFrame, run_date: str, cfg: MarketConfig) -> None:
+    """'일별종목이력' 탭에 오늘자 종목별(정상판정만) 결과를 한 줄씩 쌓는다.
+    다음날/과거와 비교할 수 있도록 날짜별로 계속 누적되며, 같은 날 재실행 시
+    그날 행만 다시 만들어 덮어쓴다(중복 방지)."""
+    import gspread
+
+    sheet_name = f"{cfg.sheet_tab_prefix}일별종목이력"
+    ok_df = df[df["상태"] == "OK"]
+
+    col_map = [
+        "종목코드", "종목명",
+        "조건1_150200위", "조건2_150위200", "조건3_200상승중", "조건4_50위150200",
+        "조건5_종가위50", "조건6_저가대비30pct이상", "조건7_고가대비25pct이내", "조건8_RS랭킹70이상_대체지표",
+        "전체통과(8개AND)", "RS_백분위랭킹", "RS상승중_참고용", "52주고점대비_참고용",
+        "VCP수축비율_근사치", "Dryup비율_참고용", "피벗대비위치_참고용",
+        "셋업점수_참고용_매수신호아님", "돌파_참고용_매수신호아님",
+    ]
+    new_rows = [[run_date] + [_clean_cell(v) for v in row] for row in ok_df[col_map].itertuples(index=False)]
+
+    try:
+        ws = sh.worksheet(sheet_name)
+        existing = ws.get_all_values()
+        old_rows = [row for row in existing[1:] if row and row[0] != run_date]  # 오늘자 재실행 시 중복 제거
+    except gspread.exceptions.WorksheetNotFound:
+        ws = sh.add_worksheet(title=sheet_name, rows="1000", cols=str(len(STOCK_HISTORY_HEADER) + 2))
+        old_rows = []
+
+    all_values = [STOCK_HISTORY_HEADER] + old_rows + new_rows
+    ws.resize(rows=max(len(all_values) + 10, 100), cols=len(STOCK_HISTORY_HEADER) + 2)
+    ws.update(all_values, "A1")
+    ws.freeze(rows=1)
+    ws.format(f"A1:{chr(ord('A') + len(STOCK_HISTORY_HEADER) - 1)}1", {"textFormat": {"bold": True}})
+
+    logger.info("'%s' 탭에 %s 종목별 이력 %d행 반영 완료 (누적 %d행).",
+                sheet_name, run_date, len(new_rows), len(all_values) - 1)
+
+
 def upload_to_google_sheets(df: pd.DataFrame, run_date: str, cfg: MarketConfig) -> bool:
     creds_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
     sheet_id = os.environ.get("GOOGLE_SHEET_ID")
@@ -882,9 +976,10 @@ def upload_to_google_sheets(df: pd.DataFrame, run_date: str, cfg: MarketConfig) 
 
         header = [f"※ [{cfg.label}] 8번 RS는 IBD RS가 없어 {cfg.rs_note}로 계산한 대체 지표입니다. "
                    "'충족조건수'는 참고용이며, '전체통과'만 8개 조건 전부 충족(AND) 여부의 공식 판정입니다. "
-                   "VCP/피벗/컨빅션스코어는 8개 조건 판정과 무관한 진입 타이밍 참고 지표이며, "
+                   "'RS상승중'은 RS_3개월>RS_6개월>RS_12개월 여부입니다. "
+                   "VCP/피벗/셋업점수/관찰후보/돌파는 8개 조건 판정과 무관한 진입 타이밍 참고 지표이며, "
                    "VCP는 실제 미너비니 방법론(스윙 고점/저점 기반 다중 파동 탐지)이 아닌 "
-                   "고정 4주 구간 비교 근사치입니다. 매수 신호가 아닙니다."]
+                   "고정 4주 구간 비교 근사치입니다. '관찰후보'/'돌파' 포함 전부 매수 신호가 아닙니다."]
         values = [header, list(df.columns)] + df.astype(object).where(pd.notnull(df), "").values.tolist()
 
         ws.update(values, "A1")
@@ -895,6 +990,11 @@ def upload_to_google_sheets(df: pd.DataFrame, run_date: str, cfg: MarketConfig) 
             _upsert_daily_summary(sh, df, run_date, cfg)
         except Exception as exc:  # noqa: BLE001 - 요약 탭 실패가 본 업로드 성공을 덮지 않도록
             logger.warning("'%s' 요약 탭 갱신 실패 (본 결과 업로드는 정상 완료됨): %s", cfg.summary_sheet_name, exc)
+
+        try:
+            _append_daily_stock_history(sh, df, run_date, cfg)
+        except Exception as exc:  # noqa: BLE001 - 이력 탭 실패가 본 업로드 성공을 덮지 않도록
+            logger.warning("'%s일별종목이력' 탭 갱신 실패 (본 결과 업로드는 정상 완료됨): %s", cfg.sheet_tab_prefix, exc)
 
         return True
     except Exception as exc:  # noqa: BLE001

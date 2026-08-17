@@ -42,18 +42,21 @@ COLUMN_MAP = {
     "종목코드": "code", "종목명": "name", "시장": "market", "시가총액": "marcap",
     "상태": "status", "제외사유": "reason",
     "종가": "close", "SMA50": "sma50", "SMA150": "sma150", "SMA200": "sma200",
-    "52주최고가": "high52w", "52주최저가": "low52w",
+    "52주최고가": "high52w", "52주최저가": "low52w", "52주고점대비_참고용": "high52wPosition",
     "조건1_150200위": "c1", "조건2_150위200": "c2", "조건3_200상승중": "c3",
     "조건4_50위150200": "c4", "조건5_종가위50": "c5", "조건6_저가대비30pct이상": "c6",
     "조건7_고가대비25pct이내": "c7", "조건8_RS랭킹70이상_대체지표": "c8",
     "RS_백분위랭킹": "rsRank",
+    "RS_3개월-12개월차_참고용": "rsMomentumDiff", "RS상승중_참고용": "rsRising",
     "충족조건수(8개중, 참고용)": "metCount",
     "전체통과(8개AND)": "passAll",
     "거래량": "volume", "SMA50거래량": "volSma50",
     "Dryup비율_참고용": "dryupRatio", "돌파거래량배율_참고용": "breakoutVolRatio",
     "VCP수축비율_근사치": "vcpRatio", "VCP형성중_근사치": "vcpForming",
     "피벗": "pivot", "피벗대비위치_참고용": "pivotPosition", "피벗임박_참고용": "pivotNear",
-    "컨빅션스코어_참고용_매수신호아님": "conviction",
+    "셋업점수_참고용_매수신호아님": "setupScore",
+    "관찰후보_참고용_매수신호아님": "watchCandidate",
+    "돌파_참고용_매수신호아님": "breakoutSignal",
 }
 
 
@@ -159,6 +162,8 @@ HTML_TEMPLATE = r"""<!doctype html>
     --text: #1b1e24; --text-dim: #6b7280; --accent: #2563eb;
     --pass-bg: #e6f7ec; --pass-text: #157347; --pass-border: #b7e4c7;
     --fail-bg: #f8f9fa; --na-bg: #fdf2f2; --na-text: #b42318;
+    --watch-bg: #eef0ff; --watch-text: #4338ca; --watch-border: #c7cbfa;
+    --breakout-bg: #fff2e0; --breakout-text: #b45309; --breakout-border: #fbd9a8;
     --row-hover: #f0f4ff; --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   }
   @media (prefers-color-scheme: dark) {
@@ -167,6 +172,8 @@ HTML_TEMPLATE = r"""<!doctype html>
       --text: #e7e9ee; --text-dim: #9aa2b1; --accent: #5b8def;
       --pass-bg: #113322; --pass-text: #6bd08a; --pass-border: #1e5c3a;
       --fail-bg: #171a21; --na-bg: #3a1717; --na-text: #f2a4a0;
+      --watch-bg: #201f42; --watch-text: #a5b0fc; --watch-border: #3c3a72;
+      --breakout-bg: #3a2712; --breakout-text: #f6b96a; --breakout-border: #6b4a1f;
       --row-hover: #1d2230; --shadow: 0 1px 3px rgba(0,0,0,0.4);
     }
   }
@@ -216,6 +223,8 @@ HTML_TEMPLATE = r"""<!doctype html>
   .badge.pass { background: var(--pass-bg); color: var(--pass-text); border: 1px solid var(--pass-border); }
   .badge.fail { background: var(--fail-bg); color: var(--text-dim); border: 1px solid var(--border); }
   .badge.na { background: var(--na-bg); color: var(--na-text); }
+  .badge.watch { background: var(--watch-bg); color: var(--watch-text); border: 1px solid var(--watch-border); }
+  .badge.breakout { background: var(--breakout-bg); color: var(--breakout-text); border: 1px solid var(--breakout-border); }
   .metbar { display: inline-flex; gap: 2px; vertical-align: middle; }
   .metbar span { width: 6px; height: 12px; border-radius: 1px; background: var(--border); }
   .metbar span.on { background: var(--accent); }
@@ -246,11 +255,14 @@ HTML_TEMPLATE = r"""<!doctype html>
       <input type="text" id="search" placeholder="종목코드 또는 종목명 검색...">
       <button class="filter-btn active" data-filter="all">전체</button>
       <button class="filter-btn" data-filter="pass">8개 통과만</button>
+      <button class="filter-btn" data-filter="watch">관찰후보만</button>
+      <button class="filter-btn" data-filter="breakout">돌파만</button>
       <button class="filter-btn" data-filter="na">확인불가만</button>
       <select id="sortSelect">
-        <option value="conviction">컨빅션스코어순</option>
+        <option value="setupScore">셋업점수순</option>
         <option value="metCount">충족조건수순</option>
         <option value="rsRank">RS백분위순</option>
+        <option value="high52wPosition">52주고점대비순</option>
         <option value="marcap">시가총액순</option>
         <option value="code">종목코드순</option>
       </select>
@@ -267,7 +279,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   <footer>
     ※ 8번 조건(상대강도, RS)은 IBD RS가 없는 시장 특성상 각 시장 지수 대비 3·6·12개월 초과수익률을 유니버스 내 백분위로 환산한 대체 지표입니다.<br>
     ※ "충족조건수"는 참고용이며, "전체통과" 배지만 8개 조건을 전부 동시 충족(AND)했다는 공식 판정입니다.<br>
-    ※ "컨빅션", "타이밍신호(VCP/피벗임박)"는 8개 조건 판정과 무관한 진입 타이밍 참고 지표입니다. VCP는 실제 미너비니 방법론(스윙 고점/저점 기반 다중 파동 탐지)이 아닌 고정 4주 구간 비교 근사치이며, 매수 신호가 아닙니다.<br>
+    ※ "셋업점수", "타이밍신호(관찰후보/돌파/VCP/피벗임박)", "RS상승중", "52주고점대비"는 8개 조건 판정과 무관한 진입 타이밍 참고 지표입니다. VCP는 실제 미너비니 방법론(스윙 고점/저점 기반 다중 파동 탐지)이 아닌 고정 4주 구간 비교 근사치이며, "관찰후보"·"돌파" 포함 전부 매수 신호가 아닙니다.<br>
     ※ 이 페이지는 1차 필터 + 타이밍 참고 지표까지만 보여줍니다. 스테이지(와인스타인 4단계) 확정, 베이스 단계, 펀더멘털, 촉매는 별도로 직접 판단해야 합니다.
   </footer>
 </div>
@@ -363,19 +375,24 @@ function getCols() {
     { key: "close", label: "종가", fmt: v => fmtNum(v) },
     { key: "metCount", label: "충족", fmt: (v) => metBar(v) },
     { key: "rsRank", label: "RS백분위", fmt: v => v != null ? fmtNum(v, 1) : "-" },
+    { key: "high52wPosition", label: "52주고점대비", fmt: v => v != null ? fmtPct(v) : "-" },
   ];
   if (hasMarcap()) {
     cols.push({ key: "marcap", label: "시가총액", fmt: v => v ? fmtNum(v / 1e8, 0) + "억" : "-" });
   }
   cols.push(
-    { key: "conviction", label: "컨빅션", fmt: v => convictionBadge(v) },
+    { key: "setupScore", label: "셋업점수", fmt: v => setupScoreBadge(v) },
     { key: "signals", label: "타이밍신호", fmt: (v, r) => timingSignals(r) },
     { key: "passAll", label: "판정", fmt: (v, r) => statusBadge(r) },
   );
   return cols;
 }
 
-function convictionBadge(v) {
+function fmtPct(v) {
+  return (v >= 0 ? "+" : "") + (v * 100).toFixed(1) + "%";
+}
+
+function setupScoreBadge(v) {
   if (v === null || v === undefined) return "-";
   const pct = Math.max(0, Math.min(100, v * 10));
   const hue = 4 + (pct / 100) * 146; // 낮으면 빨강 계열, 높으면 초록 계열
@@ -384,6 +401,8 @@ function convictionBadge(v) {
 
 function timingSignals(r) {
   const badges = [];
+  if (r.watchCandidate === true) badges.push(`<span class="badge watch" title="8/8통과+RS85이상+RS상승중+52주고점-10%이내+셋업8점이상+피벗임박. 매수신호 아님">관찰후보</span>`);
+  if (r.breakoutSignal === true) badges.push(`<span class="badge breakout" title="피벗 상향돌파 + 거래량 1.5배 이상. 매수신호 아님">돌파</span>`);
   if (r.vcpForming === true) badges.push(`<span class="badge pass" title="VCP 수축 근사치 조건 충족">VCP</span>`);
   if (r.pivotNear === true) badges.push(`<span class="badge pass" title="피벗 대비 -5%~0% 구간">피벗임박</span>`);
   return badges.length ? badges.join(" ") : "-";
@@ -406,6 +425,8 @@ function renderTable() {
   let rows = DATA[currentMarket].rows.slice();
 
   if (currentFilter === "pass") rows = rows.filter(r => r.passAll === true);
+  else if (currentFilter === "watch") rows = rows.filter(r => r.watchCandidate === true);
+  else if (currentFilter === "breakout") rows = rows.filter(r => r.breakoutSignal === true);
   else if (currentFilter === "na") rows = rows.filter(r => r.status !== "OK");
 
   if (q) rows = rows.filter(r =>
@@ -430,7 +451,7 @@ function renderTable() {
       const key = th.dataset.key;
       if (key === "rank" || key === "signals") return;
       if (sortKey === key) sortDir *= -1; else { sortKey = key; sortDir = -1; }
-      document.getElementById("sortSelect").value = ["conviction","metCount","rsRank","marcap","code"].includes(key) ? key : sortKey;
+      document.getElementById("sortSelect").value = ["setupScore","metCount","rsRank","high52wPosition","marcap","code"].includes(key) ? key : sortKey;
       renderTable();
     });
   });
