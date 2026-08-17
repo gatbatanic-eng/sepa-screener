@@ -16,7 +16,11 @@ on:
         options: [KR, US, ALL]
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: sepa-screening
+  cancel-in-progress: false
 
 jobs:
   screen:
@@ -60,3 +64,15 @@ jobs:
           name: sepa-screening-result-${{ github.run_id }}
           path: output/*.csv
           retention-days: 90
+
+      - name: 대시보드(docs/index.html) 생성
+        run: python generate_dashboard.py
+
+      - name: 대시보드 커밋 & 푸시
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git diff --cached --quiet || git commit -m "대시보드 자동 갱신 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+          git pull --rebase origin master
+          git push
