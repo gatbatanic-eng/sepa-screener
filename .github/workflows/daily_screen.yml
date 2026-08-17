@@ -25,11 +25,11 @@ jobs:
       - name: 의존성 설치
         run: pip install -r requirements.txt
 
-      - name: 스크리닝 실행
+      - name: 스크리닝 실행 (한국 + 미국)
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
-        run: python screening.py
+        run: python screening.py --market ALL
 
       - name: 결과 CSV 아티팩트 업로드
         if: always()

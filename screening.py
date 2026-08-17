@@ -1,8 +1,10 @@
 """
 SEPA(미너비니) 추세 템플릿 1차 스크리너
 =====================================
-코스피/코스닥 시가총액 상위 N종목(기본 200)을 대상으로 마크 미너비니의
-"추세 템플릿(Trend Template)" 8개 조건을 매일 점검한다.
+한국(코스피/코스닥 시가총액 상위 N종목, 기본 200)과 미국(S&P500 전체
+구성종목)을 대상으로 마크 미너비니의 "추세 템플릿(Trend Template)"
+8개 조건을 매일 점검한다. 두 시장은 서로 다른 CSV/구글시트 탭으로
+완전히 분리되어 저장된다.
 
 중요한 설계 원칙 (임의로 완화하지 말 것)
 ----------------------------------------
@@ -11,16 +13,19 @@ SEPA(미너비니) 추세 템플릿 1차 스크리너
 2. 이동평균은 전부 단순이동평균(SMA)만 사용한다. EMA는 사용하지 않는다.
 3. 개별 종목의 데이터가 부족하거나 조회에 실패하면 추정치로 채우지 않고
    "확인 불가"로 표시해 제외한다.
-4. 8번 조건(상대강도)은 한국 시장에 IBD RS가 없어 코스피/코스닥 지수 대비
-   3·6·12개월 초과수익률로 계산한 "대체 지표"이며, 반드시 그렇게 표기한다.
+4. 8번 조건(상대강도)은 IBD RS가 없어 각 시장 지수(한국: 코스피/코스닥,
+   미국: S&P500) 대비 3·6·12개월 초과수익률로 계산한 "대체 지표"이며,
+   반드시 그렇게 표기한다.
 5. 이 스크리너는 1차 필터일 뿐이다. 스테이지(와인스타인 4단계) 확정, VCP
    패턴, 피벗 돌파, 펀더멘털, 촉매 판단, 매매 신호/자동매매는 다루지 않는다.
 
 실행 방법
 ---------
-    python screening.py                 # 기본 실행 (상위 200종목, 구글시트 연동 시도)
-    python screening.py --limit 20      # 개발/테스트용: 상위 20종목만
-    python screening.py --skip-sheets   # 구글시트 업로드 생략, CSV만 저장
+    python screening.py                    # 기본: 한국(KR) 시장만 실행
+    python screening.py --market US        # 미국(S&P500) 시장만 실행
+    python screening.py --market ALL       # 한국 + 미국 순차 실행
+    python screening.py --limit 20         # 개발/테스트용: 유니버스 앞에서 20종목만
+    python screening.py --skip-sheets      # 구글시트 업로드 생략, CSV만 저장
 """
 
 from __future__ import annotations
@@ -91,8 +96,33 @@ RETRY_BACKOFF_BASE = 1.6
 
 KOSPI_INDEX_CODE = "KS11"
 KOSDAQ_INDEX_CODE = "KQ11"
+US_INDEX_CODE = "US500"  # S&P500 지수
 
 OUTPUT_DIR = Path(__file__).resolve().parent / "output"
+
+
+@dataclass(frozen=True)
+class MarketConfig:
+    key: str                 # "KR" | "US"
+    label: str                # 로그용 표시 이름
+    file_prefix: str          # CSV 파일명 접두사
+    sheet_tab_prefix: str     # 구글시트 일자별 탭 이름 접두사 ("" = 기존 한국 탭과 동일한 이름 유지)
+    summary_sheet_name: str   # 구글시트 누적 요약 탭 이름
+    rs_note: str               # 구글시트 안내문구에 들어갈 RS 설명
+
+
+MARKET_CONFIGS: dict[str, MarketConfig] = {
+    "KR": MarketConfig(
+        key="KR", label="한국(코스피/코스닥 시총 상위)",
+        file_prefix="kr", sheet_tab_prefix="", summary_sheet_name="일별요약",
+        rs_note="코스피/코스닥 지수 대비 3·6·12개월 초과수익률의 유니버스 내 백분위",
+    ),
+    "US": MarketConfig(
+        key="US", label="미국(S&P500 전체 구성종목)",
+        file_prefix="us", sheet_tab_prefix="US_", summary_sheet_name="US_일별요약",
+        rs_note="S&P500 지수 대비 3·6·12개월 초과수익률의 유니버스 내 백분위",
+    ),
+}
 
 logging.basicConfig(
     level=logging.INFO,
@@ -166,10 +196,30 @@ def fetch_price_history(code: str, start: str) -> pd.DataFrame:
     raise RuntimeError(f"{code} 조회 최종 실패: {last_exc}")
 
 
-def get_universe(top_n: int) -> pd.DataFrame:
+def fetch_stock_listing(market: str) -> pd.DataFrame:
+    """fdr.StockListing을 재시도와 함께 호출한다 (유니버스 조회는 실패 시 전체가 죽으므로 특히 중요)."""
+    last_exc: Optional[Exception] = None
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            listing = fdr.StockListing(market)
+            if listing is None or listing.empty:
+                raise ValueError("빈 목록 반환")
+            return listing
+        except Exception as exc:  # noqa: BLE001
+            last_exc = exc
+            wait = (RETRY_BACKOFF_BASE ** attempt) + random.uniform(0, 1.0)
+            logger.warning(
+                "종목 목록(%s) 조회 실패 (attempt %d/%d): %s -> %.1fs 후 재시도",
+                market, attempt, MAX_RETRIES, exc, wait,
+            )
+            time.sleep(wait)
+    raise RuntimeError(f"종목 목록({market}) 조회 최종 실패: {last_exc}")
+
+
+def get_universe_kr(top_n: int) -> pd.DataFrame:
     """코스피/코스닥 시가총액 상위 top_n 종목 목록을 가져온다."""
     logger.info("KRX 전체 종목 목록 조회 중...")
-    listing = fdr.StockListing("KRX")
+    listing = fetch_stock_listing("KRX")
 
     # KOSDAQ GLOBAL은 코스닥 내 세그먼트이므로 코스닥에 포함, KONEX는 제외
     listing = listing[listing["Market"].isin(["KOSPI", "KOSDAQ", "KOSDAQ GLOBAL"])].copy()
@@ -181,6 +231,28 @@ def get_universe(top_n: int) -> pd.DataFrame:
     listing = listing.sort_values("Marcap", ascending=False)
     listing = listing.head(top_n).reset_index(drop=True)
     logger.info("유니버스 확정: %d종목 (코스피+코스닥 시총 상위)", len(listing))
+    return listing[["Code", "Name", "Market", "Marcap"]]
+
+
+# fdr.StockListing('S&P500')이 복수클래스 주식의 점(.)을 제거해서 내려주는데,
+# 정작 시세 조회(야후 파이낸스 백엔드)는 하이픈 표기를 요구해서 그대로 두면
+# "확인불가"로 빠진다. S&P500 내 해당 종목은 아래 두 개뿐이라 명시적으로 보정한다.
+US_TICKER_OVERRIDES = {
+    "BRKB": "BRK-B",  # Berkshire Hathaway
+    "BFB": "BF-B",    # Brown-Forman
+}
+
+
+def get_universe_us() -> pd.DataFrame:
+    """S&P500 전체 구성종목 목록을 가져온다 (시가총액 데이터는 이 소스에서 제공하지 않음)."""
+    logger.info("S&P500 구성종목 목록 조회 중...")
+    listing = fetch_stock_listing("S&P500")
+    listing = listing.rename(columns={"Symbol": "Code"})
+    listing["Code"] = listing["Code"].replace(US_TICKER_OVERRIDES)
+    listing["Market"] = "US"
+    listing["Marcap"] = np.nan  # 무료 소스 한계로 시총 데이터 없음 (전체 구성종목을 그대로 스크리닝)
+    listing = listing.dropna(subset=["Code", "Name"]).reset_index(drop=True)
+    logger.info("유니버스 확정: %d종목 (S&P500 전체 구성종목)", len(listing))
     return listing[["Code", "Name", "Market", "Marcap"]]
 
 
@@ -215,6 +287,9 @@ def evaluate_stock(code: str, name: str, market: str, marcap: float, start_date:
 
     df = df.sort_index()
     df = df[~df.index.duplicated(keep="last")]
+    # 데이터 소스가 드물게 특정일 OHLC를 통째로 NaN으로 반환하는 경우가 있음
+    # (예: 당일 장중 미확정 데이터, 소스 자체의 결측일). 그 하루만 건너뛴다.
+    df = df.dropna(subset=["Close", "High", "Low"])
 
     if len(df) < MIN_TRADING_DAYS:
         result.status = "확인불가"
@@ -303,19 +378,27 @@ def compute_excess_returns(stock_close: pd.Series, index_close: pd.Series) -> di
 # ----------------------------------------------------------------------------
 # 메인 스크리닝 로직
 # ----------------------------------------------------------------------------
-def run_screening(top_n: int, max_workers: int, limit: Optional[int] = None) -> pd.DataFrame:
+def run_screening(market_key: str, top_n: int, max_workers: int, limit: Optional[int] = None) -> pd.DataFrame:
     from concurrent.futures import ThreadPoolExecutor, as_completed
 
-    universe = get_universe(top_n)
+    if market_key == "KR":
+        universe = get_universe_kr(top_n)
+        benchmark_codes = (("KOSPI", KOSPI_INDEX_CODE), ("KOSDAQ", KOSDAQ_INDEX_CODE))
+    elif market_key == "US":
+        universe = get_universe_us()
+        benchmark_codes = (("US", US_INDEX_CODE),)
+    else:
+        raise ValueError(f"알 수 없는 시장 키: {market_key}")
+
     if limit:
         universe = universe.head(limit)
         logger.info("개발/테스트 모드: 상위 %d종목으로 제한", limit)
 
     start_date = (pd.Timestamp.today() - pd.Timedelta(days=HISTORY_CALENDAR_DAYS)).strftime("%Y-%m-%d")
 
-    logger.info("벤치마크 지수(KOSPI/KOSDAQ) 조회 중...")
+    logger.info("벤치마크 지수(%s) 조회 중...", ", ".join(label for label, _ in benchmark_codes))
     index_close: dict[str, pd.Series] = {}
-    for label, code in (("KOSPI", KOSPI_INDEX_CODE), ("KOSDAQ", KOSDAQ_INDEX_CODE)):
+    for label, code in benchmark_codes:
         idx_df = fetch_price_history(code, start_date)
         idx_df = idx_df.sort_index()
         idx_df = idx_df[~idx_df.index.duplicated(keep="last")]
@@ -510,17 +593,17 @@ def _apply_sheet_formatting(ws, df: pd.DataFrame) -> None:
         ws.spreadsheet.batch_update(rule)
 
 
-SUMMARY_SHEET_NAME = "일별요약"
 SUMMARY_HEADER = [
     "날짜", "스크리닝종목수", "정상판정", "확인불가", "8개조건전부통과",
     "평균RS백분위_정상판정종목", "평균충족조건수_정상판정종목",
 ]
 
 
-def _upsert_daily_summary(sh, df: pd.DataFrame, run_date: str) -> None:
-    """'일별요약' 탭에 오늘 자 요약 한 줄을 추가/갱신하고, 추세 차트를 붙여둔다."""
+def _upsert_daily_summary(sh, df: pd.DataFrame, run_date: str, cfg: MarketConfig) -> None:
+    """누적 요약 탭에 오늘 자 요약 한 줄을 추가/갱신하고, 추세 차트를 붙여둔다."""
     import gspread
 
+    summary_sheet_name = cfg.summary_sheet_name
     ok_df = df[df["상태"] == "OK"]
     row = [
         run_date,
@@ -533,10 +616,10 @@ def _upsert_daily_summary(sh, df: pd.DataFrame, run_date: str) -> None:
     ]
 
     try:
-        ws = sh.worksheet(SUMMARY_SHEET_NAME)
+        ws = sh.worksheet(summary_sheet_name)
         is_new = False
     except gspread.exceptions.WorksheetNotFound:
-        ws = sh.add_worksheet(title=SUMMARY_SHEET_NAME, rows="3000", cols=str(len(SUMMARY_HEADER) + 2))
+        ws = sh.add_worksheet(title=summary_sheet_name, rows="3000", cols=str(len(SUMMARY_HEADER) + 2))
         ws.update([SUMMARY_HEADER], "A1")
         ws.freeze(rows=1)
         ws.format(f"A1:{chr(ord('A') + len(SUMMARY_HEADER) - 1)}1", {"textFormat": {"bold": True}})
@@ -546,24 +629,24 @@ def _upsert_daily_summary(sh, df: pd.DataFrame, run_date: str) -> None:
     if run_date in existing_dates:
         row_idx = existing_dates.index(run_date) + 1
         ws.update([row], f"A{row_idx}")
-        logger.info("'%s' 탭의 %s 요약 행을 갱신했습니다.", SUMMARY_SHEET_NAME, run_date)
+        logger.info("'%s' 탭의 %s 요약 행을 갱신했습니다.", summary_sheet_name, run_date)
     else:
         ws.append_row(row, value_input_option="USER_ENTERED")
-        logger.info("'%s' 탭에 %s 요약 행을 추가했습니다.", SUMMARY_SHEET_NAME, run_date)
+        logger.info("'%s' 탭에 %s 요약 행을 추가했습니다.", summary_sheet_name, run_date)
 
     if is_new:
-        _add_summary_chart(sh, ws)
+        _add_summary_chart(sh, ws, cfg)
 
 
-def _add_summary_chart(sh, ws) -> None:
-    """일별요약 탭에 '8개조건전부통과' 추이를 보여주는 꺾은선 차트를 한 번만 추가한다."""
+def _add_summary_chart(sh, ws, cfg: MarketConfig) -> None:
+    """누적 요약 탭에 '8개조건전부통과' 추이를 보여주는 꺾은선 차트를 한 번만 추가한다."""
     max_rows = int(ws.row_count)
     request = {
         "requests": [{
             "addChart": {
                 "chart": {
                     "spec": {
-                        "title": "일별 8개 조건 전부 통과 종목 수 추이",
+                        "title": f"[{cfg.label}] 일별 8개 조건 전부 통과 종목 수 추이",
                         "basicChart": {
                             "chartType": "LINE",
                             "legendPosition": "BOTTOM_LEGEND",
@@ -599,7 +682,7 @@ def _add_summary_chart(sh, ws) -> None:
     sh.batch_update(request)
 
 
-def upload_to_google_sheets(df: pd.DataFrame, run_date: str) -> bool:
+def upload_to_google_sheets(df: pd.DataFrame, run_date: str, cfg: MarketConfig) -> bool:
     creds_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
     sheet_id = os.environ.get("GOOGLE_SHEET_ID")
 
@@ -623,7 +706,7 @@ def upload_to_google_sheets(df: pd.DataFrame, run_date: str) -> bool:
         gc = gspread.authorize(credentials)
         sh = gc.open_by_key(sheet_id)
 
-        sheet_name = run_date  # 예: 2026-08-16
+        sheet_name = f"{cfg.sheet_tab_prefix}{run_date}"  # 예: 2026-08-16 / US_2026-08-16
         try:
             ws = sh.worksheet(sheet_name)
             sh.del_worksheet(ws)  # 같은 날 재실행 시 덮어쓰기
@@ -633,7 +716,7 @@ def upload_to_google_sheets(df: pd.DataFrame, run_date: str) -> bool:
 
         ws = sh.add_worksheet(title=sheet_name, rows=str(len(df) + 10), cols=str(len(df.columns) + 2))
 
-        header = ["※ 8번 RS는 IBD RS가 없는 한국 시장 대체 지표(코스피/코스닥 지수 대비 3·6·12개월 초과수익률의 유니버스 내 백분위)입니다. "
+        header = [f"※ [{cfg.label}] 8번 RS는 IBD RS가 없어 {cfg.rs_note}로 계산한 대체 지표입니다. "
                    "'충족조건수'는 참고용이며, '전체통과'만 8개 조건 전부 충족(AND) 여부의 공식 판정입니다."]
         values = [header, list(df.columns)] + df.astype(object).where(pd.notnull(df), "").values.tolist()
 
@@ -642,9 +725,9 @@ def upload_to_google_sheets(df: pd.DataFrame, run_date: str) -> bool:
         logger.info("구글시트 업로드 완료: 탭 '%s' (%d행)", sheet_name, len(df))
 
         try:
-            _upsert_daily_summary(sh, df, run_date)
+            _upsert_daily_summary(sh, df, run_date, cfg)
         except Exception as exc:  # noqa: BLE001 - 요약 탭 실패가 본 업로드 성공을 덮지 않도록
-            logger.warning("'%s' 요약 탭 갱신 실패 (본 결과 업로드는 정상 완료됨): %s", SUMMARY_SHEET_NAME, exc)
+            logger.warning("'%s' 요약 탭 갱신 실패 (본 결과 업로드는 정상 완료됨): %s", cfg.summary_sheet_name, exc)
 
         return True
     except Exception as exc:  # noqa: BLE001
@@ -655,26 +738,18 @@ def upload_to_google_sheets(df: pd.DataFrame, run_date: str) -> bool:
 # ----------------------------------------------------------------------------
 # 엔트리포인트
 # ----------------------------------------------------------------------------
-def main():
-    parser = argparse.ArgumentParser(description="SEPA 추세 템플릿 1차 스크리너")
-    parser.add_argument("--top-n", type=int, default=TOP_N_DEFAULT, help="시가총액 상위 몇 종목을 대상으로 할지")
-    parser.add_argument("--limit", type=int, default=None, help="개발/테스트용: 유니버스를 앞에서부터 N종목으로 제한")
-    parser.add_argument("--workers", type=int, default=MAX_WORKERS_DEFAULT, help="동시 요청 스레드 수")
-    parser.add_argument("--skip-sheets", action="store_true", help="구글시트 업로드를 강제로 건너뜀")
-    args = parser.parse_args()
-
+def run_market(market_key: str, run_date: str, args) -> None:
+    cfg = MARKET_CONFIGS[market_key]
     t0 = time.time()
-    # 실행 서버의 로컬 시간대(GitHub Actions는 UTC)와 무관하게 한국 날짜로 고정
-    run_date = datetime.now(ZoneInfo("Asia/Seoul")).strftime("%Y-%m-%d")
-    logger.info("=== SEPA 추세 템플릿 스크리닝 시작 (%s) ===", run_date)
+    logger.info("--- [%s] 스크리닝 시작 ---", cfg.label)
 
-    df = run_screening(top_n=args.top_n, max_workers=args.workers, limit=args.limit)
+    df = run_screening(market_key=market_key, top_n=args.top_n, max_workers=args.workers, limit=args.limit)
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    full_path = OUTPUT_DIR / f"sepa_screening_full_{run_date}.csv"
-    pass_path = OUTPUT_DIR / f"sepa_screening_pass_{run_date}.csv"
-    latest_full_path = OUTPUT_DIR / "latest_full.csv"
-    latest_pass_path = OUTPUT_DIR / "latest_pass.csv"
+    full_path = OUTPUT_DIR / f"sepa_screening_{cfg.file_prefix}_full_{run_date}.csv"
+    pass_path = OUTPUT_DIR / f"sepa_screening_{cfg.file_prefix}_pass_{run_date}.csv"
+    latest_full_path = OUTPUT_DIR / f"latest_{cfg.file_prefix}_full.csv"
+    latest_pass_path = OUTPUT_DIR / f"latest_{cfg.file_prefix}_pass.csv"
 
     df.to_csv(full_path, index=False, encoding="utf-8-sig")
     df.to_csv(latest_full_path, index=False, encoding="utf-8-sig")
@@ -686,7 +761,7 @@ def main():
     logger.info("CSV 저장 완료: %s (전체 %d행), %s (통과 %d행)", full_path, len(df), pass_path, len(pass_df))
 
     if not args.skip_sheets:
-        upload_to_google_sheets(df, run_date)
+        upload_to_google_sheets(df, run_date, cfg)
     else:
         logger.info("--skip-sheets 지정됨: 구글시트 업로드 생략")
 
@@ -694,9 +769,29 @@ def main():
     ok_count = int((df["상태"] == "OK").sum())
     excluded_count = int((df["상태"] == "확인불가").sum())
     logger.info(
-        "=== 완료 === 총 %d종목 | 정상판정 %d | 확인불가/제외 %d | 8개조건전부통과 %d | 소요시간 %.1f초",
-        len(df), ok_count, excluded_count, len(pass_df), elapsed,
+        "--- [%s] 완료 --- 총 %d종목 | 정상판정 %d | 확인불가/제외 %d | 8개조건전부통과 %d | 소요시간 %.1f초",
+        cfg.label, len(df), ok_count, excluded_count, len(pass_df), elapsed,
     )
+
+
+def main():
+    parser = argparse.ArgumentParser(description="SEPA 추세 템플릿 1차 스크리너")
+    parser.add_argument("--market", choices=["KR", "US", "ALL"], default="KR",
+                         help="KR=한국(코스피/코스닥), US=미국(S&P500), ALL=둘 다 순차 실행 (기본: KR)")
+    parser.add_argument("--top-n", type=int, default=TOP_N_DEFAULT, help="한국 시장 시가총액 상위 몇 종목을 대상으로 할지 (미국은 S&P500 전체 고정)")
+    parser.add_argument("--limit", type=int, default=None, help="개발/테스트용: 유니버스를 앞에서부터 N종목으로 제한")
+    parser.add_argument("--workers", type=int, default=MAX_WORKERS_DEFAULT, help="동시 요청 스레드 수")
+    parser.add_argument("--skip-sheets", action="store_true", help="구글시트 업로드를 강제로 건너뜀")
+    args = parser.parse_args()
+
+    # 실행 서버의 로컬 시간대(GitHub Actions는 UTC)와 무관하게 한국 날짜로 고정
+    run_date = datetime.now(ZoneInfo("Asia/Seoul")).strftime("%Y-%m-%d")
+    markets = ["KR", "US"] if args.market == "ALL" else [args.market]
+
+    logger.info("=== SEPA 추세 템플릿 스크리닝 시작 (%s, 대상 시장: %s) ===", run_date, ", ".join(markets))
+    for market_key in markets:
+        run_market(market_key, run_date, args)
+    logger.info("=== 전체 완료 ===")
 
 
 if __name__ == "__main__":
