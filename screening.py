@@ -188,6 +188,7 @@ class StockResult:
     exclude_reason: str = ""
 
     close: Optional[float] = None
+    change_pct: Optional[float] = None  # 전일 종가 대비 당일 등락률
     sma50: Optional[float] = None
     sma150: Optional[float] = None
     sma200: Optional[float] = None
@@ -379,6 +380,8 @@ def evaluate_stock(code: str, name: str, market: str, marcap: float, start_date:
         return result, None
 
     last_close = float(close.iloc[-1])
+    prev_close = float(close.iloc[-2])
+    change_pct = last_close / prev_close - 1.0 if prev_close > 0 else None
     last_sma50 = float(sma50.iloc[-1])
     last_sma150 = float(sma150.iloc[-1])
     last_sma200 = float(sma200.iloc[-1])
@@ -390,6 +393,7 @@ def evaluate_stock(code: str, name: str, market: str, marcap: float, start_date:
     low_52w = float(low.iloc[-window:].min())
 
     result.close = last_close
+    result.change_pct = change_pct
     result.sma50 = last_sma50
     result.sma150 = last_sma150
     result.sma200 = last_sma200
@@ -702,6 +706,7 @@ def results_to_dataframe(results: list[StockResult]) -> pd.DataFrame:
             "상태": r.status,
             "제외사유": r.exclude_reason,
             "종가": r.close,
+            "등락률": r.change_pct,
             "SMA50": r.sma50,
             "SMA150": r.sma150,
             "SMA200": r.sma200,

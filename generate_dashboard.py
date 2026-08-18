@@ -41,7 +41,7 @@ MARKETS = {
 COLUMN_MAP = {
     "종목코드": "code", "종목명": "name", "시장": "market", "시가총액": "marcap",
     "상태": "status", "제외사유": "reason",
-    "종가": "close", "SMA50": "sma50", "SMA150": "sma150", "SMA200": "sma200",
+    "종가": "close", "등락률": "changePct", "SMA50": "sma50", "SMA150": "sma150", "SMA200": "sma200",
     "52주최고가": "high52w", "52주최저가": "low52w", "52주고점대비_참고용": "high52wPosition",
     "조건1_150200위": "c1", "조건2_150위200": "c2", "조건3_200상승중": "c3",
     "조건4_50위150200": "c4", "조건5_종가위50": "c5", "조건6_저가대비30pct이상": "c6",
@@ -164,6 +164,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     --fail-bg: #f8f9fa; --na-bg: #fdf2f2; --na-text: #b42318;
     --watch-bg: #eef0ff; --watch-text: #4338ca; --watch-border: #c7cbfa;
     --breakout-bg: #fff2e0; --breakout-text: #b45309; --breakout-border: #fbd9a8;
+    --up: #d92b2b; --down: #1a56db;
     --row-hover: #f0f4ff; --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   }
   @media (prefers-color-scheme: dark) {
@@ -174,6 +175,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       --fail-bg: #171a21; --na-bg: #3a1717; --na-text: #f2a4a0;
       --watch-bg: #201f42; --watch-text: #a5b0fc; --watch-border: #3c3a72;
       --breakout-bg: #3a2712; --breakout-text: #f6b96a; --breakout-border: #6b4a1f;
+      --up: #f0605f; --down: #6ea8fe;
       --row-hover: #1d2230; --shadow: 0 1px 3px rgba(0,0,0,0.4);
     }
   }
@@ -225,6 +227,9 @@ HTML_TEMPLATE = r"""<!doctype html>
   .badge.na { background: var(--na-bg); color: var(--na-text); }
   .badge.watch { background: var(--watch-bg); color: var(--watch-text); border: 1px solid var(--watch-border); }
   .badge.breakout { background: var(--breakout-bg); color: var(--breakout-text); border: 1px solid var(--breakout-border); }
+  .change { font-weight: 600; }
+  .change.up { color: var(--up); }
+  .change.down { color: var(--down); }
   .metbar { display: inline-flex; gap: 2px; vertical-align: middle; }
   .metbar span { width: 6px; height: 12px; border-radius: 1px; background: var(--border); }
   .metbar span.on { background: var(--accent); }
@@ -373,6 +378,7 @@ function getCols() {
     { key: "code", label: "코드", left: true },
     { key: "name", label: "종목명", left: true },
     { key: "close", label: "종가", fmt: v => fmtNum(v) },
+    { key: "changePct", label: "등락률", fmt: v => changeBadge(v) },
     { key: "metCount", label: "충족", fmt: (v) => metBar(v) },
     { key: "rsRank", label: "RS백분위", fmt: v => v != null ? fmtNum(v, 1) : "-" },
     { key: "high52wPosition", label: "52주고점대비", fmt: v => v != null ? fmtPct(v) : "-" },
@@ -390,6 +396,12 @@ function getCols() {
 
 function fmtPct(v) {
   return (v >= 0 ? "+" : "") + (v * 100).toFixed(1) + "%";
+}
+
+function changeBadge(v) {
+  if (v === null || v === undefined) return "-";
+  const cls = v > 0 ? "up" : (v < 0 ? "down" : "");
+  return `<span class="change ${cls}">${fmtPct(v)}</span>`;
 }
 
 function setupScoreBadge(v) {
