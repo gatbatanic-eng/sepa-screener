@@ -659,6 +659,7 @@ def run_screening(market_key: str, top_n: int, max_workers: int, limit: Optional
         idx_df = fetch_price_history(code, start_date)
         idx_df = idx_df.sort_index()
         idx_df = idx_df[~idx_df.index.duplicated(keep="last")]
+        idx_df = idx_df.dropna(subset=["Close"])  # 데이터 소스가 드물게 특정일을 통째로 NaN 반환하는 문제 방지
         index_close[label] = idx_df["Close"].astype(float)
 
     # --- A. 시장 게이팅: 지수별로 한 번씩만 계산 ---
