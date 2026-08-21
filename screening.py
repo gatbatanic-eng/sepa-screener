@@ -20,10 +20,12 @@ SEPA(미너비니) 추세 템플릿 1차 스크리너
    4단계) 확정, 베이스 단계 카운트, 펀더멘털, 촉매 판단, 매매 신호/
    자동매매는 여전히 다루지 않는다.
 6. 거래량 기반 지표(Dry-up/돌파거래량), VCP 수축, 피벗 근접도, RS방향,
-   52주고점대비, 셋업점수, 관찰후보, 돌파는 "진입 타이밍 참고용" 부가
-   지표이며 8개 조건 판정에는 전혀 관여하지 않는다. VCP는 실제 미너비니
-   방법론(스윙 고점/저점 기반 다중 파동 탐지)이 아닌 고정 4주 구간 비교
-   근사치이므로 반드시 그렇게 표기한다. 이 지표들은 매수 신호가 아니다.
+   52주고점대비, 셋업점수, 돌파, 시장게이팅(A), 진입체크리스트/진입판정
+   (B, GO/WATCH/NO-GO)은 "진입 타이밍 참고용" 부가 지표이며 8개 조건
+   판정에는 전혀 관여하지 않는다. VCP는 실제 미너비니 방법론(스윙 고점/
+   저점 기반 다중 파동 탐지)이 아닌 고정 4주 구간 비교 근사치이므로
+   반드시 그렇게 표기한다. B는 8/8 통과 종목에만 계산한다. 이 지표들은
+   전부 매수 신호가 아니다.
 
 실행 방법
 ---------
@@ -133,13 +135,25 @@ SETUP_SCORE_WEIGHTS = {
     "rs": 0.20,
 }
 
-# "관찰후보" 판정 기준
-WATCH_RS_THRESHOLD = 85
-WATCH_HIGH52W_POSITION_MIN = -0.10  # 52주 고점 대비 -10% 이내
-WATCH_SETUP_SCORE_MIN = 8.0
-
 # "돌파" 판정 기준 (피벗 상향 돌파 + 거래량 급증)
 BREAKOUT_VOL_RATIO_MIN = 1.5
+
+# --- A. 시장 게이팅 (지수 단위, 8개 조건과 같은 방식으로 지수 자체에 적용) ---
+# 조건1: 지수종가 > SMA50 / 조건2: SMA50>SMA150>SMA200 정배열 / 조건3: 200일선 상승중(20거래일 전 대비)
+# 3개 다 충족=우호적, 1~2개=중립, 0개=비우호적. 코스피/코스닥/S&P500 각 지수별로 독립 판정한다.
+MARKET_GATE_FAVORABLE = "우호적"
+MARKET_GATE_NEUTRAL = "중립"
+MARKET_GATE_UNFAVORABLE = "비우호적"
+
+# --- B. 종목별 진입 체크리스트 (8/8 통과 종목 대상, 7개 항목 중 충족 개수로 판정) ---
+# 7개 전부=GO, 5~6개=WATCH, 4개 이하=NO-GO. 임계치는 초기 임의값(추후 조정 예정).
+GO_RS_THRESHOLD = 85
+GO_HIGH52W_POSITION_MIN = -0.10   # 52주 고점 대비 -10% 이내
+GO_DRYUP_MAX = 0.7                # 초기값, 조정 예정
+GO_SETUP_SCORE_MIN = 7.0          # 초기값, 조정 예정
+ENTRY_VERDICT_GO = "GO"
+ENTRY_VERDICT_WATCH = "WATCH"
+ENTRY_VERDICT_NOGO = "NO-GO"
 
 
 @dataclass(frozen=True)
@@ -227,8 +241,14 @@ class StockResult:
     pivot_position: Optional[float] = None
     pivot_near: Optional[bool] = None
     setup_score: Optional[float] = None        # 참고용 셋업 점수(0~10) = VCP30%+Pivot30%+Dryup20%+RS20%. 매수 신호 아님
-    watch_candidate: Optional[bool] = None      # "관찰후보" 표시 (8/8 통과 + RS85+ + RS상승중 + 52주고점-10%이내 + 셋업8+ + 피벗임박)
     breakout_signal: Optional[bool] = None      # "돌파" 표시 (피벗 상향 돌파 + 거래량 1.5배 이상)
+
+    # --- A. 시장 게이팅 (지수 단위, 참고용) ---
+    market_gate_status: Optional[str] = None    # 우호적/중립/비우호적 (이 종목이 속한 지수 기준)
+
+    # --- B. 종목별 진입 체크리스트 (8/8 통과 종목에만 계산, 참고용) ---
+    entry_checklist_count: Optional[int] = None  # 7개 항목 중 충족 개수
+    entry_verdict: Optional[str] = None          # GO / WATCH / NO-GO
 
 
 # ----------------------------------------------------------------------------
@@ -514,23 +534,77 @@ def compute_setup_score(r: "StockResult") -> Optional[float]:
     return round(score, 2)
 
 
-def compute_watch_candidate(r: "StockResult") -> bool:
-    """'관찰후보': 8/8 통과 + RS85+ + RS상승중 + 52주고점-10%이내 + 셋업점수8+ + 피벗임박(-5%~0%)."""
-    return (
-        r.pass_all is True
-        and r.rs_percentile is not None and r.rs_percentile >= WATCH_RS_THRESHOLD
-        and r.rs_rising is True
-        and r.high52w_position is not None and r.high52w_position >= WATCH_HIGH52W_POSITION_MIN
-        and r.setup_score is not None and r.setup_score >= WATCH_SETUP_SCORE_MIN
-        and r.pivot_near is True
-    )
-
-
 def compute_breakout_signal(r: "StockResult") -> Optional[bool]:
     """'돌파': 피벗을 상향 돌파(피벗대비위치 > 0) + 거래량이 50일 평균의 1.5배 이상."""
     if r.pivot_position is None or r.breakout_vol_ratio is None:
         return None
     return r.pivot_position > 0 and r.breakout_vol_ratio >= BREAKOUT_VOL_RATIO_MIN
+
+
+def compute_market_gate(index_close: pd.Series) -> Optional[str]:
+    """
+    A. 시장 게이팅: 지수 자체에 8개 조건과 같은 방식(SMA50/150/200)을 적용해
+    우호적/중립/비우호적을 판정한다. 8개 조건 판정과는 무관한 참고 지표다.
+      조건1: 지수종가 > SMA50
+      조건2: SMA50 > SMA150 > SMA200 (정배열)
+      조건3: 오늘 SMA200 > 20거래일 전 SMA200 (200일선 상승 중)
+    3개 다 충족=우호적, 1~2개=중립, 0개=비우호적.
+    """
+    if len(index_close) < MIN_TRADING_DAYS:
+        return None
+
+    sma50 = index_close.rolling(50).mean()
+    sma150 = index_close.rolling(150).mean()
+    sma200 = index_close.rolling(200).mean()
+
+    if pd.isna(sma200.iloc[-1]) or pd.isna(sma150.iloc[-1]) or pd.isna(sma50.iloc[-1]):
+        return None
+    if len(sma200) <= MA_TREND_LOOKBACK or pd.isna(sma200.iloc[-1 - MA_TREND_LOOKBACK]):
+        return None
+
+    last_close = float(index_close.iloc[-1])
+    last_sma50, last_sma150, last_sma200 = float(sma50.iloc[-1]), float(sma150.iloc[-1]), float(sma200.iloc[-1])
+    sma200_1m_ago = float(sma200.iloc[-1 - MA_TREND_LOOKBACK])
+
+    conds = [
+        last_close > last_sma50,
+        last_sma50 > last_sma150 > last_sma200,
+        last_sma200 > sma200_1m_ago,
+    ]
+    count = sum(conds)
+    if count == 3:
+        return MARKET_GATE_FAVORABLE
+    if count == 0:
+        return MARKET_GATE_UNFAVORABLE
+    return MARKET_GATE_NEUTRAL
+
+
+def compute_entry_checklist(r: "StockResult") -> tuple[Optional[int], Optional[str]]:
+    """
+    B. 종목별 진입 체크리스트: 8/8 통과 종목에만 계산한다(그 외에는 None, None).
+    7개 항목 중 충족 개수로 GO(7)/WATCH(5~6)/NO-GO(4이하)를 판정한다.
+    8개 조건 판정과는 무관한 참고 지표이며 매수 신호가 아니다.
+    """
+    if r.pass_all is not True:
+        return None, None
+
+    checks = [
+        r.market_gate_status == MARKET_GATE_FAVORABLE,
+        r.pivot_near is True,
+        r.rs_percentile is not None and r.rs_percentile >= GO_RS_THRESHOLD,
+        r.high52w_position is not None and r.high52w_position >= GO_HIGH52W_POSITION_MIN,
+        r.dryup_ratio is not None and r.dryup_ratio <= GO_DRYUP_MAX,
+        r.breakout_signal is True,
+        r.setup_score is not None and r.setup_score >= GO_SETUP_SCORE_MIN,
+    ]
+    count = sum(checks)
+    if count == 7:
+        verdict = ENTRY_VERDICT_GO
+    elif count >= 5:
+        verdict = ENTRY_VERDICT_WATCH
+    else:
+        verdict = ENTRY_VERDICT_NOGO
+    return count, verdict
 
 
 # ----------------------------------------------------------------------------
@@ -586,6 +660,13 @@ def run_screening(market_key: str, top_n: int, max_workers: int, limit: Optional
         idx_df = idx_df.sort_index()
         idx_df = idx_df[~idx_df.index.duplicated(keep="last")]
         index_close[label] = idx_df["Close"].astype(float)
+
+    # --- A. 시장 게이팅: 지수별로 한 번씩만 계산 ---
+    market_gates: dict[str, Optional[str]] = {
+        label: compute_market_gate(series) for label, series in index_close.items()
+    }
+    for label, status in market_gates.items():
+        logger.info("시장 게이팅[%s]: %s", label, status or "판정불가")
 
     results: list[StockResult] = []
     close_series_map: dict[str, pd.Series] = {}
@@ -685,12 +766,16 @@ def run_screening(market_key: str, top_n: int, max_workers: int, limit: Optional
             r.met_count = sum(conds)
             r.pass_all = all(conds)
 
-    # --- 셋업 점수 / 관찰후보 / 돌파 (참고용, 전체 스크리닝 대상 종목에 계산) ---
+    # --- 셋업 점수 / 돌파 / 시장게이팅 (참고용, 전체 스크리닝 대상 종목에 계산) ---
     for r in results:
         if r.status == "OK":
             r.setup_score = compute_setup_score(r)
-            r.watch_candidate = compute_watch_candidate(r)
             r.breakout_signal = compute_breakout_signal(r)
+            r.market_gate_status = market_gates.get(r.market)
+
+    # --- B. 종목별 진입 체크리스트 (8/8 통과 종목에만) ---
+    for r in results:
+        r.entry_checklist_count, r.entry_verdict = compute_entry_checklist(r)
 
     return results_to_dataframe(results)
 
@@ -740,8 +825,10 @@ def results_to_dataframe(results: list[StockResult]) -> pd.DataFrame:
             "피벗대비위치_참고용": r.pivot_position,
             "피벗임박_참고용": r.pivot_near,
             "셋업점수_참고용_매수신호아님": r.setup_score,
-            "관찰후보_참고용_매수신호아님": r.watch_candidate,
             "돌파_참고용_매수신호아님": r.breakout_signal,
+            "시장게이팅_참고용": r.market_gate_status,
+            "진입체크리스트_충족수_참고용": r.entry_checklist_count,
+            "진입판정_참고용_매수신호아님": r.entry_verdict,
         })
     df = pd.DataFrame(rows)
     df = df.sort_values(
@@ -895,6 +982,7 @@ STOCK_HISTORY_HEADER = [
     "조건1", "조건2", "조건3", "조건4", "조건5", "조건6", "조건7", "조건8",
     "전체통과", "RS백분위", "RS상승중", "52주고점대비",
     "VCP수축비율", "Dryup비율", "피벗대비위치", "셋업점수", "돌파",
+    "시장게이팅", "진입체크리스트충족수", "진입판정",
 ]
 
 
@@ -924,6 +1012,7 @@ def _append_daily_stock_history(sh, df: pd.DataFrame, run_date: str, cfg: Market
         "전체통과(8개AND)", "RS_백분위랭킹", "RS상승중_참고용", "52주고점대비_참고용",
         "VCP수축비율_근사치", "Dryup비율_참고용", "피벗대비위치_참고용",
         "셋업점수_참고용_매수신호아님", "돌파_참고용_매수신호아님",
+        "시장게이팅_참고용", "진입체크리스트_충족수_참고용", "진입판정_참고용_매수신호아님",
     ]
     new_rows = [[run_date] + [_clean_cell(v) for v in row] for row in ok_df[col_map].itertuples(index=False)]
 
@@ -982,9 +1071,11 @@ def upload_to_google_sheets(df: pd.DataFrame, run_date: str, cfg: MarketConfig) 
         header = [f"※ [{cfg.label}] 8번 RS는 IBD RS가 없어 {cfg.rs_note}로 계산한 대체 지표입니다. "
                    "'충족조건수'는 참고용이며, '전체통과'만 8개 조건 전부 충족(AND) 여부의 공식 판정입니다. "
                    "'RS상승중'은 RS_3개월>RS_6개월>RS_12개월 여부입니다. "
-                   "VCP/피벗/셋업점수/관찰후보/돌파는 8개 조건 판정과 무관한 진입 타이밍 참고 지표이며, "
+                   "VCP/피벗/셋업점수/돌파/시장게이팅/진입판정은 8개 조건 판정과 무관한 진입 타이밍 참고 지표이며, "
                    "VCP는 실제 미너비니 방법론(스윙 고점/저점 기반 다중 파동 탐지)이 아닌 "
-                   "고정 4주 구간 비교 근사치입니다. '관찰후보'/'돌파' 포함 전부 매수 신호가 아닙니다."]
+                   "고정 4주 구간 비교 근사치입니다. '진입판정(GO/WATCH/NO-GO)'은 8/8 통과 종목에만 계산되며, "
+                   "Dry-up≤0.7·셋업점수≥7 등 임계치는 초기값으로 추후 조정 예정입니다. "
+                   "이 지표들은 전부 매수 신호가 아닙니다."]
         values = [header, list(df.columns)] + df.astype(object).where(pd.notnull(df), "").values.tolist()
 
         ws.update(values, "A1")

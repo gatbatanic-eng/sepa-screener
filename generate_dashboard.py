@@ -55,8 +55,10 @@ COLUMN_MAP = {
     "VCP수축비율_근사치": "vcpRatio", "VCP형성중_근사치": "vcpForming",
     "피벗": "pivot", "피벗대비위치_참고용": "pivotPosition", "피벗임박_참고용": "pivotNear",
     "셋업점수_참고용_매수신호아님": "setupScore",
-    "관찰후보_참고용_매수신호아님": "watchCandidate",
     "돌파_참고용_매수신호아님": "breakoutSignal",
+    "시장게이팅_참고용": "marketGate",
+    "진입체크리스트_충족수_참고용": "entryChecklistCount",
+    "진입판정_참고용_매수신호아님": "entryVerdict",
 }
 
 
@@ -195,6 +197,11 @@ HTML_TEMPLATE = r"""<!doctype html>
     background: var(--panel); color: var(--text); cursor: pointer; font-size: 13px; font-weight: 600;
   }
   .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .gate-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .gate-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; border: 1px solid transparent; }
+  .tier-good { background: var(--pass-bg); color: var(--pass-text); border-color: var(--pass-border); }
+  .tier-mid { background: var(--breakout-bg); color: var(--breakout-text); border-color: var(--breakout-border); }
+  .tier-bad { background: var(--fail-bg); color: var(--text-dim); border-color: var(--border); }
   .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 18px; }
   .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; box-shadow: var(--shadow); }
   .card .label { color: var(--text-dim); font-size: 12px; margin-bottom: 6px; }
@@ -248,6 +255,8 @@ HTML_TEMPLATE = r"""<!doctype html>
 
   <div class="tabs" id="tabs"></div>
 
+  <div class="gate-row" id="gateRow"></div>
+
   <div class="cards" id="cards"></div>
 
   <div class="panel">
@@ -260,7 +269,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <input type="text" id="search" placeholder="종목코드 또는 종목명 검색...">
       <button class="filter-btn active" data-filter="all">전체</button>
       <button class="filter-btn" data-filter="pass">8개 통과만</button>
-      <button class="filter-btn" data-filter="watch">관찰후보만</button>
+      <button class="filter-btn" data-filter="go">GO만</button>
       <button class="filter-btn" data-filter="breakout">돌파만</button>
       <button class="filter-btn" data-filter="na">확인불가만</button>
       <select id="sortSelect">
@@ -284,7 +293,8 @@ HTML_TEMPLATE = r"""<!doctype html>
   <footer>
     ※ 8번 조건(상대강도, RS)은 IBD RS가 없는 시장 특성상 각 시장 지수 대비 3·6·12개월 초과수익률을 유니버스 내 백분위로 환산한 대체 지표입니다.<br>
     ※ "충족조건수"는 참고용이며, "전체통과" 배지만 8개 조건을 전부 동시 충족(AND)했다는 공식 판정입니다.<br>
-    ※ "셋업점수", "타이밍신호(관찰후보/돌파/VCP/피벗임박)", "RS상승중", "52주고점대비"는 8개 조건 판정과 무관한 진입 타이밍 참고 지표입니다. VCP는 실제 미너비니 방법론(스윙 고점/저점 기반 다중 파동 탐지)이 아닌 고정 4주 구간 비교 근사치이며, "관찰후보"·"돌파" 포함 전부 매수 신호가 아닙니다.<br>
+    ※ "셋업점수", "타이밍신호(돌파/VCP/피벗임박)", "RS상승중", "52주고점대비"는 8개 조건 판정과 무관한 진입 타이밍 참고 지표입니다. VCP는 실제 미너비니 방법론(스윙 고점/저점 기반 다중 파동 탐지)이 아닌 고정 4주 구간 비교 근사치입니다.<br>
+    ※ 상단 배지(코스피/코스닥/S&P500: 우호적/중립/비우호적)는 지수 자체에 8개 조건과 같은 방식(SMA50/150/200)을 적용한 시장 게이팅 참고 지표입니다. "진입판정"(GO/WATCH/NO-GO)은 8/8 통과 종목에 7개 항목(시장게이팅/피벗임박/RS85+/52주고점-10%이내/Dryup≤0.7/돌파/셋업점수≥7) 충족 개수로 매기며, Dry-up·셋업점수 임계치는 초기값으로 추후 조정 예정입니다. 전부 매수 신호가 아닙니다.<br>
     ※ 이 페이지는 1차 필터 + 타이밍 참고 지표까지만 보여줍니다. 스테이지(와인스타인 4단계) 확정, 베이스 단계, 펀더멘털, 촉매는 별도로 직접 판단해야 합니다.
   </footer>
 </div>
@@ -315,6 +325,17 @@ function renderTabs() {
       renderAll();
     });
   });
+}
+
+function renderGateRow() {
+  const rows = DATA[currentMarket].rows;
+  const segments = [...new Set(rows.map(r => r.market).filter(Boolean))];
+  const tierClass = g => g === "우호적" ? "tier-good" : (g === "중립" ? "tier-mid" : "tier-bad");
+  const chips = segments.map(seg => {
+    const gate = (rows.find(r => r.market === seg && r.marketGate) || {}).marketGate || "판정불가";
+    return `<span class="gate-chip ${tierClass(gate)}">${seg}: ${gate}</span>`;
+  });
+  document.getElementById("gateRow").innerHTML = chips.join("");
 }
 
 function renderCards() {
@@ -390,8 +411,15 @@ function getCols() {
     { key: "setupScore", label: "셋업점수", fmt: v => setupScoreBadge(v) },
     { key: "signals", label: "타이밍신호", fmt: (v, r) => timingSignals(r) },
     { key: "passAll", label: "판정", fmt: (v, r) => statusBadge(r) },
+    { key: "entryVerdict", label: "진입판정", fmt: v => entryVerdictBadge(v) },
   );
   return cols;
+}
+
+function entryVerdictBadge(v) {
+  if (!v) return "-";
+  const tier = v === "GO" ? "tier-good" : (v === "WATCH" ? "tier-mid" : "tier-bad");
+  return `<span class="badge ${tier}" title="8/8 통과 종목에 대한 7항목 체크리스트 참고 판정. 매수 신호 아님">${v}</span>`;
 }
 
 function fmtPct(v) {
@@ -413,7 +441,6 @@ function setupScoreBadge(v) {
 
 function timingSignals(r) {
   const badges = [];
-  if (r.watchCandidate === true) badges.push(`<span class="badge watch" title="8/8통과+RS85이상+RS상승중+52주고점-10%이내+셋업8점이상+피벗임박. 매수신호 아님">관찰후보</span>`);
   if (r.breakoutSignal === true) badges.push(`<span class="badge breakout" title="피벗 상향돌파 + 거래량 1.5배 이상. 매수신호 아님">돌파</span>`);
   if (r.vcpForming === true) badges.push(`<span class="badge pass" title="VCP 수축 근사치 조건 충족">VCP</span>`);
   if (r.pivotNear === true) badges.push(`<span class="badge pass" title="피벗 대비 -5%~0% 구간">피벗임박</span>`);
@@ -437,7 +464,7 @@ function renderTable() {
   let rows = DATA[currentMarket].rows.slice();
 
   if (currentFilter === "pass") rows = rows.filter(r => r.passAll === true);
-  else if (currentFilter === "watch") rows = rows.filter(r => r.watchCandidate === true);
+  else if (currentFilter === "go") rows = rows.filter(r => r.entryVerdict === "GO");
   else if (currentFilter === "breakout") rows = rows.filter(r => r.breakoutSignal === true);
   else if (currentFilter === "na") rows = rows.filter(r => r.status !== "OK");
 
@@ -485,6 +512,7 @@ function renderTable() {
 
 function renderAll() {
   renderTabs();
+  renderGateRow();
   renderCards();
   renderTrend();
   renderTable();
