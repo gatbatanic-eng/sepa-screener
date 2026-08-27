@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RANGE-MR / V-REBOUND 스크리너</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --panel: #ffffff; --border: #e3e5e9;
+    --text: #1b1e24; --text-dim: #6b7280; --accent: #2563eb;
+    --buy-bg: #e6f7ec; --buy-text: #157347; --buy-border: #b7e4c7;
+    --watch-bg: #fff2e0; --watch-text: #b45309; --watch-border: #fbd9a8;
+    --setup-bg: #eef0ff; --setup-text: #4338ca; --setup-border: #c7cbfa;
+    --inval-bg: #fdf2f2; --inval-text: #b42318; --inval-border: #f3c6c2;
+    --up: #d92b2b; --down: #1a56db;
+    --row-hover: #f0f4ff; --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --panel: #171a21; --border: #2a2e37;
+      --text: #e7e9ee; --text-dim: #9aa2b1; --accent: #5b8def;
+      --buy-bg: #113322; --buy-text: #6bd08a; --buy-border: #1e5c3a;
+      --watch-bg: #3a2712; --watch-text: #f6b96a; --watch-border: #6b4a1f;
+      --setup-bg: #201f42; --setup-text: #a5b0fc; --setup-border: #3c3a72;
+      --inval-bg: #3a1717; --inval-text: #f2a4a0; --inval-border: #6b2b26;
+      --up: #f0605f; --down: #6ea8fe;
+      --row-hover: #1d2230; --shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", sans-serif;
+    font-size: 14px; line-height: 1.5;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; }
+  header { margin-bottom: 20px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .subtitle { color: var(--text-dim); font-size: 13px; }
+  .tabs { display: flex; gap: 8px; margin: 16px 0; }
+  .tab-btn {
+    padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--panel); color: var(--text); cursor: pointer; font-size: 13px; font-weight: 600;
+  }
+  .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; box-shadow: var(--shadow); }
+  .card .label { color: var(--text-dim); font-size: 12px; margin-bottom: 6px; }
+  .card .value { font-size: 22px; font-weight: 700; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow); padding: 16px; margin-bottom: 18px; }
+  .panel h2 { font-size: 14px; margin: 0 0 12px; color: var(--text-dim); font-weight: 600; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; align-items: center; }
+  .controls input[type=text] {
+    flex: 1; min-width: 180px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--text); font-size: 13px;
+  }
+  .controls select {
+    padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--text); font-size: 13px;
+  }
+  .filter-btn { padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer; font-size: 12px; font-weight: 600; }
+  .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 9px 10px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th:first-child, td:first-child, th.left, td.left, td.reasons { text-align: left; }
+  th { color: var(--text-dim); font-weight: 600; cursor: pointer; user-select: none; position: sticky; top: 0; background: var(--panel); }
+  th.sorted::after { content: " \25BC"; font-size: 9px; }
+  th.sorted.asc::after { content: " \25B2"; }
+  tbody tr:hover { background: var(--row-hover); }
+  tbody tr.buy-row { background: var(--buy-bg); }
+  .table-scroll { overflow-x: auto; max-height: 70vh; overflow-y: auto; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .badge.buy { background: var(--buy-bg); color: var(--buy-text); border: 1px solid var(--buy-border); }
+  .badge.watch { background: var(--watch-bg); color: var(--watch-text); border: 1px solid var(--watch-border); }
+  .badge.setup { background: var(--setup-bg); color: var(--setup-text); border: 1px solid var(--setup-border); }
+  .badge.inval { background: var(--inval-bg); color: var(--inval-text); border: 1px solid var(--inval-border); }
+  .reasons { max-width: 320px; white-space: normal; color: var(--text-dim); font-size: 12px; }
+  .code { color: var(--text-dim); font-size: 12px; }
+  .empty-msg { text-align: center; color: var(--text-dim); padding: 30px; }
+  footer { color: var(--text-dim); font-size: 12px; margin-top: 24px; line-height: 1.7; }
+  svg.trend { width: 100%; height: 60px; display: block; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>RANGE-MR / V-REBOUND 스크리너</h1>
+    <div class="subtitle" id="subtitle">박스권 평균회귀(RANGE-MR) · 급락 후 반등(V-REBOUND) — 실전 매수 신호가 아닌 스크리닝 참고 자료</div>
+  </header>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="cards" id="cards"></div>
+
+  <div class="panel">
+    <h2>일별 BUY_CANDIDATE 수 추이</h2>
+    <svg class="trend" id="trend"></svg>
+  </div>
+
+  <div class="panel">
+    <div class="controls">
+      <input type="text" id="search" placeholder="종목코드 검색...">
+      <button class="filter-btn active" data-filter="all">전체</button>
+      <button class="filter-btn" data-filter="BUY_CANDIDATE">BUY_CANDIDATE만</button>
+      <button class="filter-btn" data-filter="WATCH_TRIGGER">WATCH/TRIGGER만</button>
+      <button class="filter-btn" data-filter="SETUP">SETUP만</button>
+      <select id="sortSelect">
+        <option value="totalScore">총점순</option>
+        <option value="rr1">R/R순</option>
+        <option value="symbol">종목코드순</option>
+      </select>
+    </div>
+    <div class="table-scroll">
+      <table id="table">
+        <thead><tr id="thead-row"></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="empty-msg" id="emptyMsg" style="display:none;">검색 결과가 없습니다.</div>
+    </div>
+  </div>
+
+  <footer>
+    ※ 이 표는 스크리닝 신호를 나열할 뿐 매수 추천이 아닙니다. entry는 신호 발생일(T) 다음 거래일 시가로 체결한다는 가정 하의 값입니다(백테스트 기준) — 이 화면의 값은 실시간 신호 시점 참고용 stop/target/RR입니다.<br>
+    ※ SETUP/WATCH/TRIGGER/BUY_CANDIDATE/INVALIDATED 분류와 배점 산식은 range_vrebound/README.md 및 config/strategy_config.yaml을 참고하세요. Quality(펀더멘털) 항목은 데이터 소스가 없어 항상 UNKNOWN이며 총점에서 제외 후 재환산됩니다.
+  </footer>
+</div>
+
+<script>
+const DATA = {"V_REBOUND": {"label": "V-REBOUND (급락 후 반등)", "rows": [{"symbol": "373220", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 75.37532437532043, "triggerScore": null, "totalScore": 75.37532437532043, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 256974.8490669396, "target1": 295000.0, "target2": 497500.0, "rr1": -0.66505086652136, "rr2": 1.1186948350756654, "reasons": ["Drawdown = -26%", "Excess drawdown vs market = 3%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 1.42x", "RS 5D = 2.6%p", "First rebound high breakout = True", "R/R = -0.67"]}, {"symbol": "005380", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 71.2096264815552, "triggerScore": null, "totalScore": 71.2096264815552, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 163488.95041201546, "target1": 191200.0, "target2": 772000.0, "rr1": -0.8818347807633353, "rr2": 1.594807582231564, "reasons": ["Drawdown = -48%", "Excess drawdown vs market = -26%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 1.68x", "RS 5D = -5.5%p", "First rebound high breakout = False", "R/R = -0.88"]}, {"symbol": "034020", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 72.67602443448398, "triggerScore": null, "totalScore": 72.67602443448398, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 13642.551652390755, "target1": 18790.0, "target2": 109300.0, "rr1": -0.9287623841510928, "rr2": 0.32384204722300064, "reasons": ["Drawdown = -21%", "Excess drawdown vs market = 2%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 1.43x", "RS 5D = 12.3%p", "First rebound high breakout = True", "R/R = -0.93"]}, {"symbol": "006400", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 72.05970149253731, "triggerScore": null, "totalScore": 72.05970149253731, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 140557.66253811916, "target1": 179000.0, "target2": 670000.0, "rr1": -0.9102741860442278, "rr2": 0.2357376738217103, "reasons": ["Drawdown = -15%", "Excess drawdown vs market = 9%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 2.10x", "RS 5D = 13.0%p", "First rebound high breakout = True", "R/R = -0.91"]}, {"symbol": "012330", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 73.33333333333333, "triggerScore": null, "totalScore": 73.33333333333333, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 356484.5796637865, "target1": 414000.0, "target2": 778000.0, "rr1": -0.39467277908476, "rr2": 3.436284329897977, "reasons": ["Drawdown = -42%", "Excess drawdown vs market = -19%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 2.29x", "RS 5D = -11.8%p", "First rebound high breakout = False", "R/R = -0.39"]}, {"symbol": "010120", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 73.33264995410315, "triggerScore": null, "totalScore": 73.33264995410315, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 17512.939676819384, "target1": 33800.0, "target2": 276500.0, "rr1": -0.9193658232506516, "rr2": 0.2821962946972921, "reasons": ["Drawdown = -21%", "Excess drawdown vs market = 4%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 1.53x", "RS 5D = 9.3%p", "First rebound high breakout = True", "R/R = -0.92"]}, {"symbol": "267260", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 78.60459968101343, "triggerScore": null, "totalScore": 78.60459968101343, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 236869.34045555428, "target1": 336500.0, "target2": 1213000.0, "rr1": -0.8294377158320262, "rr2": 0.6710827339652307, "reasons": ["Drawdown = -32%", "Excess drawdown vs market = -2%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 1.42x", "RS 5D = 9.2%p", "First rebound high breakout = True", "R/R = -0.83"]}, {"symbol": "298040", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 73.52367972667071, "triggerScore": null, "totalScore": 73.52367972667071, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 124332.14128775577, "target1": 330000.0, "target2": 4169000.0, "rr1": -0.930392223915861, "rr2": 0.3689077934042519, "reasons": ["Drawdown = -26%", "Excess drawdown vs market = 2%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 1.31x", "RS 5D = 6.9%p", "First rebound high breakout = True", "R/R = -0.93"]}, {"symbol": "005490", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 71.07605537768099, "triggerScore": null, "totalScore": 71.07605537768099, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 220379.0023206696, "target1": 290000.0, "target2": 416500.0, "rr1": -0.41554386686092304, "rr2": 0.646401570672547, "reasons": ["Drawdown = -18%", "Excess drawdown vs market = 4%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 1.48x", "RS 5D = 4.7%p", "First rebound high breakout = True", "R/R = -0.42"]}, {"symbol": "000150", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 75.46529892839051, "triggerScore": null, "totalScore": 75.46529892839051, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 67703.37580676517, "target1": 157900.0, "target2": 2168000.0, "rr1": -0.9213147606914438, "rr2": 0.8322453192876028, "reasons": ["Drawdown = -44%", "Excess drawdown vs market = -24%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 1.10x", "RS 5D = 2.2%p", "First rebound high breakout = False", "R/R = -0.92"]}, {"symbol": "003550", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 72.52215358798524, "triggerScore": null, "totalScore": 72.52215358798524, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 85318.3552201155, "target1": 111900.0, "target2": 154200.0, "rr1": -0.08909710263460655, "rr2": 1.3604442209976462, "reasons": ["Drawdown = -26%", "Excess drawdown vs market = -10%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 0.72x", "RS 5D = 2.8%p", "First rebound high breakout = False", "R/R = -0.09"]}, {"symbol": "003670", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 79.54470008638106, "triggerScore": null, "totalScore": 79.54470008638106, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 89763.90854243776, "target1": 129015.0, "target2": 244500.0, "rr1": -0.5834813302370636, "rr2": 0.642004555412246, "reasons": ["Drawdown = -25%", "Excess drawdown vs market = 1%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 1.96x", "RS 5D = 11.8%p", "First rebound high breakout = True", "R/R = -0.58"]}, {"symbol": "064350", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 73.33333333333333, "triggerScore": null, "totalScore": 73.33333333333333, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 108570.61249919322, "target1": 152400.0, "target2": 240000.0, "rr1": 0.4595498326307602, "rr2": 3.3766922484608033, "reasons": ["Drawdown = -42%", "Excess drawdown vs market = -14%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 0.60x", "RS 5D = 0.1%p", "First rebound high breakout = False", "R/R = 0.46"]}, {"symbol": "011070", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 73.33333333333333, "triggerScore": null, "totalScore": 73.33333333333333, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 93519.6742720862, "target1": 150000.0, "target2": 1381000.0, "rr1": -0.8878201930805208, "rr2": 1.5571611440159472, "reasons": ["Drawdown = -57%", "Excess drawdown vs market = -40%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 0.43x", "RS 5D = 0.8%p", "First rebound high breakout = False", "R/R = -0.89"]}, {"symbol": "086520", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 76.31941384058545, "triggerScore": null, "totalScore": 76.31941384058545, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 34399.4989512341, "target1": 46500.0, "target2": 138200.0, "rr1": -0.7899236841964041, "rr2": 0.8020763562609642, "reasons": ["Drawdown = -33%", "Excess drawdown vs market = -9%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 1.20x", "RS 5D = 4.8%p", "First rebound high breakout = False", "R/R = -0.79"]}, {"symbol": "247540", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 78.16070204049846, "triggerScore": null, "totalScore": 78.16070204049846, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 76773.07794583526, "target1": 101100.0, "target2": 218000.0, "rr1": -0.409926309264525, "rr2": 2.425599463103698, "reasons": ["Drawdown = -46%", "Excess drawdown vs market = -23%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 1.22x", "RS 5D = 3.8%p", "First rebound high breakout = False", "R/R = -0.41"]}, {"symbol": "277810", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 73.33333333333333, "triggerScore": null, "totalScore": 73.33333333333333, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 91146.45672549846, "target1": 147400.0, "target2": 845000.0, "rr1": -0.8519072830292124, "rr2": 0.9845899995455051, "reasons": ["Drawdown = -44%", "Excess drawdown vs market = -20%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 0.69x", "RS 5D = 0.3%p", "First rebound high breakout = False", "R/R = -0.85"]}, {"symbol": "047040", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 80.0, "triggerScore": null, "totalScore": 80.0, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 10244.799357990234, "target1": 18880.0, "target2": 28750.0, "rr1": -0.11481055501583796, "rr2": 0.8969574610612341, "reasons": ["Drawdown = -30%", "Excess drawdown vs market = 4%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 3.32x", "RS 5D = 18.8%p", "First rebound high breakout = True", "R/R = -0.11"]}, {"symbol": "000880", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 75.96616337972755, "triggerScore": null, "totalScore": 75.96616337972755, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 90319.54279750845, "target1": 103481.0, "target2": 162664.0, "rr1": -0.6699772739398463, "rr2": 0.8140327939362689, "reasons": ["Drawdown = -20%", "Excess drawdown vs market = 5%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 4.63x", "RS 5D = 28.6%p", "First rebound high breakout = True", "R/R = -0.67"]}, {"symbol": "000500", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 80.0, "triggerScore": null, "totalScore": 80.0, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 6198.982218510704, "target1": 22255.0, "target2": 326000.0, "rr1": -0.9217927998848091, "rr2": 0.5577176442538014, "reasons": ["Drawdown = -35%", "Excess drawdown vs market = 25%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 4.56x", "RS 5D = 27.4%p", "First rebound high breakout = True", "R/R = -0.92"]}, {"symbol": "062040", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 80.0, "triggerScore": null, "totalScore": 80.0, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 32674.684759921605, "target1": 69200.0, "target2": 272500.0, "rr1": -0.7836502470726177, "rr2": 0.42055304264668064, "reasons": ["Drawdown = -26%", "Excess drawdown vs market = 3%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 3.47x", "RS 5D = 11.6%p", "First rebound high breakout = True", "R/R = -0.78"]}, {"symbol": "001440", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 94.56397588797938, "triggerScore": null, "totalScore": 94.56397588797938, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 8941.826893611411, "target1": 12340.0, "target2": 47950.0, "rr1": -0.8370819395804241, "rr2": 0.8701624973301659, "reasons": ["Drawdown = -38%", "Excess drawdown vs market = -16%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 1.37x", "RS 5D = 4.2%p", "First rebound high breakout = True", "R/R = -0.84"]}, {"symbol": "066970", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 73.42823577803804, "triggerScore": null, "totalScore": 73.42823577803804, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 42235.52912097365, "target1": 59000.0, "target2": 164000.0, "rr1": -0.8085471115084211, "rr2": 0.39056936742355935, "reasons": ["Drawdown = -21%", "Excess drawdown vs market = 5%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 1.51x", "RS 5D = 19.3%p", "First rebound high breakout = True", "R/R = -0.81"]}, {"symbol": "222800", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 76.76722394568692, "triggerScore": null, "totalScore": 76.76722394568692, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 3394.2616230095955, "target1": 11970.0, "target2": 164200.0, "rr1": -0.9305640491714343, "rr2": 0.30201025871482207, "reasons": ["Drawdown = -23%", "Excess drawdown vs market = 47%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 1.79x", "RS 5D = 10.8%p", "First rebound high breakout = True", "R/R = -0.93"]}, {"symbol": "454910", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 73.33333333333333, "triggerScore": null, "totalScore": 73.33333333333333, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 37089.97998291756, "target1": 56900.0, "target2": 170000.0, "rr1": -0.44987478463813796, "rr2": 2.690917693298492, "reasons": ["Drawdown = -57%", "Excess drawdown vs market = -26%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 0.67x", "RS 5D = 0.2%p", "First rebound high breakout = False", "R/R = -0.45"]}, {"symbol": "005385", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 70.20830221523947, "triggerScore": null, "totalScore": 70.20830221523947, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 166061.95624127056, "target1": 206000.0, "target2": 305000.0, "rr1": 0.18027046845538577, "rr2": 3.10597151387886, "reasons": ["Drawdown = -34%", "Excess drawdown vs market = -11%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 1.53x", "RS 5D = -0.2%p", "First rebound high breakout = False", "R/R = 0.18"]}, {"symbol": "052690", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 76.33270321361057, "triggerScore": null, "totalScore": 76.33270321361057, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 44881.64503265508, "target1": 57000.0, "target2": 158700.0, "rr1": -0.8511594225625742, "rr2": 0.3979446650941905, "reasons": ["Drawdown = -20%", "Excess drawdown vs market = 15%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 2.58x", "RS 5D = 33.2%p", "First rebound high breakout = True", "R/R = -0.85"]}, {"symbol": "011790", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 73.33333333333333, "triggerScore": null, "totalScore": 73.33333333333333, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 58295.02094535483, "target1": 87900.0, "target2": 163000.0, "rr1": -0.06917155946621151, "rr2": 2.292093947766736, "reasons": ["Drawdown = -45%", "Excess drawdown vs market = -21%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 0.77x", "RS 5D = 3.5%p", "First rebound high breakout = False", "R/R = -0.07"]}, {"symbol": "087010", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 73.33333333333333, "triggerScore": null, "totalScore": 73.33333333333333, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 39288.89667927763, "target1": 104500.0, "target2": 282000.0, "rr1": -0.5620803159300235, "rr2": 0.6299060171354385, "reasons": ["Drawdown = -33%", "Excess drawdown vs market = -12%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 0.42x", "RS 5D = 1.6%p", "First rebound high breakout = False", "R/R = -0.56"]}, {"symbol": "004020", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 75.15463917525773, "triggerScore": null, "totalScore": 75.15463917525773, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 19017.18309286964, "target1": 22400.0, "target2": 38800.0, "rr1": -0.7279122718206944, "rr2": 0.5911773699317242, "reasons": ["Drawdown = -19%", "Excess drawdown vs market = 2%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 2.68x", "RS 5D = 11.2%p", "First rebound high breakout = True", "R/R = -0.73"]}, {"symbol": "001040", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 72.27971256680628, "triggerScore": null, "totalScore": 72.27971256680628, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 85677.12218568737, "target1": 100700.0, "target2": 192500.0, "rr1": -0.6328978161682844, "rr2": 1.6103461809069477, "reasons": ["Drawdown = -34%", "Excess drawdown vs market = -9%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 0.51x", "RS 5D = 2.1%p", "First rebound high breakout = False", "R/R = -0.63"]}, {"symbol": "103590", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 71.78132512960316, "triggerScore": null, "totalScore": 71.78132512960316, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 13907.961823361615, "target1": 22900.0, "target2": 93600.0, "rr1": -0.8530521544211069, "rr2": 0.3023269129653348, "reasons": ["Drawdown = -20%", "Excess drawdown vs market = 2%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 1.46x", "RS 5D = 6.4%p", "First rebound high breakout = True", "R/R = -0.85"]}, {"symbol": "022100", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 73.33333333333333, "triggerScore": null, "totalScore": 73.33333333333333, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 15901.031874690074, "target1": 21800.0, "target2": 37250.0, "rr1": 0.12383386305315403, "rr2": 3.067269531008892, "reasons": ["Drawdown = -43%", "Excess drawdown vs market = -24%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 0.80x", "RS 5D = 2.6%p", "First rebound high breakout = False", "R/R = 0.12"]}, {"symbol": "336260", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 73.33333333333333, "triggerScore": null, "totalScore": 73.33333333333333, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 10136.04148885508, "target1": 14440.0, "target2": 88400.0, "rr1": -0.8772540610388606, "rr2": 1.232034311992158, "reasons": ["Drawdown = -49%", "Excess drawdown vs market = -28%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 0.41x", "RS 5D = 10.3%p", "First rebound high breakout = False", "R/R = -0.88"]}, {"symbol": "375500", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 75.5322720957461, "triggerScore": null, "totalScore": 75.5322720957461, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 36309.165532219544, "target1": 41900.0, "target2": 95600.0, "rr1": -0.8528372817785308, "rr2": 0.5606615463544045, "reasons": ["Drawdown = -22%", "Excess drawdown vs market = 25%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 1.66x", "RS 5D = 3.5%p", "First rebound high breakout = True", "R/R = -0.85"]}, {"symbol": "450080", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 73.4746433219883, "triggerScore": null, "totalScore": 73.4746433219883, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 25729.018298257397, "target1": 39550.0, "target2": 61500.0, "rr1": 0.06965415018571076, "rr2": 1.76844147971499, "reasons": ["Drawdown = -37%", "Excess drawdown vs market = -14%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 1.01x", "RS 5D = 3.6%p", "First rebound high breakout = False", "R/R = 0.07"]}, {"symbol": "319400", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 73.33333333333333, "triggerScore": null, "totalScore": 73.33333333333333, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 16807.310927565442, "target1": 24550.0, "target2": 42250.0, "rr1": 0.05447595506960165, "rr2": 2.4650369668994747, "reasons": ["Drawdown = -43%", "Excess drawdown vs market = -19%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 0.32x", "RS 5D = 1.0%p", "First rebound high breakout = False", "R/R = 0.05"]}, {"symbol": "178320", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 100.0, "triggerScore": null, "totalScore": 100.0, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": 14573.302753285772, "target1": 20600.0, "target2": 81300.0, "rr1": -0.7749275352674885, "rr2": 1.4919689172981285, "reasons": ["Drawdown = -49%", "Excess drawdown vs market = -25%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 2.31x", "RS 5D = 7.0%p", "First rebound high breakout = True", "R/R = -0.77"]}, {"symbol": "010170", "date": "2026-08-27", "marketRegime": "CRASH", "setupScore": 95.27597778297411, "triggerScore": null, "totalScore": 95.27597778297411, "signal": "WATCH", "qualityStatus": "UNKNOWN", "entry": null, "stop": -270.50739493645426, "target1": 507.0, "target2": 22700.0, "rr1": -0.9486132636109313, "rr2": 0.5181584328509511, "reasons": ["Drawdown = -35%", "Excess drawdown vs market = -8%p", "Stabilized (NEW_LOW=FALSE) = True", "Rebound volume = 2.22x", "RS 5D = 17.9%p", "First rebound high breakout = True", "R/R = -0.95"]}], "history": [{"date": "2026-08-27", "total": 39, "buyCandidate": 0}], "asOf": "2026-08-27"}};
+const strategyKeys = Object.keys(DATA);
+let currentStrategy = strategyKeys[0];
+let currentFilter = "all";
+let sortKey = "totalScore";
+let sortDir = -1;
+
+function fmtNum(n, digits) {
+  if (n === null || n === undefined) return "-";
+  return Number(n).toLocaleString("ko-KR", { maximumFractionDigits: digits ?? 1, minimumFractionDigits: 0 });
+}
+
+function renderTabs() {
+  const el = document.getElementById("tabs");
+  if (strategyKeys.length <= 1) { el.style.display = "none"; return; }
+  el.innerHTML = strategyKeys.map(k =>
+    `<button class="tab-btn${k===currentStrategy?" active":""}" data-strategy="${k}">${DATA[k].label}</button>`
+  ).join("");
+  el.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => { currentStrategy = btn.dataset.strategy; renderAll(); });
+  });
+}
+
+function signalBadgeClass(s) {
+  if (s === "BUY_CANDIDATE") return "buy";
+  if (s === "WATCH" || s === "TRIGGER") return "watch";
+  if (s === "INVALIDATED") return "inval";
+  return "setup";
+}
+
+function renderCards() {
+  const strat = DATA[currentStrategy];
+  const rows = strat.rows;
+  const counts = { BUY_CANDIDATE: 0, WATCH: 0, TRIGGER: 0, SETUP: 0, INVALIDATED: 0 };
+  rows.forEach(r => { if (counts[r.signal] !== undefined) counts[r.signal]++; });
+  const cards = [
+    ["기준일", strat.asOf || "-"],
+    ["전체 신호", rows.length],
+    ["BUY_CANDIDATE", counts.BUY_CANDIDATE],
+    ["WATCH/TRIGGER", counts.WATCH + counts.TRIGGER],
+    ["SETUP", counts.SETUP],
+  ];
+  document.getElementById("cards").innerHTML = cards.map(([label, value]) =>
+    `<div class="card"><div class="label">${label}</div><div class="value">${value}</div></div>`
+  ).join("");
+  document.getElementById("subtitle").textContent =
+    `기준일: ${strat.asOf || "-"} · ${strat.label} · 박스권 평균회귀(RANGE-MR) · 급락 후 반등(V-REBOUND) — 실전 매수 신호가 아닌 스크리닝 참고 자료`;
+}
+
+function renderTrend() {
+  const hist = DATA[currentStrategy].history;
+  const svg = document.getElementById("trend");
+  if (hist.length < 2) {
+    svg.innerHTML = `<text x="8" y="30" fill="var(--text-dim)" font-size="12">추세를 보려면 이틀 이상의 데이터가 쌓여야 합니다 (현재 ${hist.length}일치).</text>`;
+    return;
+  }
+  const w = 1000, h = 60, pad = 4;
+  const vals = hist.map(d => d.buyCandidate ?? 0);
+  const max = Math.max(...vals, 1);
+  const stepX = (w - pad * 2) / (hist.length - 1);
+  const pts = vals.map((v, i) => [pad + i * stepX, h - pad - (v / max) * (h - pad * 2)]);
+  const path = pts.map((p, i) => (i === 0 ? "M" : "L") + p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ");
+  const lastPt = pts[pts.length - 1];
+  svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  svg.innerHTML = `
+    <path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2"/>
+    <circle cx="${lastPt[0]}" cy="${lastPt[1]}" r="3" fill="var(--accent)"/>
+    <text x="${pad}" y="${h-2}" fill="var(--text-dim)" font-size="10">${hist[0].date}</text>
+    <text x="${w-pad}" y="${h-2}" fill="var(--text-dim)" font-size="10" text-anchor="end">${hist[hist.length-1].date} (${vals[vals.length-1]}건)</text>
+  `;
+}
+
+function renderTable() {
+  const q = document.getElementById("search").value.trim().toLowerCase();
+  let rows = DATA[currentStrategy].rows.slice();
+
+  if (currentFilter === "BUY_CANDIDATE") rows = rows.filter(r => r.signal === "BUY_CANDIDATE");
+  else if (currentFilter === "WATCH_TRIGGER") rows = rows.filter(r => r.signal === "WATCH" || r.signal === "TRIGGER");
+  else if (currentFilter === "SETUP") rows = rows.filter(r => r.signal === "SETUP");
+
+  if (q) rows = rows.filter(r => (r.symbol || "").toLowerCase().includes(q));
+
+  rows.sort((a, b) => {
+    const av = a[sortKey], bv = b[sortKey];
+    if (av === null || av === undefined) return 1;
+    if (bv === null || bv === undefined) return -1;
+    if (typeof av === "string") return sortDir * av.localeCompare(bv);
+    return sortDir * (av - bv);
+  });
+
+  const cols = [
+    { key: "symbol", label: "종목코드", left: true },
+    { key: "signal", label: "판정", fmt: v => `<span class="badge ${signalBadgeClass(v)}">${v}</span>` },
+    { key: "marketRegime", label: "시장레짐" },
+    { key: "totalScore", label: "총점", fmt: v => fmtNum(v) },
+    { key: "triggerScore", label: "트리거점수", fmt: v => v != null ? fmtNum(v) : "-" },
+    { key: "qualityStatus", label: "품질" },
+    { key: "stop", label: "손절", fmt: v => v != null ? fmtNum(v, 0) : "-" },
+    { key: "target1", label: "목표1", fmt: v => v != null ? fmtNum(v, 0) : "-" },
+    { key: "target2", label: "목표2", fmt: v => v != null ? fmtNum(v, 0) : "-" },
+    { key: "rr1", label: "R/R", fmt: v => v != null ? fmtNum(v, 2) : "-" },
+    { key: "reasons", label: "근거", fmt: v => `<span class="reasons">${(v || []).join(" · ")}</span>` },
+  ];
+
+  const thead = document.getElementById("thead-row");
+  thead.innerHTML = cols.map(c =>
+    `<th class="${c.left ? "left" : ""}${c.key===sortKey?" sorted"+(sortDir===1?" asc":""):""}" data-key="${c.key}">${c.label}</th>`
+  ).join("");
+  thead.querySelectorAll("th").forEach(th => {
+    th.addEventListener("click", () => {
+      const key = th.dataset.key;
+      if (key === "reasons") return;
+      if (sortKey === key) sortDir *= -1; else { sortKey = key; sortDir = -1; }
+      const opt = document.getElementById("sortSelect");
+      if (["totalScore","rr1","symbol"].includes(key)) opt.value = key;
+      renderTable();
+    });
+  });
+
+  const tbody = document.getElementById("tbody");
+  document.getElementById("emptyMsg").style.display = rows.length ? "none" : "block";
+  tbody.innerHTML = rows.map(r => {
+    const cells = cols.map(c => {
+      const v = r[c.key];
+      const content = c.fmt ? c.fmt(v, r) : (v ?? "-");
+      return `<td class="${c.left ? "left" : ""}${c.key==="reasons"?" reasons":""}">${content}</td>`;
+    }).join("");
+    return `<tr class="${r.signal === "BUY_CANDIDATE" ? "buy-row" : ""}">${cells}</tr>`;
+  }).join("");
+}
+
+function renderAll() {
+  renderTabs();
+  renderCards();
+  renderTrend();
+  renderTable();
+}
+
+document.getElementById("search").addEventListener("input", renderTable);
+document.querySelectorAll(".filter-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentFilter = btn.dataset.filter;
+    renderTable();
+  });
+});
+document.getElementById("sortSelect").addEventListener("change", (e) => {
+  sortKey = e.target.value; sortDir = -1; renderTable();
+});
+
+if (strategyKeys.length === 0) {
+  document.querySelector(".wrap").innerHTML = '<div class="empty-msg">아직 저장된 신호가 없습니다. run_daily_screen.py를 먼저 실행하세요.</div>';
+} else {
+  renderAll();
+}
+</script>
+</body>
+</html>
