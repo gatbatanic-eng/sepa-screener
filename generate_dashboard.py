@@ -10,6 +10,9 @@ SEPA 스크리닝 결과를 정적 HTML 대시보드(docs/index.html)로 만든�
   계속 같이 보이게 한다.
 - docs/data/history_{kr,us}.json 에 날짜별 요약을 하루 한 줄씩 누적하고,
   대시보드에서 통과 종목 수 추이로 보여준다.
+- docs/data/charts_{kr,us}.json 에는 8/8 통과 종목의 미니차트용 시계열
+  (종가/SMA/거래량/RSI, screening.py가 만든 output/chart_data_*.json을
+  그대로 옮긴 것)을 최신 스냅샷으로 유지한다.
 - 결과는 docs/index.html 하나로 자기완결적(외부 CDN/폰트 없음)이라
   GitHub Pages(=docs 폴더 서빙)에 그대로 올리면 된다.
 
@@ -119,6 +122,24 @@ def load_history(prefix: str) -> list:
     return json.loads(hist_path.read_text(encoding="utf-8")) if hist_path.exists() else []
 
 
+def load_fresh_charts(prefix: str) -> dict | None:
+    """이번 실행에서 screening.py가 만든 8/8 통과 종목 미니차트 데이터(있으면)."""
+    path = OUTPUT_DIR / f"chart_data_{prefix}.json"
+    if not path.exists():
+        return None
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def load_chart_snapshot(prefix: str) -> dict:
+    path = DATA_DIR / f"charts_{prefix}.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+
+
+def save_chart_snapshot(prefix: str, charts: dict) -> None:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    (DATA_DIR / f"charts_{prefix}.json").write_text(json.dumps(charts, ensure_ascii=False), encoding="utf-8")
+
+
 def build() -> None:
     run_date = datetime.now(ZoneInfo("Asia/Seoul")).strftime("%Y-%m-%d")
     payload: dict[str, dict] = {}
@@ -136,7 +157,15 @@ def build() -> None:
             history = load_history(prefix)
 
         as_of = history[-1]["date"] if history else None
-        payload[prefix] = {"label": label, "rows": rows, "history": history, "asOf": as_of}
+
+        fresh_charts = load_fresh_charts(prefix)
+        if fresh_charts is not None:
+            save_chart_snapshot(prefix, fresh_charts)
+            charts = fresh_charts
+        else:
+            charts = load_chart_snapshot(prefix)
+
+        payload[prefix] = {"label": label, "rows": rows, "history": history, "asOf": as_of, "charts": charts}
 
     if not payload:
         print("생성할 데이터가 없습니다 (output/latest_*_full.csv를 먼저 만들어야 함: screening.py를 먼저 실행하세요)")
@@ -244,6 +273,18 @@ HTML_TEMPLATE = r"""<!doctype html>
   .empty-msg { text-align: center; color: var(--text-dim); padding: 30px; }
   footer { color: var(--text-dim); font-size: 12px; margin-top: 24px; line-height: 1.7; }
   svg.trend { width: 100%; height: 60px; display: block; }
+  .chart-link { text-decoration: none; color: var(--text-dim); font-size: 13px; padding: 2px 4px; }
+  .chart-link:hover { color: var(--accent); }
+  .chart-btn { border: 1px solid var(--border); background: var(--bg); border-radius: 6px; padding: 2px 6px; cursor: pointer; font-size: 12px; margin-left: 4px; }
+  .chart-btn:hover { border-color: var(--accent); }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
+  .modal-overlay.open { display: flex; }
+  .modal-box { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; max-width: 820px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow); }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: 700; }
+  .modal-close { border: none; background: none; color: var(--text-dim); font-size: 16px; cursor: pointer; padding: 4px 8px; }
+  .modal-close:hover { color: var(--text); }
+  .modal-body canvas { width: 100%; display: block; margin-bottom: 6px; }
+  .modal-note { color: var(--text-dim); font-size: 11px; margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -295,8 +336,24 @@ HTML_TEMPLATE = r"""<!doctype html>
     ※ "충족조건수"는 참고용이며, "전체통과" 배지만 8개 조건을 전부 동시 충족(AND)했다는 공식 판정입니다.<br>
     ※ "셋업점수", "타이밍신호(돌파/VCP/피벗임박)", "RS상승중", "52주고점대비"는 8개 조건 판정과 무관한 진입 타이밍 참고 지표입니다. VCP는 실제 미너비니 방법론(스윙 고점/저점 기반 다중 파동 탐지)이 아닌 고정 4주 구간 비교 근사치입니다.<br>
     ※ 상단 배지(코스피/코스닥/S&P500: 우호적/중립/비우호적)는 지수 자체에 8개 조건과 같은 방식(SMA50/150/200)을 적용한 시장 게이팅 참고 지표입니다. "진입판정"(GO/WATCH/NO-GO)은 8/8 통과 종목에 7개 항목(시장게이팅/피벗임박/RS85+/52주고점-10%이내/Dryup≤0.7/돌파/셋업점수≥7) 충족 개수로 매기며, Dry-up·셋업점수 임계치는 초기값으로 추후 조정 예정입니다. 전부 매수 신호가 아닙니다.<br>
-    ※ 이 페이지는 1차 필터 + 타이밍 참고 지표까지만 보여줍니다. 스테이지(와인스타인 4단계) 확정, 베이스 단계, 펀더멘털, 촉매는 별도로 직접 판단해야 합니다.
+    ※ 이 페이지는 1차 필터 + 타이밍 참고 지표까지만 보여줍니다. 스테이지(와인스타인 4단계) 확정, 베이스 단계, 펀더멘털, 촉매는 별도로 직접 판단해야 합니다.<br>
+    ※ "↗"는 외부 차트 사이트(네이버 금융/야후 파이낸스) 링크이며 SEPA 스크리너와 무관합니다. "📈 미니차트"는 8개 조건을 전부 통과한 종목에만 제공되며, 종가/이동평균/거래량/RSI(14) 전부 참고용입니다.
   </footer>
+</div>
+
+<div class="modal-overlay" id="chartModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span id="modalTitle"></span>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <canvas id="priceCanvas" width="760" height="240"></canvas>
+      <canvas id="volumeCanvas" width="760" height="80"></canvas>
+      <canvas id="rsiCanvas" width="760" height="80"></canvas>
+      <div class="modal-note">종가/SMA50·150·200/거래량/RSI(14) — 참고용, 매수 신호 아님</div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -398,6 +455,7 @@ function getCols() {
     { key: "rank", label: "#", left: true },
     { key: "code", label: "코드", left: true },
     { key: "name", label: "종목명", left: true },
+    { key: "chart", label: "차트", left: true, fmt: (v, r) => chartCell(r) },
     { key: "close", label: "종가", fmt: v => fmtNum(v) },
     { key: "changePct", label: "등락률", fmt: v => changeBadge(v) },
     { key: "metCount", label: "충족", fmt: (v) => metBar(v) },
@@ -420,6 +478,23 @@ function entryVerdictBadge(v) {
   if (!v) return "-";
   const tier = v === "GO" ? "tier-good" : (v === "WATCH" ? "tier-mid" : "tier-bad");
   return `<span class="badge ${tier}" title="8/8 통과 종목에 대한 7항목 체크리스트 참고 판정. 매수 신호 아님">${v}</span>`;
+}
+
+function externalChartUrl(r) {
+  if (r.market === "KOSPI" || r.market === "KOSDAQ") {
+    return `https://finance.naver.com/item/main.naver?code=${encodeURIComponent(r.code)}`;
+  }
+  return `https://finance.yahoo.com/quote/${encodeURIComponent(r.code)}`;
+}
+
+function chartCell(r) {
+  const url = externalChartUrl(r);
+  const ext = `<a class="chart-link" href="${url}" target="_blank" rel="noopener noreferrer" title="외부 차트 사이트에서 보기 (SEPA 스크리너와 무관)">↗</a>`;
+  const hasChart = !!((DATA[currentMarket].charts || {})[r.code]);
+  const mini = hasChart
+    ? `<button class="chart-btn" data-code="${r.code}" title="미니차트 보기 (종가/SMA/거래량/RSI, 참고용)">📈</button>`
+    : "";
+  return ext + mini;
 }
 
 function fmtPct(v) {
@@ -488,7 +563,7 @@ function renderTable() {
   thead.querySelectorAll("th").forEach(th => {
     th.addEventListener("click", () => {
       const key = th.dataset.key;
-      if (key === "rank" || key === "signals") return;
+      if (key === "rank" || key === "signals" || key === "chart") return;
       if (sortKey === key) sortDir *= -1; else { sortKey = key; sortDir = -1; }
       document.getElementById("sortSelect").value = ["setupScore","metCount","rsRank","high52wPosition","marcap","code"].includes(key) ? key : sortKey;
       renderTable();
@@ -530,6 +605,134 @@ document.querySelectorAll(".filter-btn").forEach(btn => {
 document.getElementById("sortSelect").addEventListener("change", (e) => {
   sortKey = e.target.value; sortDir = -1; renderTable();
 });
+
+document.getElementById("tbody").addEventListener("click", (e) => {
+  const btn = e.target.closest(".chart-btn");
+  if (btn) openChartModal(btn.dataset.code);
+});
+document.getElementById("modalClose").addEventListener("click", closeChartModal);
+document.getElementById("chartModal").addEventListener("click", (e) => {
+  if (e.target.id === "chartModal") closeChartModal();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeChartModal();
+});
+
+function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function openChartModal(code) {
+  const chart = (DATA[currentMarket].charts || {})[code];
+  const row = DATA[currentMarket].rows.find(r => r.code === code);
+  if (!chart || !row) return;
+  document.getElementById("modalTitle").textContent = `${row.name} (${code})`;
+  drawPriceChart(chart);
+  drawVolumeChart(chart);
+  drawRsiChart(chart);
+  document.getElementById("chartModal").classList.add("open");
+}
+
+function closeChartModal() {
+  document.getElementById("chartModal").classList.remove("open");
+}
+
+function plotLine(ctx, values, x, y, color, width) {
+  ctx.beginPath();
+  let started = false;
+  values.forEach((v, i) => {
+    if (v === null || v === undefined) { started = false; return; }
+    if (!started) { ctx.moveTo(x(i), y(v)); started = true; }
+    else ctx.lineTo(x(i), y(v));
+  });
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.stroke();
+}
+
+function drawPriceChart(chart) {
+  const canvas = document.getElementById("priceCanvas");
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width, h = canvas.height, pad = 28;
+  ctx.clearRect(0, 0, w, h);
+
+  const series = [
+    { data: chart.close, label: "종가", color: cssVar("--text"), width: 1.6 },
+    { data: chart.sma50, label: "SMA50", color: "#e0555a", width: 1.2 },
+    { data: chart.sma150, label: "SMA150", color: "#d4a017", width: 1.2 },
+    { data: chart.sma200, label: "SMA200", color: "#3b7ddb", width: 1.2 },
+  ];
+  const allVals = series.flatMap(s => s.data.filter(v => v !== null && v !== undefined));
+  if (!allVals.length) return;
+  const min = Math.min(...allVals), max = Math.max(...allVals);
+  const n = chart.close.length;
+  const x = i => pad + (i / Math.max(n - 1, 1)) * (w - pad * 2);
+  const y = v => h - pad - ((v - min) / ((max - min) || 1)) * (h - pad * 2 - 14) - 0;
+
+  series.forEach(s => plotLine(ctx, s.data, x, y, s.color, s.width));
+
+  ctx.font = "11px sans-serif";
+  series.forEach((s, i) => {
+    ctx.fillStyle = s.color;
+    ctx.fillRect(pad + i * 78, 4, 10, 10);
+    ctx.fillStyle = cssVar("--text-dim");
+    ctx.fillText(s.label, pad + i * 78 + 14, 13);
+  });
+  ctx.fillStyle = cssVar("--text-dim");
+  ctx.fillText(chart.dates[0], pad, h - 6);
+  ctx.textAlign = "right";
+  ctx.fillText(chart.dates[chart.dates.length - 1], w - pad, h - 6);
+  ctx.textAlign = "left";
+}
+
+function drawVolumeChart(chart) {
+  const canvas = document.getElementById("volumeCanvas");
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width, h = canvas.height, pad = 6, bottomPad = 4;
+  ctx.clearRect(0, 0, w, h);
+  const vals = chart.volume.filter(v => v !== null && v !== undefined);
+  if (!vals.length) return;
+  const max = Math.max(...vals, 1);
+  const n = chart.volume.length;
+  const barW = (w - pad * 2) / n;
+  ctx.fillStyle = cssVar("--accent");
+  chart.volume.forEach((v, i) => {
+    if (v === null || v === undefined) return;
+    const bh = (v / max) * (h - pad - bottomPad - 12);
+    ctx.fillRect(pad + i * barW, h - bottomPad - bh, Math.max(barW - 1, 1), bh);
+  });
+  ctx.fillStyle = cssVar("--text-dim");
+  ctx.font = "11px sans-serif";
+  ctx.fillText("거래량", pad, 12);
+}
+
+function drawRsiChart(chart) {
+  const canvas = document.getElementById("rsiCanvas");
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width, h = canvas.height, pad = 22, topPad = 14, bottomPad = 6;
+  ctx.clearRect(0, 0, w, h);
+  const n = chart.rsi.length;
+  const x = i => pad + (i / Math.max(n - 1, 1)) * (w - pad - 6);
+  const y = v => topPad + (1 - v / 100) * (h - topPad - bottomPad);
+
+  ctx.strokeStyle = cssVar("--border");
+  ctx.setLineDash([4, 3]);
+  [30, 70].forEach(level => {
+    ctx.beginPath();
+    ctx.moveTo(pad, y(level));
+    ctx.lineTo(w - 6, y(level));
+    ctx.stroke();
+  });
+  ctx.setLineDash([]);
+
+  plotLine(ctx, chart.rsi, x, y, cssVar("--accent"), 1.4);
+
+  ctx.fillStyle = cssVar("--text-dim");
+  ctx.font = "11px sans-serif";
+  ctx.fillText("RSI(14)", pad, 12);
+  ctx.fillText("70", 2, y(70) + 3);
+  ctx.fillText("30", 2, y(30) + 3);
+}
 
 renderAll();
 </script>

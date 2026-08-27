@@ -155,6 +155,10 @@ ENTRY_VERDICT_GO = "GO"
 ENTRY_VERDICT_WATCH = "WATCH"
 ENTRY_VERDICT_NOGO = "NO-GO"
 
+# --- 대시보드 미니차트 (8/8 통과 종목 전용) ---
+CHART_TRADING_DAYS = 252   # 차트에 보여줄 최근 거래일 수 (약 1년)
+RSI_PERIOD = 14
+
 
 @dataclass(frozen=True)
 class MarketConfig:
@@ -605,6 +609,69 @@ def compute_entry_checklist(r: "StockResult") -> tuple[Optional[int], Optional[s
     else:
         verdict = ENTRY_VERDICT_NOGO
     return count, verdict
+
+
+# ----------------------------------------------------------------------------
+# 대시보드 미니차트 데이터 (8/8 통과 종목 전용, 참고용 보조지표 포함)
+# ----------------------------------------------------------------------------
+def compute_rsi(close: pd.Series, period: int = RSI_PERIOD) -> pd.Series:
+    """표준 RSI(Wilder 방식 지수평활). 종가만으로 계산되며 8개 조건 판정과 무관."""
+    delta = close.diff()
+    gain = delta.clip(lower=0)
+    loss = -delta.clip(upper=0)
+    avg_gain = gain.ewm(alpha=1 / period, min_periods=period, adjust=False).mean()
+    avg_loss = loss.ewm(alpha=1 / period, min_periods=period, adjust=False).mean()
+
+    rs = avg_gain / avg_loss
+    rsi = 100 - (100 / (1 + rs))
+    rsi = rsi.where(avg_loss != 0, 100.0)                              # 하락이 전혀 없으면 100
+    rsi = rsi.where(~((avg_gain == 0) & (avg_loss == 0)), 50.0)        # 변동이 전혀 없으면 중립 50
+    return rsi
+
+
+def _series_tail_list(series: pd.Series, digits: Optional[int] = None) -> list:
+    tail = series.iloc[-CHART_TRADING_DAYS:]
+    if digits is None:
+        return [None if pd.isna(v) else int(v) for v in tail]
+    return [None if pd.isna(v) else round(float(v), digits) for v in tail]
+
+
+def build_chart_data(pass_rows: list[tuple[str, str]], start_date: str) -> dict[str, dict]:
+    """
+    8/8 통과 종목만 대상으로, 대시보드 미니차트에 쓸 최근 1년치 종가/이동평균/
+    거래량/RSI를 뽑는다. 이미 스크리닝 단계에서 조회한 데이터를 재사용하지 않고
+    해당 종목들만 다시 조회한다 (통과 종목 수가 적어 비용이 크지 않음).
+    개별 종목이 실패해도 나머지 차트 생성에는 영향 없다.
+    """
+    charts: dict[str, dict] = {}
+    for code, name in pass_rows:
+        try:
+            df = fetch_price_history(code, start_date)
+            df = df.sort_index()
+            df = df[~df.index.duplicated(keep="last")]
+            df = df.dropna(subset=["Close", "High", "Low"])
+            if "Volume" not in df.columns or len(df) < 60:
+                continue
+
+            close = df["Close"].astype(float)
+            volume = df["Volume"].astype(float)
+            sma50 = close.rolling(50).mean()
+            sma150 = close.rolling(150).mean()
+            sma200 = close.rolling(200).mean()
+            rsi = compute_rsi(close)
+
+            charts[code] = {
+                "dates": [d.strftime("%Y-%m-%d") for d in close.index[-CHART_TRADING_DAYS:]],
+                "close": _series_tail_list(close, 2),
+                "sma50": _series_tail_list(sma50, 2),
+                "sma150": _series_tail_list(sma150, 2),
+                "sma200": _series_tail_list(sma200, 2),
+                "volume": _series_tail_list(volume),
+                "rsi": _series_tail_list(rsi, 1),
+            }
+        except Exception as exc:  # noqa: BLE001 - 종목 하나 실패가 전체를 죽이면 안 됨
+            logger.warning("[%s %s] 차트 데이터 생성 실패: %s", code, name, exc)
+    return charts
 
 
 # ----------------------------------------------------------------------------
@@ -1123,6 +1190,13 @@ def run_market(market_key: str, run_date: str, args) -> None:
     pass_df.to_csv(latest_pass_path, index=False, encoding="utf-8-sig")
 
     logger.info("CSV 저장 완료: %s (전체 %d행), %s (통과 %d행)", full_path, len(df), pass_path, len(pass_df))
+
+    chart_start_date = (pd.Timestamp.today() - pd.Timedelta(days=HISTORY_CALENDAR_DAYS)).strftime("%Y-%m-%d")
+    pass_codes = list(zip(pass_df["종목코드"], pass_df["종목명"]))
+    charts = build_chart_data(pass_codes, chart_start_date)
+    chart_path = OUTPUT_DIR / f"chart_data_{cfg.file_prefix}.json"
+    chart_path.write_text(json.dumps(charts, ensure_ascii=False), encoding="utf-8")
+    logger.info("차트 데이터 생성 완료: %s (%d/%d종목)", chart_path, len(charts), len(pass_df))
 
     if not args.skip_sheets:
         upload_to_google_sheets(df, run_date, cfg)
