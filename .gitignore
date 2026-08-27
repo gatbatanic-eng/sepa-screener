@@ -16,3 +16,12 @@ service_account*.json
 credentials*.json
 
 .DS_Store
+
+# range_vrebound (RANGE-MR / V-REBOUND 스크리너, SEPA와 별도)
+.pytest_cache/
+.coverage
+range_vrebound/data/raw/
+range_vrebound/data/processed/
+# screener.db는 의도적으로 커밋한다 (GitHub Actions가 매 실행마다 결과를
+# 저장소에 반영 — 워크플로우가 끝나면 러너 파일시스템은 사라지므로).
+range_vrebound/data/*.db-journal
