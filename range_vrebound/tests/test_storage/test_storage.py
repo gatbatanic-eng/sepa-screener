@@ -1,6 +1,7 @@
 from datetime import date
 
 import pytest
+from sqlalchemy import create_engine, text
 
 from src.market.regime import RegimeType
 from src.models.signal import QualityStatus, Signal, SignalState, StrategyName
@@ -24,9 +25,10 @@ def session(tmp_path):
     session.close()
 
 
-def _signal(symbol="005930", strategy=StrategyName.RANGE_MR, signal_state=SignalState.BUY_CANDIDATE, d=date(2024, 1, 5)):
+def _signal(symbol="005930", strategy=StrategyName.RANGE_MR, signal_state=SignalState.BUY_CANDIDATE, d=date(2024, 1, 5), name=None):
     return Signal(
         symbol=symbol,
+        name=name,
         strategy=strategy,
         date=d,
         market_regime=RegimeType.RANGE,
@@ -134,3 +136,61 @@ def test_query_trades_filter_by_symbol(session):
     results = query_trades(session, symbol="000660")
     assert len(results) == 1
     assert results[0].symbol == "000660"
+
+
+def test_get_engine_migrates_pre_existing_db_missing_name_column(tmp_path):
+    """실제로 겪은 상황을 재현한다: name 컬럼이 생기기 전에 이미 운영
+    중이던 DB에 새 코드로 접근하면 마이그레이션 없이는
+    'no such column: signals.name'으로 깨진다.
+    """
+    db_path = tmp_path / "legacy.db"
+    legacy_engine = create_engine(f"sqlite:///{db_path}")
+    with legacy_engine.connect() as conn:
+        conn.execute(
+            text(
+                """
+                CREATE TABLE signals (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    symbol VARCHAR NOT NULL,
+                    strategy VARCHAR NOT NULL,
+                    date DATE NOT NULL,
+                    market_regime VARCHAR NOT NULL,
+                    setup_score FLOAT NOT NULL,
+                    trigger_score FLOAT,
+                    total_score FLOAT NOT NULL,
+                    signal VARCHAR NOT NULL,
+                    quality_status VARCHAR NOT NULL,
+                    entry FLOAT,
+                    stop FLOAT,
+                    target_1 FLOAT,
+                    target_2 FLOAT,
+                    rr_1 FLOAT,
+                    rr_2 FLOAT,
+                    reasons_json VARCHAR NOT NULL DEFAULT '[]'
+                )
+                """
+            )
+        )
+        conn.execute(
+            text(
+                "INSERT INTO signals (symbol, strategy, date, market_regime, setup_score, "
+                "total_score, signal, quality_status, reasons_json) VALUES "
+                "('005930', 'RANGE_MR', '2024-01-05', 'RANGE', 80, 80, 'WATCH', 'UNKNOWN', '[]')"
+            )
+        )
+        conn.commit()
+    legacy_engine.dispose()
+
+    engine = get_engine(db_path)  # 마이그레이션이 여기서 일어나야 한다
+    session = get_session_factory(engine)()
+    try:
+        results = query_signals(session)  # name 컬럼이 없으면 여기서 OperationalError
+        assert len(results) == 1
+        assert results[0].name is None  # 기존 행은 값이 없어 NULL
+
+        save_signal(session, _signal(symbol="000660", name="SK하이닉스"))
+        session.commit()
+        results = query_signals(session, symbol="000660")
+        assert results[0].name == "SK하이닉스"
+    finally:
+        session.close()

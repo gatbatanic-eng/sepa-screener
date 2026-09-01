@@ -35,6 +35,7 @@ class QualityStatus(str, Enum):
 
 class Signal(BaseModel):
     symbol: str
+    name: Optional[str] = None  # 종목명 (표시용, 스펙 25조 스키마에는 없는 추가 필드)
     strategy: StrategyName
     date: date_
     market_regime: RegimeType

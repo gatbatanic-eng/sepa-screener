@@ -58,6 +58,19 @@ def test_process_symbol_produces_real_signal_for_engineered_v_rebound_scenario()
     assert v_rebound_signal.symbol == "TEST"
 
 
+def test_process_symbol_propagates_stock_name():
+    pre = [100.0] * 280
+    crash = [100.0, 90.0, 80.0, 70.0]
+    low_period = [70.0, 71.0, 72.0, 73.0, 74.0]
+    rebound = [76.0, 79.0]
+    closes = pre + crash + low_period + rebound
+    bars = _make_bars(closes)
+    benchmark_close = pd.Series([100.0] * len(closes), index=[b.date for b in bars])
+
+    _, v_rebound_signal = process_symbol("TEST", bars, benchmark_close, None, CONFIG, name="테스트전자")
+    assert v_rebound_signal.name == "테스트전자"
+
+
 def test_process_symbol_benchmark_misaligned_index_does_not_crash():
     # 벤치마크 시계열의 날짜가 종목과 완전히 일치하지 않아도(공휴일 차이 등)
     # 크래시 없이 처리돼야 한다(reindex로 정렬).

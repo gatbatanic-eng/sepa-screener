@@ -35,7 +35,7 @@ from src.storage import get_engine, get_session_factory, save_signal
 logger = logging.getLogger(__name__)
 
 
-def _bars_to_frame(bars: list[OHLCVBar]) -> pd.DataFrame:
+def bars_to_frame(bars: list[OHLCVBar]) -> pd.DataFrame:
     records = [
         {"date": b.date, "open": b.open, "high": b.high, "low": b.low, "close": b.close, "volume": b.volume}
         for b in bars
@@ -63,6 +63,7 @@ def process_symbol(
     benchmark_close: pd.Series,
     market_regime_series: Optional[pd.Series],
     config: StrategyConfig,
+    name: Optional[str] = None,
 ) -> tuple[Optional[Signal], Optional[Signal]]:
     """RANGE-MR과 V-REBOUND를 각각 평가해 오늘(마지막 거래일)자 Signal을
     반환한다. 데이터가 부족하면 (None, None)이다.
@@ -70,7 +71,7 @@ def process_symbol(
     if len(bars) < config.data.min_trading_days:
         return None, None
 
-    df = _bars_to_frame(bars)
+    df = bars_to_frame(bars)
     benchmark_aligned = _align_to_index(benchmark_close, df.index)
     regime_aligned = _align_to_index(market_regime_series, df.index) if market_regime_series is not None else None
 
@@ -84,8 +85,8 @@ def process_symbol(
     )
 
     last_date = df.index[-1].date()
-    range_mr_signal = range_mr_row_to_signal(symbol, last_date, range_mr_df.iloc[-1])
-    v_rebound_signal = v_rebound_row_to_signal(symbol, last_date, v_rebound_df.iloc[-1])
+    range_mr_signal = range_mr_row_to_signal(symbol, last_date, range_mr_df.iloc[-1], name=name)
+    v_rebound_signal = v_rebound_row_to_signal(symbol, last_date, v_rebound_df.iloc[-1], name=name)
     return range_mr_signal, v_rebound_signal
 
 
@@ -133,13 +134,14 @@ def run_daily_screen(
     try:
         for row in universe.itertuples(index=False):
             symbol = row.Code
+            name = getattr(row, "Name", None)
             market = getattr(row, "Market", "KOSPI")
             benchmark_close = kosdaq_close if market == "KOSDAQ" else kospi_close
             regime_series = kosdaq_regime if market == "KOSDAQ" else kospi_regime
             try:
                 bars = fetch_ohlcv(symbol, start, end)
                 range_mr_signal, v_rebound_signal = process_symbol(
-                    symbol, bars, benchmark_close, regime_series, config
+                    symbol, bars, benchmark_close, regime_series, config, name=name
                 )
                 if range_mr_signal is not None:
                     save_signal(session, range_mr_signal)

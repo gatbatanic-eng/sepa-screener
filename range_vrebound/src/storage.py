@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 from typing import Optional
 
-from sqlalchemy import Column, Date, Float, Integer, String
+from sqlalchemy import Column, Date, Float, Integer, String, text
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
@@ -31,6 +31,7 @@ class SignalRecord(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     symbol = Column(String, nullable=False, index=True)
+    name = Column(String, nullable=True)
     strategy = Column(SAEnum(StrategyName), nullable=False, index=True)
     date = Column(Date, nullable=False, index=True)
     market_regime = Column(SAEnum(RegimeType), nullable=False)
@@ -68,11 +69,30 @@ class TradeRecord(Base):
     holding_days = Column(Integer, nullable=True)
 
 
+# 컬럼이 나중에 추가된 스키마 변경 이력. (table, column, SQL 타입) — 이미
+# 실제 운영 DB가 쌓인 뒤 Signal에 `name`을 추가하면서 필요해졌다.
+# `Base.metadata.create_all`은 이미 있는 테이블에는 새 컬럼을 만들어주지
+# 않으므로, 매번 가벼운 마이그레이션으로 누락된 컬럼을 보충한다.
+_COLUMN_MIGRATIONS: list[tuple[str, str, str]] = [
+    ("signals", "name", "TEXT"),
+]
+
+
+def _ensure_columns(engine) -> None:
+    with engine.connect() as conn:
+        for table, column, coltype in _COLUMN_MIGRATIONS:
+            existing = {row[1] for row in conn.execute(text(f"PRAGMA table_info({table})"))}
+            if column not in existing:
+                conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {coltype}"))
+                conn.commit()
+
+
 def get_engine(db_path: Path | str = DEFAULT_DB_PATH):
     db_path = Path(db_path)
     db_path.parent.mkdir(parents=True, exist_ok=True)
     engine = create_engine(f"sqlite:///{db_path}")
     Base.metadata.create_all(engine)
+    _ensure_columns(engine)
     return engine
 
 
@@ -83,6 +103,7 @@ def get_session_factory(engine) -> sessionmaker:
 def save_signal(session: Session, signal: Signal) -> SignalRecord:
     record = SignalRecord(
         symbol=signal.symbol,
+        name=signal.name,
         strategy=signal.strategy,
         date=signal.date,
         market_regime=signal.market_regime,
@@ -129,6 +150,7 @@ def save_trade(session: Session, trade: Trade) -> TradeRecord:
 def _record_to_signal(record: SignalRecord) -> Signal:
     return Signal(
         symbol=record.symbol,
+        name=record.name,
         strategy=record.strategy,
         date=record.date,
         market_regime=record.market_regime,

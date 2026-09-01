@@ -144,18 +144,19 @@ def evaluate_range_mr(
     return result
 
 
-def range_mr_row_to_signal(symbol: str, date, row: pd.Series) -> Optional[Signal]:
+def range_mr_row_to_signal(symbol: str, date, row: pd.Series, name: Optional[str] = None) -> Optional[Signal]:
     if row["signal"] is None or (isinstance(row["signal"], float) and pd.isna(row["signal"])):
         return None
     reasons = [
-        f"Box position = {row['box_position']:.0%}" if pd.notna(row["box_position"]) else "Box position = N/A",
-        f"Support touches = {int(row['support_touch_count'])}" if pd.notna(row["support_touch_count"]) else "Support touches = N/A",
-        f"Volume ratio = {row['volume_ratio']:.2f}x" if pd.notna(row["volume_ratio"]) else "Volume ratio = N/A",
-        f"3-day high breakout = {bool(row['breakout'])}",
-        f"R/R = {row['rr_1']:.2f}" if pd.notna(row["rr_1"]) else "R/R = N/A",
+        f"박스 포지션 = {row['box_position']:.0%}" if pd.notna(row["box_position"]) else "박스 포지션 = 확인불가",
+        f"지지 터치 횟수 = {int(row['support_touch_count'])}회" if pd.notna(row["support_touch_count"]) else "지지 터치 횟수 = 확인불가",
+        f"거래량 배수 = {row['volume_ratio']:.2f}배" if pd.notna(row["volume_ratio"]) else "거래량 배수 = 확인불가",
+        f"3일 고점 돌파 = {'예' if bool(row['breakout']) else '아니오'}",
+        f"손익비(R/R) = {row['rr_1']:.2f}" if pd.notna(row["rr_1"]) else "손익비(R/R) = 확인불가",
     ]
     return Signal(
         symbol=symbol,
+        name=name,
         strategy=StrategyName.RANGE_MR,
         date=date,
         market_regime=row.get("market_regime", RegimeType.NORMAL),
@@ -272,20 +273,21 @@ def evaluate_v_rebound(
     return result
 
 
-def v_rebound_row_to_signal(symbol: str, date, row: pd.Series) -> Optional[Signal]:
+def v_rebound_row_to_signal(symbol: str, date, row: pd.Series, name: Optional[str] = None) -> Optional[Signal]:
     if row["signal"] is None or (isinstance(row["signal"], float) and pd.isna(row["signal"])):
         return None
     reasons = [
-        f"Drawdown = {row['drawdown']:.0%}" if pd.notna(row["drawdown"]) else "Drawdown = N/A",
-        f"Excess drawdown vs market = {row['excess_return_60d']:.0%}p" if pd.notna(row["excess_return_60d"]) else "Excess drawdown = N/A",
-        f"Stabilized (NEW_LOW=FALSE) = {bool(row['is_stabilized'])}",
-        f"Rebound volume = {row['rebound_volume_ratio']:.2f}x" if pd.notna(row["rebound_volume_ratio"]) else "Rebound volume = N/A",
-        f"RS 5D = {row['rs_5d']:.1%}p" if pd.notna(row["rs_5d"]) else "RS 5D = N/A",
-        f"First rebound high breakout = {bool(row['breakout'])}",
-        f"R/R = {row['rr_1']:.2f}" if pd.notna(row["rr_1"]) else "R/R = N/A",
+        f"고점 대비 하락률 = {row['drawdown']:.0%}" if pd.notna(row["drawdown"]) else "고점 대비 하락률 = 확인불가",
+        f"시장 대비 초과하락 = {row['excess_return_60d']:.0%}p" if pd.notna(row["excess_return_60d"]) else "시장 대비 초과하락 = 확인불가",
+        f"저점 안정화(신규 저점 없음) = {'예' if bool(row['is_stabilized']) else '아니오'}",
+        f"반등 거래량 배수 = {row['rebound_volume_ratio']:.2f}배" if pd.notna(row["rebound_volume_ratio"]) else "반등 거래량 배수 = 확인불가",
+        f"5일 상대강도(RS) = {row['rs_5d']:.1%}p" if pd.notna(row["rs_5d"]) else "5일 상대강도(RS) = 확인불가",
+        f"첫 반등고점 돌파 = {'예' if bool(row['breakout']) else '아니오'}",
+        f"손익비(R/R) = {row['rr_1']:.2f}" if pd.notna(row["rr_1"]) else "손익비(R/R) = 확인불가",
     ]
     return Signal(
         symbol=symbol,
+        name=name,
         strategy=StrategyName.V_REBOUND,
         date=date,
         market_regime=row.get("market_regime", RegimeType.NORMAL),
