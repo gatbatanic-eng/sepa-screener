@@ -19,6 +19,7 @@
 | `screener/main.py` | CLI: 수집 → 스코어 → 판정 → CSV + 콘솔 요약 |
 | `screener/report.py` | 랭킹 리포트 (Markdown) 생성 |
 | `screener/index_builder.py` | 추적 지수(스크리너 인덱스) 순방향 빌더 |
+| `screener/generate_dashboard.py` | 정적 HTML 대시보드 생성 (`docs/screener/`) |
 | `tests/test_factors_synthetic.py` | 합성 데이터로 factors/signals 검증 (네트워크 불필요) |
 | `tests/test_index_synthetic.py` | mock 데이터로 index_builder 검증 (네트워크 불필요) |
 
@@ -88,13 +89,35 @@ BUY 신호 상위 N종목으로 **동일가중** 바스켓을 구성하고, 실�
 > 지수값은 **거래비용·세금·슬리피지가 반영되지 않은 이론치**다.
 > 매 실행 시점의 종가를 쓰므로 실행 빈도·시각에 따라 경로가 달라질 수 있다.
 
-일반적인 사용 흐름:
+### 4) 웹 대시보드
+
+```bash
+python -m screener.generate_dashboard
+```
+
+`docs/screener/index.html` (자기완결형 정적 페이지)을 생성한다. GitHub Pages 가 `docs/` 를
+서빙하므로 **https://gatbatanic-eng.github.io/sepa-screener/screener/** 로 접근한다.
+
+- 스크리너 인덱스 시계열 차트(리밸런싱일 표시), 신호별 요약 카드, 실행일별 신호 수 추이
+- 한국/미국 탭, 신호 필터, 정렬 가능한 종목 표(3팩터 세부 점수 + 판정 사유)
+- 상단에 SEPA·RANGE-MR/V-REBOUND 대시보드로 가는 네비게이션
+
+`docs/screener/data/signal_history.json` 에 실행일별 신호 수가 순방향 누적된다.
+
+### 일반적인 사용 흐름
 
 ```bash
 python -m screener.main --market all           # 1. 스크리닝 → screening_result.csv
 python -m screener.report                       # 2. 리포트
 python -m screener.index_builder --top-n 20      # 3. 지수 갱신 (screening_result.csv 사용)
+python -m screener.generate_dashboard           # 4. 대시보드 갱신
 ```
+
+### 자동화 (GitHub Actions)
+
+`.github/workflows/screener_daily.yml` 이 평일 2회(한국장·미국장 마감 후) 위 4단계를 실행하고
+`output/index_state.json`, `output/index_history.csv`, `docs/screener/` 를 저장소에 커밋한다.
+`workflow_dispatch` 로 수동 실행 및 종목 수 조절도 가능하다.
 
 ## 테스트
 

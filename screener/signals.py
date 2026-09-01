@@ -172,6 +172,9 @@ def _buy_fail_summary(r: pd.Series) -> str:
         bits.append(f"6M {_pct(r['ret_6m'])}<+3%")
     if not (_ge(r["roe"], BUY_ROE_MIN) and bool(r["net_income_positive"])):
         bits.append("ROE<8% 또는 적자")
+    d2e = r["debt_to_equity"]
+    if not pd.isna(d2e) and d2e > BUY_DEBT_MAX:
+        bits.append(f"부채비율 {d2e:.0f}%>200%")
     return "BUY 불충족: " + ", ".join(bits) if bits else ""
 
 

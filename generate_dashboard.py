@@ -220,6 +220,11 @@ HTML_TEMPLATE = r"""<!doctype html>
   header { margin-bottom: 20px; }
   h1 { font-size: 20px; margin: 0 0 4px; }
   .subtitle { color: var(--text-dim); font-size: 13px; }
+  .nav { display: flex; gap: 10px; margin: 10px 0 4px; flex-wrap: wrap; }
+  .nav a { font-size: 12px; color: var(--text-dim); text-decoration: none; border: 1px solid var(--border);
+           border-radius: 999px; padding: 4px 12px; background: var(--panel); }
+  .nav a:hover { color: var(--accent); border-color: var(--accent); }
+  .nav a.here { color: #fff; background: var(--accent); border-color: var(--accent); }
   .tabs { display: flex; gap: 8px; margin: 16px 0; }
   .tab-btn {
     padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border);
@@ -292,6 +297,11 @@ HTML_TEMPLATE = r"""<!doctype html>
   <header>
     <h1>SEPA 추세 템플릿 스크리너</h1>
     <div class="subtitle" id="subtitle">미너비니 추세 템플릿 8개 조건 1차 필터 + 타이밍 참고 지표 · 스테이지/베이스단계/펀더멘털/매매신호는 다루지 않음</div>
+    <div class="nav">
+      <a class="here" href="./">SEPA 추세템플릿</a>
+      <a href="./range_vrebound/">RANGE-MR · V-REBOUND</a>
+      <a href="./screener/">멀티팩터</a>
+    </div>
   </header>
 
   <div class="tabs" id="tabs"></div>
