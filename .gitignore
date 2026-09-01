@@ -5,7 +5,7 @@ venv/
 env/
 
 # 스크리닝 결과물 (자동 생성, 저장소에 커밋하지 않음)
-output/
+output/*
 
 # 민감정보 - 절대 커밋 금지
 *.json
@@ -25,3 +25,8 @@ range_vrebound/data/processed/
 # screener.db는 의도적으로 커밋한다 (GitHub Actions가 매 실행마다 결과를
 # 저장소에 반영 — 워크플로우가 끝나면 러너 파일시스템은 사라지므로).
 range_vrebound/data/*.db-journal
+
+# 추적 지수(스크리너 인덱스)의 상태·히스토리는 순방향으로 누적되므로 의도적으로 커밋한다
+# (위의 output/* 와 *.json 규칙보다 뒤에 와야 예외가 적용된다)
+!output/index_state.json
+!output/index_history.csv

@@ -4,3 +4,8 @@ numpy>=1.24.0
 gspread>=6.0.0
 google-auth>=2.25.0
 tzdata>=2024.1
+
+# 멀티팩터 스크리너 (screener/) 전용
+requests>=2.31.0        # 네이버 금융 모바일 API (한국 재무지표)
+yfinance>=0.2.40        # 미국 유니버스 재무지표
+# pykrx>=1.0.45         # (선택) KRX 데이터포털 복구 시 data_kr 대체용
