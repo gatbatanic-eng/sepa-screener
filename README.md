@@ -20,6 +20,7 @@
 | `screener/report.py` | 랭킹 리포트 (Markdown) 생성 |
 | `screener/index_builder.py` | 추적 지수(스크리너 인덱스) 순방향 빌더 |
 | `screener/generate_dashboard.py` | 정적 HTML 대시보드 생성 (`docs/screener/`) |
+| `screener/backtest.py` | 근사 백테스트 (과거 구간 전략 적용) |
 | `tests/test_factors_synthetic.py` | 합성 데이터로 factors/signals 검증 (네트워크 불필요) |
 | `tests/test_index_synthetic.py` | mock 데이터로 index_builder 검증 (네트워크 불필요) |
 
@@ -112,6 +113,38 @@ python -m screener.report                       # 2. 리포트
 python -m screener.index_builder --top-n 20      # 3. 지수 갱신 (screening_result.csv 사용)
 python -m screener.generate_dashboard           # 4. 대시보드 갱신
 ```
+
+### 5) 근사 백테스트
+
+```bash
+python -m screener.backtest --start 2023-01-01 --freq monthly --top-n 20
+python -m screener.backtest --select signal --freq quarterly       # 라이브 인덱스와 동일 방식
+```
+
+과거 구간에 전략을 적용해 지수 곡선·CAGR·MDD·샤프를 벤치마크(KOSPI/S&P500/50:50 혼합)와
+비교한다. `output/backtest/` 에 `equity_curve.csv`, `rebalance_log.csv`, `backtest_report.md` 저장.
+가격·재무는 `output/backtest/cache/` 에 캐시된다(`--refresh` 로 무시).
+
+**`--select` 모드** (중요):
+
+| 모드 | 편입 규칙 | 용도 |
+|---|---|---|
+| `rank` (기본) | SELL 을 뺀 뒤 composite_score 상위 N — **항상 N종목 분산** | 팩터 모델 자체의 성과 검증 (O'Shaughnessy/Greenblatt 방식) |
+| `signal` | BUY 신호 종목만 (0개면 기존 유지) | 라이브 `index_builder` 와 동일. BUY 가 워낙 드물어 1~3종목 초집중 → 개별종목 운에 좌우됨 |
+
+BUY 신호는 극도로 선별적(라이브에서 372종목 중 4개)이라 `signal` 백테스트는 사실상
+"매달 최고점수 1종목"이 되어 분산이 없다. 전략의 팩터 로직을 보려면 `rank` 를 쓴다.
+
+⚠️ **이것은 "대략적인" 백테스트다.** 무료 데이터 한계상:
+
+- **생존편향** — 유니버스가 *현재* 상장/구성 종목. 과거 탈락 종목 누락 → 결과가 실제보다 낙관적.
+- **재무는 연간·최근 3~4년** (한국 네이버 3년, 미국 yfinance 4년). 각 리밸런싱 시점엔 그때까지
+  공시됐을 직전 회계연도 값을 쓴다(보고 지연 반영). **유효 백테스트 구간은 사실상 2~3년** —
+  한국은 FY2023 공시(~2024-04) 이후부터 편입 가능.
+- **환율 미반영** (현지통화 % 수익률 동일가중), 거래비용·세금·슬리피지 무시. 이론치.
+- 짧은 구간은 통계적으로 결정적이지 않다. **방향 참고용**으로만 보라.
+
+엄밀한 검증은 STRATEGY.md 의 학술 백테스트와, 순방향으로 쌓이는 `index_builder` 실전 지수를 신뢰하라.
 
 ### 자동화 (GitHub Actions)
 
