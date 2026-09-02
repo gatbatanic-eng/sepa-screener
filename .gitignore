@@ -12,11 +12,17 @@ output/*
 !package.json
 !docs/data/*.json
 !docs/screener/data/*.json
+# 매크로 브리핑 결과 (자동 생성, 민감정보 아님 — 대시보드가 읽어야 하므로 커밋)
+!docs/macro.json
+!macro/docs/macro.json
 .env
 service_account*.json
 credentials*.json
 
 .DS_Store
+
+# 매크로 모듈 시계열 캐시 (매 실행마다 새로 수집하므로 커밋 불필요)
+macro/data/
 
 # range_vrebound (RANGE-MR / V-REBOUND 스크리너, SEPA와 별도)
 .pytest_cache/
