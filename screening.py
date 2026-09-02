@@ -638,10 +638,13 @@ def _series_tail_list(series: pd.Series, digits: Optional[int] = None) -> list:
 
 def build_chart_data(pass_rows: list[tuple[str, str]], start_date: str) -> dict[str, dict]:
     """
-    8/8 통과 종목만 대상으로, 대시보드 미니차트에 쓸 최근 1년치 종가/이동평균/
-    거래량/RSI를 뽑는다. 이미 스크리닝 단계에서 조회한 데이터를 재사용하지 않고
-    해당 종목들만 다시 조회한다 (통과 종목 수가 적어 비용이 크지 않음).
+    8/8 통과 종목만 대상으로, 대시보드 미니차트에 쓸 최근 1년치 종가/고저가/
+    이동평균/거래량/RSI를 뽑는다. 이미 스크리닝 단계에서 조회한 데이터를 재사용하지
+    않고 해당 종목들만 다시 조회한다 (통과 종목 수가 적어 비용이 크지 않음).
     개별 종목이 실패해도 나머지 차트 생성에는 영향 없다.
+
+    high/low 는 대시보드 미니차트에서 스윙 고점·저점(변곡점)과 가격대별 거래량
+    (매물대)을 그리는 데 쓴다. 8개 조건 판정과는 무관한 참고용 차트 데이터다.
     """
     charts: dict[str, dict] = {}
     for code, name in pass_rows:
@@ -654,6 +657,8 @@ def build_chart_data(pass_rows: list[tuple[str, str]], start_date: str) -> dict[
                 continue
 
             close = df["Close"].astype(float)
+            high = df["High"].astype(float)
+            low = df["Low"].astype(float)
             volume = df["Volume"].astype(float)
             sma50 = close.rolling(50).mean()
             sma150 = close.rolling(150).mean()
@@ -663,6 +668,8 @@ def build_chart_data(pass_rows: list[tuple[str, str]], start_date: str) -> dict[
             charts[code] = {
                 "dates": [d.strftime("%Y-%m-%d") for d in close.index[-CHART_TRADING_DAYS:]],
                 "close": _series_tail_list(close, 2),
+                "high": _series_tail_list(high, 2),
+                "low": _series_tail_list(low, 2),
                 "sma50": _series_tail_list(sma50, 2),
                 "sma150": _series_tail_list(sma150, 2),
                 "sma200": _series_tail_list(sma200, 2),
