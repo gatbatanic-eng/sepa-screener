@@ -85,6 +85,20 @@
   .badge.na { background: var(--na-bg); color: var(--na-text); }
   .badge.watch { background: var(--watch-bg); color: var(--watch-text); border: 1px solid var(--watch-border); }
   .badge.breakout { background: var(--breakout-bg); color: var(--breakout-text); border: 1px solid var(--breakout-border); }
+  .badge.hold { background: var(--na-bg); color: var(--na-text); border: 1px solid var(--na-text); margin-left: 4px; }
+  .hold-note { margin: 0 0 14px; padding: 9px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
+               background: var(--na-bg); color: var(--na-text); border: 1px solid var(--na-text); line-height: 1.5; }
+  /* 매크로 카드(macro-card.js)를 기존 대시보드 팔레트·다크모드에 맞춤. 카드 내부 구조는 건드리지 않고 CSS 변수만 덮어씀 */
+  #macro-card { display: block; margin-bottom: 18px; }
+  #macro-card .mc {
+    max-width: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", sans-serif;
+    border-radius: 10px; box-shadow: var(--shadow);
+    --mc-surface: var(--panel); --mc-plane: var(--bg);
+    --mc-ink: var(--text); --mc-ink2: var(--text-dim); --mc-ink3: var(--text-dim);
+    --mc-line: var(--border); --mc-series: var(--accent);
+    --mc-good: var(--pass-text); --mc-warn: var(--breakout-text); --mc-crit: var(--na-text);
+  }
   .change { font-weight: 600; }
   .change.up { color: var(--up); }
   .change.down { color: var(--down); }
@@ -121,6 +135,8 @@
     </div>
   </header>
 
+  <div id="macro-card" data-src="macro.json"></div><script src="macro-card.js"></script>
+
   <div class="tabs" id="tabs"></div>
 
   <div class="gate-row" id="gateRow"></div>
@@ -133,6 +149,7 @@
   </div>
 
   <div class="panel">
+    <div id="holdNote" class="hold-note" hidden>매크로 국면 <b>리스크오프</b> — 8/8 조건 전부 통과 종목이라도 신규 진입은 관망하세요. 통과 종목 판정 옆에 <span class="badge hold">관망</span> 표시가 붙습니다. (근거: 상단 매크로 브리핑 카드)</div>
     <div class="controls">
       <input type="text" id="search" placeholder="종목코드 또는 종목명 검색...">
       <button class="filter-btn active" data-filter="all">전체</button>
@@ -190,6 +207,7 @@ let currentMarket = marketKeys[0];
 let currentFilter = "all";
 let sortKey = "metCount";
 let sortDir = -1;
+let macroRegime = null;  // "risk_on" | "neutral" | "risk_off" — macro.json 에서 읽음
 
 function fmtNum(n, digits) {
   if (n === null || n === undefined) return "-";
@@ -358,7 +376,11 @@ function metBar(v) {
 
 function statusBadge(r) {
   if (r.status !== "OK") return `<span class="badge na">확인불가</span>`;
-  return r.passAll ? `<span class="badge pass">전체통과</span>` : `<span class="badge fail">미통과</span>`;
+  if (!r.passAll) return `<span class="badge fail">미통과</span>`;
+  const hold = macroRegime === "risk_off"
+    ? `<span class="badge hold" title="매크로 국면 리스크오프 — 8/8 통과라도 신규 진입 관망 (상단 매크로 브리핑 참조)">관망</span>`
+    : "";
+  return `<span class="badge pass">전체통과</span>${hold}`;
 }
 
 function renderTable() {
@@ -562,6 +584,24 @@ function drawRsiChart(chart) {
 }
 
 renderAll();
+
+// --- 매크로 국면 연동 -----------------------------------------------------
+// macro-card.js 와 독립적으로 macro.json 을 직접 읽는다(로드 순서에 의존하지 않음).
+// 실패하면 macro-card.js 가 노출하는 window.MACRO_REGIME 로 폴백.
+function applyMacroRegime(regime) {
+  if (!regime || regime === macroRegime) return;
+  macroRegime = regime;
+  document.documentElement.dataset.macroRegime = regime;
+  const note = document.getElementById("holdNote");
+  if (note) note.hidden = (regime !== "risk_off");
+  renderTable();
+}
+fetch("macro.json?t=" + Date.now())
+  .then(r => r.ok ? r.json() : Promise.reject(r.status))
+  .then(d => applyMacroRegime(d.regime))
+  .catch(() => { if (window.MACRO_REGIME) applyMacroRegime(window.MACRO_REGIME); });
+// macro-card.js 가 이 스크립트보다 늦게 fetch 를 끝내는 경우 대비
+setTimeout(() => { if (!macroRegime && window.MACRO_REGIME) applyMacroRegime(window.MACRO_REGIME); }, 3000);
 </script>
 </body>
 </html>

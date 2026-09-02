@@ -2,10 +2,14 @@ finance-datareader>=0.9.90
 pandas>=2.0.0
 numpy>=1.24.0
 gspread>=6.0.0
-google-auth>=2.25.0
+google-auth>=2.30.0
 tzdata>=2024.1
 
 # 멀티팩터 스크리너 (screener/) 전용
 requests>=2.31.0        # 네이버 금융 모바일 API (한국 재무지표)
 yfinance>=0.2.40        # 미국 유니버스 재무지표
-# pykrx>=1.0.45         # (선택) KRX 데이터포털 복구 시 data_kr 대체용
+
+# 매크로 브리핑 모듈 (macro/) 전용
+pyyaml>=6.0             # rules.yaml 파싱
+anthropic>=0.40         # 3문장 요약 (ANTHROPIC_API_KEY 없으면 미사용)
+pykrx>=1.0.45           # 코스피 외국인 순매수(KOSPI_FOREIGN) 수집용. KRX 차단 시 해당 지표만 건너뜀

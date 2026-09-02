@@ -1,0 +1,140 @@
+# ============================================================
+# 매크로 해석 규칙 (rules.yaml)
+# ------------------------------------------------------------
+# 코드 수정 없이 이 파일만 고치면 임계값·문장·점수가 바뀝니다.
+#
+# condition 에서 쓸 수 있는 값 (지표ID.속성):
+#   .value      현재값
+#   .chg_1d     1일 변화 (금리류는 bp, 나머지는 %)
+#   .chg_1w     1주(5거래일) 변화
+#   .chg_1m     1개월(21거래일) 변화
+#   .pct_1y     1년 백분위 (0~100, 현재값이 1년 중 어느 위치인지)
+#   .max_1y / .min_1y   1년 최고/최저
+#   .above_ma50 50일 이동평균 위인지 (True/False)
+#   .is_high_1y 1년 신고가인지 (True/False)
+#   .sum_5d     5거래일 누적합 (외국인 순매수용, 단위: 억원)
+#   .prev_1m    1개월 전 값
+#
+# 지표ID: US10Y US2Y SPREAD_2S10S KR3Y DXY USDKRW USDJPY WTI COPPER GOLD
+#         VIX HY_OAS SOX KOSPI KOSDAQ KOSPI_FOREIGN COPPER_GOLD
+# ============================================================
+
+regime:
+  risk_on_min: 1       # 합계 >= 1  → 리스크온
+  risk_off_max: -3     # 합계 <= -3 → 리스크오프  (그 사이는 중립)
+  labels:
+    risk_on: "리스크온"
+    neutral: "중립"
+    risk_off: "리스크오프"
+  sepa_note:
+    risk_off: "리스크오프 — 8/8 통과 종목이라도 신규 진입 관망"
+    neutral: "중립 — 정상 진입, 포지션 크기 표준"
+    risk_on: "리스크온 — 정상 진입, 피라미딩 허용"
+
+rules:
+  # ---------- 금리 ----------
+  - id: R1
+    group: 금리
+    condition: "US10Y.chg_1w >= 20"
+    message: "미 10년물 1주 +{US10Y.chg_1w:.0f}bp 급등 — 성장주·반도체 밸류에이션 역풍"
+    score: -1
+
+  - id: R2a
+    group: 금리
+    condition: "US10Y.chg_1w <= -20 and VIX.chg_1w > 0"
+    message: "미 10년물 1주 {US10Y.chg_1w:.0f}bp 급락 + VIX 상승 — 금리 하락이 경기침체 우려 때문, 호재 아님"
+    score: -1
+
+  - id: R2b
+    group: 금리
+    condition: "US10Y.chg_1w <= -20 and VIX.chg_1w <= 0"
+    message: "미 10년물 1주 {US10Y.chg_1w:.0f}bp 하락 + VIX 안정 — 금리 부담 완화, 성장주 우호"
+    score: 1
+
+  - id: R3
+    group: 금리
+    condition: "SPREAD_2S10S.prev_1m < 0 and SPREAD_2S10S.value >= 0"
+    message: "2s10s 역전 해소({SPREAD_2S10S.prev_1m:.0f}bp → {SPREAD_2S10S.value:.0f}bp) — 역사적으로 침체 진입 직전 패턴, 경계"
+    score: -1
+
+  # ---------- 환율 ----------
+  - id: R4
+    group: 환율
+    condition: "DXY.chg_1m >= 2 or DXY.pct_1y >= 90"
+    message: "달러 강세(DXY 1개월 {DXY.chg_1m:+.1f}%, 1년 백분위 {DXY.pct_1y:.0f}) — 외국인 코스피 순매도 압력"
+    score: -1
+
+  - id: R5
+    group: 환율
+    condition: "USDKRW.chg_1w >= 2 or USDKRW.value >= USDKRW.max_1y * 0.97"
+    message: "원/달러 {USDKRW.value:,.0f}원(1주 {USDKRW.chg_1w:+.1f}%, 1년 고점 근접) — 원화 약세 심화, 외국인 이탈 경계"
+    score: -1
+
+  - id: R6
+    group: 환율
+    condition: "USDJPY.chg_1w <= -3"
+    message: "엔/달러 1주 {USDJPY.chg_1w:+.1f}% 급락(엔 강세) — 엔 캐리 청산 리스크, 2024년 8월 패턴 경계"
+    score: -2
+
+  # ---------- 리스크 심리 ----------
+  - id: R7a
+    group: 리스크심리
+    condition: "20 <= VIX.value < 30"
+    message: "VIX {VIX.value:.1f} — 변동성 주의 구간, SEPA 신규 진입 보류 권고"
+    score: -1
+
+  - id: R7b
+    group: 리스크심리
+    condition: "VIX.value >= 30"
+    message: "VIX {VIX.value:.1f} — 패닉 구간, SEPA 진입 중단 / BNF 후보 스캔 활성화"
+    score: -2
+
+  - id: R8
+    group: 리스크심리
+    condition: "HY_OAS.chg_1w >= 50 or HY_OAS.pct_1y >= 85"
+    message: "하이일드 스프레드 {HY_OAS.value:.0f}bp(1주 {HY_OAS.chg_1w:+.0f}bp, 백분위 {HY_OAS.pct_1y:.0f}) — 신용 스트레스 신호"
+    score: -2
+
+  # ---------- 원자재 ----------
+  - id: R9a
+    group: 원자재
+    condition: "WTI.chg_1m >= 15"
+    message: "WTI 1개월 {WTI.chg_1m:+.1f}% 급등 — 인플레 재점화·금리 상방 압력"
+    score: -1
+
+  - id: R9b
+    group: 원자재
+    condition: "WTI.chg_1m <= -15"
+    message: "WTI 1개월 {WTI.chg_1m:+.1f}% 급락 — 수요 둔화 가능성(OPEC 증산 등 공급 요인인지 확인 필요)"
+    score: 0
+
+  - id: R10
+    group: 원자재
+    condition: "COPPER_GOLD.chg_1m <= -8"
+    message: "구리/금 비율 1개월 {COPPER_GOLD.chg_1m:+.1f}% — 경기 둔화 신호(구리 약세·금 강세)"
+    score: -1
+
+  # ---------- 섹터·수급 ----------
+  - id: R11a
+    group: 섹터수급
+    condition: "(not SOX.above_ma50) or SOX.chg_1w <= -5"
+    message: "SOX 반도체지수 1주 {SOX.chg_1w:+.1f}%, 50일선 {'상회' if SOX.above_ma50 else '하회'} — 섹터 모멘텀 훼손, 포트폴리오 노출 점검"
+    score: -1
+
+  - id: R11b
+    group: 섹터수급
+    condition: "SOX.is_high_1y"
+    message: "SOX 반도체지수 1년 신고가 — 섹터 모멘텀 강화"
+    score: 1
+
+  - id: R12a
+    group: 섹터수급
+    condition: "KOSPI_FOREIGN.sum_5d <= -20000"
+    message: "코스피 외국인 5일 누적 {KOSPI_FOREIGN.sum_5d/10000:,.1f}조 순매도 — 수급 역풍"
+    score: -1
+
+  - id: R12b
+    group: 섹터수급
+    condition: "KOSPI_FOREIGN.sum_5d >= 20000"
+    message: "코스피 외국인 5일 누적 {KOSPI_FOREIGN.sum_5d/10000:,.1f}조 순매수 — 수급 우호"
+    score: 1
