@@ -8,24 +8,24 @@ SEPA(미너비니) 추세 템플릿 1차 스크리너
 
 중요한 설계 원칙 (임의로 완화하지 말 것)
 ----------------------------------------
-1. 8개 조건은 "전부 동시 충족(AND)"이 원칙이다. 점수화하거나 부분 충족을
-   통과로 처리하지 않는다.
-2. 이동평균은 전부 단순이동평균(SMA)만 사용한다. EMA는 사용하지 않는다.
+1. TREND TEMPLATE 8개 조건은 "전부 동시 충족(AND)"이 원칙이다. 점수화하거나
+   부분 충족을 통과로 처리하지 않는다.
+2. TREND TEMPLATE 의 이동평균은 전부 단순이동평균(SMA)만 사용한다. EMA는
+   ENTRY/EXIT 관리(EMA10/EMA20)에서만 쓴다.
 3. 개별 종목의 데이터가 부족하거나 조회에 실패하면 추정치로 채우지 않고
-   "확인 불가"로 표시해 제외한다.
-4. 8번 조건(상대강도)은 IBD RS가 없어 각 시장 지수(한국: 코스피/코스닥,
-   미국: S&P500) 대비 3·6·12개월 초과수익률로 계산한 "대체 지표"이며,
-   반드시 그렇게 표기한다.
-5. 이 스크리너는 1차 필터(8개 조건 AND)가 본체다. 스테이지(와인스타인
-   4단계) 확정, 베이스 단계 카운트, 펀더멘털, 촉매 판단, 매매 신호/
-   자동매매는 여전히 다루지 않는다.
-6. 거래량 기반 지표(Dry-up/돌파거래량), VCP 수축, 피벗 근접도, RS방향,
-   52주고점대비, 셋업점수, 돌파, 시장게이팅(A), 진입체크리스트/진입판정
-   (B, GO/WATCH/NO-GO)은 "진입 타이밍 참고용" 부가 지표이며 8개 조건
-   판정에는 전혀 관여하지 않는다. VCP는 실제 미너비니 방법론(스윙 고점/
-   저점 기반 다중 파동 탐지)이 아닌 고정 4주 구간 비교 근사치이므로
-   반드시 그렇게 표기한다. B는 8/8 통과 종목에만 계산한다. 이 지표들은
-   전부 매수 신호가 아니다.
+   "확인 불가"로 표시해 제외한다. v2 지표도 데이터 부족 시 None 을 유지한다.
+4. 8번 조건은 IBD RS가 없어 지수 대비 초과수익률 백분위로 계산한 "대체 지표"다.
+   레거시(3·6·12개월 달력일 단순평균)와 v2(21·63·126·252 거래일 가중 percentile)
+   를 **둘 다** 출력해 비교 가능하게 둔다.
+5. look-ahead 금지: 오늘 신호를 계산할 때 미래 봉을 쓰지 않는다.
+
+SEPA Screener v2 (sepa/ 패키지)
+------------------------------
+기존 "좋은 추세 종목 찾기"에 더해 SETUP(변동성·매물 수축) → READY(피벗 대기) →
+ENTRY(확인된 돌파 / 눌림목) → EXIT(FAST_FAIL·TREND_BREAK·PROFIT_ALERT 경고) 단계
+를 얹는다. 각 종목은 ``EntryState`` 와 ``ExitState`` 를 별도로 가진다. 모든
+임계값은 :mod:`sepa.config` 한 곳에서 온다. 기존 8개 조건·컬럼·시트 탭·대시보드
+는 그대로 유지된다 (v2 는 컬럼 추가 방식).
 
 실행 방법
 ---------
@@ -34,6 +34,8 @@ SEPA(미너비니) 추세 템플릿 1차 스크리너
     python screening.py --market ALL       # 한국 + 미국 순차 실행
     python screening.py --limit 20         # 개발/테스트용: 유니버스 앞에서 20종목만
     python screening.py --skip-sheets      # 구글시트 업로드 생략, CSV만 저장
+    python screening.py --universe-mode legacy_market_cap   # KR 유니버스: 기존 시총 상위
+    python screening.py --skip-v2          # v2 단계 생략 (레거시 8조건만)
 """
 
 from __future__ import annotations
@@ -59,6 +61,13 @@ try:
 except ImportError as exc:  # pragma: no cover
     print("FinanceDataReader가 설치되어 있지 않습니다. `pip install -r requirements.txt`")
     raise
+
+# SEPA Screener v2 코어 (순수 함수 패키지)
+from sepa import regime as v2_regime
+from sepa import states as v2_states
+from sepa import universe as v2_universe
+from sepa.config import load_config
+from sepa.pipeline import compute_rs_v2, evaluate_stock_v2
 
 # Windows 콘솔(cp949 등)에서도 한글 로그가 깨지지 않도록 UTF-8 강제
 for _stream in (sys.stdout, sys.stderr):
@@ -159,6 +168,39 @@ ENTRY_VERDICT_NOGO = "NO-GO"
 CHART_TRADING_DAYS = 252   # 차트에 보여줄 최근 거래일 수 (약 1년)
 RSI_PERIOD = 14
 
+# ----------------------------------------------------------------------------
+# SEPA Screener v2 설정 (sepa/config.py). 모든 v2 임계값은 여기(및 오버라이드
+# 파일/환경변수)에서만 온다. run_market() 에서 CLI 옵션으로 일부를 덮어쓴다.
+# ----------------------------------------------------------------------------
+SEPA_CFG = load_config()
+
+# v2 결과 dict 키 → CSV/시트/대시보드용 한국어 컬럼명
+V2_COLUMN_MAP: dict[str, str] = {
+    "trend_ok": "TREND_OK_v2",
+    "cond8_v2": "조건8_RS_v2",
+    "rs_score": "RS_Score",
+    "rs_score_20d_ago": "RS_Score_20일전",
+    "rs_change_20d": "RS_20D_Change",
+    "rs_line_new_high": "RS_Line_신고가",
+    "er21": "ER_21d", "er63": "ER_63d", "er126": "ER_126d", "er252": "ER_252d",
+    "high_proximity_ratio": "52주고점근접비율", "high_proximity_tier": "고점근접등급",
+    "base_length": "base길이", "range_10_pct": "range10_pct",
+    "atr20": "ATR20", "atr60": "ATR60", "atr_contraction_ratio": "ATR수축비율",
+    "avg_volume_10": "평균거래량10", "avg_volume_20": "평균거래량20", "avg_volume_50": "평균거래량50",
+    "volume_dryup_ratio": "거래량Dryup비율",
+    "pivot_price": "피벗가격_v2", "pivot_distance_pct": "피벗거리_pct", "pivot_source": "피벗산출방식",
+    "contraction_count": "수축횟수", "contraction_widths": "수축폭목록",
+    "setup_ready": "SETUP_READY", "setup_quality_score": "SetupQuality점수",
+    "zone": "피벗구간", "confirmed_breakout": "확인된돌파",
+    "breakout_volume_ratio": "돌파거래량비율_50", "breakout_clv": "돌파CLV",
+    "recent_breakout_days_ago": "최근돌파_며칠전", "pullback": "눌림목",
+    "entry_state": "EntryState", "entry_state_reason": "EntryState사유",
+    "exit_state": "ExitState", "exit_warnings": "ExitWarnings", "exit_state_reason": "ExitState사유",
+    "structural_stop_price": "구조적손절가", "swing_low_price": "스윙저점",
+    "initial_risk_pct": "초기리스크_pct", "entry_risk_flag": "진입리스크플래그",
+    "market_regime": "시장국면_v2", "breadth_50": "breadth50", "entry_size_factor": "권장진입비중",
+}
+
 
 @dataclass(frozen=True)
 class MarketConfig:
@@ -253,6 +295,11 @@ class StockResult:
     # --- B. 종목별 진입 체크리스트 (8/8 통과 종목에만 계산, 참고용) ---
     entry_checklist_count: Optional[int] = None  # 7개 항목 중 충족 개수
     entry_verdict: Optional[str] = None          # GO / WATCH / NO-GO
+
+    # --- SEPA Screener v2 ---
+    avg_trading_value_20: Optional[float] = None  # 최근 20거래일 평균 거래대금 (원, KR)
+    in_universe: bool = True                       # 유동성 필터 통과 여부 (US/legacy 는 항상 True)
+    v2: dict = field(default_factory=dict)         # sepa.pipeline.evaluate_stock_v2() 결과 + 시장국면
 
 
 # ----------------------------------------------------------------------------
@@ -353,11 +400,12 @@ def asof_price(series: pd.Series, target_date: pd.Timestamp) -> Optional[float]:
 # ----------------------------------------------------------------------------
 # 종목 1개 처리
 # ----------------------------------------------------------------------------
-def evaluate_stock(code: str, name: str, market: str, marcap: float, start_date: str) -> tuple[StockResult, Optional[pd.Series]]:
+def evaluate_stock(code: str, name: str, market: str, marcap: float, start_date: str) -> tuple[StockResult, Optional[pd.DataFrame]]:
     """
-    한 종목에 대해 8개 조건 중 1~7번을 판정한다.
-    (8번 RS는 전체 유니버스가 모여야 백분위를 매길 수 있으므로 이 함수에서는
-    3/6/12개월 초과수익률의 '원재료'인 종가 시계열만 함께 반환한다.)
+    한 종목에 대해 TREND TEMPLATE 조건 1~7번을 판정한다.
+    (8번 RS 와 v2 지표는 전체 유니버스가 모여야 백분위를 매길 수 있으므로 이
+    함수에서는 정규화한 OHLCV DataFrame 을 함께 반환한다. run_screening() 이
+    이 데이터를 재사용해 RS·SETUP·ENTRY·EXIT 를 계산한다 — 재조회 없음.)
     """
     result = StockResult(code=code, name=name, market=market, marcap=marcap)
 
@@ -373,6 +421,17 @@ def evaluate_stock(code: str, name: str, market: str, marcap: float, start_date:
     # 데이터 소스가 드물게 특정일 OHLC를 통째로 NaN으로 반환하는 경우가 있음
     # (예: 당일 장중 미확정 데이터, 소스 자체의 결측일). 그 하루만 건너뛴다.
     df = df.dropna(subset=["Close", "High", "Low"])
+
+    # v2 가 재사용할 정규화 OHLCV (Open/Volume 이 없으면 안전한 대체값)
+    ohlcv = pd.DataFrame(index=df.index)
+    ohlcv["Open"] = df["Open"].astype(float) if "Open" in df.columns else df["Close"].astype(float)
+    ohlcv["High"] = df["High"].astype(float)
+    ohlcv["Low"] = df["Low"].astype(float)
+    ohlcv["Close"] = df["Close"].astype(float)
+    ohlcv["Volume"] = df["Volume"].astype(float) if "Volume" in df.columns else np.nan
+    if "Volume" in df.columns:
+        result.avg_trading_value_20 = v2_universe.avg_trading_value_20(
+            ohlcv["Close"], ohlcv["Volume"])
 
     if len(df) < MIN_TRADING_DAYS:
         result.status = "확인불가"
@@ -412,7 +471,7 @@ def evaluate_stock(code: str, name: str, market: str, marcap: float, start_date:
     sma200_1m_ago = float(sma200.iloc[-1 - MA_TREND_LOOKBACK])
 
     # 52주 고저가: 최근 252거래일(대략 52주) 기준, 일중 고가/저가 사용
-    window = min(252, len(df))
+    window = min(SEPA_CFG.trend.week52_window, len(df))
     high_52w = float(high.iloc[-window:].max())
     low_52w = float(low.iloc[-window:].min())
 
@@ -431,17 +490,17 @@ def evaluate_stock(code: str, name: str, market: str, marcap: float, start_date:
     result.cond3_200_rising = last_sma200 > sma200_1m_ago
     result.cond4_50_above_150_200 = (last_sma50 > last_sma150) and (last_sma50 > last_sma200)
     result.cond5_above_50 = last_close > last_sma50
-    result.cond6_30pct_above_low = last_close >= low_52w * 1.30
+    result.cond6_30pct_above_low = last_close >= low_52w * SEPA_CFG.trend.low_52w_mult
     # 52주 고가 대비 25% 이내(=고가의 75% 이상). 이전 코드의 "<= high*1.25"는
     # close가 high_52w를 넘을 수 없어 사실상 항상 참인 트리비얼 조건이었음(버그 수정).
-    result.cond7_within_25pct_high = last_close >= high_52w * 0.75
+    result.cond7_within_25pct_high = last_close >= high_52w * SEPA_CFG.trend.high_52w_mult
 
-    # --- 진입 타이밍 참고 지표 (8개 조건과 무관, 참고용) ---
+    # --- 진입 타이밍 참고 지표 (레거시. 8개 조건과 무관, 참고용) ---
     if "Volume" in df.columns:
         volume = df["Volume"].astype(float)
         compute_timing_metrics(result, high, low, close, volume)
 
-    return result, close
+    return result, ohlcv
 
 
 def compute_timing_metrics(result: StockResult, high: pd.Series, low: pd.Series,
@@ -709,12 +768,17 @@ def compute_excess_returns(stock_close: pd.Series, index_close: pd.Series) -> di
 # ----------------------------------------------------------------------------
 # 메인 스크리닝 로직
 # ----------------------------------------------------------------------------
-def run_screening(market_key: str, top_n: int, max_workers: int, limit: Optional[int] = None) -> pd.DataFrame:
+def run_screening(market_key: str, top_n: int, max_workers: int, limit: Optional[int] = None,
+                  cfg=None, skip_v2: bool = False) -> pd.DataFrame:
     from concurrent.futures import ThreadPoolExecutor, as_completed
 
+    cfg = cfg or SEPA_CFG
+
     if market_key == "KR":
-        universe = get_universe_kr(top_n)
+        listing = fetch_stock_listing("KRX")
+        universe = v2_universe.select_kr_candidates(listing, cfg.universe)
         benchmark_codes = (("KOSPI", KOSPI_INDEX_CODE), ("KOSDAQ", KOSDAQ_INDEX_CODE))
+        logger.info("KR 유니버스 확정: %d종목 (모드=%s)", len(universe), cfg.universe.kr_mode)
     elif market_key == "US":
         universe = get_universe_us()
         benchmark_codes = (("US", US_INDEX_CODE),)
@@ -744,7 +808,7 @@ def run_screening(market_key: str, top_n: int, max_workers: int, limit: Optional
         logger.info("시장 게이팅[%s]: %s", label, status or "판정불가")
 
     results: list[StockResult] = []
-    close_series_map: dict[str, pd.Series] = {}
+    ohlcv_map: dict[str, pd.DataFrame] = {}
     market_map: dict[str, str] = {}
 
     logger.info("종목별 가격 데이터 조회 및 조건 1~7 판정 시작 (동시성 %d)...", max_workers)
@@ -763,19 +827,20 @@ def run_screening(market_key: str, top_n: int, max_workers: int, limit: Optional
             row = futures[future]
             done_count += 1
             try:
-                stock_result, close_series = future.result()
+                stock_result, ohlcv = future.result()
             except Exception as exc:  # noqa: BLE001 - 개별 종목 실패가 전체를 죽이지 않도록
                 logger.error("[%s %s] 예기치 못한 오류: %s", row.Code, row.Name, exc)
                 stock_result = StockResult(
                     code=row.Code, name=row.Name, market=row.Market, marcap=row.Marcap,
                     status="확인불가", exclude_reason=f"예외 발생: {exc}",
                 )
-                close_series = None
+                ohlcv = None
 
+            if ohlcv is not None:
+                ohlcv_map[stock_result.code] = ohlcv          # 확인불가여도 유동성 랭킹엔 쓸 수 있음
             if stock_result.status == "확인불가":
                 failed_codes.append(f"{stock_result.code} {stock_result.name}: {stock_result.exclude_reason}")
             else:
-                close_series_map[stock_result.code] = close_series
                 market_map[stock_result.code] = stock_result.market
 
             results.append(stock_result)
@@ -787,12 +852,13 @@ def run_screening(market_key: str, top_n: int, max_workers: int, limit: Optional
         for line in failed_codes:
             logger.warning("  - %s", line)
 
-    # --- RS(대체 지표) 계산: OK 상태인 종목만 대상 ---
-    logger.info("상대강도(RS, 대체 지표) 계산 중...")
+    # --- 레거시 RS(대체 지표) 계산: OK 상태인 종목만 대상 ---
+    logger.info("레거시 상대강도(RS, 3/6/12개월 달력일) 계산 중...")
     for r in results:
         if r.status != "OK":
             continue
-        stock_close = close_series_map.get(r.code)
+        _ohlcv = ohlcv_map.get(r.code)
+        stock_close = _ohlcv["Close"].astype(float) if _ohlcv is not None else None
         if stock_close is None:
             continue
         bench = index_close.get(r.market)
@@ -848,17 +914,115 @@ def run_screening(market_key: str, top_n: int, max_workers: int, limit: Optional
             r.breakout_signal = compute_breakout_signal(r)
             r.market_gate_status = market_gates.get(r.market)
 
-    # --- B. 종목별 진입 체크리스트 (8/8 통과 종목에만) ---
+    # --- B. 종목별 진입 체크리스트 (레거시. 8/8 통과 종목에만) ---
     for r in results:
         r.entry_checklist_count, r.entry_verdict = compute_entry_checklist(r)
 
+    # ========================================================================
+    # SEPA Screener v2 단계 (유니버스 확정 → RS v2 → SETUP/ENTRY/EXIT → 시장국면)
+    # ========================================================================
+    if not skip_v2:
+        try:
+            _run_v2_stage(market_key, results, ohlcv_map, index_close, cfg)
+        except Exception as exc:  # noqa: BLE001 - v2 실패가 레거시 결과를 죽이지 않도록
+            logger.error("v2 단계 실패 (레거시 결과는 정상): %s", exc, exc_info=True)
+    else:
+        logger.info("--skip-v2: v2 단계 생략")
+
     return results_to_dataframe(results)
+
+
+def _benchmark_for(market_seg: str, index_close: dict[str, pd.Series]) -> Optional[pd.Series]:
+    """종목의 소속시장(KOSPI/KOSDAQ/US) → 벤치마크 지수 종가."""
+    if market_seg in index_close:
+        return index_close[market_seg]
+    if "US" in index_close:
+        return index_close["US"]
+    return next(iter(index_close.values()), None)
+
+
+def _run_v2_stage(market_key: str, results: list[StockResult],
+                  ohlcv_map: dict[str, pd.DataFrame],
+                  index_close: dict[str, pd.Series], cfg) -> None:
+    ok = [r for r in results if r.status == "OK" and r.code in ohlcv_map]
+
+    # --- 유니버스 확정 (KR liquidity 모드: 20일 평균 거래대금 상위 N) ---
+    if market_key == "KR" and cfg.universe.kr_mode == "liquidity":
+        atv = {r.code: r.avg_trading_value_20 for r in results if r.code in ohlcv_map}
+        keep = v2_universe.finalize_liquidity_universe(atv, cfg.universe)
+        for r in results:
+            r.in_universe = (r.code in keep) if r.code in ohlcv_map else False
+    else:
+        for r in results:
+            r.in_universe = True
+
+    # --- RS v2: 유니버스(in_universe) + OK 종목만 percentile 모수 ---
+    rs_codes = [r.code for r in ok if r.in_universe]
+    rs_ohlcv = {c: ohlcv_map[c] for c in rs_codes}
+    bench_by_code = {}
+    for r in ok:
+        if r.in_universe:
+            bench_by_code[r.code] = _benchmark_for(r.market, index_close)
+    logger.info("RS v2 계산 중... (모수 %d종목)", len(rs_codes))
+    rs_v2_map = compute_rs_v2(rs_ohlcv, bench_by_code, cfg.rs) if rs_codes else {}
+
+    # --- 종목별 SETUP / ENTRY / EXIT (유니버스 포함 종목만) ---
+    logger.info("v2 SETUP/ENTRY/EXIT 판정 중...")
+    for r in ok:
+        if not r.in_universe:
+            continue
+        rs = rs_v2_map.get(r.code)
+        cond_1_7 = [
+            r.cond1_above_150_200, r.cond2_150_above_200, r.cond3_200_rising,
+            r.cond4_50_above_150_200, r.cond5_above_50, r.cond6_30pct_above_low,
+            r.cond7_within_25pct_high,
+        ]
+        try:
+            r.v2 = evaluate_stock_v2(
+                ohlcv_map[r.code], cfg,
+                cond_1_7=cond_1_7, close_today=r.close, high_52w=r.high_52w, rs=rs,
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("[%s %s] v2 종목 판정 실패: %s", r.code, r.name, exc)
+            r.v2 = {}
+
+    # --- 시장 국면 (지수별) + breadth ---
+    segments = sorted({r.market for r in ok})
+    for seg in segments:
+        idx = _benchmark_for(seg, index_close)
+        seg_flags = [
+            (r.close > r.sma50) if (r.close is not None and r.sma50 is not None) else None
+            for r in ok if r.market == seg and r.in_universe
+        ]
+        breadth = v2_regime.breadth_ratio_from_flags(seg_flags)
+        reg = v2_regime.market_regime(idx, cfg.regime, breadth) if idx is not None else None
+        for r in ok:
+            if r.market != seg or not r.in_universe:
+                continue
+            if reg is not None:
+                r.v2["market_regime"] = reg.regime
+                r.v2["breadth_50"] = reg.breadth_50
+                r.v2["entry_size_factor"] = reg.entry_size_factor
+        if reg is not None:
+            logger.info("시장국면[%s]: %s (breadth50=%.2f, 권장진입비중=%.2f)",
+                        seg, reg.regime, reg.breadth_50 or 0.0, reg.entry_size_factor or 0.0)
+
+    n_trend = sum(1 for r in ok if r.v2.get("trend_ok") is True)
+    n_go = sum(1 for r in ok if r.v2.get("entry_state") in v2_states.GO_STATES)
+    logger.info("v2 결과: TREND_OK %d, GO(BREAKOUT+PULLBACK) %d / OK %d종목", n_trend, n_go, len(ok))
+
+
+def _csv_cell(v):
+    """리스트 등 CSV/시트에 못 넣는 값을 문자열로 평탄화."""
+    if isinstance(v, (list, tuple)):
+        return " | ".join(str(x) for x in v)
+    return v
 
 
 def results_to_dataframe(results: list[StockResult]) -> pd.DataFrame:
     rows = []
     for r in results:
-        rows.append({
+        row = {
             "종목코드": r.code,
             "종목명": r.name,
             "시장": r.market,
@@ -904,12 +1068,23 @@ def results_to_dataframe(results: list[StockResult]) -> pd.DataFrame:
             "시장게이팅_참고용": r.market_gate_status,
             "진입체크리스트_충족수_참고용": r.entry_checklist_count,
             "진입판정_참고용_매수신호아님": r.entry_verdict,
-        })
+            # --- v2 ---
+            "20일평균거래대금": r.avg_trading_value_20,
+            "유니버스포함": r.in_universe,
+        }
+        for k, kcol in V2_COLUMN_MAP.items():
+            row[kcol] = _csv_cell(r.v2.get(k))
+        rows.append(row)
+
     df = pd.DataFrame(rows)
+
+    # 정렬: 레거시 통과 → v2 TREND_OK → EntryState 매력도 → SetupQuality → RS Score
+    df["_es_rank"] = df["EntryState"].map(v2_states.ENTRY_STATE_RANK).fillna(99)
     df = df.sort_values(
-        ["전체통과(8개AND)", "셋업점수_참고용_매수신호아님", "충족조건수(8개중, 참고용)", "RS_백분위랭킹"],
-        ascending=[False, False, False, False], na_position="last",
-    )
+        ["전체통과(8개AND)", "TREND_OK_v2", "_es_rank",
+         "SetupQuality점수", "RS_Score", "셋업점수_참고용_매수신호아님", "RS_백분위랭킹"],
+        ascending=[False, False, True, False, False, False, False], na_position="last",
+    ).drop(columns=["_es_rank"])
     return df.reset_index(drop=True)
 
 
@@ -1058,6 +1233,9 @@ STOCK_HISTORY_HEADER = [
     "전체통과", "RS백분위", "RS상승중", "52주고점대비",
     "VCP수축비율", "Dryup비율", "피벗대비위치", "셋업점수", "돌파",
     "시장게이팅", "진입체크리스트충족수", "진입판정",
+    # v2
+    "TREND_OK_v2", "RS_Score", "RS_20D_Change", "SetupQuality", "SETUP_READY",
+    "피벗거리_pct", "EntryState", "ExitState", "시장국면_v2",
 ]
 
 
@@ -1088,6 +1266,8 @@ def _append_daily_stock_history(sh, df: pd.DataFrame, run_date: str, cfg: Market
         "VCP수축비율_근사치", "Dryup비율_참고용", "피벗대비위치_참고용",
         "셋업점수_참고용_매수신호아님", "돌파_참고용_매수신호아님",
         "시장게이팅_참고용", "진입체크리스트_충족수_참고용", "진입판정_참고용_매수신호아님",
+        "TREND_OK_v2", "RS_Score", "RS_20D_Change", "SetupQuality점수", "SETUP_READY",
+        "피벗거리_pct", "EntryState", "ExitState", "시장국면_v2",
     ]
     new_rows = [[run_date] + [_clean_cell(v) for v in row] for row in ok_df[col_map].itertuples(index=False)]
 
@@ -1181,7 +1361,17 @@ def run_market(market_key: str, run_date: str, args) -> None:
     t0 = time.time()
     logger.info("--- [%s] 스크리닝 시작 ---", cfg.label)
 
-    df = run_screening(market_key=market_key, top_n=args.top_n, max_workers=args.workers, limit=args.limit)
+    sepa_cfg = SEPA_CFG
+    overrides: dict = {}
+    if args.universe_mode:
+        overrides["universe.kr_mode"] = args.universe_mode
+    if args.top_n != TOP_N_DEFAULT:
+        overrides["universe.kr_market_cap_top_n"] = args.top_n
+    if overrides:
+        sepa_cfg = SEPA_CFG.with_overrides(overrides)
+
+    df = run_screening(market_key=market_key, top_n=args.top_n, max_workers=args.workers,
+                       limit=args.limit, cfg=sepa_cfg, skip_v2=args.skip_v2)
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     full_path = OUTPUT_DIR / f"sepa_screening_{cfg.file_prefix}_full_{run_date}.csv"
@@ -1199,11 +1389,16 @@ def run_market(market_key: str, run_date: str, args) -> None:
     logger.info("CSV 저장 완료: %s (전체 %d행), %s (통과 %d행)", full_path, len(df), pass_path, len(pass_df))
 
     chart_start_date = (pd.Timestamp.today() - pd.Timedelta(days=HISTORY_CALENDAR_DAYS)).strftime("%Y-%m-%d")
-    pass_codes = list(zip(pass_df["종목코드"], pass_df["종목명"]))
-    charts = build_chart_data(pass_codes, chart_start_date)
+    # 미니차트: 레거시 8/8 통과 종목 + v2 진입 후보(GO/READY/BREAKOUT_UNCONFIRMED)
+    chart_states = {v2_states.GO_BREAKOUT, v2_states.GO_PULLBACK, v2_states.READY,
+                    v2_states.BREAKOUT_UNCONFIRMED}
+    chart_mask = (df["전체통과(8개AND)"] == True) | (df["EntryState"].isin(chart_states))  # noqa: E712
+    chart_df = df[chart_mask].head(120)
+    chart_codes = list(zip(chart_df["종목코드"], chart_df["종목명"]))
+    charts = build_chart_data(chart_codes, chart_start_date)
     chart_path = OUTPUT_DIR / f"chart_data_{cfg.file_prefix}.json"
     chart_path.write_text(json.dumps(charts, ensure_ascii=False), encoding="utf-8")
-    logger.info("차트 데이터 생성 완료: %s (%d/%d종목)", chart_path, len(charts), len(pass_df))
+    logger.info("차트 데이터 생성 완료: %s (%d/%d종목)", chart_path, len(charts), len(chart_df))
 
     if not args.skip_sheets:
         upload_to_google_sheets(df, run_date, cfg)
@@ -1227,6 +1422,10 @@ def main():
     parser.add_argument("--limit", type=int, default=None, help="개발/테스트용: 유니버스를 앞에서부터 N종목으로 제한")
     parser.add_argument("--workers", type=int, default=MAX_WORKERS_DEFAULT, help="동시 요청 스레드 수")
     parser.add_argument("--skip-sheets", action="store_true", help="구글시트 업로드를 강제로 건너뜀")
+    parser.add_argument("--universe-mode", choices=["liquidity", "legacy_market_cap"], default=None,
+                        help="KR 유니버스 선정 방식 (기본: sepa/config.py 의 값 = liquidity)")
+    parser.add_argument("--skip-v2", action="store_true",
+                        help="SEPA Screener v2 단계(SETUP/ENTRY/EXIT/RS v2)를 생략하고 레거시 8조건만")
     args = parser.parse_args()
 
     # 실행 서버의 로컬 시간대(GitHub Actions는 UTC)와 무관하게 한국 날짜로 고정

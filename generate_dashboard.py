@@ -62,6 +62,26 @@ COLUMN_MAP = {
     "시장게이팅_참고용": "marketGate",
     "진입체크리스트_충족수_참고용": "entryChecklistCount",
     "진입판정_참고용_매수신호아님": "entryVerdict",
+    # --- SEPA Screener v2 ---
+    "20일평균거래대금": "avgTradingValue20", "유니버스포함": "inUniverse",
+    "TREND_OK_v2": "trendOk", "조건8_RS_v2": "c8v2",
+    "RS_Score": "rsScore", "RS_Score_20일전": "rsScorePrev", "RS_20D_Change": "rsChange20d",
+    "RS_Line_신고가": "rsLineHigh",
+    "52주고점근접비율": "highProximity", "고점근접등급": "highTier",
+    "base길이": "baseLength", "range10_pct": "range10",
+    "ATR20": "atr20", "ATR60": "atr60", "ATR수축비율": "atrContraction",
+    "거래량Dryup비율": "volDryup",
+    "피벗가격_v2": "pivotV2", "피벗거리_pct": "pivotDist", "피벗산출방식": "pivotSrc",
+    "수축횟수": "contractionCount", "수축폭목록": "contractionWidths",
+    "SETUP_READY": "setupReady", "SetupQuality점수": "setupQuality",
+    "피벗구간": "zone", "확인된돌파": "confirmedBo",
+    "돌파거래량비율_50": "boVolRatio", "돌파CLV": "boClv",
+    "최근돌파_며칠전": "boDaysAgo", "눌림목": "pullback",
+    "EntryState": "entryState", "EntryState사유": "entryReason",
+    "ExitState": "exitState", "ExitWarnings": "exitWarnings", "ExitState사유": "exitReason",
+    "구조적손절가": "structStop", "스윙저점": "swingLow",
+    "초기리스크_pct": "initRisk", "진입리스크플래그": "riskFlag",
+    "시장국면_v2": "regime", "breadth50": "breadth", "권장진입비중": "sizeFactor",
 }
 
 
@@ -236,6 +256,28 @@ HTML_TEMPLATE = r"""<!doctype html>
   .tier-good { background: var(--pass-bg); color: var(--pass-text); border-color: var(--pass-border); }
   .tier-mid { background: var(--breakout-bg); color: var(--breakout-text); border-color: var(--breakout-border); }
   .tier-bad { background: var(--fail-bg); color: var(--text-dim); border-color: var(--border); }
+  /* --- v2: 시장국면 배너 + EntryState/ExitState 배지 --- */
+  .regime-bar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 10px 14px;
+                border-radius: 10px; margin-bottom: 16px; border: 1px solid var(--border);
+                background: var(--panel); box-shadow: var(--shadow); font-size: 13px; }
+  .regime-bar .lbl { color: var(--text-dim); font-size: 12px; }
+  .regime-chip { font-weight: 700; padding: 4px 11px; border-radius: 999px; font-size: 12px; }
+  .regime-GREEN { background: var(--pass-bg); color: var(--pass-text); }
+  .regime-YELLOW { background: var(--breakout-bg); color: var(--breakout-text); }
+  .regime-RED { background: var(--na-bg); color: var(--na-text); }
+  .regime-RECOVERY { background: var(--watch-bg); color: var(--watch-text); }
+  .es { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; letter-spacing: .02em; white-space: nowrap; }
+  .es-go { background: var(--pass-text); color: #fff; }
+  .es-ready { background: var(--watch-bg); color: var(--watch-text); border: 1px solid var(--watch-border); }
+  .es-setup { background: var(--watch-bg); color: var(--watch-text); }
+  .es-warn { background: var(--breakout-bg); color: var(--breakout-text); border: 1px solid var(--breakout-border); }
+  .es-bad { background: var(--na-bg); color: var(--na-text); }
+  .es-neutral { background: var(--fail-bg); color: var(--text-dim); border: 1px solid var(--border); }
+  .xs { display: inline-block; padding: 2px 7px; border-radius: 6px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .xs-hold { background: var(--fail-bg); color: var(--text-dim); border: 1px solid var(--border); }
+  .xs-warn { background: var(--breakout-bg); color: var(--breakout-text); }
+  .xs-bad { background: var(--na-bg); color: var(--na-text); }
+  .cell-reason { color: var(--text-dim); font-size: 11px; max-width: 260px; white-space: normal; }
   .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 18px; }
   .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; box-shadow: var(--shadow); }
   .card .label { color: var(--text-dim); font-size: 12px; margin-bottom: 6px; }
@@ -261,6 +303,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   th.sorted.asc::after { content: " \25B2"; }
   tbody tr:hover { background: var(--row-hover); }
   tbody tr.pass-row { background: var(--pass-bg); }
+  tbody tr.go-row { background: var(--pass-bg); box-shadow: inset 3px 0 0 var(--pass-text); }
   .table-scroll { overflow-x: auto; max-height: 70vh; overflow-y: auto; }
   .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
   .badge.pass { background: var(--pass-bg); color: var(--pass-text); border: 1px solid var(--pass-border); }
@@ -322,6 +365,8 @@ HTML_TEMPLATE = r"""<!doctype html>
 
   <div class="tabs" id="tabs"></div>
 
+  <div class="regime-bar" id="regimeBar" hidden></div>
+
   <div class="gate-row" id="gateRow"></div>
 
   <div class="cards" id="cards"></div>
@@ -336,14 +381,24 @@ HTML_TEMPLATE = r"""<!doctype html>
     <div class="controls">
       <input type="text" id="search" placeholder="종목코드 또는 종목명 검색...">
       <button class="filter-btn active" data-filter="all">전체</button>
-      <button class="filter-btn" data-filter="pass">8개 통과만</button>
-      <button class="filter-btn" data-filter="go">GO만</button>
-      <button class="filter-btn" data-filter="breakout">돌파만</button>
-      <button class="filter-btn" data-filter="na">확인불가만</button>
+      <button class="filter-btn" data-filter="trend">TREND_OK</button>
+      <button class="filter-btn" data-filter="setup">SETUP</button>
+      <button class="filter-btn" data-filter="ready">READY</button>
+      <button class="filter-btn" data-filter="go">GO</button>
+      <button class="filter-btn" data-filter="go_breakout">GO_BREAKOUT</button>
+      <button class="filter-btn" data-filter="go_pullback">GO_PULLBACK</button>
+      <button class="filter-btn" data-filter="extended">LATE·EXTENDED</button>
+      <button class="filter-btn" data-filter="exitwarn">매도경고</button>
+      <button class="filter-btn" data-filter="pass">레거시 8/8</button>
+      <button class="filter-btn" data-filter="na">확인불가</button>
       <select id="sortSelect">
-        <option value="setupScore">셋업점수순</option>
+        <option value="entryState">EntryState순</option>
+        <option value="setupQuality">SetupQuality순</option>
+        <option value="rsScore">RS Score순</option>
+        <option value="rsChange20d">RS 20D변화순</option>
+        <option value="pivotDist">피벗거리순</option>
+        <option value="setupScore">셋업점수(레거시)순</option>
         <option value="metCount">충족조건수순</option>
-        <option value="rsRank">RS백분위순</option>
         <option value="high52wPosition">52주고점대비순</option>
         <option value="marcap">시가총액순</option>
         <option value="code">종목코드순</option>
@@ -359,12 +414,14 @@ HTML_TEMPLATE = r"""<!doctype html>
   </div>
 
   <footer>
-    ※ 8번 조건(상대강도, RS)은 IBD RS가 없는 시장 특성상 각 시장 지수 대비 3·6·12개월 초과수익률을 유니버스 내 백분위로 환산한 대체 지표입니다.<br>
-    ※ "충족조건수"는 참고용이며, "전체통과" 배지만 8개 조건을 전부 동시 충족(AND)했다는 공식 판정입니다.<br>
-    ※ "셋업점수", "타이밍신호(돌파/VCP/피벗임박)", "RS상승중", "52주고점대비"는 8개 조건 판정과 무관한 진입 타이밍 참고 지표입니다. VCP는 실제 미너비니 방법론(스윙 고점/저점 기반 다중 파동 탐지)이 아닌 고정 4주 구간 비교 근사치입니다.<br>
-    ※ 상단 배지(코스피/코스닥/S&P500: 우호적/중립/비우호적)는 지수 자체에 8개 조건과 같은 방식(SMA50/150/200)을 적용한 시장 게이팅 참고 지표입니다. "진입판정"(GO/WATCH/NO-GO)은 8/8 통과 종목에 7개 항목(시장게이팅/피벗임박/RS85+/52주고점-10%이내/Dryup≤0.7/돌파/셋업점수≥7) 충족 개수로 매기며, Dry-up·셋업점수 임계치는 초기값으로 추후 조정 예정입니다. 전부 매수 신호가 아닙니다.<br>
-    ※ 이 페이지는 1차 필터 + 타이밍 참고 지표까지만 보여줍니다. 스테이지(와인스타인 4단계) 확정, 베이스 단계, 펀더멘털, 촉매는 별도로 직접 판단해야 합니다.<br>
-    ※ "↗"는 외부 차트 사이트(네이버 금융/야후 파이낸스) 링크이며 SEPA 스크리너와 무관합니다. "📈 미니차트"는 8개 조건을 전부 통과한 종목에만 제공되며, 종가/이동평균/거래량/RSI(14) 전부 참고용입니다.
+    <b>SEPA Screener v2</b> — TREND(8조건) → SETUP(변동성·매물 수축) → READY(피벗 대기) → ENTRY(확인된 돌파/눌림목) → EXIT(실패·매도 경고)<br>
+    ※ <b>Entry State</b>: GO_BREAKOUT(거래량·종가위치 확인된 돌파) · GO_PULLBACK(돌파 후 눌림목 반등) · READY(피벗 -2~0%) · SETUP/WATCH · BREAKOUT_UNCONFIRMED(돌파구간이나 미확인) · LATE(+3~5%)/EXTENDED(+5%↑, 추격 금지) · TREND_OK(셋업 전) · FAILED(돌파 빠른 실패). <b>단순히 올랐다고 매수 신호가 아닙니다.</b><br>
+    ※ <b>Exit State</b>: HOLD · WATCH_EXIT(EMA10/20 이탈) · TREND_BREAK(SMA50 대량거래 이탈) · FAST_FAIL(돌파 직후 실패) · PROFIT_ALERT(클라이맥스 경고, 강제매도 아님). STOP/TIME_STOP 은 진입가·진입일(포지션)이 있어야 판정되며 스크리너 단독에선 표시되지 않습니다.<br>
+    ※ <b>RS Score</b>(0~100) = 거래일 기준 초과수익 21·63·126·252일의 유니버스 내 percentile 가중합(0.10/0.40/0.30/0.20). ≥80 이면 TREND 통과, ≥90 강한 리더(★). RS Δ20d = 20거래일 전 대비 RS Score 변화. <b>레거시 "RS백분위"</b>(3·6·12개월 달력일 단순평균)도 별도 컬럼으로 비교 가능하게 남겨둡니다.<br>
+    ※ <b>52W거리</b> = 종가/52주 고가 − 1. SUPER(≥90%) / LEADER(≥85%) / NORMAL(≥75%) / FAIL. <b>ATR수축</b> = ATR20/ATR60 (≤0.75 목표), <b>Dry-up</b> = 평균거래량10/50 (≤0.70 목표). VCP 는 "완전한 Minervini 재현" 이 아니라 스윙 기반 deterministic heuristic 입니다.<br>
+    ※ 상단 <b>시장 국면</b>(GREEN/YELLOW/RED/RECOVERY) + breadth50 + 권장 진입비중은 신규진입 리스크 참고용이며 실제 주문 기능이 아닙니다. 상단 배지(우호적/중립/비우호적)는 기존 시장 게이팅(레거시)입니다.<br>
+    ※ "레거시판정"·"충족(8)"·"셋업점수(레거시)"·"타이밍신호"는 기존 화면과 비교하기 위해 유지합니다. 스테이지(와인스타인 4단계)·베이스 단계·펀더멘털·촉매는 여전히 자동 판정하지 않습니다. 모든 임계값은 <code>sepa/config.py</code> 에서 조정됩니다.<br>
+    ※ "↗" 는 외부 차트 사이트 링크, "📈" 미니차트는 레거시 8/8 통과 + v2 진입 후보(GO/READY)에 제공됩니다. 종가/SMA/거래량/RSI(14)·매물대·변곡점 전부 참고용입니다.
   </footer>
 </div>
 
@@ -388,13 +445,27 @@ const DATA = __DATA_JSON__;
 const marketKeys = Object.keys(DATA);
 let currentMarket = marketKeys[0];
 let currentFilter = "all";
-let sortKey = "metCount";
+let sortKey = "entryState";
 let sortDir = -1;
 let macroRegime = null;  // "risk_on" | "neutral" | "risk_off" — macro.json 에서 읽음
 
+// EntryState 매력도 순위 (작을수록 진입 매력 높음). sepa/states.py 와 동일.
+const ENTRY_RANK = {
+  GO_BREAKOUT: 0, GO_PULLBACK: 1, READY: 2, BREAKOUT_UNCONFIRMED: 3, WATCH: 4,
+  SETUP: 5, LATE: 6, EXTENDED: 7, TREND_OK: 8, FAILED: 9, TREND_FAIL: 10,
+};
+const GO_SET = new Set(["GO_BREAKOUT", "GO_PULLBACK"]);
+
 function fmtNum(n, digits) {
-  if (n === null || n === undefined) return "-";
+  if (n === null || n === undefined || n === "") return "-";
   return Number(n).toLocaleString("ko-KR", { maximumFractionDigits: digits ?? 0, minimumFractionDigits: 0 });
+}
+function toNum(v) { return (v === null || v === undefined || v === "") ? null : Number(v); }
+function toBool(v) { return v === true || v === "True" || v === "true"; }
+function fmtSigned(v, digits) {
+  const n = toNum(v);
+  if (n === null || Number.isNaN(n)) return "-";
+  return (n > 0 ? "+" : "") + n.toFixed(digits ?? 1);
 }
 
 function renderTabs() {
@@ -406,7 +477,7 @@ function renderTabs() {
   el.querySelectorAll(".tab-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       currentMarket = btn.dataset.market;
-      if (sortKey === "marcap" && !hasMarcap()) { sortKey = "metCount"; document.getElementById("sortSelect").value = "metCount"; }
+      if (sortKey === "marcap" && !hasMarcap()) { sortKey = "entryState"; document.getElementById("sortSelect").value = "entryState"; }
       renderAll();
     });
   });
@@ -423,19 +494,49 @@ function renderGateRow() {
   document.getElementById("gateRow").innerHTML = chips.join("");
 }
 
+function renderRegimeBar() {
+  const rows = DATA[currentMarket].rows;
+  const el = document.getElementById("regimeBar");
+  const segments = [...new Set(rows.map(r => r.market).filter(Boolean))];
+  const parts = [];
+  segments.forEach(seg => {
+    const s = rows.find(r => r.market === seg && r.regime);
+    if (!s) return;
+    const bd = toNum(s.breadth), sf = toNum(s.sizeFactor);
+    parts.push(
+      `<span class="lbl">${seg}</span>` +
+      `<span class="regime-chip regime-${s.regime}">${s.regime}</span>` +
+      (bd != null ? `<span class="lbl">breadth50 ${(bd * 100).toFixed(0)}%</span>` : "") +
+      (sf != null ? `<span class="lbl">권장 진입비중 <b style="color:var(--text)">${sf.toFixed(2)}</b></span>` : "")
+    );
+  });
+  if (!parts.length) { el.hidden = true; return; }
+  el.hidden = false;
+  el.innerHTML = `<span class="lbl">시장 국면(v2)</span>` + parts.join(`<span style="opacity:.4">|</span>`) +
+    `<span class="lbl" style="margin-left:auto">GREEN 정상 · YELLOW 축소 · RED 방어 · RECOVERY 회복초기 · 참고용, 주문기능 아님</span>`;
+}
+
 function renderCards() {
   const market = DATA[currentMarket];
   const rows = market.rows;
   const hist = market.history;
   const latest = hist[hist.length - 1] || {};
+  const nTrend = rows.filter(r => toBool(r.trendOk)).length;
+  const nGo = rows.filter(r => GO_SET.has(r.entryState)).length;
+  const nReady = rows.filter(r => r.entryState === "READY").length;
+  const hasV2 = rows.some(r => r.entryState);
   const cards = [
     ["기준일", market.asOf || "-"],
     ["스크리닝종목수", latest.total ?? rows.length],
     ["정상판정", latest.ok ?? rows.filter(r => r.status === "OK").length],
-    ["확인불가/제외", latest.excluded ?? rows.filter(r => r.status !== "OK").length],
-    ["8개조건전부통과", latest.pass ?? rows.filter(r => r.passAll === true).length],
-    ["평균 RS백분위", latest.avgRs != null ? fmtNum(latest.avgRs, 1) : "-"],
+    ["레거시 8/8 통과", latest.pass ?? rows.filter(r => r.passAll === true).length],
   ];
+  if (hasV2) {
+    cards.push(["TREND_OK (v2)", nTrend], ["READY", nReady], ["GO 후보", nGo]);
+  } else {
+    cards.push(["확인불가/제외", rows.filter(r => r.status !== "OK").length],
+               ["평균 RS백분위", latest.avgRs != null ? fmtNum(latest.avgRs, 1) : "-"]);
+  }
   document.getElementById("cards").innerHTML = cards.map(([label, value]) =>
     `<div class="card"><div class="label">${label}</div><div class="value">${value}</div></div>`
   ).join("");
@@ -478,6 +579,10 @@ function hasMarcap() {
   return DATA[currentMarket].rows.some(r => r.marcap !== null && r.marcap !== undefined);
 }
 
+function hasV2() {
+  return DATA[currentMarket].rows.some(r => r.entryState);
+}
+
 function getCols() {
   const cols = [
     { key: "rank", label: "#", left: true },
@@ -486,26 +591,89 @@ function getCols() {
     { key: "chart", label: "차트", left: true, fmt: (v, r) => chartCell(r) },
     { key: "close", label: "종가", fmt: v => fmtNum(v) },
     { key: "changePct", label: "등락률", fmt: v => changeBadge(v) },
-    { key: "metCount", label: "충족", fmt: (v) => metBar(v) },
-    { key: "rsRank", label: "RS백분위", fmt: v => v != null ? fmtNum(v, 1) : "-" },
-    { key: "high52wPosition", label: "52주고점대비", fmt: v => v != null ? fmtPct(v) : "-" },
   ];
+  if (hasV2()) {
+    cols.push(
+      { key: "entryState", label: "Entry State", left: true, fmt: (v, r) => entryStateBadge(v, r) },
+      { key: "exitState", label: "Exit State", left: true, fmt: (v, r) => exitStateBadge(v, r) },
+      { key: "trendOk", label: "Trend", fmt: v => trendBadge(v) },
+      { key: "rsScore", label: "RS Score", fmt: v => rsScoreBadge(v) },
+      { key: "rsChange20d", label: "RS Δ20d", fmt: v => fmtSigned(v, 1) },
+      { key: "highProximity", label: "52W거리", fmt: (v, r) => w52DistCell(r) },
+      { key: "setupQuality", label: "Setup Q", fmt: v => setupQualityBadge(v) },
+      { key: "atrContraction", label: "ATR수축", fmt: v => ratioCell(v, 0.75) },
+      { key: "volDryup", label: "Dry-up", fmt: v => ratioCell(v, 0.70) },
+      { key: "pivotDist", label: "피벗거리", fmt: v => { const n = toNum(v); return n == null ? "-" : (n > 0 ? "+" : "") + n.toFixed(1) + "%"; } },
+      { key: "setupReady", label: "Setup", fmt: v => toBool(v) ? `<span class="es es-setup">READY</span>` : "-" },
+    );
+  }
+  cols.push({ key: "metCount", label: "충족(8)", fmt: (v) => metBar(v) });
   if (hasMarcap()) {
     cols.push({ key: "marcap", label: "시가총액", fmt: v => v ? fmtNum(v / 1e8, 0) + "억" : "-" });
   }
   cols.push(
-    { key: "setupScore", label: "셋업점수", fmt: v => setupScoreBadge(v) },
+    { key: "setupScore", label: "셋업점수(레거시)", fmt: v => setupScoreBadge(v) },
     { key: "signals", label: "타이밍신호", fmt: (v, r) => timingSignals(r) },
-    { key: "passAll", label: "판정", fmt: (v, r) => statusBadge(r) },
-    { key: "entryVerdict", label: "진입판정", fmt: v => entryVerdictBadge(v) },
+    { key: "passAll", label: "레거시판정", fmt: (v, r) => statusBadge(r) },
   );
   return cols;
 }
 
-function entryVerdictBadge(v) {
+function trendBadge(v) {
+  if (v === null || v === undefined || v === "") return "-";
+  return toBool(v) ? `<span class="es es-go" title="TREND TEMPLATE 8조건(RS v2 포함) 전부 충족">OK</span>`
+                   : `<span class="es es-bad">X</span>`;
+}
+
+function entryStateBadge(v, r) {
   if (!v) return "-";
-  const tier = v === "GO" ? "tier-good" : (v === "WATCH" ? "tier-mid" : "tier-bad");
-  return `<span class="badge ${tier}" title="8/8 통과 종목에 대한 7항목 체크리스트 참고 판정. 매수 신호 아님">${v}</span>`;
+  const cls = GO_SET.has(v) ? "es-go" : v === "READY" ? "es-ready"
+    : (v === "SETUP" || v === "WATCH" || v === "BREAKOUT_UNCONFIRMED") ? "es-setup"
+    : (v === "LATE" || v === "EXTENDED") ? "es-warn"
+    : (v === "FAILED" || v === "TREND_FAIL") ? "es-bad" : "es-neutral";
+  const rsn = (r && r.entryReason) ? String(r.entryReason).replace(/"/g, "&quot;") : "";
+  return `<span class="es ${cls}" title="${rsn}">${v}</span>`;
+}
+
+function exitStateBadge(v, r) {
+  if (!v) return "-";
+  if (v === "HOLD") return `<span class="xs xs-hold">HOLD</span>`;
+  const cls = (v === "FAST_FAIL" || v === "STOP" || v === "TREND_BREAK") ? "xs-bad" : "xs-warn";
+  const rsn = (r && r.exitReason) ? String(r.exitReason).replace(/"/g, "&quot;") : "";
+  return `<span class="xs ${cls}" title="${rsn}">${v}</span>`;
+}
+
+function rsScoreBadge(v) {
+  const n = toNum(v);
+  if (n === null) return "-";
+  const hue = 4 + Math.max(0, Math.min(100, n)) / 100 * 146;
+  const strong = n >= 90 ? " ★" : "";
+  return `<span style="display:inline-block;min-width:30px;padding:2px 6px;border-radius:6px;font-weight:700;background:hsl(${hue},70%,92%);color:hsl(${hue},60%,30%)">${n.toFixed(0)}${strong}</span>`;
+}
+
+function setupQualityBadge(v) {
+  const n = toNum(v);
+  if (n === null) return "-";
+  const hue = 4 + Math.max(0, Math.min(100, n)) / 100 * 146;
+  return `<span style="display:inline-block;min-width:30px;padding:2px 6px;border-radius:6px;font-weight:700;background:hsl(${hue},60%,93%);color:hsl(${hue},55%,32%)">${n.toFixed(0)}</span>`;
+}
+
+function ratioCell(v, threshold) {
+  const n = toNum(v);
+  if (n === null) return "-";
+  const ok = n <= threshold;
+  return `<span style="color:${ok ? "var(--pass-text)" : "var(--text-dim)"};font-weight:${ok ? 700 : 400}">${n.toFixed(2)}</span>`;
+}
+
+function w52DistCell(r) {
+  const hp = toNum(r.highProximity);
+  if (hp === null) return "-";
+  const dist = (hp - 1) * 100;
+  const tier = r.highTier || "";
+  const tcls = (tier === "SUPER_LEADER" || tier === "LEADER") ? "tier-good"
+    : tier === "NORMAL" ? "tier-mid" : "tier-bad";
+  const tlabel = tier === "SUPER_LEADER" ? "SUPER" : tier;
+  return `${dist.toFixed(1)}% ${tier ? `<span class="badge ${tcls}" style="font-size:10px">${tlabel}</span>` : ""}`;
 }
 
 function externalChartUrl(r) {
@@ -570,21 +738,36 @@ function renderTable() {
   const q = document.getElementById("search").value.trim().toLowerCase();
   let rows = DATA[currentMarket].rows.slice();
 
-  if (currentFilter === "pass") rows = rows.filter(r => r.passAll === true);
-  else if (currentFilter === "go") rows = rows.filter(r => r.entryVerdict === "GO");
-  else if (currentFilter === "breakout") rows = rows.filter(r => r.breakoutSignal === true);
-  else if (currentFilter === "na") rows = rows.filter(r => r.status !== "OK");
+  const F = {
+    pass: r => r.passAll === true,
+    na: r => r.status !== "OK",
+    trend: r => toBool(r.trendOk),
+    setup: r => r.entryState === "SETUP" || toBool(r.setupReady),
+    ready: r => r.entryState === "READY",
+    go: r => GO_SET.has(r.entryState),
+    go_breakout: r => r.entryState === "GO_BREAKOUT",
+    go_pullback: r => r.entryState === "GO_PULLBACK",
+    extended: r => r.entryState === "LATE" || r.entryState === "EXTENDED",
+    exitwarn: r => r.exitState && r.exitState !== "HOLD",
+  };
+  if (F[currentFilter]) rows = rows.filter(F[currentFilter]);
 
   if (q) rows = rows.filter(r =>
     (r.code || "").toLowerCase().includes(q) || (r.name || "").toLowerCase().includes(q)
   );
 
   rows.sort((a, b) => {
-    const av = a[sortKey], bv = b[sortKey];
+    if (sortKey === "entryState") {
+      const ar = ENTRY_RANK[a.entryState] ?? 99, br = ENTRY_RANK[b.entryState] ?? 99;
+      return sortDir * -1 * (ar - br);   // 기본(sortDir=-1)에서 GO 가 위로
+    }
+    let av = a[sortKey], bv = b[sortKey];
+    if (av === "" ) av = null;
+    if (bv === "" ) bv = null;
     if (av === null || av === undefined) return 1;
     if (bv === null || bv === undefined) return -1;
-    if (typeof av === "string") return sortDir * av.localeCompare(bv);
-    return sortDir * (av - bv);
+    if (typeof av === "string" && isNaN(Number(av))) return sortDir * av.localeCompare(bv);
+    return sortDir * (Number(av) - Number(bv));
   });
 
   const cols = getCols();
@@ -597,7 +780,8 @@ function renderTable() {
       const key = th.dataset.key;
       if (key === "rank" || key === "signals" || key === "chart") return;
       if (sortKey === key) sortDir *= -1; else { sortKey = key; sortDir = -1; }
-      document.getElementById("sortSelect").value = ["setupScore","metCount","rsRank","high52wPosition","marcap","code"].includes(key) ? key : sortKey;
+      const sel = document.getElementById("sortSelect");
+      if ([...sel.options].some(o => o.value === key)) sel.value = key;
       renderTable();
     });
   });
@@ -613,12 +797,33 @@ function renderTable() {
       const content = c.fmt ? c.fmt(v, r) : (v ?? "-");
       return `<td class="${c.left ? "left" : ""}">${c.key === "rank" ? (i + 1) : content}</td>`;
     }).join("");
-    return `<tr class="${r.passAll ? "pass-row" : ""}">${cells}</tr>`;
+    const cls = GO_SET.has(r.entryState) ? "go-row" : (r.passAll ? "pass-row" : "");
+    return `<tr class="${cls}">${cells}</tr>`;
   }).join("");
+}
+
+function syncFilterButtons() {
+  const v2 = hasV2();
+  const v2only = new Set(["trend", "setup", "ready", "go", "go_breakout", "go_pullback", "extended", "exitwarn"]);
+  document.querySelectorAll(".filter-btn").forEach(b => {
+    if (v2only.has(b.dataset.filter)) b.hidden = !v2;
+  });
+  document.querySelectorAll("#sortSelect option").forEach(o => {
+    if (["entryState", "setupQuality", "rsScore", "rsChange20d", "pivotDist"].includes(o.value)) o.hidden = !v2;
+  });
+  if (!v2 && ["trend","setup","ready","go","go_breakout","go_pullback","extended","exitwarn"].includes(currentFilter)) {
+    currentFilter = "all";
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.toggle("active", b.dataset.filter === "all"));
+  }
+  if (!v2 && ["entryState","setupQuality","rsScore","rsChange20d","pivotDist"].includes(sortKey)) {
+    sortKey = "metCount";
+  }
 }
 
 function renderAll() {
   renderTabs();
+  syncFilterButtons();
+  renderRegimeBar();
   renderGateRow();
   renderCards();
   renderTrend();
