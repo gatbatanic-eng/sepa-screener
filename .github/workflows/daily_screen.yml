@@ -25,7 +25,8 @@ concurrency:
 jobs:
   screen:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # v2: KR 유니버스가 유동성 상위 ~700종목으로 늘고 SETUP/ENTRY/EXIT 계산이 추가돼 여유를 둔다.
+    timeout-minutes: 30
     steps:
       - name: 저장소 체크아웃
         uses: actions/checkout@v4
