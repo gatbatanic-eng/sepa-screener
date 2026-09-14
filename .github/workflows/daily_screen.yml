@@ -54,6 +54,8 @@ jobs:
             else
               echo "market=US" >> "$GITHUB_OUTPUT"
             fi
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            echo "market=US" >> "$GITHUB_OUTPUT"
           else
             echo "market=${{ github.event.inputs.market || 'ALL' }}" >> "$GITHUB_OUTPUT"
           fi
@@ -74,6 +76,8 @@ jobs:
           retention-days: 90
 
       - name: 일별 기록과 5·20·60거래일 성과 갱신
+        id: research
+        continue-on-error: true
         run: python research_tracker.py --market ${{ steps.market.outputs.market }}
 
       - name: 대시보드(docs/index.html) 생성
@@ -83,8 +87,13 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          mkdir -p research
           git add docs/ research/
           git diff --cached --quiet || git commit -m "대시보드 자동 갱신 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
           git pull --rebase origin master
           git push
 
+
+      - name: 연구 기록 실패 표시
+        if: steps.research.outcome == 'failure'
+        run: exit 1

@@ -9,6 +9,7 @@ import os
 from dataclasses import asdict
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parent
 HORIZONS = (5, 20, 60)
@@ -86,13 +87,35 @@ def membership(row, group):
     value = row.get('trendOk' if group == 'TREND' else 'setupReady')
     return value if isinstance(value, bool) else None
 
+def session_closed(day, recorded_at, market):
+    local = datetime.fromisoformat(recorded_at).astimezone(ZoneInfo('Asia/Seoul' if market == 'kr' else 'America/New_York'))
+    return day < local.date().isoformat() or (day == local.date().isoformat() and (local.hour, local.minute) >= ((15, 40) if market == 'kr' else (16, 10)))
+
+def reject_unclosed(state, market):
+    bad = {k: d for k, d in state.get('days', {}).items() if not session_closed(d['date'], d['recordedAt'], market)}
+    if not bad:
+        return
+    snapshots = {d['snapshot'] for d in bad.values()}
+    state.setdefault('excludedObservations', {}).update(bad)
+    state['days'] = {k: d for k, d in state['days'].items() if k not in bad}
+    rejected = [s for s in state['signals'] if s['snapshot'] in snapshots]
+    state['signals'] = [s for s in state['signals'] if s['snapshot'] not in snapshots]
+    for signal in rejected:
+        state['membership'].pop(f"{signal['strategyId']}:{signal['code']}:{signal['group']}", None)
+    state['latestSession'] = max((d['date'] for d in state['days'].values()), default='')
+
 def process(payload, state, root=ROOT):
     market, strategy = payload['market'], payload['strategyId']
+    reject_unclosed(state, market)
     benchmarks, prices = payload['benchmarks'], payload['prices']
     if not benchmarks or not all(benchmarks.values()):
         raise ValueError('벤치마크 거래일 데이터 없음')
     sessions = {k: max(v) for k, v in benchmarks.items()}
     day = max(sessions.values())
+    if not session_closed(day, payload['recordedAt'], market):
+        state['deferredAt'] = payload['recordedAt']
+        state['deferredReason'] = '정규장 마감 전 입력 제외'
+        return state
     snapshot = {k: v for k, v in payload.items() if k not in ('prices', 'benchmarks', 'recordedAt', 'runId', 'sourceCommit')}
     snapshot['sessions'] = sessions
     sid = digest(snapshot)
@@ -135,7 +158,7 @@ def process(payload, state, root=ROOT):
             existing = signal['outcomes'].get(str(horizon), {})
             p = prices.get(signal['code'], {})
             b = benchmarks.get(signal['benchmark'], {})
-            if existing.get('status') == 'complete' and signal['date'] not in b:
+            if existing.get('status') in ('complete', 'unavailable') and signal['date'] not in b:
                 continue
             signal['outcomes'][str(horizon)] = outcome(signal, p, b, horizon)
     state['updatedAt'] = payload['recordedAt']
@@ -170,6 +193,14 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--market', choices=['KR', 'US', 'ALL'], default='ALL')
     args = parser.parse_args()
+    # Repair any earlier noncanonical intraday observation while retaining its audit archive.
+    for existing_market in ('kr', 'us'):
+        existing_path = ROOT / 'research' / f'{existing_market}.json'
+        if existing_path.exists():
+            saved = json.loads(existing_path.read_text())
+            reject_unclosed(saved, existing_market)
+            write_json(existing_path, saved)
+            write_json(ROOT / 'docs' / 'research' / f'{existing_market}.json', public_view(saved))
     for market in (['kr', 'us'] if args.market == 'ALL' else [args.market.lower()]):
         path = ROOT / 'output' / f'research_input_{market}.json'
         if not path.exists():
@@ -179,6 +210,9 @@ def main():
         state = json.loads(target.read_text()) if target.exists() else {}
         supplement_prices(payload, state)
         process(payload, state)
+        if not state.get('days'):
+            print(f'{market}: 정규장 마감 후 첫 기록을 기다립니다.')
+            continue
         write_json(target, state)
         write_json(ROOT / 'docs' / 'research' / f'{market}.json', public_view(state))
         print(f'{market}: {len(state["days"])} daily observations, {len(state["signals"])} signal episodes; {state["latestSession"]}')

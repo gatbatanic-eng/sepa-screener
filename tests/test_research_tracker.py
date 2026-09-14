@@ -2,10 +2,14 @@ import copy
 import tempfile
 import unittest
 from pathlib import Path
-from research_tracker import outcome, process
+from research_tracker import outcome, process, session_closed
 
 DATES = ['2026-09-01','2026-09-02','2026-09-03','2026-09-04','2026-09-07','2026-09-08']
 class ResearchTests(unittest.TestCase):
+    def test_no_intraday_observation(self):
+        self.assertFalse(session_closed("2026-09-14", "2026-09-14T03:00:00+00:00", "kr"))
+        self.assertTrue(session_closed("2026-09-14", "2026-09-14T11:00:00+00:00", "kr"))
+        self.assertTrue(session_closed("2026-09-11", "2026-09-11T22:00:00+00:00", "us"))
     def test_exchange_horizon_and_no_signal_day_excursion(self):
         s={'date':DATES[0],'originalClose':100}
         b=dict.fromkeys(DATES,100)
@@ -27,7 +31,7 @@ class ResearchTests(unittest.TestCase):
         self.assertIsNone(r['maxUpPct'])
     def test_daily_idempotence_revision_unknown_and_new_episode(self):
         with tempfile.TemporaryDirectory() as tmp:
-            p={'market':'us','strategyId':'a','strategy':{},'recordedAt':'now',
+            p={'market':'us','strategyId':'a','strategy':{},'recordedAt':'2026-09-09T00:00:00+00:00',
                'rows':[{'code':'X','name':'X','market':'US','status':'OK','inUniverse':True,
                         'trendOk':True,'setupReady':False,'entryState':'WAIT','close':100,'priceAsOf':DATES[0]}],
                'prices':{'X':{DATES[0]:100}},'benchmarks':{'US':{DATES[0]:100}}}
