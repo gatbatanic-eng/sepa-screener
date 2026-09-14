@@ -1,6 +1,9 @@
 name: SEPA Trend Template Daily Screening
 
 on:
+  push:
+    branches: [master]
+    paths: ["research_tracker.py", "tests/test_research_tracker.py", ".github/workflows/daily_screen.yml"]
   schedule:
     # 한국: 평일(월~금) 20:00 KST = UTC 11:00
     - cron: "0 11 * * 1-5"
@@ -26,7 +29,7 @@ jobs:
   screen:
     runs-on: ubuntu-latest
     # v2: KR 유니버스가 유동성 상위 ~700종목으로 늘고 SETUP/ENTRY/EXIT 계산이 추가돼 여유를 둔다.
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: 저장소 체크아웃
         uses: actions/checkout@v4
@@ -38,6 +41,9 @@ jobs:
 
       - name: 의존성 설치
         run: pip install -r requirements.txt
+
+      - name: 연구 계산 검증
+        run: python -m unittest discover -s tests -p test_research_tracker.py -v
 
       - name: 실행 시장 결정
         id: market
@@ -54,6 +60,7 @@ jobs:
 
       - name: 스크리닝 실행 (${{ steps.market.outputs.market }})
         env:
+          SEPA_RESEARCH_EXPORT: "1"
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
         run: python screening.py --market ${{ steps.market.outputs.market }}
@@ -66,6 +73,9 @@ jobs:
           path: output/*.csv
           retention-days: 90
 
+      - name: 일별 기록과 5·20·60거래일 성과 갱신
+        run: python research_tracker.py --market ${{ steps.market.outputs.market }}
+
       - name: 대시보드(docs/index.html) 생성
         run: python generate_dashboard.py
 
@@ -73,7 +83,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/
+          git add docs/ research/
           git diff --cached --quiet || git commit -m "대시보드 자동 갱신 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
           git pull --rebase origin master
           git push
+

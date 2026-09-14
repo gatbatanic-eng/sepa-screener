@@ -929,7 +929,11 @@ def run_screening(market_key: str, top_n: int, max_workers: int, limit: Optional
     else:
         logger.info("--skip-v2: v2 단계 생략")
 
-    return results_to_dataframe(results)
+    frame = results_to_dataframe(results)
+    if os.getenv("SEPA_RESEARCH_EXPORT") == "1":
+        from research_tracker import export_inputs
+        export_inputs(frame, ohlcv_map, index_close, cfg, market_key)
+    return frame
 
 
 def _benchmark_for(market_seg: str, index_close: dict[str, pd.Series]) -> Optional[pd.Series]:
@@ -1440,3 +1444,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
