@@ -52,6 +52,12 @@ def export_inputs(frame, ohlcv, benchmarks, cfg, market):
                'recordedAt': datetime.now(timezone.utc).isoformat(),
                'sourceCommit': os.getenv('GITHUB_SHA'), 'runId': os.getenv('GITHUB_RUN_ID')}
     write_json(ROOT / 'output' / f'research_input_{market.lower()}.json', payload)
+    from range_screen import export_range
+    try:
+        export_range(payload, ohlcv)
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).exception("박스권 지표 내보내기 실패: %s", exc)
 
 def outcome(signal, prices, benchmark, horizon):
     dates = sorted(d for d in benchmark if d > signal['date'])
@@ -81,6 +87,8 @@ def membership(row, group):
         return False
     if row.get('inUniverse') is not True:
         return None
+    if group.startswith('RANGE_'):
+        return row.get('rangeWatch' if group == 'RANGE_WATCH' else 'rangeGo')
     if group == 'GO':
         entry = row.get('entryState')
         return entry in ('GO_BREAKOUT', 'GO_PULLBACK') if entry else None
@@ -139,7 +147,7 @@ def process(payload, state, root=ROOT):
             code, benchmark = row['code'], row.get('market') if market == 'kr' else 'US'
             if benchmark not in sessions or row.get('priceAsOf') != sessions[benchmark]:
                 continue  # stale/missing quotes never create or terminate an episode
-            for group in GROUPS:
+            for group in payload.get('groups', GROUPS):
                 mk = f'{strategy}:{code}:{group}'
                 flag = membership(row, group)
                 if flag is None:
@@ -153,7 +161,7 @@ def process(payload, state, root=ROOT):
                 members[mk] = flag
         state['latestSession'] = day
     for signal in signals:
-        for horizon in HORIZONS:
+        for horizon in payload.get('horizons', HORIZONS):
             # Freeze validated completed horizons; future data outages cannot erase earned observations.
             existing = signal['outcomes'].get(str(horizon), {})
             p = prices.get(signal['code'], {})
@@ -161,6 +169,10 @@ def process(payload, state, root=ROOT):
             if existing.get('status') == 'complete' or (existing.get('status') == 'unavailable' and signal['date'] not in b):
                 continue
             signal['outcomes'][str(horizon)] = outcome(signal, p, b, horizon)
+    if 'groups' in payload:
+        state['latestRows'] = payload['rows']
+        state['groups'] = payload['groups']
+        state['horizons'] = payload['horizons']
     state['updatedAt'] = payload['recordedAt']
     state['market'] = market
     state['lastRunId'] = payload.get('runId')
@@ -173,7 +185,7 @@ def supplement_prices(payload, state):
     from screening import fetch_price_history
     earliest = {}
     for s in state.get('signals', []):
-        if s['code'] not in payload['prices'] and any(s.get('outcomes', {}).get(str(h), {}).get('status') != 'complete' for h in HORIZONS):
+        if s['code'] not in payload['prices'] and any(s.get('outcomes', {}).get(str(h), {}).get('status') != 'complete' for h in payload.get('horizons', HORIZONS)):
             earliest[s['code']] = min(earliest.get(s['code'], s['date']), s['date'])
     def fetch(code, start):
         frame = fetch_price_history(code, start)
@@ -201,12 +213,14 @@ def main():
             reject_unclosed(saved, existing_market)
             write_json(existing_path, saved)
             write_json(ROOT / 'docs' / 'research' / f'{existing_market}.json', public_view(saved))
-    for market in (['kr', 'us'] if args.market == 'ALL' else [args.market.lower()]):
-        path = ROOT / 'output' / f'research_input_{market}.json'
+    markets = ['kr', 'us'] if args.market == 'ALL' else [args.market.lower()]
+    for dataset in [m for market in markets for m in (market, 'range_' + market)]:
+        market = dataset.rsplit('_', 1)[-1]
+        path = ROOT / 'output' / f'research_input_{dataset}.json'
         if not path.exists():
             raise FileNotFoundError(f'이번 실행의 연구 입력 없음: {market}')
         payload = json.loads(path.read_text())
-        target = ROOT / 'research' / f'{market}.json'
+        target = ROOT / 'research' / f'{dataset}.json'
         state = json.loads(target.read_text()) if target.exists() else {}
         supplement_prices(payload, state)
         process(payload, state)
@@ -214,7 +228,7 @@ def main():
             print(f'{market}: 정규장 마감 후 첫 기록을 기다립니다.')
             continue
         write_json(target, state)
-        write_json(ROOT / 'docs' / 'research' / f'{market}.json', public_view(state))
+        write_json(ROOT / 'docs' / 'research' / f'{dataset}.json', public_view(state))
         print(f'{market}: {len(state["days"])} daily observations, {len(state["signals"])} signal episodes; {state["latestSession"]}')
 
 if __name__ == '__main__':
