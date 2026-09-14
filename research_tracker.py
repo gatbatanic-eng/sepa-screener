@@ -154,11 +154,11 @@ def process(payload, state, root=ROOT):
         state['latestSession'] = day
     for signal in signals:
         for horizon in HORIZONS:
-            # Freeze completed 60-session observations after their price window leaves provider history.
+            # Freeze validated completed horizons; future data outages cannot erase earned observations.
             existing = signal['outcomes'].get(str(horizon), {})
             p = prices.get(signal['code'], {})
             b = benchmarks.get(signal['benchmark'], {})
-            if existing.get('status') in ('complete', 'unavailable') and signal['date'] not in b:
+            if existing.get('status') == 'complete' or (existing.get('status') == 'unavailable' and signal['date'] not in b):
                 continue
             signal['outcomes'][str(horizon)] = outcome(signal, p, b, horizon)
     state['updatedAt'] = payload['recordedAt']
