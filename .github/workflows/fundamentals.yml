@@ -1,0 +1,44 @@
+name: Trend Fundamentals DART
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: [SEPA Trend Template Daily Screening]
+    types: [completed]
+  push:
+    branches: [master]
+    paths: [publish_fundamentals.py, .github/workflows/fundamentals.yml]
+permissions:
+  contents: write
+concurrency:
+  group: sepa-screening
+  cancel-in-progress: false
+jobs:
+  fundamentals:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Collect trend fundamentals
+        id: collect
+        continue-on-error: true
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+        run: python publish_fundamentals.py
+      - name: Save public financial data and observation history
+        run: |
+          mkdir -p docs/data/fundamentals research/fundamentals
+          git add -f docs/data/fundamentals/ research/fundamentals/
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git diff --cached --quiet || git commit -m 'Refresh trend fundamentals from DART'
+          git pull --rebase origin master
+          git push
+      - name: Report collection failure
+        if: steps.collect.outcome == 'failure'
+        run: exit 1
