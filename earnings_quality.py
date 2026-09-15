@@ -111,12 +111,14 @@ def publish(market):
   rows.append(row)
   fingerprint=stamp(checks);active[code]=fingerprint
   if state.get('active',{}).get(code)!=fingerprint:
-   sid=stamp([VERSION,market,code,today,fingerprint])
-   if not any(s['id']==sid for s in state['signals']):state['signals'].append({'id':sid,'code':code,'name':stock['name'],'observationDate':today,'observedAt':now.isoformat(),'exchange':stock.get('market'),'statuses':{p:a['status'] for p,a in checks.items()},'outcomes':{str(h):{'status':'pending'} for h in HORIZONS}})
+   sid=stamp([VERSION,market,code,today,{p:a['status'] for p,a in checks.items()}])
+   if not any(s['id']==sid for s in state['signals']):state['signals'].append({'id':sid,'assessmentDigest':fingerprint,'code':code,'name':stock['name'],'observationDate':today,'observedAt':now.isoformat(),'exchange':stock.get('market'),'statuses':{p:a['status'] for p,a in checks.items()},'outcomes':{str(h):{'status':'pending'} for h in HORIZONS}})
  # Snapshot each run, retaining the first daily observation as the daily reference.
  snapshot={'strategyId':VERSION,'observedAt':now.isoformat(),'market':market,'rows':rows}
  digest=stamp(rows);sp=ROOT/f'research/earnings/{market}/{today}-{digest}.json'
  if not sp.exists():save(sp,snapshot)
+ for signal in state['signals']:
+  if signal.get('observedAt')==now.isoformat():signal['snapshot']=str(sp.relative_to(ROOT))
  state['days'].setdefault(today,{'date':today,'snapshot':str(sp.relative_to(ROOT)),'counts':{p:{s:sum(r['assessments'][p]['status']==s for r in rows) for s in ('pass','fail','hold')} for p in PROFILES}})
  state.update(active=active,latestRows=rows,updatedAt=now.isoformat(),profiles={k:{'sales':v[0],'profit':v[1]} for k,v in PROFILES.items()},horizons=list(HORIZONS),method='관찰일 다음 거래일 종가를 기준으로 20·60·120거래일 뒤 종가 비교. 비용 전 가격 연구이며 실제 체결 수익이 아닙니다.')
  # All active and departed cohorts continue receiving price updates.
