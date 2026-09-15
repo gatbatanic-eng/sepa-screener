@@ -86,6 +86,21 @@ UNIVERSE → TREND → SETUP → READY → ENTRY → (POSITION/관리) → EXIT
 dry-up / 수축횟수 / range tightness / 피벗근접 의 가중 평균 — **랭킹용이며 GO
 hard rule 을 대체하지 않는다**.
 
+**평가 시점(`config.setup.setup_lag_bars`, 기본 1)**: `atr_contraction_ratio` /
+`volume_dryup_ratio` / `range_10_pct` 는 당일이 아니라 **전일까지**의 데이터로
+평가한다. 2026-09 실데이터 검증에서 KR 662·US 500종목 전량 `setup_ready=0`
+(ATR수축·Dry-up 두 게이트만 0~1건 통과)로 나온 원인을 분석한 결과, GO_BREAKOUT
+이 요구하는 "당일 거래량 1.4배↑·CLV 0.70↑"와 SETUP_READY 가 요구하는 "최근
+변동성·거래량이 작음"을 **같은 날짜**로 평가하면 돌파일 자체의 거래량·변동폭
+확장이 ATR20/거래량10 창에 들어가 SETUP 게이트를 스스로 깎아먹는 자기모순이
+확인됐다(피벗 근접 종목일수록 값이 임계값에 더 가깝게 미달 — 자기모순 패턴과
+일치). `pivot.py`가 피벗가격에 이미 쓰던 "당일 제외" 원칙을 SETUP 품질 지표에도
+적용해 해결했다 — **임계값(0.75/0.70)은 바꾸지 않았다**. `pivot_distance_pct`
+와 확인된 돌파(거래량·CLV) 판정은 원래대로 당일 데이터를 쓴다("오늘 돌파했는가"
+를 보는 것이므로). 수정 후에도 GO 가 드물면 그건 자기모순이 아니라 실제 시장
+국면(변동성 확장기) 때문일 가능성이 높다 — `tests/test_sepa_v2.py::
+test_setup_lag_excludes_breakout_day_self_sabotage` 참고.
+
 ## Pivot
 
 `config.pivot.min_bars_ago`(기본 1) 만큼 전까지의 데이터로만 계산. 우선순위:

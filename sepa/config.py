@@ -123,6 +123,11 @@ class SetupConfig:
     range10_window: int = 10
     range10_max: float = 10.0             # (10일 고가/10일 저가 - 1) * 100 <= 10%
     range10_hard_filter: bool = False     # True 면 range10 을 SETUP_READY hard 조건에 포함
+    # ATR수축·Dry-up·range10 은 이 거래일 수만큼 "어제까지"의 데이터로 평가한다(기본 1 = 당일 제외).
+    # 당일이 확인된 돌파일(거래량·변동폭이 정상적으로 큰 날)이면, 그 값이 같은 날 ATR20/거래량10에
+    # 들어가 "베이스가 탄탄했는가"를 스스로 깎아먹는 자기모순이 생기기 때문. pivot.py 가 피벗가격에
+    # 이미 쓰는 것과 같은 원칙(당일 자기참조 방지)을 SETUP 품질 지표에도 적용한 것 — 임계값 변경 아님.
+    setup_lag_bars: int = 1
     # setup_quality_score (0~100) 구성 가중치 (합계로 정규화)
     quality_weights: dict[str, float] = field(default_factory=lambda: {
         "rs": 0.20,
