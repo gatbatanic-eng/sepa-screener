@@ -116,8 +116,11 @@ def main():
             if cik is None: raise RuntimeError('SEC ticker mapping unavailable')
             data=fetch(f'https://data.sec.gov/api/xbrl/companyfacts/CIK{int(cik):010d}.json')
             if int(data['cik'])!=int(cik): raise RuntimeError('SEC company identity mismatch')
+            company=fetch(f'https://data.sec.gov/submissions/CIK{int(cik):010d}.json')
+            recent=company.get('filings',{}).get('recent',{})
+            report_dates=[d for d,f in zip(recent.get('reportDate',[]),recent.get('form',[])) if f in ('10-Q','10-Q/A','10-K','10-K/A') and d]
             quarters=normalize(data,now.date().isoformat())
-            payload={'schemaVersion':1,'market':'us','code':code,'name':stock['name'],'cik':str(cik),'source':'SEC EDGAR','checkedAt':now.isoformat(),'status':'ok' if quarters else 'unavailable','quarters':quarters,'historyNote':'과거 실적은 수집 시점에 조회한 공시값입니다. 정정 공시가 반영될 수 있으며 과거 매수 시점에 알려진 값으로 간주할 수 없습니다.'}
+            payload={'schemaVersion':1,'market':'us','code':code,'name':stock['name'],'cik':str(cik),'source':'SEC EDGAR','industryCode':company.get('sic'),'industrySystem':'SIC','latestReportPeriod':max(report_dates,default=None),'checkedAt':now.isoformat(),'status':'ok' if quarters else 'unavailable','quarters':quarters,'historyNote':'과거 실적은 수집 시점에 조회한 공시값입니다. 정정 공시가 반영될 수 있으며 과거 매수 시점에 알려진 값으로 간주할 수 없습니다.'}
             digest=hashlib.sha256(json.dumps(quarters,sort_keys=True).encode()).hexdigest()[:20]
             snap=ROOT/'research/fundamentals/us'/code/(digest+'.json')
             if not snap.exists(): save(snap,payload)

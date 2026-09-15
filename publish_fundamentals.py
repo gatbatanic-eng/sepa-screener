@@ -99,7 +99,7 @@ class Dart:
             return []
         if obj.get('status') != '000':
             raise RuntimeError('DART status ' + str(obj.get('status', 'unknown')))
-        return obj.get('list', [])
+        return obj if endpoint == 'company.json' else obj.get('list', [])
 
     def corporations(self):
         raw = self.request('corpCode.xml')
@@ -131,6 +131,7 @@ def main():
         try:
             if code not in corps:
                 raise RuntimeError('DART corporation mapping unavailable')
+            company = api.request('company.json', corp_code=corps[code])
             reports = {}
             for year in range(now.year - 3, now.year + 1):
                 for quarter, report_code in REPORTS.items():
@@ -145,7 +146,7 @@ def main():
                     if rows:
                         reports[(year, quarter)] = {'rows': rows, 'basis': basis}
             quarters = normalize(reports)
-            payload = {'schemaVersion': 1, 'market': 'kr', 'code': code, 'name': stock['name'], 'source': 'OpenDART',
+            payload = {'schemaVersion': 1, 'market': 'kr', 'code': code, 'name': stock['name'], 'source': 'OpenDART', 'industryCode': company.get('induty_code'), 'industrySystem': 'KSIC',
                        'checkedAt': now.isoformat(), 'status': 'ok' if quarters else 'unavailable', 'quarters': quarters,
                        'historyNote': '과거 실적은 수집 시점의 공시 조회값입니다. 과거 매수 시점에 알려진 값으로 간주할 수 없습니다.'}
             digest = hashlib.sha256(json.dumps(quarters, sort_keys=True).encode()).hexdigest()[:20]

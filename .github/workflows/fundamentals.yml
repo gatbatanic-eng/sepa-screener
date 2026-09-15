@@ -6,7 +6,7 @@ on:
     types: [completed]
   push:
     branches: [master]
-    paths: [publish_fundamentals.py, publish_us_fundamentals.py, tests/test_us_fundamentals.py, .github/workflows/fundamentals.yml]
+    paths: [publish_fundamentals.py, publish_us_fundamentals.py, tests/test_us_fundamentals.py, earnings_quality.py, tests/test_earnings_quality.py, .github/workflows/fundamentals.yml]
 permissions:
   contents: write
 concurrency:
@@ -24,6 +24,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Install research dependencies
+        run: pip install -r requirements.txt
+      - name: Verify earnings improvement rules
+        run: python -m unittest discover -s tests -p test_earnings_quality.py
       - name: Verify US fiscal period calculations
         run: python -m unittest discover -s tests -p test_us_fundamentals.py
       - name: Collect trend fundamentals
@@ -38,9 +42,14 @@ jobs:
         env:
           SEC_USER_AGENT: 'GoldenCodeResearch gatbatanic@gmail.com'
         run: python publish_us_fundamentals.py
+      - name: Record earnings improvement and forward research
+        id: earnings
+        continue-on-error: true
+        run: python earnings_quality.py
       - name: Save public financial data and observation history
         run: |
-          mkdir -p docs/data/fundamentals research/fundamentals
+          mkdir -p docs/data/fundamentals research/fundamentals research/earnings
+          git add -f research/earnings/ docs/research/earnings_*.json
           git add -f docs/data/fundamentals/ research/fundamentals/
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
@@ -48,5 +57,5 @@ jobs:
           git pull --rebase origin master
           git push
       - name: Report collection failure
-        if: steps.collect.outcome == 'failure' || steps.sec.outcome == 'failure'
+        if: steps.collect.outcome == 'failure' || steps.sec.outcome == 'failure' || steps.earnings.outcome == 'failure'
         run: exit 1
