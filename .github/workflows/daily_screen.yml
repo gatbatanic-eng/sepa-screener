@@ -85,6 +85,11 @@ jobs:
       - name: 대시보드(docs/index.html) 생성
         run: python generate_dashboard.py
 
+      - name: 종목 상세 차트 갱신
+        id: charts
+        continue-on-error: true
+        run: python publish_stock_charts.py --market ${{ steps.market.outputs.market }}
+
       - name: 대시보드 커밋 & 푸시
         run: |
           git config user.name "github-actions[bot]"
@@ -98,4 +103,8 @@ jobs:
 
       - name: 연구 기록 실패 표시
         if: steps.research.outcome == 'failure'
+        run: exit 1
+
+      - name: 차트 갱신 실패 표시
+        if: steps.charts.outcome == 'failure'
         run: exit 1

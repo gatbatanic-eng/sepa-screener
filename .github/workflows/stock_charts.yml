@@ -1,0 +1,30 @@
+name: Stock chart bootstrap
+on:
+  push:
+    branches: [master]
+    paths: ['publish_stock_charts.py', '.github/workflows/stock_charts.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: sepa-screening
+  cancel-in-progress: false
+jobs:
+  charts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt
+      - run: python publish_stock_charts.py --market ALL
+      - name: Save charts
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add docs/data/stock_charts/
+          git diff --cached --quiet || git commit -m 'Refresh stock detail charts'
+          git pull --rebase origin master
+          git push
