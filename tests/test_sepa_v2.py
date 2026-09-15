@@ -266,6 +266,55 @@ def test_setup_ready_true_on_tight_vcp():
     assert 0 <= s.setup_quality_score <= 100
 
 
+def test_setup_lag_excludes_breakout_day_self_sabotage():
+    """
+    타이트한 VCP 베이스 다음 날 '확인된 돌파'(거래량 급증 + 넓은 레인지)가 나와도,
+    SETUP 품질 지표(ATR수축/Dry-up)는 그 돌파일이 아니라 전일까지로 평가돼야
+    setup_ready 가 유지된다 (실데이터에서 발견된 자기모순 수정 — 2026-09 분석).
+    setup_lag_bars=0 으로 강제하면(옛 동작) 같은 데이터에서 ATR수축비율이
+    악화되는 것도 함께 확인한다(수정이 실제로 문제를 해결함을 입증).
+    """
+    trend = list(np.linspace(80, 200, 320))
+    base = []
+    lvl = 200.0
+    for pb, seg in [(10, 12), (6, 12), (3, 12)]:
+        base += list(np.linspace(lvl, lvl * (1 - pb / 100), seg))
+        base += list(np.linspace(lvl * (1 - pb / 100), lvl * 0.995, seg))
+    c = trend + base
+    vol = [2_000_000.0] * len(trend) + list(np.linspace(1_200_000.0, 250_000.0, len(base)))
+    hi = [x * (1.02 if i < len(trend) else 1.004) for i, x in enumerate(c)]
+    lo = [x * (0.98 if i < len(trend) else 0.996) for i, x in enumerate(c)]
+
+    # --- 돌파일 1봉 추가: 거래량 급증 + 넓은 레인지 + 피벗 상향 돌파, 종가는 고가 근처(CLV 높음) ---
+    pivot_est = max(hi[-CONFIG.pivot.base_lookback:])
+    breakout_close = pivot_est * 1.02
+    c.append(breakout_close)
+    vol.append(5_000_000.0)          # base 말미(~250k) 대비 큰 거래량 배율
+    hi.append(breakout_close * 1.01)
+    lo.append(c[-2] * 0.995)         # 전일 종가 부근에서 시작해 넓게 상승
+
+    df = _mk(c, vol=vol, hi=hi, lo=lo)
+
+    with_lag = evaluate_setup(df, CONFIG, trend_ok=True, high_proximity_ratio=0.97,
+                              rs_score=92, rs_change_20d=6, rs_line_new_high=True)
+    assert with_lag.atr_contraction_ratio is not None
+    assert with_lag.atr_contraction_ratio <= CONFIG.setup.atr_contraction_max, with_lag
+    assert with_lag.volume_dryup_ratio is not None
+    assert with_lag.volume_dryup_ratio <= CONFIG.setup.volume_dryup_max, with_lag
+    assert with_lag.setup_ready is True, with_lag.reasons
+    # 돌파일 자체는 SETUP 지표 평가에서 제외됐으므로 전일 종가 기준 피벗거리와 무관하게
+    # pivot_distance_pct 는 "오늘"(돌파일) 종가로 정상 계산돼야 한다 (당일 값 유지).
+    assert with_lag.pivot_distance_pct is not None and with_lag.pivot_distance_pct > 0, with_lag
+
+    cfg_no_lag = CONFIG.with_overrides({"setup.setup_lag_bars": 0})
+    no_lag = evaluate_setup(df, cfg_no_lag, trend_ok=True, high_proximity_ratio=0.97,
+                            rs_score=92, rs_change_20d=6, rs_line_new_high=True)
+    assert no_lag.atr_contraction_ratio is not None
+    # 당일(돌파일)을 그대로 포함시키면 같은 데이터에서 ATR수축비율이 확실히 더 나빠진다
+    # (자기모순 재현) — 이것이 lag 를 둬야 하는 이유다.
+    assert no_lag.atr_contraction_ratio > with_lag.atr_contraction_ratio, (no_lag, with_lag)
+
+
 # ---------------------------------------------------------------------------
 # 8. MARKET REGIME
 # ---------------------------------------------------------------------------

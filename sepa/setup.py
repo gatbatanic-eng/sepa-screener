@@ -19,6 +19,18 @@ AND volume_dryup_ratio<=0.70 AND contraction_count>=2
 (range_10 은 기본적으로 quality factor. cfg.setup.range10_hard_filter=True 면 hard)
 
 setup_quality_score 는 **랭킹용** 이며 GO_BREAKOUT hard rule 을 대체하지 않는다.
+
+평가 시점 (자기참조 방지)
+------------------------
+ATR20/ATR60·거래량10/20/50·range_10 은 당일이 아니라 **cfg.setup.setup_lag_bars
+(기본 1) 거래일 전까지**의 데이터로 평가한다. 당일이 확인된 돌파일이면 그날의
+거래량·변동폭 확장 자체가 ATR20/거래량10 창에 들어가 "베이스가 탄탄했는가"
+판정을 스스로 깎아먹기 때문 — GO_BREAKOUT 이 요구하는 "오늘 거래량 1.4배 이상·
+CLV 0.70 이상"과 SETUP_READY 가 요구하는 "최근 변동성·거래량이 작음"이 같은
+날짜를 보면 서로 상쇄되는 자기모순이 된다. pivot.py 가 피벗가격에 이미 적용한
+"당일 제외" 원칙을 여기에도 그대로 적용한 것이며, 임계값(0.75/0.70)은 손대지
+않았다. pivot_distance_pct·확인된 돌파(거래량·CLV) 판정은 원래대로 당일 데이터
+를 쓴다 — 그건 "오늘 돌파했는가"를 확인하는 것이므로 당일 기준이 맞다.
 """
 from __future__ import annotations
 
@@ -103,7 +115,7 @@ def evaluate_setup(ohlcv: pd.DataFrame, cfg: SepaConfig, *,
         r.reasons.append("데이터 부족")
         return r
 
-    # --- 피벗 ---
+    # --- 피벗 (당일 종가 vs 전일까지의 피벗가격 — 원래부터 당일 제외 원칙 적용됨) ---
     piv = compute_pivot(high, low, close, cfg.pivot, cfg.swing)
     r.pivot_price = piv.pivot_price
     r.pivot_distance_pct = piv.pivot_distance_pct
@@ -117,34 +129,41 @@ def evaluate_setup(ohlcv: pd.DataFrame, cfg: SepaConfig, *,
     # --- base 길이 ---
     r.base_length = _base_length(high, r.pivot_price, contr.base_start_idx, s.max_base_length)
 
-    # --- range_10 ---
-    if n >= s.range10_window:
-        hh = float(rolling_high(high, s.range10_window).iloc[-1])
-        ll = float(rolling_low(low, s.range10_window).iloc[-1])
-        if ll > 0:
-            r.range_10_pct = round((hh / ll - 1.0) * 100.0, 2)
+    # --- SETUP 품질 지표(range_10/ATR수축/Dry-up) 평가 시점: 당일 제외, setup_lag_bars 거래일 전까지 ---
+    lag = max(0, s.setup_lag_bars)
+    setup_pos = n - 1 - lag  # positional index. 음수면(데이터가 lag 보다 짧으면) 평가 불가 → None 유지
 
-    # --- ATR 수축 ---
-    a_fast = atr(high, low, close, s.atr_fast)
-    a_slow = atr(high, low, close, s.atr_slow)
-    if not pd.isna(a_fast.iloc[-1]) and not pd.isna(a_slow.iloc[-1]) and a_slow.iloc[-1] > 0:
-        r.atr20 = round(float(a_fast.iloc[-1]), 4)
-        r.atr60 = round(float(a_slow.iloc[-1]), 4)
-        r.atr_contraction_ratio = round(r.atr20 / r.atr60, 3)
+    if setup_pos >= 0:
+        # --- range_10 ---
+        if setup_pos >= s.range10_window - 1:
+            hh = float(rolling_high(high, s.range10_window).iloc[setup_pos])
+            ll = float(rolling_low(low, s.range10_window).iloc[setup_pos])
+            if ll > 0:
+                r.range_10_pct = round((hh / ll - 1.0) * 100.0, 2)
 
-    # --- 거래량 dry-up ---
-    if not volume.empty and not (volume.iloc[-s.vol_dryup_slow:] <= 0).all():
-        av10 = rolling_mean(volume, s.vol_dryup_fast).iloc[-1]
-        av20 = rolling_mean(volume, s.vol_dryup_mid).iloc[-1]
-        av50 = rolling_mean(volume, s.vol_dryup_slow).iloc[-1]
-        if not pd.isna(av10):
-            r.avg_volume_10 = round(float(av10), 2)
-        if not pd.isna(av20):
-            r.avg_volume_20 = round(float(av20), 2)
-        if not pd.isna(av50):
-            r.avg_volume_50 = round(float(av50), 2)
-        if r.avg_volume_10 is not None and r.avg_volume_50 not in (None, 0):
-            r.volume_dryup_ratio = round(r.avg_volume_10 / r.avg_volume_50, 3)
+        # --- ATR 수축 ---
+        a_fast = atr(high, low, close, s.atr_fast)
+        a_slow = atr(high, low, close, s.atr_slow)
+        af, asl = a_fast.iloc[setup_pos], a_slow.iloc[setup_pos]
+        if not pd.isna(af) and not pd.isna(asl) and asl > 0:
+            r.atr20 = round(float(af), 4)
+            r.atr60 = round(float(asl), 4)
+            r.atr_contraction_ratio = round(r.atr20 / r.atr60, 3)
+
+        # --- 거래량 dry-up ---
+        vol_window = volume.iloc[max(0, setup_pos - s.vol_dryup_slow + 1): setup_pos + 1]
+        if not volume.empty and not vol_window.empty and not (vol_window <= 0).all():
+            av10 = rolling_mean(volume, s.vol_dryup_fast).iloc[setup_pos]
+            av20 = rolling_mean(volume, s.vol_dryup_mid).iloc[setup_pos]
+            av50 = rolling_mean(volume, s.vol_dryup_slow).iloc[setup_pos]
+            if not pd.isna(av10):
+                r.avg_volume_10 = round(float(av10), 2)
+            if not pd.isna(av20):
+                r.avg_volume_20 = round(float(av20), 2)
+            if not pd.isna(av50):
+                r.avg_volume_50 = round(float(av50), 2)
+            if r.avg_volume_10 is not None and r.avg_volume_50 not in (None, 0):
+                r.volume_dryup_ratio = round(r.avg_volume_10 / r.avg_volume_50, 3)
 
     # --- SETUP_READY (hard) ---
     hard_inputs = {
