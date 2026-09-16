@@ -160,6 +160,16 @@ def save_chart_snapshot(prefix: str, charts: dict) -> None:
     (DATA_DIR / f"charts_{prefix}.json").write_text(json.dumps(charts, ensure_ascii=False), encoding="utf-8")
 
 
+def load_fundamentals_index(prefix: str) -> dict:
+    """publish_fundamentals.py/publish_us_fundamentals.py가 레거시 8/8 통과 종목에
+    대해 이미 docs/data/fundamentals/{prefix}/index.json 으로 커밋해 둔 것을 그대로
+    읽는다(이 스크립트가 새로 수집하지 않음). code -> {status, latestPeriod}."""
+    path = DATA_DIR / "fundamentals" / prefix / "index.json"
+    if not path.exists():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8")).get("symbols", {})
+
+
 def build() -> None:
     run_date = datetime.now(ZoneInfo("Asia/Seoul")).strftime("%Y-%m-%d")
     payload: dict[str, dict] = {}
@@ -185,7 +195,10 @@ def build() -> None:
         else:
             charts = load_chart_snapshot(prefix)
 
-        payload[prefix] = {"label": label, "rows": rows, "history": history, "asOf": as_of, "charts": charts}
+        fundamentals = load_fundamentals_index(prefix)
+
+        payload[prefix] = {"label": label, "rows": rows, "history": history, "asOf": as_of,
+                            "charts": charts, "fundamentals": fundamentals}
 
     if not payload:
         print("생성할 데이터가 없습니다 (output/latest_*_full.csv를 먼저 만들어야 함: screening.py를 먼저 실행하세요)")
@@ -339,6 +352,14 @@ HTML_TEMPLATE = r"""<!doctype html>
   .chart-link:hover { color: var(--accent); }
   .chart-btn { border: 1px solid var(--border); background: var(--bg); border-radius: 6px; padding: 2px 6px; cursor: pointer; font-size: 12px; margin-left: 4px; }
   .chart-btn:hover { border-color: var(--accent); }
+  .fund-btn { border: 1px solid var(--border); background: var(--bg); border-radius: 6px; padding: 2px 6px; cursor: pointer; font-size: 12px; margin-left: 4px; }
+  .fund-btn:hover { border-color: var(--accent); }
+  .fund-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .fund-table th, .fund-table td { padding: 5px 8px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .fund-table th.left, .fund-table td.left { text-align: left; }
+  .fund-table thead th { color: var(--text-dim); font-weight: 600; }
+  .fund-table a { color: var(--accent); text-decoration: none; }
+  .fund-table a:hover { text-decoration: underline; }
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
   .modal-overlay.open { display: flex; }
   .modal-box { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; max-width: 820px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow); }
@@ -421,7 +442,8 @@ HTML_TEMPLATE = r"""<!doctype html>
     ※ <b>52W거리</b> = 종가/52주 고가 − 1. SUPER(≥90%) / LEADER(≥85%) / NORMAL(≥75%) / FAIL. <b>ATR수축</b> = ATR20/ATR60 (≤0.75 목표), <b>Dry-up</b> = 평균거래량10/50 (≤0.70 목표). VCP 는 "완전한 Minervini 재현" 이 아니라 스윙 기반 deterministic heuristic 입니다.<br>
     ※ 상단 <b>시장 국면</b>(GREEN/YELLOW/RED/RECOVERY) + breadth50 + 권장 진입비중은 신규진입 리스크 참고용이며 실제 주문 기능이 아닙니다. 상단 배지(우호적/중립/비우호적)는 기존 시장 게이팅(레거시)입니다.<br>
     ※ "레거시판정"·"충족(8)"·"셋업점수(레거시)"·"타이밍신호"는 기존 화면과 비교하기 위해 유지합니다. 스테이지(와인스타인 4단계)·베이스 단계·펀더멘털·촉매는 여전히 자동 판정하지 않습니다. 모든 임계값은 <code>sepa/config.py</code> 에서 조정됩니다.<br>
-    ※ "↗" 는 외부 차트 사이트 링크, "📈" 미니차트는 레거시 8/8 통과 + v2 진입 후보(GO/READY)에 제공됩니다. 종가/SMA/거래량/RSI(14)·매물대·변곡점 전부 참고용입니다.
+    ※ "↗" 는 외부 차트 사이트 링크, "📈" 미니차트는 레거시 8/8 통과 + v2 진입 후보(GO/READY)에 제공됩니다. 종가/SMA/거래량/RSI(14)·매물대·변곡점 전부 참고용입니다.<br>
+    ※ "📊" 재무정보는 <b>레거시 8/8 전체통과 종목</b>에 한해 한국은 OpenDART, 미국은 SEC EDGAR 공시 원문을 그대로 보여줍니다(가공·추정치 없음). 수집 시점의 공시값이며, 과거 매수 시점에 알려졌던 값이 아닐 수 있고 정정공시가 있으면 갱신됩니다 — 투자 판단은 원문 공시를 직접 확인하세요.
   </footer>
 </div>
 
@@ -437,6 +459,16 @@ HTML_TEMPLATE = r"""<!doctype html>
       <canvas id="rsiCanvas" width="760" height="80"></canvas>
       <div class="modal-note">종가/SMA50·150·200/거래량/RSI(14) · 오른쪽 축=가격, 옅은 가로막대=가격대별 거래량(매물대), 점선=최대 거래량대(POC)·밸류에어리어, ▲▼=스윙 고점/저점(변곡점) — 전부 참고용, 매수 신호 아님</div>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="fundModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span id="fundModalTitle"></span>
+      <button class="modal-close" id="fundModalClose">✕</button>
+    </div>
+    <div class="modal-body" id="fundModalBody"></div>
   </div>
 </div>
 
@@ -690,7 +722,11 @@ function chartCell(r) {
   const mini = hasChart
     ? `<button class="chart-btn" data-code="${r.code}" title="미니차트 보기 (종가/SMA/거래량/RSI, 참고용)">📈</button>`
     : "";
-  return ext + mini;
+  const fundInfo = (DATA[currentMarket].fundamentals || {})[r.code];
+  const fund = (fundInfo && fundInfo.status === "ok")
+    ? `<button class="fund-btn" data-code="${r.code}" title="재무정보 보기 (DART/SEC 공시, 레거시 8/8 통과 종목만)">📊</button>`
+    : "";
+  return ext + mini + fund;
 }
 
 function fmtPct(v) {
@@ -844,15 +880,21 @@ document.getElementById("sortSelect").addEventListener("change", (e) => {
 });
 
 document.getElementById("tbody").addEventListener("click", (e) => {
-  const btn = e.target.closest(".chart-btn");
-  if (btn) openChartModal(btn.dataset.code);
+  const chartBtn = e.target.closest(".chart-btn");
+  if (chartBtn) openChartModal(chartBtn.dataset.code);
+  const fundBtn = e.target.closest(".fund-btn");
+  if (fundBtn) openFundModal(fundBtn.dataset.code);
 });
 document.getElementById("modalClose").addEventListener("click", closeChartModal);
 document.getElementById("chartModal").addEventListener("click", (e) => {
   if (e.target.id === "chartModal") closeChartModal();
 });
+document.getElementById("fundModalClose").addEventListener("click", closeFundModal);
+document.getElementById("fundModal").addEventListener("click", (e) => {
+  if (e.target.id === "fundModal") closeFundModal();
+});
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeChartModal();
+  if (e.key === "Escape") { closeChartModal(); closeFundModal(); }
 });
 
 function cssVar(name) {
@@ -872,6 +914,78 @@ function openChartModal(code) {
 
 function closeChartModal() {
   document.getElementById("chartModal").classList.remove("open");
+}
+
+function fmtMoney(v, currency) {
+  const n = toNum(v);
+  if (n === null) return "-";
+  if (currency === "KRW") return (n / 1e8).toLocaleString("ko-KR", { maximumFractionDigits: 1 }) + "억";
+  return "$" + (n / 1e6).toLocaleString("en-US", { maximumFractionDigits: 1 }) + "M";
+}
+
+function fmtYoY(y) {
+  if (!y) return "-";
+  if (y.pct !== null && y.pct !== undefined) return (y.pct > 0 ? "+" : "") + y.pct.toFixed(1) + "%";
+  return y.label || "-";
+}
+
+function renderFundamentals(data) {
+  if (data.status !== "ok" || !data.quarters || !data.quarters.length) {
+    return `<div class="modal-note">${data.source || ""} 공시 데이터가 아직 없습니다.</div>`;
+  }
+  const isUS = data.market === "us";
+  const rows = data.quarters.map(q => `
+    <tr>
+      <td class="left">${q.period}</td>
+      <td>${fmtMoney(q.revenue, q.currency)}</td>
+      <td>${fmtMoney(q.operatingProfit, q.currency)}</td>
+      <td>${q.operatingMargin != null ? q.operatingMargin.toFixed(1) + "%" : "-"}</td>
+      <td>${fmtMoney(q.netIncome, q.currency)}</td>
+      <td>${fmtYoY(q.netIncomeYoY)}</td>
+      ${isUS ? `<td>${q.eps != null ? "$" + Number(q.eps).toFixed(2) : "-"}</td>` : ""}
+      <td>${fmtMoney(q.operatingCashFlow, q.currency)}</td>
+      ${isUS ? `<td>${fmtMoney(q.freeCashFlow, q.currency)}</td>` : ""}
+      <td>${q.debtToEquity != null ? q.debtToEquity.toFixed(0) + "%" : "-"}</td>
+      <td class="left">${q.sourceUrl ? `<a href="${q.sourceUrl}" target="_blank" rel="noopener noreferrer">공시</a>` : "-"}</td>
+    </tr>`).join("");
+  return `
+    <div class="table-scroll">
+    <table class="fund-table">
+      <thead><tr>
+        <th class="left">분기</th><th>매출액</th><th>영업이익</th><th>영업이익률</th>
+        <th>순이익</th><th>순이익YoY</th>
+        ${isUS ? "<th>EPS</th>" : ""}
+        <th>영업CF</th>
+        ${isUS ? "<th>FCF</th>" : ""}
+        <th>부채비율</th><th class="left">공시</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    </div>
+    <div class="modal-note">출처: ${data.source || "-"} · 최초수집 ${data.firstObservedAt ? data.firstObservedAt.slice(0, 10) : "-"} · 갱신 ${data.checkedAt ? data.checkedAt.slice(0, 10) : "-"}<br>${data.historyNote || ""}</div>
+  `;
+}
+
+async function openFundModal(code) {
+  const info = (DATA[currentMarket].fundamentals || {})[code];
+  const row = DATA[currentMarket].rows.find(r => r.code === code);
+  if (!info || !row) return;
+  document.getElementById("fundModalTitle").textContent = `${row.name} (${code}) 재무정보 — 레거시 8/8 통과`;
+  const body = document.getElementById("fundModalBody");
+  body.innerHTML = `<div class="modal-note">불러오는 중…</div>`;
+  document.getElementById("fundModal").classList.add("open");
+  try {
+    const res = await fetch(`data/fundamentals/${currentMarket}/${code}.json`, { cache: "no-store" });
+    if (!res.ok) throw new Error("fetch failed");
+    const data = await res.json();
+    body.innerHTML = renderFundamentals(data);
+  } catch (e) {
+    body.innerHTML = `<div class="modal-note">재무정보를 불러오지 못했습니다.</div>`;
+  }
+}
+
+function closeFundModal() {
+  document.getElementById("fundModal").classList.remove("open");
 }
 
 function plotLine(ctx, values, x, y, color, width) {
