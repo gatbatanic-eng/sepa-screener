@@ -1,4 +1,4 @@
-"""Public DART fundamentals for KR trend observations; never exports credentials.
+"""Public DART fundamentals for KR legacy 8/8 pass observations; never exports credentials.
 
 Snapshots are first-observed payloads, not historical point-in-time backtests.
 """
@@ -120,7 +120,9 @@ def main():
         raise RuntimeError('DART_API_KEY is not configured')
     now = dt.datetime.now(dt.timezone.utc)
     stocks = json.loads((ROOT / 'docs/data/latest_kr.json').read_text())
-    selected = [r for r in stocks if r.get('status') == 'OK' and r.get('inUniverse') is True and r.get('trendOk') is True]
+    # 레거시 8개 조건(c1~c8) 전부 통과 종목 전체(passAll). v2 TREND_OK/유니버스는
+    # 더 좁은 부분집합이라 trendOk 로만 거르면 legacy 통과 종목 일부가 누락된다.
+    selected = [r for r in stocks if r.get('status') == 'OK' and r.get('passAll') is True]
     api = Dart(key)
     corps = api.corporations()
     output = ROOT / 'docs/data/fundamentals/kr'
