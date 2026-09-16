@@ -84,6 +84,92 @@ COLUMN_MAP = {
     "시장국면_v2": "regime", "breadth50": "breadth", "권장진입비중": "sizeFactor",
 }
 
+# --- 밸류 스코어(참고용, 매수신호 아님) ---
+# DART/SEC "과거 실제 공시" 기반이며 애널리스트 컨센서스(추정치)가 아니다.
+# sepa/setup.py의 setup_quality_score와 동일한 방식: 서브지표를 각각
+# [0,1]로 선형 매핑 후 가중평균하되, 결측 서브지표는 제외하고 나머지로
+# 재정규화한다(하드 게이트 아님, 랭킹용).
+VALUE_GROWTH_LO, VALUE_GROWTH_HI = -20.0, 50.0   # 영업이익(우선)·순이익·매출 YoY%
+VALUE_PER_CHEAP, VALUE_PER_EXPENSIVE = 10.0, 30.0  # trailing PER: 한국만(marcap 필요, 미국은 marcap 미수집)
+VALUE_ROOM_HIGH, VALUE_ROOM_LOW = 0.75, 1.00       # 52주고점 근접도: 레거시 조건7(고점대비 25%이내)로 실질 범위가 이 구간
+VALUE_WEIGHTS = {"growth": 0.40, "accel": 0.20, "cheap": 0.25, "room": 0.15}
+
+
+def _value_lin(x: float | None, lo: float, hi: float) -> float | None:
+    if x is None:
+        return None
+    if lo == hi:
+        return 0.0
+    return max(0.0, min(1.0, (x - lo) / (hi - lo)))
+
+
+def _yoy_pct(quarter: dict, key: str) -> float | None:
+    return (quarter.get(key + "YoY") or {}).get("pct")
+
+
+def compute_value_metrics(market: str, code: str, row: dict) -> dict:
+    """실적 성장 추세 + (한국만) 낮은 trailing PER + 아직 52주 고점 대비
+    여유 있음을 조합한 랭킹용 점수. 미국은 marcap 미수집·EPS 결측이 많아
+    PER을 신뢰할 수 없으므로 밸류에이션 서브지표를 아예 빼고 계산한다.
+    fundamentals 파일이 없거나 분기가 4개 미만이면 빈 dict(계산 안 함)."""
+    path = DATA_DIR / "fundamentals" / market / f"{code}.json"
+    if not path.exists():
+        return {}
+    fund = json.loads(path.read_text(encoding="utf-8"))
+    quarters = fund.get("quarters") or []
+    if len(quarters) < 4:
+        return {}
+
+    last2, prior2 = quarters[-2:], quarters[-4:-2]
+
+    def accelerating(key: str) -> bool | None:
+        l = [_yoy_pct(q, key) for q in last2]
+        p = [_yoy_pct(q, key) for q in prior2]
+        if any(v is None for v in l + p):
+            return None
+        return (min(l) > 0) and (sum(l) / 2 >= sum(p) / 2)
+
+    op_yoy_last = _yoy_pct(quarters[-1], "operatingProfit")
+    ni_yoy_last = _yoy_pct(quarters[-1], "netIncome")
+    rev_yoy_last = _yoy_pct(quarters[-1], "revenue")
+    if op_yoy_last is not None:
+        growth_basis, growth_basis_label = op_yoy_last, "영업이익"
+    elif ni_yoy_last is not None:
+        growth_basis, growth_basis_label = ni_yoy_last, "순이익"
+    else:
+        growth_basis, growth_basis_label = rev_yoy_last, "매출액"
+    op_accel = accelerating("operatingProfit")
+
+    out = {"opYoyLast": op_yoy_last, "revYoyLast": rev_yoy_last,
+           "niYoyLast": ni_yoy_last, "opAccel": op_accel,
+           "growthBasisLabel": growth_basis_label if growth_basis is not None else None,
+           "growthBasisVal": growth_basis}
+
+    subs: dict[str, float] = {}
+    g = _value_lin(growth_basis, VALUE_GROWTH_LO, VALUE_GROWTH_HI)
+    if g is not None:
+        subs["growth"] = g
+    if op_accel is not None:
+        subs["accel"] = 1.0 if op_accel else 0.0
+
+    if market == "kr":
+        last4 = quarters[-4:]
+        ni_vals = [q.get("netIncome") for q in last4]
+        marcap = row.get("marcap")
+        if all(v is not None for v in ni_vals) and sum(ni_vals) > 0 and marcap:
+            per = marcap / sum(ni_vals)
+            out["trailingPer"] = round(per, 1)
+            subs["cheap"] = 1.0 - _value_lin(per, VALUE_PER_CHEAP, VALUE_PER_EXPENSIVE)
+
+    hp = row.get("highProximity")
+    if hp is not None:
+        subs["room"] = 1.0 - _value_lin(hp, VALUE_ROOM_HIGH, VALUE_ROOM_LOW)
+
+    total_w = sum(VALUE_WEIGHTS[k] for k in subs)
+    if subs and total_w > 0:
+        out["valueScore"] = round(sum(subs[k] * VALUE_WEIGHTS[k] for k in subs) / total_w * 100.0, 1)
+    return out
+
 
 def load_fresh_rows(prefix: str) -> list | None:
     """이번 실행이 이 시장을 스크리닝했다면 output/의 CSV에서 읽는다."""
@@ -196,6 +282,10 @@ def build() -> None:
             charts = load_chart_snapshot(prefix)
 
         fundamentals = load_fundamentals_index(prefix)
+        for r in rows:
+            info = fundamentals.get(r.get("code"))
+            if info and info.get("status") == "ok":
+                r.update(compute_value_metrics(prefix, r["code"], r))
 
         payload[prefix] = {"label": label, "rows": rows, "history": history, "asOf": as_of,
                             "charts": charts, "fundamentals": fundamentals}
@@ -412,6 +502,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <button class="filter-btn" data-filter="exitwarn">매도경고</button>
       <button class="filter-btn" data-filter="pass">레거시 8/8</button>
       <button class="filter-btn" data-filter="na">확인불가</button>
+      <button class="filter-btn" data-filter="value">실적개선·밸류</button>
       <select id="sortSelect">
         <option value="entryState">EntryState순</option>
         <option value="setupQuality">SetupQuality순</option>
@@ -422,6 +513,7 @@ HTML_TEMPLATE = r"""<!doctype html>
         <option value="metCount">충족조건수순</option>
         <option value="high52wPosition">52주고점대비순</option>
         <option value="marcap">시가총액순</option>
+        <option value="valueScore">밸류점수순</option>
         <option value="code">종목코드순</option>
       </select>
     </div>
@@ -443,7 +535,8 @@ HTML_TEMPLATE = r"""<!doctype html>
     ※ 상단 <b>시장 국면</b>(GREEN/YELLOW/RED/RECOVERY) + breadth50 + 권장 진입비중은 신규진입 리스크 참고용이며 실제 주문 기능이 아닙니다. 상단 배지(우호적/중립/비우호적)는 기존 시장 게이팅(레거시)입니다.<br>
     ※ "레거시판정"·"충족(8)"·"셋업점수(레거시)"·"타이밍신호"는 기존 화면과 비교하기 위해 유지합니다. 스테이지(와인스타인 4단계)·베이스 단계·펀더멘털·촉매는 여전히 자동 판정하지 않습니다. 모든 임계값은 <code>sepa/config.py</code> 에서 조정됩니다.<br>
     ※ "↗" 는 외부 차트 사이트 링크, "📈" 미니차트는 레거시 8/8 통과 + v2 진입 후보(GO/READY)에 제공됩니다. 종가/SMA/거래량/RSI(14)·매물대·변곡점 전부 참고용입니다.<br>
-    ※ "📊" 재무정보는 <b>레거시 8/8 전체통과 종목</b>에 한해 한국은 OpenDART, 미국은 SEC EDGAR 공시 원문을 그대로 보여줍니다(가공·추정치 없음). 수집 시점의 공시값이며, 과거 매수 시점에 알려졌던 값이 아닐 수 있고 정정공시가 있으면 갱신됩니다 — 투자 판단은 원문 공시를 직접 확인하세요.
+    ※ "📊" 재무정보는 <b>레거시 8/8 전체통과 종목</b>에 한해 한국은 OpenDART, 미국은 SEC EDGAR 공시 원문을 그대로 보여줍니다(가공·추정치 없음). 수집 시점의 공시값이며, 과거 매수 시점에 알려졌던 값이 아닐 수 있고 정정공시가 있으면 갱신됩니다 — 투자 판단은 원문 공시를 직접 확인하세요.<br>
+    ※ <b>밸류점수</b>(0~100, 랭킹용)는 최근 분기 영업이익(없으면 순이익·매출) YoY + 직전 2분기 대비 가속 여부 + (한국만) trailing PER(시총/최근4분기 순이익합) 낮음 + 52주고점 대비 여유(아직 안 오름)를 <code>generate_dashboard.py</code>에서 가중평균한 것입니다. <b>애널리스트 컨센서스(추정치)가 아니라 DART/SEC에 이미 공시된 과거 실적</b>이며, PER은 일회성 손익이 낀 분기가 있으면 왜곡될 수 있고 미국은 EPS·시가총액 결측이 많아 PER 서브지표 자체를 뺍니다. 매수 신호가 아니라 "실적은 개선되는데 아직 안 오른 후보" 1차 스크리닝용 참고 지표입니다.
   </footer>
 </div>
 
@@ -615,6 +708,10 @@ function hasV2() {
   return DATA[currentMarket].rows.some(r => r.entryState);
 }
 
+function hasValue() {
+  return DATA[currentMarket].rows.some(r => r.valueScore !== null && r.valueScore !== undefined);
+}
+
 function getCols() {
   const cols = [
     { key: "rank", label: "#", left: true },
@@ -642,6 +739,13 @@ function getCols() {
   cols.push({ key: "metCount", label: "충족(8)", fmt: (v) => metBar(v) });
   if (hasMarcap()) {
     cols.push({ key: "marcap", label: "시가총액", fmt: v => v ? fmtNum(v / 1e8, 0) + "억" : "-" });
+  }
+  if (hasValue()) {
+    cols.push(
+      { key: "valueScore", label: "밸류점수", fmt: v => valueScoreBadge(v) },
+      { key: "opYoyLast", label: "영업이익YoY", fmt: v => fmtSigned(v, 1) + (v != null ? "%" : "") },
+      { key: "trailingPer", label: "PER(TTM)", fmt: v => v != null ? v.toFixed(1) + "배" : "-" },
+    );
   }
   cols.push(
     { key: "setupScore", label: "셋업점수(레거시)", fmt: v => setupScoreBadge(v) },
@@ -746,6 +850,13 @@ function setupScoreBadge(v) {
   return `<span style="display:inline-block;min-width:34px;padding:2px 6px;border-radius:6px;font-weight:700;background:hsl(${hue},70%,92%);color:hsl(${hue},60%,32%);">${fmtNum(v, 1)}</span>`;
 }
 
+function valueScoreBadge(v) {
+  if (v === null || v === undefined) return "-";
+  const pct = Math.max(0, Math.min(100, v));
+  const hue = 4 + (pct / 100) * 146;
+  return `<span style="display:inline-block;min-width:34px;padding:2px 6px;border-radius:6px;font-weight:700;background:hsl(${hue},70%,92%);color:hsl(${hue},60%,32%);" title="실적성장+(한국만)저PER+아직 52주고점 여유 있음의 랭킹용 조합점수. 매수신호 아님, 컨센서스 아닌 과거 공시 기반">${fmtNum(v, 0)}</span>`;
+}
+
 function timingSignals(r) {
   const badges = [];
   if (r.breakoutSignal === true) badges.push(`<span class="badge breakout" title="피벗 상향돌파 + 거래량 1.5배 이상. 매수신호 아님">돌파</span>`);
@@ -785,6 +896,7 @@ function renderTable() {
     go_pullback: r => r.entryState === "GO_PULLBACK",
     extended: r => r.entryState === "LATE" || r.entryState === "EXTENDED",
     exitwarn: r => r.exitState && r.exitState !== "HOLD",
+    value: r => r.opAccel === true,
   };
   if (F[currentFilter]) rows = rows.filter(F[currentFilter]);
 
@@ -840,18 +952,28 @@ function renderTable() {
 
 function syncFilterButtons() {
   const v2 = hasV2();
+  const value = hasValue();
   const v2only = new Set(["trend", "setup", "ready", "go", "go_breakout", "go_pullback", "extended", "exitwarn"]);
   document.querySelectorAll(".filter-btn").forEach(b => {
     if (v2only.has(b.dataset.filter)) b.hidden = !v2;
+    if (b.dataset.filter === "value") b.hidden = !value;
   });
   document.querySelectorAll("#sortSelect option").forEach(o => {
     if (["entryState", "setupQuality", "rsScore", "rsChange20d", "pivotDist"].includes(o.value)) o.hidden = !v2;
+    if (o.value === "valueScore") o.hidden = !value;
   });
   if (!v2 && ["trend","setup","ready","go","go_breakout","go_pullback","extended","exitwarn"].includes(currentFilter)) {
     currentFilter = "all";
     document.querySelectorAll(".filter-btn").forEach(b => b.classList.toggle("active", b.dataset.filter === "all"));
   }
+  if (!value && currentFilter === "value") {
+    currentFilter = "all";
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.toggle("active", b.dataset.filter === "all"));
+  }
   if (!v2 && ["entryState","setupQuality","rsScore","rsChange20d","pivotDist"].includes(sortKey)) {
+    sortKey = "metCount";
+  }
+  if (!value && sortKey === "valueScore") {
     sortKey = "metCount";
   }
 }
@@ -929,11 +1051,25 @@ function fmtYoY(y) {
   return y.label || "-";
 }
 
-function renderFundamentals(data) {
+function valueScoreSummary(row) {
+  if (row.valueScore === null || row.valueScore === undefined) return "";
+  const parts = [
+    row.growthBasisLabel ? `성장기준(${row.growthBasisLabel})YoY ${fmtSigned(row.growthBasisVal, 1)}%` : "성장기준 판정불가",
+    `영업이익 가속(직전2분기 대비) ${row.opAccel === true ? "예" : row.opAccel === false ? "아니오" : "판정불가"}`,
+    row.trailingPer != null ? `PER(TTM) ${row.trailingPer.toFixed(1)}배` : null,
+    `52주고점 대비 ${row.highProximity != null ? ((row.highProximity - 1) * 100).toFixed(1) + "%" : "-"}`,
+  ].filter(Boolean).join(" · ");
+  return `<div class="modal-note" style="margin-bottom:8px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;">
+    <b>밸류점수 ${valueScoreBadge(row.valueScore)}</b> (랭킹용, 매수신호 아님) — ${parts}
+  </div>`;
+}
+
+function renderFundamentals(data, row) {
   if (data.status !== "ok" || !data.quarters || !data.quarters.length) {
     return `<div class="modal-note">${data.source || ""} 공시 데이터가 아직 없습니다.</div>`;
   }
   const isUS = data.market === "us";
+  const summary = row ? valueScoreSummary(row) : "";
   const rows = data.quarters.map(q => `
     <tr>
       <td class="left">${q.period}</td>
@@ -949,6 +1085,7 @@ function renderFundamentals(data) {
       <td class="left">${q.sourceUrl ? `<a href="${q.sourceUrl}" target="_blank" rel="noopener noreferrer">공시</a>` : "-"}</td>
     </tr>`).join("");
   return `
+    ${summary}
     <div class="table-scroll">
     <table class="fund-table">
       <thead><tr>
@@ -978,7 +1115,7 @@ async function openFundModal(code) {
     const res = await fetch(`data/fundamentals/${currentMarket}/${code}.json`, { cache: "no-store" });
     if (!res.ok) throw new Error("fetch failed");
     const data = await res.json();
-    body.innerHTML = renderFundamentals(data);
+    body.innerHTML = renderFundamentals(data, row);
   } catch (e) {
     body.innerHTML = `<div class="modal-note">재무정보를 불러오지 못했습니다.</div>`;
   }
