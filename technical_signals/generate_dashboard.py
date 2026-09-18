@@ -173,6 +173,12 @@ HTML_TEMPLATE = r"""<!doctype html>
   .controls input, .controls select { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel); color: var(--text); font-size: 12px; }
   .filter-btn { padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer; font-size: 12px; font-weight: 600; }
   .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .filter-btn.reset-btn { background: var(--panel); color: var(--text-dim); font-weight: 500; margin-left: auto; }
+  .filter-count { color: var(--text-dim); font-size: 11px; }
+  .numeric-filters { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); }
+  .numeric-field { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-dim); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 4px 8px; }
+  .numeric-field input { width: 56px; padding: 3px 5px; border-radius: 6px; border: 1px solid var(--border); background: var(--panel); color: var(--text); font-size: 12px; }
+  .numeric-field.active { border-color: var(--accent); color: var(--text); }
   .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px; box-shadow: var(--shadow); }
   .table-scroll { overflow-x: auto; }
   table { border-collapse: collapse; width: 100%; white-space: nowrap; }
@@ -228,7 +234,10 @@ HTML_TEMPLATE = r"""<!doctype html>
   <div class="panel">
     <div class="controls" id="filterBar">
       <input type="text" id="search" placeholder="종목코드 또는 종목명 검색...">
+      <span class="filter-count" id="filterCount"></span>
+      <button class="filter-btn reset-btn" id="resetFilters">조건 초기화</button>
     </div>
+    <div class="controls numeric-filters" id="numericFilters"></div>
     <div class="table-scroll">
       <table id="table">
         <thead><tr id="thead-row"></tr></thead>
@@ -256,9 +265,18 @@ const DATA = __DATA_JSON__;
 const marketKeys = Object.keys(DATA);
 let currentMarket = marketKeys[0];
 let currentTrack = "trend";   // "trend"(추세돌파) | "rebound"(박스권반등)
-let currentFilter = "all";
+let activeFilters = new Set();   // 조건 버튼(불리언), 여러 개 동시 선택 시 AND
+let numericFilters = {};         // { scoreMin, riskMax, rsiMin, rsiMax, volMin } — 값 있는 것만 AND
 let sortKey = "trendScore";
 let sortDir = -1;
+
+const NUMERIC_FIELDS = [
+  { key: "scoreMin", label: "점수≥", get: (r, t) => r[t.scoreKey] },
+  { key: "riskMax", label: "리스크%≤", get: r => r.riskPct },
+  { key: "rsiMin", label: "RSI≥", get: r => r.rsiValue },
+  { key: "rsiMax", label: "RSI≤", get: r => r.rsiValue },
+  { key: "volMin", label: "거래량/50일≥", get: r => r.volumeRatio50 },
+];
 
 const TRACKS = {
   trend: { label: "추세돌파", scoreKey: "trendScore", verdictKey: "trendVerdict", reasonsKey: "trendVerdictReasons" },
@@ -313,7 +331,8 @@ function renderTracks() {
     btn.addEventListener("click", () => {
       currentTrack = btn.dataset.track;
       sortKey = TRACKS[currentTrack].scoreKey;
-      currentFilter = "all";
+      activeFilters.clear();
+      numericFilters = {};
       renderAll();
     });
   });
@@ -372,7 +391,9 @@ function getCols() {
   ];
   const trendOnly = [
     { key: "trendAligned", label: "정배열", fmt: v => boolBadge(v, "정배열", "-") },
-    { key: "goldenCross", label: "골든크로스", fmt: (v, r) => r.deadCross ? `<span class="badge warn">데드</span>` : boolBadge(v, "골든") },
+    { key: "goldenCross", label: "골든크로스", fmt: (v, r) => v === true
+        ? `<span class="badge on">골든</span>${r.deadCross ? ' <span class="badge warn">데드도</span>' : ""}`
+        : (r.deadCross ? `<span class="badge warn">데드</span>` : "-") },
     { key: "breakoutTrigger", label: "돌파트리거", fmt: v => boolBadge(v, "돌파", "-") },
     { key: "pivotDistancePct", label: "피벗대비", fmt: (v, r) => v == null ? "-" : `${v > 0 ? "+" : ""}${v.toFixed(1)}% ${r.chaseWarning ? '<span class="badge warn">추격주의</span>' : ""}` },
     { key: "macdBullCross", label: "MACD", fmt: v => boolBadge(v, "매수돌파") },
@@ -401,13 +422,13 @@ function getCols() {
 function getFilters() {
   if (currentTrack === "trend") {
     return [
-      ["all", "전체"], ["review", "매수검토+"], ["ready", "진입준비"], ["hold", "진입보류"],
+      ["review", "매수검토+"], ["ready", "진입준비"], ["hold", "진입보류"],
       ["golden", "골든크로스"], ["breakout", "돌파트리거"], ["macd", "MACD매수"],
       ["squeeze", "볼린저수축"], ["obv", "OBV상승"], ["chase", "추격경고"], ["na", "확인불가"],
     ];
   }
   return [
-    ["all", "전체"], ["review", "매수검토+"], ["ready", "진입준비"], ["hold", "진입보류"],
+    ["review", "매수검토+"], ["ready", "진입준비"], ["hold", "진입보류"],
     ["position", "눌린위치"], ["revert", "하단복귀"], ["rsi", "RSI회복"], ["stoch", "스토캐스틱매수"],
     ["squeeze", "볼린저수축"], ["obv", "OBV상승"], ["na", "확인불가"],
   ];
@@ -444,20 +465,60 @@ function filterPredicate(key, t) {
 function renderFilterBar() {
   const el = document.getElementById("filterBar");
   const search = document.getElementById("search");
-  el.querySelectorAll(".filter-btn").forEach(b => b.remove());
+  el.querySelectorAll(".filter-btn:not(.reset-btn)").forEach(b => b.remove());
   getFilters().forEach(([key, label]) => {
     const btn = document.createElement("button");
-    btn.className = "filter-btn" + (key === currentFilter ? " active" : "");
+    btn.className = "filter-btn" + (activeFilters.has(key) ? " active" : "");
     btn.dataset.filter = key;
     btn.textContent = label;
+    btn.title = "클릭해서 켜고 끄기 — 여러 개 동시에 켜면 전부 AND로 적용됩니다";
     btn.addEventListener("click", () => {
-      currentFilter = key;
-      el.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
+      if (activeFilters.has(key)) activeFilters.delete(key); else activeFilters.add(key);
       renderTable();
+      updateFilterCount();
+      btn.classList.toggle("active");
     });
     el.insertBefore(btn, search);
   });
+  updateFilterCount();
+}
+
+function renderNumericFilters() {
+  const el = document.getElementById("numericFilters");
+  el.innerHTML = "";
+  NUMERIC_FIELDS.forEach(f => {
+    const wrap = document.createElement("label");
+    wrap.className = "numeric-field" + (numericFilters[f.key] != null ? " active" : "");
+    wrap.innerHTML = `${f.label} <input type="number" step="any" data-key="${f.key}" value="${numericFilters[f.key] ?? ""}">`;
+    const input = wrap.querySelector("input");
+    input.addEventListener("input", () => {
+      const v = input.value.trim();
+      if (v === "") delete numericFilters[f.key]; else numericFilters[f.key] = Number(v);
+      wrap.classList.toggle("active", numericFilters[f.key] != null);
+      renderTable();
+      updateFilterCount();
+    });
+    el.appendChild(wrap);
+  });
+}
+
+function updateFilterCount() {
+  const n = activeFilters.size + Object.keys(numericFilters).length;
+  document.getElementById("filterCount").textContent = n > 0 ? `${n}개 조건 적용중(AND)` : "";
+}
+
+function numericFiltersPass(r, t) {
+  for (const f of NUMERIC_FIELDS) {
+    if (numericFilters[f.key] == null) continue;
+    const v = f.get(r, t);
+    if (v == null) return false;
+    if (f.key === "riskMax" || f.key === "rsiMax") {
+      if (v > numericFilters[f.key]) return false;
+    } else {
+      if (v < numericFilters[f.key]) return false;
+    }
+  }
+  return true;
 }
 
 function renderTable() {
@@ -465,8 +526,11 @@ function renderTable() {
   let rows = DATA[currentMarket].rows.slice();
   const t = TRACKS[currentTrack];
 
-  const pred = filterPredicate(currentFilter, t);
-  if (currentFilter !== "all" && pred) rows = rows.filter(pred);
+  for (const key of activeFilters) {
+    const pred = filterPredicate(key, t);
+    if (pred) rows = rows.filter(pred);
+  }
+  if (Object.keys(numericFilters).length) rows = rows.filter(r => numericFiltersPass(r, t));
 
   if (q) rows = rows.filter(r =>
     (r.code || "").toLowerCase().includes(q) || (r.name || "").toLowerCase().includes(q)
@@ -512,10 +576,19 @@ function renderAll() {
   renderRegimeBar();
   renderCards();
   renderFilterBar();
+  renderNumericFilters();
   renderTable();
 }
 
 document.getElementById("search").addEventListener("input", renderTable);
+document.getElementById("resetFilters").addEventListener("click", () => {
+  activeFilters.clear();
+  numericFilters = {};
+  document.getElementById("search").value = "";
+  renderFilterBar();
+  renderNumericFilters();
+  renderTable();
+});
 
 renderAll();
 </script>
