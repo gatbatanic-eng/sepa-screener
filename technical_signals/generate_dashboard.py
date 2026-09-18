@@ -205,6 +205,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     <div class="controls">
       <input type="text" id="search" placeholder="종목코드 또는 종목명 검색...">
       <button class="filter-btn active" data-filter="all">전체</button>
+      <button class="filter-btn" data-filter="go">매수신호(조합)</button>
       <button class="filter-btn" data-filter="golden">골든크로스</button>
       <button class="filter-btn" data-filter="macd">MACD매수</button>
       <button class="filter-btn" data-filter="rsi">RSI회복</button>
@@ -238,7 +239,8 @@ HTML_TEMPLATE = r"""<!doctype html>
     ※ <b>RSI(14)</b>: 30선을 최근 3거래일 내 상향 이탈(회복) / 70 이상(과매수). <b>스토캐스틱(14,3,3)</b>: %K가 20 이하 구간에서 %D를 최근 3거래일 내 상향 돌파.<br>
     ※ <b>볼린저밴드(20,2σ)</b>: 하단이탈 후 재진입(역추세) 또는 상단돌파+거래량 1.5배 이상(추세추종), 밴드폭이 120거래일 신저치면 "수축(스퀴즈, 변동성 축소 셋업)".<br>
     ※ <b>OBV</b>: 누적거래량이 20일 평균보다 위(거래량 추세 확인용, 단독 신호 아님). <b>ADX(14)</b>: 25 이상이면 "추세 있음" — 그 자체로 매수 신호가 아니라 다른 신호의 신뢰도를 보정하는 필터입니다. <b>이격도</b> = (종가/20일 이평 − 1)×100, 수치 참고용.<br>
-    ※ <b>복합점수</b>(0~100, 랭킹용)는 위 신호 중 계산 가능한 것만 가중평균한 것입니다(골든크로스 0.20·MACD 0.20·RSI 0.15·스토캐스틱 0.15·볼린저 0.15·OBV 0.10·ADX 0.05). 하드 게이트가 아니며, 임계값은 <code>technical_signals/config.py</code>에서 조정됩니다.
+    ※ <b>복합점수</b>(0~100, 랭킹용)는 위 신호 중 계산 가능한 것만 가중평균한 것입니다(골든크로스 0.20·MACD 0.20·RSI 0.15·스토캐스틱 0.15·볼린저 0.15·OBV 0.10·ADX 0.05). 하드 게이트가 아니며, 임계값은 <code>technical_signals/config.py</code>에서 조정됩니다.<br>
+    ※ <b>매수신호(조합)</b> = <b>추세</b>(골든크로스) <b>AND</b> <b>모멘텀</b>(MACD매수돌파/RSI회복/스토캐스틱매수 중 하나) <b>AND</b> <b>거래량</b>(OBV상승/볼린저상단돌파 중 하나) <b>AND</b> <b>ADX≥25</b>. 서로 다른 각도(추세·모멘텀·거래량·추세강도)에서 동시에 확인돼야 뜨는 하드 조합이라 복합점수보다 훨씬 드물게 나옵니다. <b>이것도 매수 확정 신호가 아니라 "여러 조건이 동시에 맞은 후보" 1차 스크리닝용입니다</b> — 조합 기준은 <code>technical_signals/signals.py</code>의 <code>_go_signal()</code>에서 조정됩니다.
   </footer>
 </div>
 
@@ -293,10 +295,12 @@ function renderCards() {
   const golden = ok.filter(r => r.goldenCross === true).length;
   const multi = ok.filter(r => signalCount(r) >= 2).length;
   const trending = ok.filter(r => r.adxTrending === true).length;
+  const go = ok.filter(r => r.goSignal === true).length;
   const cards = [
     ["기준일", market.asOf || "-"],
     ["스크리닝종목수", rows.length],
     ["정상판정", ok.length],
+    ["매수신호(조합)", go],
     ["골든크로스", golden],
     ["복합신호(2개+)", multi],
     ["추세강함(ADX≥25)", trending],
@@ -313,6 +317,9 @@ function getCols() {
     { key: "name", label: "종목명", left: true },
     { key: "close", label: "종가", fmt: v => fmtNum(v, 2) },
     { key: "changePct", label: "등락률", fmt: v => changeBadge(v) },
+    { key: "goSignal", label: "매수신호(조합)", fmt: (v, r) => v === true
+        ? `<span class="badge on" title="${(r.goReasons || []).join(', ')}">GO</span>`
+        : (v === false ? "-" : `<span class="badge na">-</span>`) },
     { key: "goldenCross", label: "골든크로스", fmt: (v, r) => r.deadCross ? `<span class="badge warn">데드</span>` : boolBadge(v, "골든") },
     { key: "macdBullCross", label: "MACD", fmt: (v, r) => r.macdBearCross ? `<span class="badge warn">약세돌파</span>` : boolBadge(v, "매수돌파") },
     { key: "rsiValue", label: "RSI(14)", fmt: (v, r) => (v == null ? "-" : `${v.toFixed(1)} ${r.rsiOversoldExit ? '<span class="badge on">회복</span>' : (r.rsiOverbought ? '<span class="badge warn">과매수</span>' : "")}`) },
@@ -337,6 +344,7 @@ function renderTable() {
   let rows = DATA[currentMarket].rows.slice();
 
   const F = {
+    go: r => r.goSignal === true,
     golden: r => r.goldenCross === true,
     macd: r => r.macdBullCross === true,
     rsi: r => r.rsiOversoldExit === true,
