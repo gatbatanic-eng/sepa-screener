@@ -3,9 +3,16 @@ technical_signals/data.py — 네트워크 호출(유니버스·OHLCV 조회)
 ==================================================================
 
 다른 서브시스템(`sepa/`, `screener/`, `range_vrebound/`)의 코드를 import하지
-않는다. 유니버스를 고르는 방식(코스피+코스닥 시가총액 상위 N, S&P500 전체
-구성종목)은 관례상 동일하게 fdr.StockListing 기반으로 독립 재구현한다
-(`range_vrebound/src/data/loader.py`와 같은 원칙).
+않는다.
+
+한국 유니버스는 애초에 `fdr.StockListing("KOSPI"/"KOSDAQ")`의 Marcap(시가총액)
+컬럼으로 상위 N종목만 추리려 했으나(`range_vrebound/src/data/loader.py`와
+같은 관례), 실제로 돌려보니(로컬 및 GitHub Actions 둘 다) 이 컬럼이 —
+Marcap뿐 아니라 Close/Volume/Amount 등 시세 관련 컬럼 전부 — 현재 이
+엔드포인트에서 항상 NaN으로 내려와 사실상 못 쓴다(업스트림 데이터 문제로
+추정, 이 리포의 다른 곳에도 잠재적으로 영향을 줄 수 있음). Code/Name/Market
+은 정상 채워지므로, 시가총액 랭킹 없이 코스피+코스닥 전체를 스크리닝한다
+(개별 종목 OHLCV는 `fdr.DataReader`로 별도 조회하며 이건 정상 동작 확인됨).
 """
 from __future__ import annotations
 
@@ -26,11 +33,12 @@ import config as cfg
 
 logger = logging.getLogger(__name__)
 
-_KR_REQUIRED_COLUMNS = {"Code", "Name", "Marcap"}
+_KR_REQUIRED_COLUMNS = {"Code", "Name"}
 
 
-def fetch_kr_universe(top_n: int = cfg.KR_TOP_N_DEFAULT) -> pd.DataFrame:
-    """코스피+코스닥 시가총액 상위 top_n. 컬럼: Code, Name, Market."""
+def fetch_kr_universe() -> pd.DataFrame:
+    """코스피+코스닥 전체 상장종목. 컬럼: Code, Name, Market.
+    시가총액 랭킹은 쓰지 않는다(모듈 docstring 참고 — Marcap이 항상 NaN)."""
     kospi = fdr.StockListing("KOSPI")
     kosdaq = fdr.StockListing("KOSDAQ")
     combined = pd.concat([kospi, kosdaq], ignore_index=True)
@@ -39,9 +47,8 @@ def fetch_kr_universe(top_n: int = cfg.KR_TOP_N_DEFAULT) -> pd.DataFrame:
     missing = _KR_REQUIRED_COLUMNS - set(combined.columns)
     if missing:
         raise ValueError(f"KR listing에 필요한 컬럼이 없습니다: {sorted(missing)}")
-    cleaned = combined.dropna(subset=["Code", "Name", "Marcap"])
-    cleaned = cleaned.sort_values("Marcap", ascending=False)
-    return cleaned.head(top_n).reset_index(drop=True)[["Code", "Name", "Market"]]
+    cleaned = combined.dropna(subset=["Code", "Name"])
+    return cleaned.reset_index(drop=True)[["Code", "Name", "Market"]]
 
 
 def fetch_us_universe() -> pd.DataFrame:

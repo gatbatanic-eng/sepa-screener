@@ -31,7 +31,7 @@ DOCS_DIR = REPO_ROOT / "docs" / "technical"
 DATA_DIR = DOCS_DIR / "data"
 
 MARKETS = {
-    "kr": "한국 (코스피/코스닥 시총상위)",
+    "kr": "한국 (코스피/코스닥 전체)",
     "us": "미국 (S&P500)",
 }
 

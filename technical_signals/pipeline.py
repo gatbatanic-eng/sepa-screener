@@ -14,7 +14,6 @@ from typing import Optional
 
 import pandas as pd
 
-import config as cfg
 import data
 from signals import SignalResult, evaluate_signals
 
@@ -75,10 +74,10 @@ def _evaluate_one(code: str, name: str, market: str, start: dt.date) -> StockRec
                         changePct=change_pct, signals=sig)
 
 
-def run(market: str, top_n: int = cfg.KR_TOP_N_DEFAULT, limit: int | None = None) -> list[StockRecord]:
+def run(market: str, limit: int | None = None) -> list[StockRecord]:
     """market: 'KR' 또는 'US'."""
     if market == "KR":
-        universe = data.fetch_kr_universe(top_n)
+        universe = data.fetch_kr_universe()
     elif market == "US":
         universe = data.fetch_us_universe()
     else:
