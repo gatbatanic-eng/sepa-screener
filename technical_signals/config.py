@@ -9,7 +9,8 @@ technical_signals/config.py — 임계값·파라미터
 from __future__ import annotations
 
 # --- 유니버스 ---
-KR_TOP_N_DEFAULT = 300          # 코스피+코스닥 시가총액 상위 N종목 (SEPA legacy_market_cap 모드와 동일한 아이디어)
+# 코스피+코스닥 "시총 상위 N"을 원래 계획했으나 fdr.StockListing의 Marcap이
+# 현재 항상 NaN이라(data.py 참고) 랭킹 없이 전체를 스크리닝한다.
 MIN_TRADING_DAYS = 260          # 지표 계산에 필요한 최소 거래일 수(SMA200 등)
 HISTORY_CALENDAR_DAYS = 450     # fdr 조회 시작일 = 오늘 - 이 값 (주말/휴장 고려 여유)
 
