@@ -67,6 +67,11 @@ def fetch_ohlcv(code: str, start: dt.date) -> pd.DataFrame:
     return fdr.DataReader(code, start)
 
 
+def fetch_index_ohlcv(index_code: str, start: dt.date) -> pd.DataFrame:
+    """시장 지수(KS11/KQ11/US500 등) 일봉. 시장 국면 게이트 계산용."""
+    return fdr.DataReader(index_code, start)
+
+
 def history_start_date(today: dt.date | None = None) -> dt.date:
     today = today or dt.date.today()
     return today - dt.timedelta(days=cfg.HISTORY_CALENDAR_DAYS)
