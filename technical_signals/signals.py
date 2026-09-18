@@ -256,10 +256,14 @@ def evaluate_signals(ohlcv: pd.DataFrame, min_trading_value: float = cfg.MIN_TRA
         r.swing_low_price = round(float(swing_series.iloc[-1]), 4)
         structural_stop = r.swing_low_price - cfg.STOP_ATR_BUFFER_MULT * r.atr_value
         atr_stop = r.close - cfg.ATR_STOP_MULT * r.atr_value
-        r.stop_price = round(min(structural_stop, atr_stop), 4)  # 더 낮은(=더 보수적) 쪽
-        if r.close > 0:
-            r.risk_pct = round((r.close - r.stop_price) / r.close * 100.0, 2)
-            r.risk_too_high = r.risk_pct > cfg.MAX_RISK_PCT
+        # ATR이 종가 대비 비정상적으로 커서(품질이 나쁜/희박한 데이터) 손절가가
+        # 0 이하로 나오면 그 자체가 신뢰할 수 없는 값이므로 억지로 보여주지
+        # 않고 판정불가(None)로 남긴다 — 실데이터 전체 스크리닝 중 발견됨.
+        if structural_stop > 0 and atr_stop > 0:
+            r.stop_price = round(min(structural_stop, atr_stop), 4)  # 더 낮은(=더 보수적) 쪽
+            if r.close > 0:
+                r.risk_pct = round((r.close - r.stop_price) / r.close * 100.0, 2)
+                r.risk_too_high = r.risk_pct > cfg.MAX_RISK_PCT
 
     r.trend_score = _group_score(_trend_group_fractions(r), cfg.TREND_GROUP_WEIGHTS)
     r.rebound_score = _group_score(_rebound_group_fractions(r), cfg.REBOUND_GROUP_WEIGHTS)
