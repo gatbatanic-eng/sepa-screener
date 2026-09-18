@@ -63,6 +63,11 @@ class SignalResult:
 
     disparity20: float | None = None
 
+    momentum_trigger: bool | None = None
+    volume_confirm: bool | None = None
+    go_signal: bool | None = None
+    go_reasons: list[str] = field(default_factory=list)
+
     composite_score: float | None = None
     reasons: list[str] = field(default_factory=list)
 
@@ -157,7 +162,49 @@ def evaluate_signals(ohlcv: pd.DataFrame) -> SignalResult:
         r.disparity20 = round(float(disp.iloc[-1]), 2)
 
     r.composite_score = _composite_score(r)
+    r.go_signal, r.momentum_trigger, r.volume_confirm, r.go_reasons = _go_signal(r)
     return r
+
+
+def _go_signal(r: SignalResult) -> tuple[bool | None, bool | None, bool | None, list[str]]:
+    """4개 카테고리(추세/모멘텀/거래량/추세강도)를 전부 AND로 묶은 하드 조합
+    신호. 모멘텀·거래량 카테고리 내부는 OR(서로 상관관계 높은 지표를 전부
+    요구하면 사실상 안 뜨므로) — 사용자와 논의해 정한 조합이다:
+      추세: 골든크로스(최근)
+      모멘텀: MACD매수돌파 / RSI회복 / 스토캐스틱매수 중 하나
+      거래량: OBV상승 / 볼린저상단돌파 중 하나
+      필터: ADX>=25 (추세 있을 때만 신뢰, 횡보장 속임수 신호 배제용)
+    SEPA GO_BREAKOUT과 같은 철학(하드 AND)이지만, 이 역시 '여러 각도에서
+    동시에 확인된 후보'일 뿐 매수 확정 신호가 아니다. 4개 카테고리 중
+    하나라도 판정 불가(None)면 전체가 None(억지로 False 아님)."""
+    momentum_inputs = [r.macd_bull_cross, r.rsi_oversold_exit, r.stoch_bull_cross]
+    momentum = any(v is True for v in momentum_inputs) if any(v is not None for v in momentum_inputs) else None
+
+    volume_inputs = [r.obv_rising, r.bb_upper_breakout]
+    volume = any(v is True for v in volume_inputs) if any(v is not None for v in volume_inputs) else None
+
+    parts = {"golden_cross": r.golden_cross, "momentum": momentum,
+             "volume": volume, "adx_trending": r.adx_trending}
+    if any(v is None for v in parts.values()):
+        return None, momentum, volume, []
+
+    reasons = []
+    if r.golden_cross:
+        reasons.append("골든크로스")
+    if r.macd_bull_cross:
+        reasons.append("MACD매수돌파")
+    if r.rsi_oversold_exit:
+        reasons.append("RSI회복")
+    if r.stoch_bull_cross:
+        reasons.append("스토캐스틱매수")
+    if r.obv_rising:
+        reasons.append("OBV상승")
+    if r.bb_upper_breakout:
+        reasons.append("볼린저상단돌파")
+    if r.adx_trending:
+        reasons.append("ADX추세확인")
+
+    return all(parts.values()), momentum, volume, reasons
 
 
 def _composite_score(r: SignalResult) -> float | None:
