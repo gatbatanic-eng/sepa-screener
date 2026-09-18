@@ -18,7 +18,7 @@ import json
 import logging
 from pathlib import Path
 
-from pipeline import record_to_dict, run
+from pipeline import record_to_dict, regime_to_dict, run
 
 BASE_DIR = Path(__file__).resolve().parent
 OUTPUT_DIR = BASE_DIR / "output"
@@ -29,14 +29,14 @@ logger = logging.getLogger(__name__)
 
 def run_market(market: str, limit: int | None) -> None:
     logger.info("=== %s 기술적 신호 스크리닝 시작 ===", market)
-    records = run(market, limit=limit)
+    records, regime = run(market, limit=limit)
     ok = sum(1 for r in records if r.status == "OK")
-    logger.info("%s: %d종목 중 %d 정상판정", market, len(records), ok)
+    logger.info("%s: %d종목 중 %d 정상판정 (시장국면=%s)", market, len(records), ok, regime.regime)
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     prefix = market.lower()
     path = OUTPUT_DIR / f"latest_{prefix}.json"
-    payload = [record_to_dict(r) for r in records]
+    payload = {"rows": [record_to_dict(r) for r in records], "regime": regime_to_dict(regime)}
     path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
     logger.info("저장: %s", path)
 

@@ -76,6 +76,21 @@ def obv(close: pd.Series, volume: pd.Series) -> pd.Series:
     return (direction * volume).cumsum()
 
 
+def true_range(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.Series:
+    """True Range. 첫 봉은 전일 종가가 없어 (고가-저가)로 대체된다."""
+    prev_close = close.shift(1)
+    return pd.concat([
+        (high - low),
+        (high - prev_close).abs(),
+        (low - prev_close).abs(),
+    ], axis=1).max(axis=1)
+
+
+def atr(high: pd.Series, low: pd.Series, close: pd.Series, period: int) -> pd.Series:
+    """ATR (Wilder 지수평활). window 미만은 NaN."""
+    return true_range(high, low, close).ewm(alpha=1.0 / period, adjust=False, min_periods=period).mean()
+
+
 def adx(high: pd.Series, low: pd.Series, close: pd.Series, period: int) -> tuple[pd.Series, pd.Series, pd.Series]:
     """Wilder ADX. (ADX, +DI, -DI)를 반환한다."""
     up_move = high.diff()
@@ -83,20 +98,37 @@ def adx(high: pd.Series, low: pd.Series, close: pd.Series, period: int) -> tuple
     plus_dm = up_move.where((up_move > down_move) & (up_move > 0), 0.0)
     minus_dm = down_move.where((down_move > up_move) & (down_move > 0), 0.0)
 
-    prev_close = close.shift(1)
-    tr = pd.concat([
-        (high - low),
-        (high - prev_close).abs(),
-        (low - prev_close).abs(),
-    ], axis=1).max(axis=1)
-
-    atr_ = tr.ewm(alpha=1.0 / period, adjust=False, min_periods=period).mean()
+    atr_ = atr(high, low, close, period)
     plus_di = 100.0 * plus_dm.ewm(alpha=1.0 / period, adjust=False, min_periods=period).mean() / atr_.replace(0.0, np.nan)
     minus_di = 100.0 * minus_dm.ewm(alpha=1.0 / period, adjust=False, min_periods=period).mean() / atr_.replace(0.0, np.nan)
 
     dx = (plus_di - minus_di).abs() / (plus_di + minus_di).replace(0.0, np.nan) * 100.0
     adx_ = dx.ewm(alpha=1.0 / period, adjust=False, min_periods=period).mean()
     return adx_, plus_di, minus_di
+
+
+def clv(high: float, low: float, close: float) -> float | None:
+    """Close Location Value = (종가-저가)/(고가-저가). 고가==저가(상하한가 등)면 0.5.
+    입력이 결측이면 None. 돌파 확인(당일 세게 끝까지 밀어올렸는지) 품질 체크용."""
+    if any(v is None or (isinstance(v, float) and np.isnan(v)) for v in (high, low, close)):
+        return None
+    rng = high - low
+    if rng <= 0:
+        return 0.5
+    return float((close - low) / rng)
+
+
+def swing_low(low: pd.Series, lookback: int) -> pd.Series:
+    """최근 lookback거래일(당일 포함) 중 최저 저가 — 지지선/손절 기준 근사치."""
+    return low.rolling(lookback, min_periods=1).min()
+
+
+def rolling_pivot_high(high: pd.Series, lookback: int) -> pd.Series:
+    """전일까지의 최근 lookback거래일 고가 최고치(당일 제외, 인과적) — 돌파 판정용 피벗.
+    당일 자기참조를 피한다(당일이 확인된 돌파일이면 그날의 고가 확장 자체가
+    같은 날 피벗에 들어가 "돌파했는가" 판정을 스스로 깎아먹는 자기모순을 방지
+    — SEPA sepa/setup.py의 "당일 제외" 원칙과 동일)."""
+    return high.rolling(lookback, min_periods=lookback).max().shift(1)
 
 
 def disparity(close: pd.Series, ma: pd.Series) -> pd.Series:

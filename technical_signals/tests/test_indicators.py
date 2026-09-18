@@ -11,8 +11,8 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from indicators import (  # noqa: E402
-    adx, bollinger, bollinger_bandwidth, crossed_down_recent, crossed_up_recent,
-    disparity, ema, macd, obv, rsi, sma, stochastic,
+    adx, atr, bollinger, bollinger_bandwidth, clv, crossed_down_recent, crossed_up_recent,
+    disparity, ema, macd, obv, rolling_pivot_high, rsi, sma, stochastic, swing_low, true_range,
 )
 
 
@@ -113,6 +113,40 @@ class TestBasicIndicators(unittest.TestCase):
         d = disparity(close, ma)
         self.assertAlmostEqual(d.dropna().iloc[-1], 0.0, places=6)
 
+    def test_true_range_uses_high_low_when_no_gap(self):
+        high = pd.Series([102.0, 103.0, 104.0])
+        low = pd.Series([100.0, 101.0, 102.0])
+        close = pd.Series([101.0, 102.0, 103.0])
+        tr = true_range(high, low, close)
+        self.assertAlmostEqual(tr.iloc[0], 2.0)  # 첫 봉: 전일 종가 없음 -> 고가-저가
+        self.assertAlmostEqual(tr.iloc[1], 2.0)
+
+    def test_atr_positive_and_matches_true_range_scale(self):
+        rng = np.random.default_rng(9)
+        close = pd.Series(100 + np.cumsum(rng.normal(0, 1, 60)))
+        high = close + 1.0
+        low = close - 1.0
+        a = atr(high, low, close, 14)
+        self.assertTrue((a.dropna() > 0).all())
+
+    def test_clv_top_bottom_and_flat_range(self):
+        self.assertAlmostEqual(clv(110.0, 100.0, 110.0), 1.0)   # 종가=고가
+        self.assertAlmostEqual(clv(110.0, 100.0, 100.0), 0.0)   # 종가=저가
+        self.assertAlmostEqual(clv(100.0, 100.0, 100.0), 0.5)   # 고가==저가
+        self.assertIsNone(clv(None, 100.0, 105.0))              # 결측
+
+    def test_swing_low_is_rolling_min_including_today(self):
+        low = pd.Series([10.0, 8.0, 9.0, 7.0, 12.0])
+        out = swing_low(low, lookback=3)
+        self.assertAlmostEqual(out.iloc[3], 7.0)   # 최근 3봉(8,9,7) 중 최저
+        self.assertAlmostEqual(out.iloc[4], 7.0)   # 최근 3봉(9,7,12) 중 최저
+
+    def test_rolling_pivot_high_excludes_today(self):
+        high = pd.Series([10.0, 12.0, 11.0, 9.0, 100.0])  # 마지막날 급등
+        out = rolling_pivot_high(high, lookback=3)
+        # index 4 시점 피벗은 index 1~3(12,11,9)의 최고치여야 한다(당일 100 제외)
+        self.assertAlmostEqual(out.iloc[4], 12.0)
+
 
 class TestCrossHelpers(unittest.TestCase):
     def test_crossed_up_recent_detects_cross_within_window(self):
@@ -200,6 +234,24 @@ class TestNoLookahead(unittest.TestCase):
         a1, p1, m1 = adx(self.high, self.low, self.close, 14)
         a2, p2, m2 = adx(self.high.iloc[:cut+1], self.low.iloc[:cut+1], self.close.iloc[:cut+1], 14)
         self._assert_prefix_stable(a1, a2, cut)
+
+    def test_atr_no_lookahead(self):
+        cut = self.cut
+        a1 = atr(self.high, self.low, self.close, 14)
+        a2 = atr(self.high.iloc[:cut+1], self.low.iloc[:cut+1], self.close.iloc[:cut+1], 14)
+        self._assert_prefix_stable(a1, a2, cut)
+
+    def test_swing_low_no_lookahead(self):
+        cut = self.cut
+        s1 = swing_low(self.low, 40)
+        s2 = swing_low(self.low.iloc[:cut+1], 40)
+        self._assert_prefix_stable(s1, s2, cut)
+
+    def test_rolling_pivot_high_no_lookahead(self):
+        cut = self.cut
+        p1 = rolling_pivot_high(self.high, 60)
+        p2 = rolling_pivot_high(self.high.iloc[:cut+1], 60)
+        self._assert_prefix_stable(p1, p2, cut)
 
     def test_crossed_up_recent_no_lookahead(self):
         cut = self.cut
