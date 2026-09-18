@@ -1,0 +1,82 @@
+name: Technical Signals Daily Screening
+
+on:
+  schedule:
+    # 한국: 평일 20:45 KST = UTC 11:45 (SEPA 20:00, RANGE-MR 20:30, 멀티팩터 21:00과 겹치지 않게 뒤로 뺐다)
+    - cron: "45 11 * * 1-5"
+    # 미국: 평일 07:45 KST(전날 장마감 후) = UTC 22:45 (SEPA 07:00, 멀티팩터 07:30과 겹치지 않게)
+    - cron: "45 22 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      market:
+        description: "실행할 시장"
+        required: false
+        default: "ALL"
+        type: choice
+        options: [KR, US, ALL]
+      limit:
+        description: "개발/테스트용: 유니버스 앞에서 N종목만 (비우면 전체)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: technical-signals-screening
+  cancel-in-progress: false
+
+jobs:
+  screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: technical_signals
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 의존성 설치
+        run: pip install -r requirements.txt
+
+      - name: 지표·신호 단위 테스트 (look-ahead 회귀 포함)
+        run: python -m unittest discover -s tests -p "test_*.py" -v
+
+      - name: 실행 시장 결정
+        id: market
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            if [ "${{ github.event.schedule }}" = "45 11 * * 1-5" ]; then
+              echo "market=KR" >> "$GITHUB_OUTPUT"
+            else
+              echo "market=US" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "market=${{ github.event.inputs.market || 'ALL' }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 스크리닝 실행 (${{ steps.market.outputs.market }})
+        run: |
+          if [ -n "${{ github.event.inputs.limit }}" ]; then
+            python run_daily_screen.py --market ${{ steps.market.outputs.market }} --limit "${{ github.event.inputs.limit }}"
+          else
+            python run_daily_screen.py --market ${{ steps.market.outputs.market }}
+          fi
+
+      - name: 대시보드(../docs/technical/index.html) 생성
+        run: python generate_dashboard.py
+
+      - name: 결과 커밋 & 푸시
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ../docs/technical/
+          git diff --cached --quiet || git commit -m "기술적 신호 스크리너 갱신 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+          git pull --rebase origin master
+          git push

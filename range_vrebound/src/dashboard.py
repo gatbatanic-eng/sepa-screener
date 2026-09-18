@@ -288,6 +288,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <a href="../">SEPA 추세템플릿</a>
       <a class="here" href="./">RANGE-MR · V-REBOUND</a>
       <a href="../screener/">멀티팩터</a>
+      <a href="../technical/">기술적 신호</a>
     </div>
   </header>
 
