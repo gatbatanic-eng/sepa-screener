@@ -136,6 +136,22 @@ class TestStopRisk(unittest.TestCase):
         self.assertAlmostEqual(r.stop_price, min(structural, atr_stop), places=3)
         self.assertLess(r.stop_price, r.close)
 
+    def test_stop_left_none_when_atr_implausibly_large_vs_price(self):
+        # 실데이터 전체 스크리닝 중 발견된 사례: ATR이 종가 대비 비정상적으로 커서
+        # (희박/erratic한 데이터) ATR배수 손절가가 0 이하로 나오는 종목이 있었다.
+        # 이런 경우 억지로 음수 손절가를 보여주지 말고 판정불가(None)로 남겨야 한다.
+        n = 280
+        rng = np.random.default_rng(11)
+        close = pd.Series(np.clip(100 + np.cumsum(rng.normal(0, 1.0, n)), 1, None))
+        high = close * 50.0   # 일일 변동폭을 비정상적으로 크게
+        low = close * 0.02
+        r = evaluate_signals(_mk(close.values, high=high.values, low=low.values))
+        self.assertIsNotNone(r.atr_value)
+        self.assertGreater(r.atr_value, r.close)  # ATR이 종가보다 큰 극단적 상황
+        self.assertIsNone(r.stop_price)
+        self.assertIsNone(r.risk_pct)
+        self.assertIsNone(r.risk_too_high)
+
     def test_risk_pct_matches_close_and_stop(self):
         n = 280
         rng = np.random.default_rng(4)
