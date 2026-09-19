@@ -76,12 +76,12 @@ UNIVERSE → TREND → SETUP → READY → ENTRY → (POSITION/관리) → EXIT
 | 지표 | 계산 | 기본 조건 |
 |---|---|---|
 | `base_length` | 수축 시작 스윙 이후 거래일 수 (없으면 피벗 아래 머문 연속 봉) | ≥ 20 |
-| `atr_contraction_ratio` | ATR20 / ATR60 | ≤ 0.75 |
-| `volume_dryup_ratio` | 평균거래량10 / 평균거래량50 | ≤ 0.70 |
+| `atr_contraction_ratio` | ATR20 / ATR60 | ≤ 0.85 (원래 0.75 — 아래 "임계값 조정" 참고) |
+| `volume_dryup_ratio` | 평균거래량10 / 평균거래량50 | ≤ 0.80 (원래 0.70) |
 | `contraction_count` | 스윙 고점→저점 pullback 폭이 순차 감소한 다리 수 (예 18%→11%→6%) | ≥ 2 |
 | `range_10_pct` | (10일 고가/10일 저가 − 1)·100 | ≤ 10% (**기본 quality factor**, `config.setup.range10_hard_filter=True` 시 hard) |
 
-`setup_ready = trend_ok AND base_length≥20 AND atr_contraction≤0.75 AND vol_dryup≤0.70 AND contraction_count≥2`.
+`setup_ready = trend_ok AND base_length≥20 AND atr_contraction≤0.85 AND vol_dryup≤0.80 AND contraction_count≥2`.
 `setup_quality_score`(0~100) = RS / RS가속 / RS라인신고가 / 52주고점근접 / ATR수축 /
 dry-up / 수축횟수 / range tightness / 피벗근접 의 가중 평균 — **랭킹용이며 GO
 hard rule 을 대체하지 않는다**.
@@ -100,6 +100,20 @@ hard rule 을 대체하지 않는다**.
 를 보는 것이므로). 수정 후에도 GO 가 드물면 그건 자기모순이 아니라 실제 시장
 국면(변동성 확장기) 때문일 가능성이 높다 — `tests/test_sepa_v2.py::
 test_setup_lag_excludes_breakout_day_self_sabotage` 참고.
+
+**임계값 조정(2026-09-15, `atr_contraction_max` 0.75→0.85, `volume_dryup_max`
+0.70→0.80)**: 위 수정 후 재검증한 실데이터(KR 670·US 500종목)에서, 유니버스
+전체 통과율은 크게 늘었다(ATR: KR 0%→15.3%, US 0%→1.0% / Dry-up: KR 0%→26.2%,
+US 0.2%→5.2%). 그런데 **TREND_OK 종목만 보면 ATR수축 중간값이 KR 1.22·US 1.07
+로 수정 전후 거의 그대로**였다 — RS_SCORE≥80(=최근 강하게 상승) 조건과
+ATR수축(=최근 조용해짐) 조건이 서로 다른 종목 성질을 요구하는 구조적 상충으로
+확인됨. 그래서 "수축"의 의미(ATR20 < ATR60)는 유지한 채로 소폭(0.75→0.85,
+0.70→0.80) 완화했다. **주의**: 이 완화만으로는 검증 시점(2026-09-15) 실데이터
+기준 GO_BREAKOUT 후보가 여전히 0건이었다 — 그날 TREND_OK 종목 중 base_length·
+contraction_count 를 통과한 종목의 ATR수축비율 최솟값이 KR 1.021·US 0.976 로,
+0.85 보다도 위였기 때문. 임계값을 1.0 이상까지 올리면(=사실상 "수축" 조건을
+포기) 후보가 생기지만, 그건 SETUP 의 의미 자체를 바꾸는 것이라 적용하지
+않았다 — 시장이 실제로 조용해지길 기다리는 쪽을 택함.
 
 ## Pivot
 
