@@ -1,7 +1,8 @@
 """AI 밸류체인 75종목을 SEPA 결과와 결합해 Google Sheets에 추적한다.
 
-정적 산업 메타데이터는 ``data/ai_value_chain_universe.csv``에서 읽고,
-가격·추세·진입/청산 상태는 매일 생성되는 SEPA 결과를 사용한다.
+정적 산업 메타데이터는 운영 Google Sheet에서 읽고, 테스트·로컬 실행에서는
+선택적으로 ``data/ai_value_chain_universe.csv``를 사용할 수 있다. 가격·추세·
+진입/청산 상태는 매일 생성되는 SEPA 결과를 사용한다.
 """
 
 from __future__ import annotations
