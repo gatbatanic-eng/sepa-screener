@@ -252,8 +252,8 @@ def _write_table(ws, frame: pd.DataFrame, *, filter_table: bool = True) -> None:
     ws.freeze(rows=1, cols=3)
     last_col = gutils.rowcol_to_a1(1, len(frame.columns)).rstrip("1")
     ws.format(f"A1:{last_col}1", {
-        "backgroundColor": {"red": 0.07, "green": 0.16, "blue": 0.28},
-        "textFormat": {"bold": True, "foregroundColor": {"red": 1, "green": 1, "blue": 1}},
+        "backgroundColor": {"red": 0.90, "green": 0.90, "blue": 0.90},
+        "textFormat": {"bold": True, "foregroundColor": {"red": 0, "green": 0, "blue": 0}},
         "horizontalAlignment": "CENTER",
     })
     ws.format(f"A2:{last_col}{max(2, len(values))}", {"verticalAlignment": "MIDDLE", "wrapStrategy": "WRAP"})
@@ -315,7 +315,11 @@ def _float_values(series: pd.Series) -> pd.Series:
 def _upsert_kpis(sh, overview: pd.DataFrame, run_date: str) -> None:
     ws, _ = _worksheet(sh, KPI_SHEET, 100, len(KPI_COLUMNS) + 2)
     previous = {r.get("KPI"): r for r in _records(ws.get_all_values()) if r.get("KPI")}
-    tracked = overview[overview["기준일"].astype(str).ne("")]
+    waiting_states = {"", "업데이트 대기", "스크리너 미포함", "다음 실행부터 추적"}
+    tracked = overview[
+        overview["기준일"].astype(str).ne("")
+        & ~overview["상태"].astype(str).isin(waiting_states)
+    ]
     rs = _float_values(tracked["RS Score"]) if len(tracked) else pd.Series(dtype=float)
     auto = [
         ("AI 유니버스", "75종목 정적 유니버스", len(overview)),
