@@ -68,6 +68,7 @@ from sepa import states as v2_states
 from sepa import universe as v2_universe
 from sepa.config import load_config
 from sepa.pipeline import compute_rs_v2, evaluate_stock_v2
+from ai_tracker import extend_screening_universe, update_ai_tracker_sheets
 
 # Windows 콘솔(cp949 등)에서도 한글 로그가 깨지지 않도록 UTF-8 강제
 for _stream in (sys.stdout, sys.stderr):
@@ -785,6 +786,12 @@ def run_screening(market_key: str, top_n: int, max_workers: int, limit: Optional
     else:
         raise ValueError(f"알 수 없는 시장 키: {market_key}")
 
+    # S&P500/기본 KR 후보군 밖의 AI 핵심 종목도 75종목 트래커에서 빠지지 않게 합친다.
+    try:
+        universe = extend_screening_universe(universe, market_key)
+    except Exception as exc:  # noqa: BLE001 - 설정 탭 문제로 기존 스크리닝까지 중단하지 않도록
+        logger.warning("AI 전용 유니버스 확장 실패 (기존 유니버스로 계속): %s", exc)
+
     if limit:
         universe = universe.head(limit)
         logger.info("개발/테스트 모드: 상위 %d종목으로 제한", limit)
@@ -1350,6 +1357,11 @@ def upload_to_google_sheets(df: pd.DataFrame, run_date: str, cfg: MarketConfig) 
             _append_daily_stock_history(sh, df, run_date, cfg)
         except Exception as exc:  # noqa: BLE001 - 이력 탭 실패가 본 업로드 성공을 덮지 않도록
             logger.warning("'%s일별종목이력' 탭 갱신 실패 (본 결과 업로드는 정상 완료됨): %s", cfg.sheet_tab_prefix, exc)
+
+        try:
+            update_ai_tracker_sheets(sh, df, run_date, cfg.key)
+        except Exception as exc:  # noqa: BLE001 - AI 탭 실패가 기존 스크리너 업로드를 막지 않도록
+            logger.warning("AI 밸류체인 트래커 갱신 실패 (기존 결과 업로드는 정상 완료됨): %s", exc, exc_info=True)
 
         return True
     except Exception as exc:  # noqa: BLE001
