@@ -11,7 +11,12 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from ai_tracker import build_ai_snapshot, extend_screening_universe, load_ai_universe  # noqa: E402
+from ai_tracker import (  # noqa: E402
+    SHEET_TO_DATA_COLUMNS,
+    build_ai_snapshot,
+    extend_screening_universe,
+    load_ai_universe,
+)
 
 
 @contextmanager
@@ -50,6 +55,11 @@ def test_ai_universe_has_75_unique_tickers():
     assert universe["Ticker"].nunique() == 75
     assert (universe["Country"] == "KR").sum() == 28
     assert (universe["Country"] != "KR").sum() == 47
+
+
+def test_sheet_score_headers_map_to_internal_fields():
+    assert SHEET_TO_DATA_COLUMNS["AI Exposure"] == "AI_Exposure"
+    assert SHEET_TO_DATA_COLUMNS["Bottleneck"] == "Bottleneck_Importance"
 
 
 def test_extend_us_universe_adds_non_base_names():

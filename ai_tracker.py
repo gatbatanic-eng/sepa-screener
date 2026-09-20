@@ -78,7 +78,8 @@ def _code(value, country: str | None = None) -> str:
 SHEET_TO_DATA_COLUMNS = {
     "국가": "Country", "티커": "Ticker", "기업명": "Company", "스크리닝시장": "Screening_Market",
     "대분류": "Primary_ValueChain", "세부 밸류체인": "AI_Subsector",
-    "AI 매출 공시": "AI_Revenue_Disclosure", "Bottleneck": "Bottleneck_Importance",
+    "AI 매출 공시": "AI_Revenue_Disclosure", "AI Exposure": "AI_Exposure",
+    "Bottleneck": "Bottleneck_Importance",
     "Pricing Power": "Pricing_Power", "Technology Moat": "Technology_Moat",
     "CAPEX Sensitivity": "CAPEX_Sensitivity", "Earnings Momentum": "Earnings_Momentum",
     "Supply Constraint": "Supply_Constraint", "Revenue Visibility": "Revenue_Visibility",
