@@ -6,7 +6,9 @@
 
 from __future__ import annotations
 
+import json
 import logging
+import os
 from pathlib import Path
 
 import numpy as np
@@ -72,16 +74,76 @@ def _code(value, country: str | None = None) -> str:
     return text.zfill(6) if country == "KR" else text.upper()
 
 
-def load_ai_universe(path: Path | str = AI_DATA_PATH) -> pd.DataFrame:
-    df = pd.read_csv(path, dtype={"Ticker": str, "Country": str})
+SHEET_TO_DATA_COLUMNS = {
+    "국가": "Country", "티커": "Ticker", "기업명": "Company", "스크리닝시장": "Screening_Market",
+    "대분류": "Primary_ValueChain", "세부 밸류체인": "AI_Subsector",
+    "AI 매출 공시": "AI_Revenue_Disclosure", "Bottleneck": "Bottleneck_Importance",
+    "Pricing Power": "Pricing_Power", "Technology Moat": "Technology_Moat",
+    "CAPEX Sensitivity": "CAPEX_Sensitivity", "Earnings Momentum": "Earnings_Momentum",
+    "Supply Constraint": "Supply_Constraint", "Revenue Visibility": "Revenue_Visibility",
+    "Valuation Burden": "Valuation_Burden", "Catalyst Strength": "Catalyst_Strength",
+    "Cycle Stage": "Cycle_Stage", "Stage Tags": "Stage_Tags", "Catalyst Date": "Catalyst_Date",
+    "Valuation vs History": "Valuation_vs_History", "AI Priced In": "AI_Priced_In",
+    "체크포인트": "Checkpoints", "리서치 출처": "Research_Sources",
+    "리서치 업데이트": "Research_Update_Date", "점수 근거": "Score_Rationale",
+}
+
+
+def _load_ai_universe_from_google_sheet() -> pd.DataFrame:
+    """공개 저장소에 투자 유니버스를 두지 않고 운영 시트에서 읽는다."""
+    import gspread
+    from google.oauth2.service_account import Credentials
+
+    creds_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
+    sheet_id = os.environ.get("GOOGLE_SHEET_ID")
+    if not creds_json or not sheet_id:
+        raise RuntimeError("AI 유니버스 파일 또는 Google Sheets 인증정보가 없습니다.")
+    info = json.loads(creds_json.lstrip("\ufeff"))
+    credentials = Credentials.from_service_account_info(
+        info, scopes=["https://www.googleapis.com/auth/spreadsheets"],
+    )
+    sh = gspread.authorize(credentials).open_by_key(sheet_id)
+    values = sh.worksheet(OVERVIEW_SHEET).get_all_values()
+    if not values:
+        raise RuntimeError(f"'{OVERVIEW_SHEET}' 탭이 비어 있습니다.")
+    records = _records(values)
+    df = pd.DataFrame(records).rename(columns=SHEET_TO_DATA_COLUMNS)
+    required = {
+        "ID", "Country", "Ticker", "Company", "Screening_Market", "Primary_ValueChain",
+        "AI_Subsector", "AI_Revenue_Disclosure", "AI_Exposure", "Bottleneck_Importance",
+        "Pricing_Power", "Technology_Moat", "CAPEX_Sensitivity", "Earnings_Momentum",
+        "Supply_Constraint", "Revenue_Visibility", "Valuation_Burden", "Catalyst_Strength",
+        "Cycle_Stage", "Stage_Tags", "Catalyst_Date", "Catalyst", "Risk", "Valuation",
+        "Valuation_vs_History", "AI_Priced_In", "Checkpoints", "Research_Sources",
+        "Research_Update_Date", "Score_Rationale",
+    }
+    missing = required - set(df.columns)
+    if missing:
+        raise RuntimeError(f"AI 현황 탭 필수 컬럼 누락: {sorted(missing)}")
+    return df[list(required)]
+
+
+def load_ai_universe(path: Path | str | None = None) -> pd.DataFrame:
+    source = Path(path) if path is not None else AI_DATA_PATH
+    if source.exists():
+        df = pd.read_csv(source, dtype={"Ticker": str, "Country": str})
+    else:
+        df = _load_ai_universe_from_google_sheet()
     df["Ticker"] = [_code(t, c) for t, c in zip(df["Ticker"], df["Country"])]
+    numeric = [
+        "ID", "AI_Exposure", "Bottleneck_Importance", "Pricing_Power", "Technology_Moat",
+        "CAPEX_Sensitivity", "Earnings_Momentum", "Supply_Constraint", "Revenue_Visibility",
+        "Valuation_Burden", "Catalyst_Strength",
+    ]
+    for col in numeric:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
     if len(df) != 75 or df["Ticker"].duplicated().any():
         raise ValueError("AI 밸류체인 유니버스는 중복 없는 75종목이어야 합니다.")
     return df.sort_values("ID").reset_index(drop=True)
 
 
 def extend_screening_universe(universe: pd.DataFrame, market_key: str,
-                              path: Path | str = AI_DATA_PATH) -> pd.DataFrame:
+                              path: Path | str | None = None) -> pd.DataFrame:
     """기존 KR/US 유니버스에 AI 75종목 중 해당 시장 종목을 빠짐없이 합친다."""
     market_key = market_key.upper()
     ai = load_ai_universe(path)
@@ -109,7 +171,7 @@ def _series(merged: pd.DataFrame, name: str, default="") -> pd.Series:
 
 
 def build_ai_snapshot(screen_df: pd.DataFrame, run_date: str, market_key: str,
-                      path: Path | str = AI_DATA_PATH) -> pd.DataFrame:
+                      path: Path | str | None = None) -> pd.DataFrame:
     """한 시장의 SEPA 결과를 AI 산업 메타데이터와 결합한다."""
     market_key = market_key.upper()
     meta = load_ai_universe(path)
@@ -203,7 +265,7 @@ def _write_table(ws, frame: pd.DataFrame, *, filter_table: bool = True) -> None:
         ws.set_basic_filter(f"A1:{last_col}{len(values)}")
 
 
-def _blank_overview(path: Path | str = AI_DATA_PATH) -> pd.DataFrame:
+def _blank_overview(path: Path | str | None = None) -> pd.DataFrame:
     parts = []
     empty = pd.DataFrame(columns=["종목코드"])
     for market in ("KR", "US"):
@@ -214,7 +276,7 @@ def _blank_overview(path: Path | str = AI_DATA_PATH) -> pd.DataFrame:
     return pd.concat(parts, ignore_index=True).sort_values("ID").reset_index(drop=True)
 
 
-def _upsert_overview(sh, current: pd.DataFrame, path: Path | str = AI_DATA_PATH) -> pd.DataFrame:
+def _upsert_overview(sh, current: pd.DataFrame, path: Path | str | None = None) -> pd.DataFrame:
     ws, _ = _worksheet(sh, OVERVIEW_SHEET, 200, len(OVERVIEW_COLUMNS) + 2)
     base = {str(r["티커"]): r for r in _blank_overview(path).to_dict("records")}
     for row in _records(ws.get_all_values()):
@@ -287,7 +349,7 @@ def _upsert_kpis(sh, overview: pd.DataFrame, run_date: str) -> None:
 
 
 def update_ai_tracker_sheets(sh, screen_df: pd.DataFrame, run_date: str, market_key: str,
-                             path: Path | str = AI_DATA_PATH) -> None:
+                             path: Path | str | None = None) -> None:
     """한 시장 실행 결과를 AI 현황·이력·KPI 3개 탭에 원자적으로 반영한다."""
     current = build_ai_snapshot(screen_df, run_date, market_key, path)
     overview = _upsert_overview(sh, current, path)
