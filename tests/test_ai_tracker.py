@@ -86,3 +86,22 @@ def test_snapshot_merges_industry_and_technical_fields():
     assert first["Entry State"] == "GO_BREAKOUT"
     assert first["TREND OK v2"] is True or first["TREND OK v2"] == True  # noqa: E712
     assert second["상태"] == "스크리너 미포함"
+
+
+def _run_all() -> int:
+    tests = [value for name, value in sorted(globals().items())
+             if name.startswith("test_") and callable(value)]
+    failed = 0
+    for test in tests:
+        try:
+            test()
+            print(f"  PASS  {test.__name__}")
+        except Exception as exc:  # noqa: BLE001
+            failed += 1
+            print(f"  FAIL  {test.__name__}: {type(exc).__name__}: {exc}")
+    print(f"\n{len(tests) - failed}/{len(tests)} passed")
+    return 1 if failed else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(_run_all())
