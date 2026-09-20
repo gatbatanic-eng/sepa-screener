@@ -3,7 +3,7 @@ name: SEPA Trend Template Daily Screening
 on:
   push:
     branches: [master]
-    paths: ["range_screen.py", "tests/test_range_screen.py", "research_tracker.py", "tests/test_research_tracker.py", ".github/workflows/daily_screen.yml"]
+    paths: ["screening.py", "ai_tracker.py", "tests/test_ai_tracker.py", "range_screen.py", "tests/test_range_screen.py", "research_tracker.py", "tests/test_research_tracker.py", ".github/workflows/daily_screen.yml"]
   schedule:
     # 한국: 평일(월~금) 20:00 KST = UTC 11:00
     - cron: "0 11 * * 1-5"
@@ -46,6 +46,7 @@ jobs:
         run: |
           python -m unittest discover -s tests -p "test_*screen.py" -v
           python -m unittest discover -s tests -p test_research_tracker.py -v
+          python tests/test_ai_tracker.py
 
       - name: 실행 시장 결정
         id: market
