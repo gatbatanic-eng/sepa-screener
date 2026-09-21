@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import config as cfg  # noqa: E402
 from signals import (  # noqa: E402
-    HOLD, READY, REVIEW, SignalResult, _fraction, _group_score, _rebound_group_fractions,
+    HOLD, READY, REVIEW, WATCH, SignalResult, _fraction, _group_score, _rebound_group_fractions,
     _trend_group_fractions, compute_verdict, evaluate_signals,
 )
 
@@ -220,11 +220,37 @@ class TestTrendVerdict(unittest.TestCase):
         compute_verdict(r, "GREEN")
         self.assertIsNone(r.trend_verdict)
 
-    def test_none_when_score_below_review_threshold(self):
+    def test_not_review_when_score_below_review_threshold(self):
         r = self._base_review_ok()
-        r.trend_score = 50.0
+        r.trend_score = 40.0
         compute_verdict(r, "GREEN")
-        self.assertIsNone(r.trend_verdict)
+        self.assertNotIn(r.trend_verdict, (REVIEW, READY))
+
+    def test_watch_when_near_pivot_without_trigger(self):
+        r = self._base_review_ok()
+        r.breakout_trigger = False
+        r.trend_score = 55.0
+        r.pivot_distance_pct = -2.0
+        compute_verdict(r, "GREEN")
+        self.assertEqual(r.trend_verdict, WATCH)
+
+    def test_watch_when_trigger_but_score_below_70_even_if_low(self):
+        r = self._base_review_ok()
+        r.trend_score = 30.0
+        compute_verdict(r, "GREEN")
+        self.assertEqual(r.trend_verdict, WATCH)
+
+    def test_no_watch_when_far_from_pivot_or_chasing_or_risky(self):
+        for mutate in (lambda r: setattr(r, "pivot_distance_pct", -8.0),
+                       lambda r: setattr(r, "chase_warning", True),
+                       lambda r: setattr(r, "risk_too_high", True),
+                       lambda r: setattr(r, "trend_aligned", False)):
+            r = self._base_review_ok()
+            r.breakout_trigger = False
+            r.trend_score = 60.0
+            mutate(r)
+            compute_verdict(r, "GREEN")
+            self.assertIsNone(r.trend_verdict)
 
     def test_review_when_base_ok_but_not_ready(self):
         r = self._base_review_ok()
