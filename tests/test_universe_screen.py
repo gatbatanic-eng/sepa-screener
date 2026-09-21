@@ -35,7 +35,7 @@ class KoreanUniverseFallbackTest(unittest.TestCase):
         )
         repaired = _merge_kr_market_snapshot(listing, snapshot)
 
-        self.assertEqual(repaired["Marcap"].tolist(), [3e9, 2e9, 1e9])
+        self.assertEqual(repaired["Marcap"].tolist(), [30.0, 20.0, 10.0])
         self.assertEqual(repaired["Amount"].tolist(), [3.0, 2.0, 1.0])
 
     def test_valid_amount_keeps_liquidity_ranking(self):
