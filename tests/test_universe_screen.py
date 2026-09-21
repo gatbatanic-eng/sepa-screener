@@ -28,6 +28,7 @@ class KoreanUniverseFallbackTest(unittest.TestCase):
 
     def test_pykrx_snapshot_repairs_empty_fdr_values(self):
         listing = self._listing(3)
+        listing["Marcap"] = np.nan
         snapshot = pd.DataFrame(
             {"시가총액": [30.0, 20.0, 10.0], "거래대금": [3.0, 2.0, 1.0]},
             index=["000000", "000001", "000002"],
