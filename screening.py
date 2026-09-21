@@ -442,9 +442,10 @@ def _merge_kr_market_snapshot(listing: pd.DataFrame, snapshot: pd.DataFrame) -> 
     snap = snapshot.copy()
     snap.index = snap.index.astype(str).str.zfill(6)
     for target, source in (("Marcap", "시가총액"), ("Amount", "거래대금")):
-        if source not in snap.columns:
+        source_col = target if target in snap.columns else source
+        if source_col not in snap.columns:
             continue
-        values = pd.to_numeric(snap[source], errors="coerce")
+        values = pd.to_numeric(snap[source_col], errors="coerce")
         mapped = out["Code"].map(values)
         current = (pd.to_numeric(out[target], errors="coerce")
                    if target in out.columns else pd.Series(np.nan, index=out.index))
