@@ -2,7 +2,7 @@ import copy
 import tempfile
 import unittest
 from pathlib import Path
-from research_tracker import outcome, process, session_closed
+from research_tracker import outcome, process, session_closed, strategy_series_id
 
 DATES = ['2026-09-01','2026-09-02','2026-09-03','2026-09-04','2026-09-07','2026-09-08']
 class ResearchTests(unittest.TestCase):
@@ -31,10 +31,11 @@ class ResearchTests(unittest.TestCase):
         self.assertIsNone(r['maxUpPct'])
     def test_daily_idempotence_revision_unknown_and_new_episode(self):
         with tempfile.TemporaryDirectory() as tmp:
-            p={'market':'us','strategyId':'a','strategy':{},'recordedAt':'2026-09-09T00:00:00+00:00',
+            p={'market':'us','strategyId':'a','strategy':{'config':{'rs':80},'source':{'screening.py':'a'}},'recordedAt':'2026-09-09T00:00:00+00:00',
                'rows':[{'code':'X','name':'X','market':'US','status':'OK','inUniverse':True,
                         'trendOk':True,'setupReady':False,'entryState':'WAIT','close':100,'priceAsOf':DATES[0]}],
                'prices':{'X':{DATES[0]:100}},'benchmarks':{'US':{DATES[0]:100}}}
+            p['strategySeriesId']=strategy_series_id(p['strategy'])
             state={};root=Path(tmp)
             process(p,state,root);process(p,state,root)
             self.assertEqual(len(state['signals']),1)
@@ -48,6 +49,14 @@ class ResearchTests(unittest.TestCase):
                 p['rows'][0].update(priceAsOf=day,trendOk=flag,status=status)
                 process(p,state,root)
             self.assertEqual(len(state['signals']),2)
-            p['strategyId']='b';process(p,state,root)
+            # Source-only implementation change stays in the same research series.
+            p['strategyId']='b';p['strategy']={'config':{'rs':80},'source':{'screening.py':'b'}}
+            p['strategySeriesId']=strategy_series_id(p['strategy'])
+            process(p,state,root)
+            self.assertEqual(len(state['signals']),2)
+            # A numerical strategy change intentionally starts a new series.
+            p['strategyId']='c';p['strategy']={'config':{'rs':90},'source':{'screening.py':'b'}}
+            p['strategySeriesId']=strategy_series_id(p['strategy'])
+            process(p,state,root)
             self.assertEqual(len(state['signals']),3)
 if __name__=='__main__': unittest.main()
