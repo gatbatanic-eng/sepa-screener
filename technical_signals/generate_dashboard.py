@@ -255,6 +255,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     ※ <b>손절/리스크</b>: 스윙저점-0.5×ATR(구조적)과 종가-1.75×ATR(변동성 기준) 중 더 보수적인(리스크가 더 크게 잡히는) 쪽을 손절가로 씁니다. 리스크%가 7% 초과면 위험 표시.<br>
     ※ <b>추격 경고</b>: RSI 75 이상이거나 피벗 대비 +5% 이상 이격되면 뜹니다 — 점수가 높아도 진입 위치가 나쁠 수 있다는 뜻입니다.<br>
     ※ <b>시장 국면</b>: 개별 종목과 별개로 지수(종가&gt;SMA200, SMA50&gt;SMA200)와 breadth(유니버스 중 SMA50 위 비율 ≥50%) 3조건으로 GREEN/YELLOW/RED를 판정합니다. RED면 신규 진입 판정 자체를 보류로 내립니다.<br>
+    ※ <b>관찰(돌파임박, 추세 트랙만)</b>: 정배열 + 피벗 -3~+3% 이내 + 리스크7%이내 + 추격경고없음 이면서 (점수는 정렬용, 조건 아님. 스팩 제외) 아직 매수검토 조건(돌파트리거·점수70)은 못 채운 후보. 추격경고·리스크7%초과 종목은 제외. 매수 신호가 아니라 관찰 목록입니다.<br>
     ※ <b>매수검토/진입준비/진입보류</b>: 점수만으로 매수 신호를 만들지 않습니다. 매수검토=정배열(또는 눌린위치)+트리거+점수70↑+리스크7%이내 전부 충족. 진입준비=매수검토 + 거래량1.3배↑ + 모멘텀확인 + 시장국면 GREEN/YELLOW + 점수80↑. 진입보류=위 조건을 충족했더라도 추격경고·리스크7%초과·시장국면RED 중 하나라도 해당.<br>
     ※ 백테스트(과거 신호의 5·20·60거래일 성과 추적)는 아직 없습니다 — 별도로 준비 중입니다. 모든 임계값은 <code>technical_signals/config.py</code>에서 조정됩니다.
   </footer>
@@ -365,6 +366,7 @@ function renderCards() {
   const review = ok.filter(r => r[t.verdictKey] === "매수검토").length;
   const ready = ok.filter(r => r[t.verdictKey] === "진입준비").length;
   const hold = ok.filter(r => r[t.verdictKey] === "진입보류").length;
+  const watch = ok.filter(r => r[t.verdictKey] === "관찰").length;
   const cards = [
     ["기준일", market.asOf || "-"],
     ["스크리닝종목수", rows.length],
@@ -373,6 +375,7 @@ function renderCards() {
     [`${t.label} 진입준비`, ready],
     [`${t.label} 진입보류`, hold],
   ];
+  if (currentTrack === "trend") cards.splice(3, 0, [`${t.label} 관찰(돌파임박)`, watch]);
   document.getElementById("cards").innerHTML = cards.map(([l, v]) =>
     `<div class="card"><div class="lbl">${l}</div><div class="val">${v}</div></div>`
   ).join("");
@@ -422,7 +425,7 @@ function getCols() {
 function getFilters() {
   if (currentTrack === "trend") {
     return [
-      ["review", "매수검토+"], ["ready", "진입준비"], ["hold", "진입보류"],
+      ["watch", "관찰(돌파임박)"], ["review", "매수검토+"], ["ready", "진입준비"], ["hold", "진입보류"],
       ["golden", "골든크로스"], ["breakout", "돌파트리거"], ["macd", "MACD매수"],
       ["squeeze", "볼린저수축"], ["obv", "OBV상승"], ["chase", "추격경고"], ["na", "확인불가"],
     ];
@@ -436,6 +439,7 @@ function getFilters() {
 
 function filterPredicate(key, t) {
   const F_TREND = {
+    watch: r => r[t.verdictKey] === "관찰",
     review: r => r[t.verdictKey] === "매수검토" || r[t.verdictKey] === "진입준비",
     ready: r => r[t.verdictKey] === "진입준비",
     hold: r => r[t.verdictKey] === "진입보류",

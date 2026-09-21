@@ -43,6 +43,7 @@ from indicators import (
 REVIEW = "매수검토"
 READY = "진입준비"
 HOLD = "진입보류"
+WATCH = "관찰"
 
 
 @dataclass
@@ -317,6 +318,19 @@ def compute_verdict(r: SignalResult, regime: str | None) -> None:
     r.rebound_verdict, r.rebound_verdict_reasons = _rebound_verdict(r, regime)
 
 
+def _trend_watch(r: SignalResult) -> str | None:
+    """매수검토 조건(트리거·점수70)에는 못 미치지만 돌파 직전 구간에 있는 후보.
+    점수는 조건이 아니라 정렬용이다(돌파 직전엔 트리거·거래량 그룹이 꺼져 있어 점수가 낮다).
+    추격경고·위험초과 종목은 제외한다."""
+    if not (r.trend_aligned and r.pivot_distance_pct is not None):
+        return None
+    if r.chase_warning or r.risk_too_high:
+        return None
+    if not (cfg.WATCH_PIVOT_DISTANCE_MIN <= r.pivot_distance_pct <= cfg.PIVOT_DISTANCE_MAX_REVIEW):
+        return None
+    return WATCH
+
+
 def _trend_verdict(r: SignalResult, regime: str | None) -> tuple[str | None, list[str]]:
     # risk_too_high는 base 자격요건이 아니라 아래 HOLD 사유로만 쓴다 — base에
     # 넣으면 "위험 초과"인 경우 HOLD 대신 곧장 None(판정불가)이 돼버려서
@@ -331,6 +345,8 @@ def _trend_verdict(r: SignalResult, regime: str | None) -> tuple[str | None, lis
     if any(v is None for v in base.values()):
         return None, []
     if not all(base.values()):
+        if _trend_watch(r):
+            return WATCH, ["정배열", "피벗±3%이내", "리스크7%이내", "돌파트리거 대기"]
         return None, []
 
     hold_reasons = []

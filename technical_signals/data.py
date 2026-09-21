@@ -38,7 +38,8 @@ _KR_REQUIRED_COLUMNS = {"Code", "Name"}
 
 def fetch_kr_universe() -> pd.DataFrame:
     """코스피+코스닥 전체 상장종목. 컬럼: Code, Name, Market.
-    시가총액 랭킹은 쓰지 않는다(모듈 docstring 참고 — Marcap이 항상 NaN)."""
+    시가총액 랭킹은 쓰지 않는다(모듈 docstring 참고 — Marcap이 항상 NaN).
+    스팩(기업인수목적회사)은 가격이 거의 안 움직여 지표가 좋아 보이므로 제외한다."""
     kospi = fdr.StockListing("KOSPI")
     kosdaq = fdr.StockListing("KOSDAQ")
     combined = pd.concat([kospi, kosdaq], ignore_index=True)
@@ -48,6 +49,7 @@ def fetch_kr_universe() -> pd.DataFrame:
     if missing:
         raise ValueError(f"KR listing에 필요한 컬럼이 없습니다: {sorted(missing)}")
     cleaned = combined.dropna(subset=["Code", "Name"])
+    cleaned = cleaned[~cleaned["Name"].astype(str).str.contains("스팩", regex=False)]
     return cleaned.reset_index(drop=True)[["Code", "Name", "Market"]]
 
 

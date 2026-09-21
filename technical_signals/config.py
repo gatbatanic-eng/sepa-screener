@@ -98,4 +98,5 @@ SCORE_REVIEW_MIN = 70.0
 SCORE_READY_MIN = 80.0
 PIVOT_DISTANCE_MAX_REVIEW = 3.0   # 매수검토: 피벗대비 이격 +3% 이내
 PIVOT_DISTANCE_HOLD = 5.0         # 진입보류: 피벗대비 +5% 이상(추격)
+WATCH_PIVOT_DISTANCE_MIN = -3.0    # 관찰: 피벗 아래 -3% ~ 위 +3% 안(매수검토 상한과 동일)
 READY_VOLUME_RATIO_MIN = 1.3      # 진입준비: 거래량/50일평균 최소 배율
