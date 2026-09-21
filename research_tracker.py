@@ -14,12 +14,17 @@ from zoneinfo import ZoneInfo
 ROOT = Path(__file__).resolve().parent
 HORIZONS = (5, 20, 60)
 GROUPS = ('TREND', 'READY', 'GO', 'EXP_READY', 'EXP_GO')
+STRATEGY_FAMILY = 'sepa-v2'
 
 def packed(obj):
     return json.dumps(obj, ensure_ascii=False, sort_keys=True, separators=(',', ':'), allow_nan=False)
 
 def digest(obj):
     return hashlib.sha256(packed(obj).encode()).hexdigest()[:20]
+
+def strategy_series_id(strategy):
+    """Stable research series: implementation-only edits must not restart observations."""
+    return digest({'family': STRATEGY_FAMILY, 'config': strategy.get('config', {})})
 
 def positive(v):
     return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v) and v > 0
@@ -49,6 +54,7 @@ def export_inputs(frame, ohlcv, benchmarks, cfg, market):
     payload = {'schemaVersion': 1, 'market': market.lower(), 'rows': rows,
                'prices': prices, 'benchmarks': {k: series_prices(v) for k, v in benchmarks.items()},
                'strategy': strategy, 'strategyId': digest(strategy),
+               'strategySeriesId': strategy_series_id(strategy),
                'recordedAt': datetime.now(timezone.utc).isoformat(),
                'sourceCommit': os.getenv('GITHUB_SHA'), 'runId': os.getenv('GITHUB_RUN_ID')}
     write_json(ROOT / 'output' / f'research_input_{market.lower()}.json', payload)
@@ -129,11 +135,64 @@ def reject_unclosed(state, market):
     rejected = [s for s in state['signals'] if s['snapshot'] in snapshots]
     state['signals'] = [s for s in state['signals'] if s['snapshot'] not in snapshots]
     for signal in rejected:
-        state['membership'].pop(f"{signal['strategyId']}:{signal['code']}:{signal['group']}", None)
+        identity = signal.get('strategySeriesId') or signal['strategyId']
+        state['membership'].pop(f"{identity}:{signal['code']}:{signal['group']}", None)
     state['latestSession'] = max((d['date'] for d in state['days'].values()), default='')
+
+def _outcome_rank(signal):
+    outcomes = signal.get('outcomes', {})
+    return (sum(o.get('status') == 'complete' for o in outcomes.values()),
+            sum(o.get('observedSessions', 0) for o in outcomes.values()))
+
+def migrate_strategy_series(state):
+    """Annotate and consolidate historical source-only versions without deleting outcomes."""
+    versions = state.setdefault('strategies', {})
+    series_for = {}
+    for version_id, strategy in versions.items():
+        series = strategy.get('seriesId') or strategy_series_id(strategy)
+        strategy['seriesId'] = series
+        series_for[version_id] = series
+
+    days = list(state.get('days', {}).values())
+    canonical = {}
+    for day in days:
+        series = day.get('strategySeriesId') or series_for.get(day.get('strategyId'), day.get('strategyId'))
+        day['strategySeriesId'] = series
+        key = f"{series}:{day['date']}"
+        old = canonical.get(key)
+        if old is None or (day.get('rows', 0), old.get('recordedAt', '')) > (old.get('rows', 0), day.get('recordedAt', '')):
+            canonical[key] = day
+    if days:
+        state['days'] = canonical
+
+    merged = {}
+    for signal in state.get('signals', []):
+        series = signal.get('strategySeriesId') or series_for.get(signal.get('strategyId'), signal.get('strategyId'))
+        signal['strategySeriesId'] = series
+        key = (series, signal.get('code'), signal.get('group'), signal.get('date'))
+        old = merged.get(key)
+        if old is None or _outcome_rank(signal) > _outcome_rank(old):
+            merged[key] = signal
+    if state.get('signals'):
+        state['signals'] = list(merged.values())
+
+    # Carry the most recent version's live membership into its stable series so
+    # a source-only deployment does not open a duplicate episode.
+    if days:
+        latest = max(days, key=lambda d: (d.get('date', ''), d.get('rows', 0), d.get('recordedAt', '')))
+        version, series = latest.get('strategyId'), latest.get('strategySeriesId')
+        members = state.setdefault('membership', {})
+        prefix = f'{version}:'
+        for key, value in list(members.items()):
+            if key.startswith(prefix):
+                members.setdefault(f'{series}:{key[len(prefix):]}', value)
 
 def process(payload, state, root=ROOT):
     market, strategy = payload['market'], payload['strategyId']
+    migrate_strategy_series(state)
+    # Older tests/importers without the explicit field retain legacy behaviour.
+    # Current producers always export the stable series identifier.
+    series = payload.get('strategySeriesId') or strategy
     reject_unclosed(state, market)
     benchmarks, prices = payload['benchmarks'], payload['prices']
     if not benchmarks or not all(benchmarks.values()):
@@ -157,25 +216,26 @@ def process(payload, state, root=ROOT):
     signals = state.setdefault('signals', [])
     members = state.setdefault('membership', {})
     versions = state.setdefault('strategies', {})
-    versions.setdefault(strategy, payload['strategy'])
+    versions.setdefault(strategy, json.loads(packed(payload['strategy'])))
+    versions[strategy]['seriesId'] = series
     # First complete observation of a session is canonical; revisions are archived only.
-    key = f'{strategy}:{day}'
+    key = f'{series}:{day}'
     if key not in days and day >= state.get('latestSession', ''):
-        days[key] = {'date': day, 'snapshot': sid, 'strategyId': strategy, 'rows': len(payload['rows']),
+        days[key] = {'date': day, 'snapshot': sid, 'strategyId': strategy, 'strategySeriesId': series, 'rows': len(payload['rows']),
                      'recordedAt': payload['recordedAt'], 'sessions': sessions}
         for row in payload['rows']:
             code, benchmark = row['code'], row.get('market') if market == 'kr' else 'US'
             if benchmark not in sessions or row.get('priceAsOf') != sessions[benchmark]:
                 continue  # stale/missing quotes never create or terminate an episode
             for group in payload.get('groups', GROUPS):
-                mk = f'{strategy}:{code}:{group}'
+                mk = f'{series}:{code}:{group}'
                 flag = membership(row, group)
                 if flag is None:
                     continue
                 if flag and not members.get(mk) and positive(row.get('close')):
-                    signal = {'id': digest([strategy, code, group, sessions[benchmark]]), 'code': code,
+                    signal = {'id': digest([series, code, group, sessions[benchmark]]), 'code': code,
                               'name': row['name'], 'group': group, 'date': sessions[benchmark],
-                              'benchmark': benchmark, 'strategyId': strategy, 'originalClose': row['close'],
+                              'benchmark': benchmark, 'strategyId': strategy, 'strategySeriesId': series, 'originalClose': row['close'],
                               'snapshot': sid, 'attributes': row, 'outcomes': {}}
                     signals.append(signal)
                 members[mk] = flag
