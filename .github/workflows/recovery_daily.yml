@@ -1,6 +1,9 @@
 name: Recovery Aggressive Mode
 
 on:
+  push:
+    branches: [master]
+    paths: ["recovery_mode.py", ".gitignore"]
   pull_request:
     paths: ["recovery_mode.py", "aggressive_screen.py", "personas/valuation.py", "tests/test_recovery_mode.py", "tests/test_aggressive_screen.py", ".github/workflows/recovery_daily.yml"]
   workflow_run:
@@ -32,7 +35,7 @@ jobs:
           python -m unittest tests.test_aggressive_screen -v
 
   build:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -289,6 +289,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <a class="here" href="./">RANGE-MR · V-REBOUND</a>
       <a href="../screener/">멀티팩터</a>
       <a href="../technical/">기술적 신호</a>
+      <a href="../recovery/">계좌복구 공격매매</a>
     </div>
   </header>
 
