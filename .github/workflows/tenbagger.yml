@@ -1,0 +1,45 @@
+name: AI Tenbagger Research
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 미국 정규장 종료 뒤: 화~토 08:30 KST
+    - cron: "30 23 * * 1-5"
+  push:
+    branches: [master]
+    paths:
+      - tenbagger_screener.py
+      - data/tenbagger_universe.csv
+      - tests/test_tenbagger_screener.py
+      - .github/workflows/tenbagger.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tenbagger-research
+  cancel-in-progress: false
+
+jobs:
+  tenbagger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Verify tenbagger rules
+        run: python -m unittest tests.test_tenbagger_screener -v
+      - name: Collect estimates, margins and dilution
+        run: python tenbagger_screener.py
+      - name: Save independent tenbagger research
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f docs/research/tenbagger_us.json research/tenbagger_us.json
+          git diff --cached --quiet || git commit -m "Refresh AI tenbagger research"
+          git pull --rebase origin master
+          git push
