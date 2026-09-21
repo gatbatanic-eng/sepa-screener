@@ -48,7 +48,7 @@ import random
 import sys
 import time
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 from zoneinfo import ZoneInfo
@@ -430,6 +430,61 @@ def fetch_price_history(code: str, start: str, market: Optional[str] = None) -> 
         code, primary_day.date(), cutoff.date(),
     )
     return primary
+
+
+def _merge_kr_market_snapshot(listing: pd.DataFrame, snapshot: pd.DataFrame) -> pd.DataFrame:
+    """pykrx의 최근 거래일 시총/거래대금을 FDR 종목 목록에 코드 기준으로 보완한다."""
+    if snapshot is None or snapshot.empty:
+        return listing
+    out = listing.copy()
+    out["Code"] = out["Code"].astype(str).str.zfill(6)
+    snap = snapshot.copy()
+    snap.index = snap.index.astype(str).str.zfill(6)
+    for target, source in (("Marcap", "시가총액"), ("Amount", "거래대금")):
+        if source not in snap.columns:
+            continue
+        values = pd.to_numeric(snap[source], errors="coerce")
+        mapped = out["Code"].map(values)
+        current = (pd.to_numeric(out[target], errors="coerce")
+                   if target in out.columns else pd.Series(np.nan, index=out.index))
+        out[target] = current.where(current > 0, mapped)
+    return out
+
+
+def enrich_kr_listing_market_data(listing: pd.DataFrame) -> pd.DataFrame:
+    """FDR의 장전 시총/거래대금 결측을 pykrx 최근 실제 거래일 값으로 보완한다."""
+    required = min(SEPA_CFG.universe.kr_liquidity_candidate_n, len(listing))
+    amount = pd.to_numeric(listing.get("Amount"), errors="coerce")
+    marcap = pd.to_numeric(listing.get("Marcap"), errors="coerce")
+    amount_valid = int((amount > 0).sum()) if amount is not None else 0
+    marcap_valid = int((marcap > 0).sum()) if marcap is not None else 0
+    if max(amount_valid, marcap_valid) >= required:
+        return listing
+
+    try:
+        from pykrx import stock as pykrx_stock
+        today = datetime.now(ZoneInfo("Asia/Seoul")).date()
+        last_exc: Optional[Exception] = None
+        for offset in range(1, 15):
+            day = today - timedelta(days=offset)
+            if day.weekday() >= 5:
+                continue
+            try:
+                snapshot = pykrx_stock.get_market_cap_by_ticker(
+                    day.strftime("%Y%m%d"), market="ALL"
+                )
+                if snapshot is not None and len(snapshot) >= 100:
+                    logger.warning(
+                        "FDR 장전 시총/거래대금 결측 — pykrx %s 스냅샷 %d종목으로 보완",
+                        day.isoformat(), len(snapshot),
+                    )
+                    return _merge_kr_market_snapshot(listing, snapshot)
+            except Exception as exc:  # noqa: BLE001
+                last_exc = exc
+        raise RuntimeError(f"최근 KRX 시가총액 스냅샷 조회 실패: {last_exc}")
+    except Exception as exc:  # noqa: BLE001
+        logger.error("KR 시총/거래대금 보완 실패: %s", exc)
+        return listing
 
 
 def fetch_stock_listing(market: str) -> pd.DataFrame:
@@ -882,6 +937,7 @@ def run_screening(market_key: str, top_n: int, max_workers: int, limit: Optional
 
     if market_key == "KR":
         listing = fetch_stock_listing("KRX")
+        listing = enrich_kr_listing_market_data(listing)
         universe = v2_universe.select_kr_candidates(listing, cfg.universe)
         benchmark_codes = (("KOSPI", KOSPI_INDEX_CODE), ("KOSDAQ", KOSDAQ_INDEX_CODE))
         logger.info("KR 유니버스 확정: %d종목 (모드=%s)", len(universe), cfg.universe.kr_mode)
