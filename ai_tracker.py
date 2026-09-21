@@ -19,6 +19,7 @@ import pandas as pd
 logger = logging.getLogger("sepa_screener.ai_tracker")
 
 AI_DATA_PATH = Path(__file__).resolve().parent / "data" / "ai_value_chain_universe.csv"
+AI_SCREENING_PATH = Path(__file__).resolve().parent / "data" / "ai_screening_universe.csv"
 OVERVIEW_SHEET = "AI_밸류체인_현황"
 HISTORY_SHEET = "AI_밸류체인_이력"
 KPI_SHEET = "AI_산업_KPI"
@@ -144,11 +145,34 @@ def load_ai_universe(path: Path | str | None = None) -> pd.DataFrame:
     return df.sort_values("ID").reset_index(drop=True)
 
 
+def load_ai_screening_universe(path: Path | str | None = None) -> pd.DataFrame:
+    """가격 스크리닝에 필요한 최소 AI 목록을 항상 반환한다.
+
+    전체 산업 메타데이터는 운영 시트를 우선 사용한다. 시트 연결이나 형식에
+    문제가 생겨도 공개 저장소의 최소 목록으로 폴백해 AI 종목이 가격 수집에서
+    빠지지 않게 한다.
+    """
+    try:
+        full = load_ai_universe(path)
+        return full[["Country", "Ticker", "Company", "Screening_Market"]].copy()
+    except Exception as exc:  # noqa: BLE001 - 최소 목록으로 안전하게 폴백
+        logger.warning("AI 전체 메타데이터 로드 실패 — 최소 스크리닝 목록 사용: %s", exc)
+        df = pd.read_csv(AI_SCREENING_PATH, dtype={"Ticker": str, "Country": str})
+        required = {"Country", "Ticker", "Company", "Screening_Market"}
+        missing = required - set(df.columns)
+        if missing:
+            raise RuntimeError(f"AI 최소 스크리닝 목록 필수 컬럼 누락: {sorted(missing)}")
+        df["Ticker"] = [_code(t, country) for t, country in zip(df["Ticker"], df["Country"])]
+        if len(df) != 75 or df["Ticker"].duplicated().any():
+            raise ValueError("AI 최소 스크리닝 목록은 중복 없는 75종목이어야 합니다.")
+        return df[["Country", "Ticker", "Company", "Screening_Market"]].copy()
+
+
 def extend_screening_universe(universe: pd.DataFrame, market_key: str,
                               path: Path | str | None = None) -> pd.DataFrame:
     """기존 KR/US 유니버스에 AI 75종목 중 해당 시장 종목을 빠짐없이 합친다."""
     market_key = market_key.upper()
-    ai = load_ai_universe(path)
+    ai = load_ai_screening_universe(path)
     ai = ai[ai["Country"].eq("KR") if market_key == "KR" else ~ai["Country"].eq("KR")]
 
     out = universe.copy()
