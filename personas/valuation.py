@@ -65,6 +65,10 @@ def parse_info(info: Optional[dict]) -> Optional[dict]:
         "currentPrice": _pos(info.get("currentPrice") or info.get("regularMarketPrice")),
         "sector": str(info["sector"]) if info.get("sector") else None,
         "industry": str(info["industry"]) if info.get("industry") else None,
+        # Yahoo가 제공할 때만 보존. 미래 실적일 이벤트 리스크 보조용이며 없으면 None.
+        "earningsTimestamp": _num(info.get("earningsTimestamp")),
+        "earningsTimestampStart": _num(info.get("earningsTimestampStart")),
+        "earningsTimestampEnd": _num(info.get("earningsTimestampEnd")),
     }
     if all(rec[k] is None for k in ("trailingPE", "forwardPE", "priceToBook", "trailingEps", "marketCap", "currentPrice")):
         return None
