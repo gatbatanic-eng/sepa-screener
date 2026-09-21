@@ -6,6 +6,7 @@ from recovery_mode import (
     entry_ok,
     gap_chase_metrics,
     market_metrics,
+    rejection_reason,
     strength_score,
     suggested_amount,
     track_record_stats,
@@ -35,6 +36,29 @@ class RecoveryModeTest(unittest.TestCase):
         row = self.base()
         row["initialRiskPct"] = 6.0
         self.assertFalse(entry_ok(row, strength_score(row)))
+
+    def test_zero_risk_is_not_treated_as_missing_or_high(self):
+        row = self.base()
+        row["initialRiskPct"] = 0.0
+        row["marketRisk"] = market_metrics(row)
+        row["gapRisk"] = gap_chase_metrics(row)
+        self.assertTrue(entry_ok(row, 90))
+        self.assertNotIn("초기리스크", rejection_reason(row))
+
+    def test_missing_market_or_gap_data_fails_closed(self):
+        row = self.base()
+        row.pop("breadth")
+        row["marketRisk"] = market_metrics(row)
+        row["gapRisk"] = gap_chase_metrics(row)
+        self.assertFalse(row["marketRisk"]["available"])
+        self.assertFalse(entry_ok(row, 90))
+
+        row = self.base()
+        row.pop("gapPct")
+        row["marketRisk"] = market_metrics(row)
+        row["gapRisk"] = gap_chase_metrics(row)
+        self.assertFalse(row["gapRisk"]["available"])
+        self.assertFalse(entry_ok(row, 90))
 
     def test_gap_chase_is_blocked(self):
         row = self.base()
