@@ -505,7 +505,7 @@ def _find_naver_stock_rows(payload) -> list[dict]:
 
 
 def fetch_naver_kr_market_snapshot() -> pd.DataFrame:
-    """네이버 금융의 KOSPI·KOSDAQ 시가총액 순위에서 종목 스냅샷을 만든다."""
+    """네이버 금융의 KOSPI·KOSDAQ 시가총액 순위로 장전 후보 스냅샷을 만든다."""
     headers = {
         "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) "
                       "AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1",
