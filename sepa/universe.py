@@ -91,14 +91,14 @@ def select_kr_candidates(listing: pd.DataFrame, cfg: UniverseConfig) -> pd.DataF
         proxy_valid = 0
         if proxy:
             df[proxy] = pd.to_numeric(df[proxy], errors="coerce")
-            proxy_valid = int(df[proxy].notna().sum())
+            proxy_valid = int((df[proxy] > 0).sum())
 
         # 장 시작 전/휴장일에는 FDR이 Amount 컬럼만 만들고 값을 전부 NaN으로
         # 반환할 수 있다. 컬럼 존재 여부가 아니라 후보 pool을 채울 만큼 실제 값이
         # 있는지 확인하고, 부족하면 시가총액으로 안전하게 대체한다.
         needed = min(cfg.kr_liquidity_candidate_n, len(df))
         if proxy and proxy_valid >= needed:
-            df = df.dropna(subset=[proxy]).sort_values(proxy, ascending=False)
+            df = df[df[proxy] > 0].sort_values(proxy, ascending=False)
             log.info("KR 유니버스 모드=liquidity, 후보 선별 기준=%s(유효 %d개)",
                      proxy, proxy_valid)
         else:
@@ -107,8 +107,8 @@ def select_kr_candidates(listing: pd.DataFrame, cfg: UniverseConfig) -> pd.DataF
                     f"KR 후보 선별 불가: 거래대금 유효값 {proxy_valid}개, Marcap 컬럼 없음"
                 )
             df["Marcap"] = pd.to_numeric(df["Marcap"], errors="coerce")
-            marcap_valid = int(df["Marcap"].notna().sum())
-            df = df.dropna(subset=["Marcap"]).sort_values("Marcap", ascending=False)
+            marcap_valid = int((df["Marcap"] > 0).sum())
+            df = df[df["Marcap"] > 0].sort_values("Marcap", ascending=False)
             log.warning(
                 "KR 거래대금 유효값 부족(%d/%d) — 시가총액 유효 %d개 기준으로 후보 선별",
                 proxy_valid, needed, marcap_valid,
