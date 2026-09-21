@@ -55,6 +55,7 @@ from zoneinfo import ZoneInfo
 
 import numpy as np
 import pandas as pd
+import requests
 import yfinance as yf
 
 try:
@@ -451,6 +452,114 @@ def _merge_kr_market_snapshot(listing: pd.DataFrame, snapshot: pd.DataFrame) -> 
     return out
 
 
+def _number_from_naver(value) -> float:
+    """네이버의 숫자/한국 단위 문자열(조·억)을 원 단위 숫자로 변환한다."""
+    if value is None:
+        return float("nan")
+    if isinstance(value, (int, float)):
+        return float(value)
+    text = str(value).strip().replace(",", "")
+    if not text or text in ("-", "N/A"):
+        return float("nan")
+    total = 0.0
+    matched = False
+    import re
+    jo = re.search(r"([0-9.]+)조", text)
+    eok = re.search(r"([0-9.]+)억", text)
+    if jo:
+        total += float(jo.group(1)) * 1_000_000_000_000
+        matched = True
+    if eok:
+        total += float(eok.group(1)) * 100_000_000
+        matched = True
+    if matched:
+        return total
+    cleaned = re.sub(r"[^0-9.+-]", "", text)
+    try:
+        return float(cleaned)
+    except ValueError:
+        return float("nan")
+
+
+def _find_naver_stock_rows(payload) -> list[dict]:
+    """응답 스키마가 바뀌어도 종목코드가 든 가장 큰 배열을 찾는다."""
+    found: list[list[dict]] = []
+
+    def walk(obj):
+        if isinstance(obj, list):
+            rows = [x for x in obj if isinstance(x, dict)]
+            if rows and any(
+                any(k in row for k in ("itemCode", "code", "stockCode", "reutersCode"))
+                for row in rows
+            ):
+                found.append(rows)
+            for item in obj:
+                walk(item)
+        elif isinstance(obj, dict):
+            for value in obj.values():
+                walk(value)
+
+    walk(payload)
+    return max(found, key=len) if found else []
+
+
+def fetch_naver_kr_market_snapshot() -> pd.DataFrame:
+    """네이버 금융의 KOSPI·KOSDAQ 시가총액 순위에서 종목 스냅샷을 만든다."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) "
+                      "AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1",
+        "Referer": "https://m.stock.naver.com/",
+    }
+    records: dict[str, dict] = {}
+    url = "https://m.stock.naver.com/front-api/stock/domestic/stockList"
+    for market in ("KOSPI", "KOSDAQ"):
+        for page in range(1, 21):
+            response = requests.get(
+                url,
+                params={
+                    "sortType": "marketValue", "category": market,
+                    "page": page, "pageSize": 100,
+                },
+                headers=headers, timeout=15,
+            )
+            response.raise_for_status()
+            rows = _find_naver_stock_rows(response.json())
+            if not rows:
+                break
+            before = len(records)
+            for rank, row in enumerate(rows):
+                code = str(
+                    row.get("itemCode") or row.get("code") or
+                    row.get("stockCode") or row.get("reutersCode") or ""
+                ).split(".")[0].zfill(6)
+                if not code.isdigit() or len(code) != 6:
+                    continue
+                marcap = _number_from_naver(
+                    row.get("marketValue") or row.get("marketCap") or row.get("marketValueHangeul")
+                )
+                amount = _number_from_naver(
+                    row.get("accumulatedTradingValue") or row.get("tradingValue")
+                )
+                # 목록은 시총 내림차순이다. 표시값 파싱이 불가능해도 후보 순서는
+                # 보존하되, 화면에 가짜 시총을 노출하지 않도록 NaN으로 둔다.
+                records[code] = {"Code": code, "Marcap": marcap, "Amount": amount,
+                                 "Market": market, "_rank": (page - 1) * 100 + rank}
+            if len(records) == before or len(rows) < 100:
+                break
+
+    if len(records) < 100:
+        raise RuntimeError(f"네이버 한국 시총 목록이 {len(records)}종목뿐입니다")
+    frame = pd.DataFrame(records.values()).set_index("Code")
+    # Marcap 문자열 형식 변경으로 파싱이 안 된 경우에도 순위 후보를 복구할 수
+    # 있도록 내부 선별용 값만 부여한다(실제 결과 Marcap은 기존 값이 있으면 유지).
+    missing = ~(pd.to_numeric(frame["Marcap"], errors="coerce") > 0)
+    if missing.any():
+        frame.loc[missing, "Marcap"] = (
+            len(frame) - frame.loc[missing, "_rank"].astype(float)
+        ) * 100_000_000
+    return frame
+
+
 def enrich_kr_listing_market_data(listing: pd.DataFrame) -> pd.DataFrame:
     """FDR의 장전 시총/거래대금 결측을 pykrx 최근 실제 거래일 값으로 보완한다."""
     required = min(SEPA_CFG.universe.kr_liquidity_candidate_n, len(listing))
@@ -460,6 +569,20 @@ def enrich_kr_listing_market_data(listing: pd.DataFrame) -> pd.DataFrame:
     marcap_valid = int((marcap > 0).sum()) if marcap is not None else 0
     if max(amount_valid, marcap_valid) >= required:
         return listing
+
+    try:
+        naver_snapshot = fetch_naver_kr_market_snapshot()
+        logger.warning(
+            "FDR 장전 시총/거래대금 결측 — 네이버 시총 목록 %d종목으로 보완",
+            len(naver_snapshot),
+        )
+        repaired = _merge_kr_market_snapshot(listing, naver_snapshot)
+        repaired_valid = int((pd.to_numeric(repaired.get("Marcap"), errors="coerce") > 0).sum())
+        if repaired_valid >= required:
+            return repaired
+        logger.warning("네이버 보완 후 시총 유효값이 %d/%d로 부족", repaired_valid, required)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("네이버 KR 시총 목록 보완 실패: %s", exc)
 
     try:
         from pykrx import stock as pykrx_stock
