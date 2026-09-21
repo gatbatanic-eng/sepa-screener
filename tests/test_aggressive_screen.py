@@ -17,7 +17,7 @@ class AggressiveScreenTests(unittest.TestCase):
         return pd.DataFrame({"Open": close - .2, "High": high, "Low": low, "Close": close, "Volume": volume}, index=dates)
 
     def row(self):
-        return {"code": "X", "name": "X", "market": "US", "status": "OK", "inUniverse": True, "rsScore": 90, "regime": "GREEN"}
+        return {"code": "X", "name": "X", "market": "US", "status": "OK", "inUniverse": True, "rsScore": 90, "regime": "GREEN", "breadth": 0.65, "sizeFactor": 1.0}
 
     def test_breakout_signal_and_risk_fields(self):
         result = evaluate(self.row(), self.frame(), "us")
@@ -26,6 +26,10 @@ class AggressiveScreenTests(unittest.TestCase):
         self.assertTrue(result["aggressiveGo"])
         self.assertLessEqual(result["initialRiskPct"], CONFIG["maxInitialRiskPct"])
         self.assertGreater(result["referenceStop"], 0)
+        self.assertIn("gapPct", result)
+        self.assertIn("changePct1d", result)
+        self.assertEqual(result["breadth"], 0.65)
+        self.assertEqual(result["sizeFactor"], 1.0)
 
     def test_red_market_blocks_entry(self):
         row = self.row(); row["regime"] = "RED"
