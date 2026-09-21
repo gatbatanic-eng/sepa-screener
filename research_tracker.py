@@ -13,7 +13,7 @@ from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parent
 HORIZONS = (5, 20, 60)
-GROUPS = ('TREND', 'READY', 'GO')
+GROUPS = ('TREND', 'READY', 'GO', 'EXP_READY', 'EXP_GO')
 
 def packed(obj):
     return json.dumps(obj, ensure_ascii=False, sort_keys=True, separators=(',', ':'), allow_nan=False)
@@ -80,6 +80,19 @@ def outcome(signal, prices, benchmark, horizon):
                 pathStatus='complete' if complete else 'missing', baselineClose=start,
                 baselineRevised=abs(start / signal['originalClose'] - 1) > 0.0001)
 
+def experimental_ready(row):
+    """실험형 셋업: 기존 추세·베이스·수축을 유지하고 ATR/거래량 중 하나를 완화."""
+    required = ('trendOk', 'baseLength', 'contractionCount', 'atrContraction', 'volDryup')
+    if any(row.get(k) is None for k in required):
+        return None
+    return bool(
+        row['trendOk'] is True
+        and row['baseLength'] >= 20
+        and row['contractionCount'] >= 2
+        and (row['atrContraction'] <= 0.95 or row['volDryup'] <= 0.85)
+    )
+
+
 def membership(row, group):
     if row.get('status') != 'OK':
         return None
@@ -92,6 +105,13 @@ def membership(row, group):
     if group == 'GO':
         entry = row.get('entryState')
         return entry in ('GO_BREAKOUT', 'GO_PULLBACK') if entry else None
+    if group in ('EXP_READY', 'EXP_GO'):
+        ready = experimental_ready(row)
+        if ready is None:
+            return None
+        if group == 'EXP_READY':
+            return ready
+        return bool(ready and (row.get('confirmedBo') is True or row.get('pullback') is True))
     value = row.get('trendOk' if group == 'TREND' else 'setupReady')
     return value if isinstance(value, bool) else None
 
