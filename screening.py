@@ -490,7 +490,7 @@ def _find_naver_stock_rows(payload) -> list[dict]:
         if isinstance(obj, list):
             rows = [x for x in obj if isinstance(x, dict)]
             if rows and any(
-                any(k in row for k in ("itemCode", "code", "stockCode", "reutersCode"))
+                any(k in row for k in ("itemCode", "itemcode", "code", "stockCode", "reutersCode"))
                 for row in rows
             ):
                 found.append(rows)
@@ -512,31 +512,50 @@ def fetch_naver_kr_market_snapshot() -> pd.DataFrame:
         "Referer": "https://m.stock.naver.com/",
     }
     records: dict[str, dict] = {}
-    url = "https://m.stock.naver.com/front-api/stock/domestic/stockList"
     for market in ("KOSPI", "KOSDAQ"):
         for page in range(1, 21):
-            response = requests.get(
-                url,
-                params={
-                    "sortType": "marketValue", "category": market,
-                    "page": page, "pageSize": 100,
-                },
-                headers=headers, timeout=15,
-            )
-            response.raise_for_status()
-            rows = _find_naver_stock_rows(response.json())
+            rows = []
+            errors = []
+            candidates = [
+                (
+                    f"https://m.stock.naver.com/api/stocks/marketValue/{market}",
+                    {"page": page, "pageSize": 100},
+                ),
+                (
+                    "https://m.stock.naver.com/front-api/stock/domestic/stockList",
+                    {"sortType": "marketValue", "category": market,
+                     "page": page, "pageSize": 100},
+                ),
+                (
+                    "https://m.stock.naver.com/api/json/sise/siseListJson.nhn",
+                    {"menu": "market_sum", "sosok": 0 if market == "KOSPI" else 1,
+                     "page": page, "pageSize": 100},
+                ),
+            ]
+            for url, params in candidates:
+                try:
+                    response = requests.get(url, params=params, headers=headers, timeout=15)
+                    response.raise_for_status()
+                    rows = _find_naver_stock_rows(response.json())
+                    if rows:
+                        break
+                except Exception as exc:  # noqa: BLE001
+                    errors.append(f"{url}: {exc}")
             if not rows:
+                if page == 1:
+                    raise RuntimeError("; ".join(errors) or f"{market} 목록 응답에 종목 없음")
                 break
             before = len(records)
             for rank, row in enumerate(rows):
                 code = str(
-                    row.get("itemCode") or row.get("code") or
+                    row.get("itemCode") or row.get("itemcode") or row.get("code") or
                     row.get("stockCode") or row.get("reutersCode") or ""
                 ).split(".")[0].zfill(6)
                 if not code.isdigit() or len(code) != 6:
                     continue
                 marcap = _number_from_naver(
-                    row.get("marketValue") or row.get("marketCap") or row.get("marketValueHangeul")
+                    row.get("marketValue") or row.get("marketCap") or
+                    row.get("marketValueHangeul") or row.get("market_sum") or row.get("marketSum")
                 )
                 amount = _number_from_naver(
                     row.get("accumulatedTradingValue") or row.get("tradingValue")
