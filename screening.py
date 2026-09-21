@@ -322,18 +322,31 @@ def _latest_closed_kr_session(now: Optional[datetime] = None) -> pd.Timestamp:
     return day
 
 
-def _kr_yahoo_symbol(code: str, market: Optional[str]) -> Optional[str]:
-    """한국 종목/지수를 Yahoo Finance 심볼로 변환한다."""
+def _kr_yahoo_symbols(code: str, market: Optional[str]) -> list[str]:
+    """한국 종목/지수를 조회할 Yahoo Finance 심볼 후보를 반환한다."""
     code = str(code)
     if code == KOSPI_INDEX_CODE:
-        return "^KS11"
+        return ["^KS11"]
     if code == KOSDAQ_INDEX_CODE:
-        return "^KQ11"
-    if market == "KOSPI" and code.isdigit():
-        return f"{code.zfill(6)}.KS"
-    if market in ("KOSDAQ", "KOSDAQ GLOBAL") and code.isdigit():
-        return f"{code.zfill(6)}.KQ"
-    return None
+        return ["^KQ11"]
+    if not code.isdigit():
+        return []
+    code = code.zfill(6)
+    if market == "KOSPI":
+        return [f"{code}.KS"]
+    if market in ("KOSDAQ", "KOSDAQ GLOBAL"):
+        return [f"{code}.KQ"]
+    # AI 관찰목록처럼 시장값이 단순 KR이거나 비어 있는 경우 양쪽을 조회해
+    # 실제로 존재하면서 가장 최신인 심볼을 선택한다.
+    if market in ("KR", None, ""):
+        return [f"{code}.KS", f"{code}.KQ"]
+    return []
+
+
+def _kr_yahoo_symbol(code: str, market: Optional[str]) -> Optional[str]:
+    """하위 호환용 단일 심볼 반환."""
+    symbols = _kr_yahoo_symbols(code, market)
+    return symbols[0] if symbols else None
 
 
 def _download_yahoo_history(symbol: str, start: str) -> pd.DataFrame:
@@ -380,28 +393,42 @@ def fetch_price_history(code: str, start: str, market: Optional[str] = None) -> 
     if primary is None:
         raise RuntimeError(f"{code} 조회 최종 실패: {last_exc}")
 
-    yahoo_symbol = _kr_yahoo_symbol(code, market)
-    if yahoo_symbol is None or _last_price_date(primary) >= _latest_closed_kr_session():
+    yahoo_symbols = _kr_yahoo_symbols(code, market)
+    if not yahoo_symbols:
+        return primary
+
+    cutoff = _latest_closed_kr_session()
+    primary = primary.loc[pd.to_datetime(primary.index).tz_localize(None).normalize() <= cutoff]
+    primary_day = _last_price_date(primary)
+    if primary_day >= cutoff:
         return primary
 
     # FinanceDataReader의 한국 시세원이 하루 이상 늦는 경우가 있어, 그때만
-    # Yahoo를 조회한다. 보조 소스가 실제로 더 최신일 때에만 교체한다.
-    try:
-        fallback = _download_yahoo_history(yahoo_symbol, start)
-        primary_day = _last_price_date(primary)
-        fallback_day = _last_price_date(fallback)
-        if fallback_day > primary_day:
-            logger.warning(
-                "[%s] 기본 시세가 %s까지여서 Yahoo(%s, %s)로 보완",
-                code, primary_day.date(), yahoo_symbol, fallback_day.date(),
-            )
-            return fallback
+    # Yahoo 후보를 조회한다. 당일 장중 봉은 버리고 마감된 거래일까지만 비교한다.
+    best = primary
+    best_day = primary_day
+    for yahoo_symbol in yahoo_symbols:
+        try:
+            fallback = _download_yahoo_history(yahoo_symbol, start)
+            fallback = fallback.loc[
+                pd.to_datetime(fallback.index).tz_localize(None).normalize() <= cutoff
+            ]
+            fallback_day = _last_price_date(fallback)
+            if fallback_day > best_day:
+                best, best_day = fallback, fallback_day
+        except Exception as exc:  # noqa: BLE001 - 한 후보 실패 시 다음 후보 조회
+            logger.info("[%s] Yahoo 후보 %s 조회 불가: %s", code, yahoo_symbol, exc)
+
+    if best_day > primary_day:
         logger.warning(
-            "[%s] 한국 시세 최신일 확인 필요: 기본=%s, Yahoo=%s",
-            code, primary_day.date(), fallback_day.date(),
+            "[%s] 기본 시세가 %s까지여서 Yahoo(%s)로 %s까지 보완",
+            code, primary_day.date(), "/".join(yahoo_symbols), best_day.date(),
         )
-    except Exception as exc:  # noqa: BLE001 - 보조 소스 실패 시 기존 데이터는 보존
-        logger.warning("[%s] 지연 시세 Yahoo 보완 실패: %s", code, exc)
+        return best
+    logger.warning(
+        "[%s] 한국 시세 최신일 확인 필요: 기본/보조 모두 %s (마감 기대일 %s)",
+        code, primary_day.date(), cutoff.date(),
+    )
     return primary
 
 
