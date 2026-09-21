@@ -62,14 +62,22 @@ def fetch_us_universe() -> pd.DataFrame:
     return out.reset_index(drop=True)
 
 
+def clean_ohlcv(df: pd.DataFrame) -> pd.DataFrame:
+    """종가가 비어 있는 봉(장 마감 직후 미확정 봉 등)을 버린다. 남겨두면 마지막 종가가
+    NaN이 되어 모든 이동평균/신호가 통째로 NaN이 된다."""
+    if df is None or df.empty or "Close" not in df.columns:
+        return df
+    return df.dropna(subset=["Close"])
+
+
 def fetch_ohlcv(code: str, start: dt.date) -> pd.DataFrame:
     """단일 종목의 일봉 OHLCV DataFrame(Open/High/Low/Close/Volume, DatetimeIndex 오름차순)."""
-    return fdr.DataReader(code, start)
+    return clean_ohlcv(fdr.DataReader(code, start))
 
 
 def fetch_index_ohlcv(index_code: str, start: dt.date) -> pd.DataFrame:
     """시장 지수(KS11/KQ11/US500 등) 일봉. 시장 국면 게이트 계산용."""
-    return fdr.DataReader(index_code, start)
+    return clean_ohlcv(fdr.DataReader(index_code, start))
 
 
 def history_start_date(today: dt.date | None = None) -> dt.date:
