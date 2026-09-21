@@ -47,6 +47,10 @@ class KoreanPriceFallbackTest(unittest.TestCase):
         self.assertEqual(screening._kr_yahoo_symbol("005930", "KOSPI"), "005930.KS")
         self.assertEqual(screening._kr_yahoo_symbol("035720", "KOSDAQ"), "035720.KQ")
         self.assertIsNone(screening._kr_yahoo_symbol("AAPL", "US"))
+        self.assertEqual(
+            screening._kr_yahoo_symbols("035720", "KR"),
+            ["035720.KS", "035720.KQ"],
+        )
 
 
 if __name__ == "__main__":
