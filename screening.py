@@ -885,6 +885,18 @@ def run_screening(market_key: str, top_n: int, max_workers: int, limit: Optional
         universe = v2_universe.select_kr_candidates(listing, cfg.universe)
         benchmark_codes = (("KOSPI", KOSPI_INDEX_CODE), ("KOSDAQ", KOSDAQ_INDEX_CODE))
         logger.info("KR 유니버스 확정: %d종목 (모드=%s)", len(universe), cfg.universe.kr_mode)
+
+        # 기본 유니버스가 비었는데 AI 관찰목록만 추가되어 정상 결과처럼 저장되는
+        # 사고를 막는다. 이 검사는 AI 확장보다 먼저 실행해야 한다.
+        target_n = (cfg.universe.kr_liquidity_candidate_n
+                    if cfg.universe.kr_mode == "liquidity"
+                    else cfg.universe.kr_market_cap_top_n)
+        minimum_safe_n = min(100, target_n)
+        if len(universe) < minimum_safe_n:
+            raise RuntimeError(
+                f"KR 기본 유니버스 비정상: {len(universe)}종목 "
+                f"(최소 안전기준 {minimum_safe_n}). 결과 저장을 중단합니다."
+            )
     elif market_key == "US":
         universe = get_universe_us()
         benchmark_codes = (("US", US_INDEX_CODE),)
