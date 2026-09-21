@@ -1,0 +1,55 @@
+name: Recovery Aggressive Mode
+
+on:
+  pull_request:
+    paths: ["recovery_mode.py", "aggressive_screen.py", "personas/valuation.py", "tests/test_recovery_mode.py", "tests/test_aggressive_screen.py", ".github/workflows/recovery_daily.yml"]
+  workflow_run:
+    workflows: ["SEPA Trend Template Daily Screening"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: recovery-aggressive-mode
+  cancel-in-progress: false
+
+jobs:
+  test:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: 의존성 설치
+        run: pip install -r requirements.txt
+      - name: 복구/공격형 로직 테스트
+        run: |
+          python -m unittest tests.test_recovery_mode -v
+          python -m unittest tests.test_aggressive_screen -v
+
+  build:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: 로직 테스트
+        run: python -m unittest tests.test_recovery_mode -v
+      - name: 계좌복구 공격매매 랭킹 생성
+        run: python recovery_mode.py
+      - name: 결과 커밋
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/recovery/
+          git diff --cached --quiet || git commit -m "계좌복구 공격매매 자동 갱신 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+          git pull --rebase origin master
+          git push

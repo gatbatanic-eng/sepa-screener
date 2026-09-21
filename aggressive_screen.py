@@ -71,6 +71,8 @@ def indicators(frame: pd.DataFrame) -> pd.DataFrame:
     df["volume20Prior"] = df.Volume.shift(1).rolling(20).mean()
     df["value20"] = (close * df.Volume).rolling(20).mean()
     df["volumeRatio"] = df.Volume / df.volume20Prior
+    df["gapPct"] = (df.Open / previous_close - 1) * 100
+    df["changePct1d"] = (close / previous_close - 1) * 100
     day_range = df.High - df.Low
     df["clv"] = ((close - df.Low) / day_range).where(day_range > 0, 0.5)
     df["rsi14"] = _rsi(close)
@@ -86,7 +88,7 @@ def indicators(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def evaluate(row: dict, frame: pd.DataFrame | None, market: str) -> dict:
-    out = {k: row.get(k) for k in ("code", "name", "market", "close", "priceAsOf")}
+    out = {k: row.get(k) for k in ("code", "name", "market", "close", "priceAsOf", "regime", "breadth", "sizeFactor", "rsScore", "rsChange20d")}
     out.update(
         status="UNKNOWN",
         inUniverse=row.get("inUniverse"),
@@ -103,7 +105,7 @@ def evaluate(row: dict, frame: pd.DataFrame | None, market: str) -> dict:
             raise ValueError("원본 데이터 확인불가")
         required = (
             "Close", "sma20", "sma50", "sma50Slope10Pct", "high52w", "breakoutLevel",
-            "volumeRatio", "clv", "rsi14", "macdHistogram", "atr14", "value20",
+            "volumeRatio", "gapPct", "changePct1d", "clv", "rsi14", "macdHistogram", "atr14", "value20",
         )
         if any(not math.isfinite(float(today[key])) for key in required):
             raise ValueError("핵심 지표 계산불가")
@@ -151,7 +153,8 @@ def evaluate(row: dict, frame: pd.DataFrame | None, market: str) -> dict:
             sma50Slope10Pct=float(today.sma50Slope10Pct), high52w=float(today.high52w),
             highProximityPct=(close / today.high52w - 1) * 100,
             breakoutLevel=pivot, pivotDistancePct=watch_distance,
-            volumeRatio=float(today.volumeRatio), clv=float(today.clv),
+            volumeRatio=float(today.volumeRatio), gapPct=float(today.gapPct),
+            changePct1d=float(today.changePct1d), clv=float(today.clv),
             rsi14=float(today.rsi14), macd=float(today.macd),
             macdHistogram=float(today.macdHistogram), atr14=atr,
             value20=float(today.value20), initialRiskPct=risk,
