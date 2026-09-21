@@ -64,6 +64,12 @@ def export_inputs(frame, ohlcv, benchmarks, cfg, market):
     except Exception as exc:
         import logging
         logging.getLogger(__name__).exception("박스권 지표 내보내기 실패: %s", exc)
+    from aggressive_screen import export_aggressive
+    try:
+        export_aggressive(payload, ohlcv)
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).exception("공격형 모멘텀 지표 내보내기 실패: %s", exc)
 
 def outcome(signal, prices, benchmark, horizon):
     dates = sorted(d for d in benchmark if d > signal['date'])
@@ -80,11 +86,24 @@ def outcome(signal, prices, benchmark, horizon):
     values = [prices.get(d) for d in window]
     complete = all(positive(v) for v in values)
     excursions = [(v/start-1)*100 for v in values] if complete else []
-    return dict(base, status='complete', returnPct=ret, benchmarkPct=bench, excessPct=ret-bench,
-                maxUpPct=max(0, *excursions) if complete else None,
-                maxDownPct=min(0, *excursions) if complete else None,
-                pathStatus='complete' if complete else 'missing', baselineClose=start,
-                baselineRevised=abs(start / signal['originalClose'] - 1) > 0.0001)
+    result = dict(base, status='complete', returnPct=ret, benchmarkPct=bench, excessPct=ret-bench,
+                  maxUpPct=max(0, *excursions) if complete else None,
+                  maxDownPct=min(0, *excursions) if complete else None,
+                  pathStatus='complete' if complete else 'missing', baselineClose=start,
+                  baselineRevised=abs(start / signal['originalClose'] - 1) > 0.0001)
+    if str(signal.get('group', '')).startswith('AGGR_'):
+        pivot = signal.get('attributes', {}).get('breakoutLevel')
+        stop = signal.get('attributes', {}).get('referenceStop')
+        first_two = [prices.get(d) for d in window[:2]]
+        result['fastFail'] = bool(positive(pivot) and any(positive(v) and v < pivot for v in first_two))
+        result['stopTriggered'] = bool(positive(stop) and any(positive(v) and v <= stop for v in values))
+        if horizon >= 5:
+            day5 = prices.get(window[4]) if len(window) >= 5 else None
+            result['timeStop'] = bool(positive(day5) and (day5 / start - 1) * 100 < 3)
+        result['trackingState'] = ('STOP_TRIGGERED' if result['stopTriggered'] else
+                                   'FAST_FAIL' if result['fastFail'] else
+                                   'TIME_STOP' if result.get('timeStop') else 'ACTIVE')
+    return result
 
 def experimental_ready(row):
     """실험형 셋업: 기존 추세·베이스·수축을 유지하고 ATR/거래량 중 하나를 완화."""
@@ -108,6 +127,8 @@ def membership(row, group):
         return None
     if group.startswith('RANGE_'):
         return row.get('rangeWatch' if group == 'RANGE_WATCH' else 'rangeGo')
+    if group.startswith('AGGR_'):
+        return row.get('aggressiveWatch' if group == 'AGGR_WATCH' else 'aggressiveGo')
     if group == 'GO':
         entry = row.get('entryState')
         return entry in ('GO_BREAKOUT', 'GO_PULLBACK') if entry else None
@@ -294,7 +315,7 @@ def main():
             write_json(existing_path, saved)
             write_json(ROOT / 'docs' / 'research' / f'{existing_market}.json', public_view(saved))
     markets = ['kr', 'us'] if args.market == 'ALL' else [args.market.lower()]
-    for dataset in [m for market in markets for m in (market, 'range_' + market)]:
+    for dataset in [m for market in markets for m in (market, 'range_' + market, 'aggressive_' + market)]:
         market = dataset.rsplit('_', 1)[-1]
         path = ROOT / 'output' / f'research_input_{dataset}.json'
         if not path.exists():
