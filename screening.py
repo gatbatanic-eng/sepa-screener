@@ -55,6 +55,7 @@ from zoneinfo import ZoneInfo
 
 import numpy as np
 import pandas as pd
+import yfinance as yf
 
 try:
     import FinanceDataReader as fdr
@@ -306,16 +307,68 @@ class StockResult:
 # ----------------------------------------------------------------------------
 # 유틸: 재시도 포함 데이터 조회
 # ----------------------------------------------------------------------------
-def fetch_price_history(code: str, start: str) -> pd.DataFrame:
-    """FinanceDataReader로 가격 이력을 조회한다. 실패 시 재시도한다."""
+def _latest_closed_kr_session(now: Optional[datetime] = None) -> pd.Timestamp:
+    """현재 시각 기준 이미 마감했어야 하는 가장 최근 한국 평일을 반환한다.
+
+    공휴일 달력을 추정하지 않는다. 공휴일이면 기본/보조 소스가 모두 같은 마지막
+    실제 거래일을 반환하므로 더 최신인 데이터만 선택한다.
+    """
+    now = now or datetime.now(ZoneInfo("Asia/Seoul"))
+    day = pd.Timestamp(now.date())
+    if (now.hour, now.minute) < (15, 40):
+        day -= pd.Timedelta(days=1)
+    while day.weekday() >= 5:
+        day -= pd.Timedelta(days=1)
+    return day
+
+
+def _kr_yahoo_symbol(code: str, market: Optional[str]) -> Optional[str]:
+    """한국 종목/지수를 Yahoo Finance 심볼로 변환한다."""
+    code = str(code)
+    if code == KOSPI_INDEX_CODE:
+        return "^KS11"
+    if code == KOSDAQ_INDEX_CODE:
+        return "^KQ11"
+    if market == "KOSPI" and code.isdigit():
+        return f"{code.zfill(6)}.KS"
+    if market in ("KOSDAQ", "KOSDAQ GLOBAL") and code.isdigit():
+        return f"{code.zfill(6)}.KQ"
+    return None
+
+
+def _download_yahoo_history(symbol: str, start: str) -> pd.DataFrame:
+    """yfinance 단일 심볼 결과를 screening.py 표준 OHLCV 형태로 정규화한다."""
+    frame = yf.download(
+        symbol, start=start, auto_adjust=False, progress=False, threads=False,
+    )
+    if frame is None or frame.empty:
+        raise ValueError("Yahoo Finance 빈 데이터프레임 반환")
+    if isinstance(frame.columns, pd.MultiIndex):
+        frame.columns = frame.columns.get_level_values(0)
+    frame.index = pd.to_datetime(frame.index)
+    if getattr(frame.index, "tz", None) is not None:
+        frame.index = frame.index.tz_localize(None)
+    return frame
+
+
+def _last_price_date(frame: pd.DataFrame) -> pd.Timestamp:
+    valid = frame.dropna(subset=["Close"]) if "Close" in frame.columns else frame
+    if valid.empty:
+        raise ValueError("유효한 종가 없음")
+    return pd.Timestamp(valid.index.max()).tz_localize(None).normalize()
+
+
+def fetch_price_history(code: str, start: str, market: Optional[str] = None) -> pd.DataFrame:
+    """가격 이력을 조회하고, 한국 시세가 늦으면 Yahoo의 더 최신 데이터를 사용한다."""
     last_exc: Optional[Exception] = None
+    primary: Optional[pd.DataFrame] = None
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             time.sleep(random.uniform(*REQUEST_DELAY_RANGE))
-            df = fdr.DataReader(code, start)
-            if df is None or df.empty:
+            primary = fdr.DataReader(code, start)
+            if primary is None or primary.empty:
                 raise ValueError("빈 데이터프레임 반환")
-            return df
+            break
         except Exception as exc:  # noqa: BLE001 - 개별 종목 실패는 전체를 죽이면 안 됨
             last_exc = exc
             wait = (RETRY_BACKOFF_BASE ** attempt) + random.uniform(0, 0.5)
@@ -324,7 +377,32 @@ def fetch_price_history(code: str, start: str) -> pd.DataFrame:
                 code, attempt, MAX_RETRIES, exc, wait,
             )
             time.sleep(wait)
-    raise RuntimeError(f"{code} 조회 최종 실패: {last_exc}")
+    if primary is None:
+        raise RuntimeError(f"{code} 조회 최종 실패: {last_exc}")
+
+    yahoo_symbol = _kr_yahoo_symbol(code, market)
+    if yahoo_symbol is None or _last_price_date(primary) >= _latest_closed_kr_session():
+        return primary
+
+    # FinanceDataReader의 한국 시세원이 하루 이상 늦는 경우가 있어, 그때만
+    # Yahoo를 조회한다. 보조 소스가 실제로 더 최신일 때에만 교체한다.
+    try:
+        fallback = _download_yahoo_history(yahoo_symbol, start)
+        primary_day = _last_price_date(primary)
+        fallback_day = _last_price_date(fallback)
+        if fallback_day > primary_day:
+            logger.warning(
+                "[%s] 기본 시세가 %s까지여서 Yahoo(%s, %s)로 보완",
+                code, primary_day.date(), yahoo_symbol, fallback_day.date(),
+            )
+            return fallback
+        logger.warning(
+            "[%s] 한국 시세 최신일 확인 필요: 기본=%s, Yahoo=%s",
+            code, primary_day.date(), fallback_day.date(),
+        )
+    except Exception as exc:  # noqa: BLE001 - 보조 소스 실패 시 기존 데이터는 보존
+        logger.warning("[%s] 지연 시세 Yahoo 보완 실패: %s", code, exc)
+    return primary
 
 
 def fetch_stock_listing(market: str) -> pd.DataFrame:
@@ -411,7 +489,7 @@ def evaluate_stock(code: str, name: str, market: str, marcap: float, start_date:
     result = StockResult(code=code, name=name, market=market, marcap=marcap)
 
     try:
-        df = fetch_price_history(code, start_date)
+        df = fetch_price_history(code, start_date, market=market)
     except Exception as exc:  # noqa: BLE001
         result.status = "확인불가"
         result.exclude_reason = f"데이터 조회 실패: {exc}"
@@ -801,7 +879,7 @@ def run_screening(market_key: str, top_n: int, max_workers: int, limit: Optional
     logger.info("벤치마크 지수(%s) 조회 중...", ", ".join(label for label, _ in benchmark_codes))
     index_close: dict[str, pd.Series] = {}
     for label, code in benchmark_codes:
-        idx_df = fetch_price_history(code, start_date)
+        idx_df = fetch_price_history(code, start_date, market=label)
         idx_df = idx_df.sort_index()
         idx_df = idx_df[~idx_df.index.duplicated(keep="last")]
         idx_df = idx_df.dropna(subset=["Close"])  # 데이터 소스가 드물게 특정일을 통째로 NaN 반환하는 문제 방지
