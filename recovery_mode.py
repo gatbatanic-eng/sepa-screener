@@ -98,7 +98,9 @@ def technical_strength_score(row: dict) -> float:
     rsi_score = max(0.0, 1.0 - abs(rsi - 65.0) / 15.0) * 10
 
     signals = _clip((_num(row.get("signalCount"), 0.0) or 0.0) / 6.0) * 15
-    risk = _num(row.get("initialRiskPct"), 99.0) or 99.0
+    risk = _num(row.get("initialRiskPct"))
+    if risk is None:
+        risk = 99.0
     risk_score = _clip((7.0 - risk) / 7.0) * 10
 
     return round(slope + high + pivot + volume + clv + rsi_score + signals + risk_score, 1)
@@ -281,8 +283,9 @@ def event_metrics(row: dict, valuation: dict, today: date | None = None) -> dict
 def market_metrics(row: dict) -> dict:
     regime = row.get("regime") or "UNKNOWN"
     breadth = _num(row.get("breadth"))
-    size_factor = _num(row.get("sizeFactor"), 1.0)
-    cap = 1.0
+    size_factor = _num(row.get("sizeFactor"))
+    available = regime != "UNKNOWN" and breadth is not None and size_factor is not None
+    cap = 1.0 if available else 0.0
 
     if regime == "RED":
         cap = 0.0
@@ -304,6 +307,7 @@ def market_metrics(row: dict) -> dict:
         "regime": regime,
         "breadth": breadth,
         "sizeFactor": size_factor,
+        "available": available,
         "exposureCap": round(cap, 2),
         "blocked": cap <= 0,
     }
@@ -313,12 +317,13 @@ def gap_chase_metrics(row: dict) -> dict:
     gap = _num(row.get("gapPct"))
     day = _num(row.get("changePct1d"))
     pivot = _num(row.get("pivotDistancePct"), 99.0)
+    available = gap is not None and day is not None
     hard = gap is not None and gap >= GAP_HARD_MAX_PCT
     chase = hard or bool(
         (gap is not None and gap >= GAP_CHASE_PCT and pivot >= PIVOT_CHASE_PCT)
         or (day is not None and day >= DAY_CHASE_PCT and pivot >= PIVOT_CHASE_PCT)
     )
-    return {"gapPct": gap, "changePct1d": day, "chase": chase, "hard": hard}
+    return {"gapPct": gap, "changePct1d": day, "available": available, "chase": chase, "hard": hard}
 
 
 def enrich_row(row: dict, market: str, valuation: dict, estimates: list[dict]) -> dict:
@@ -393,6 +398,7 @@ def entry_ok(row: dict, score: float) -> bool:
     mr = row.get("marketRisk") or market_metrics(row)
     gap = row.get("gapRisk") or gap_chase_metrics(row)
     event = row.get("eventRisk") or {"status": "UNKNOWN"}
+    risk = _num(row.get("initialRiskPct"))
     return bool(
         rankable(row)
         and row.get("aggressiveGo") is True
@@ -401,9 +407,12 @@ def entry_ok(row: dict, score: float) -> bool:
         and row.get("clvOk") is True
         and row.get("rsiOk") is True
         and row.get("notExtended") is True
-        and (_num(row.get("initialRiskPct"), 99.0) or 99.0) <= STRICT_RISK_PCT
+        and risk is not None
+        and risk <= STRICT_RISK_PCT
         and score >= MIN_ENTRY_SCORE
+        and mr.get("available") is True
         and not mr.get("blocked")
+        and gap.get("available") is True
         and not gap.get("chase")
         and event.get("status") != "BLOCK"
         and fm.get("risk") != "BLOCK"
@@ -495,11 +504,20 @@ def rejection_reason(row: dict) -> str:
     failures = []
     if not row.get("aggressiveGo"):
         failures.append("공격돌파 미충족")
-    if (_num(row.get("initialRiskPct"), 99.0) or 99.0) > STRICT_RISK_PCT:
+    risk = _num(row.get("initialRiskPct"))
+    if risk is None:
+        failures.append("초기리스크 데이터 없음")
+    elif risk > STRICT_RISK_PCT:
         failures.append("초기리스크 초과")
-    if (row.get("marketRisk") or {}).get("blocked"):
+    market_risk = row.get("marketRisk") or {}
+    if market_risk.get("available") is not True:
+        failures.append("시장국면/breadth 데이터 미갱신")
+    elif market_risk.get("blocked"):
         failures.append("시장국면/breadth")
-    if (row.get("gapRisk") or {}).get("chase"):
+    gap_risk = row.get("gapRisk") or {}
+    if gap_risk.get("available") is not True:
+        failures.append("갭 데이터 미갱신")
+    elif gap_risk.get("chase"):
         failures.append("갭/급등 추격")
     if (row.get("eventRisk") or {}).get("status") == "BLOCK":
         failures.append("실적발표 임박")
@@ -693,8 +711,8 @@ th:nth-child(3),td:nth-child(3),th:nth-child(5),td:nth-child(5){{text-align:left
 <div class="card scroll"><table><thead><tr><th>#</th><th>시장</th><th>종목</th><th>강도</th><th>판정</th><th>시장</th><th>갭</th><th>거래량</th><th>실적</th><th>EPS추정</th><th>실적일</th><th>위험</th><th>손절</th><th>금액</th></tr></thead>
 <tbody>{''.join(rows)}</tbody></table></div>
 <div class="card note"><b>하드 게이트</b><br>
-① 강도 {MIN_ENTRY_SCORE:.0f}+ ② 초기리스크 ≤ {STRICT_RISK_PCT:.1f}% ③ RED 또는 breadth&lt;{BREADTH_HARD_MIN:.0%} 금지
-④ 갭 {GAP_HARD_MAX_PCT:.0f}%+ 및 피벗에서 벌어진 급등 추격 금지 ⑤ 확인 가능한 실적발표 {EVENT_BLOCK_DAYS}일 이내 금지
+① 강도 {MIN_ENTRY_SCORE:.0f}+ ② 초기리스크 ≤ {STRICT_RISK_PCT:.1f}% ③ 시장국면/breadth/권장비중 데이터가 모두 있어야 하며 RED 또는 breadth&lt;{BREADTH_HARD_MIN:.0%} 금지
+④ 갭 데이터가 있어야 하며 갭 {GAP_HARD_MAX_PCT:.0f}%+ 및 피벗에서 벌어진 급등 추격 금지 ⑤ 확인 가능한 실적발표 {EVENT_BLOCK_DAYS}일 이내 금지
 ⑥ 실적 급악화 차단 ⑦ forward EPS 기록 {ESTIMATE_MIN_SAMPLES}회 이상 뒤 {ESTIMATE_BLOCK_PCT:.0f}% 이하 하향 차단
 ⑧ 동일 섹터 하루 신규 1개. forward EPS는 Yahoo 애널리스트 추정 기반 보조 프록시입니다.</div>
 </div></body></html>"""
