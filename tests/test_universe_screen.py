@@ -5,6 +5,7 @@ import pandas as pd
 
 from sepa.config import UniverseConfig
 from sepa.universe import select_kr_candidates
+from screening import _merge_kr_market_snapshot
 
 
 class KoreanUniverseFallbackTest(unittest.TestCase):
@@ -24,6 +25,17 @@ class KoreanUniverseFallbackTest(unittest.TestCase):
         self.assertEqual(len(result), 100)
         self.assertEqual(result.iloc[0]["Code"], "000000")
         self.assertEqual(result.iloc[-1]["Code"], "000099")
+
+    def test_pykrx_snapshot_repairs_empty_fdr_values(self):
+        listing = self._listing(3)
+        snapshot = pd.DataFrame(
+            {"시가총액": [30.0, 20.0, 10.0], "거래대금": [3.0, 2.0, 1.0]},
+            index=["000000", "000001", "000002"],
+        )
+        repaired = _merge_kr_market_snapshot(listing, snapshot)
+
+        self.assertEqual(repaired["Marcap"].tolist(), [3e9, 2e9, 1e9])
+        self.assertEqual(repaired["Amount"].tolist(), [3.0, 2.0, 1.0])
 
     def test_valid_amount_keeps_liquidity_ranking(self):
         listing = self._listing(10)
