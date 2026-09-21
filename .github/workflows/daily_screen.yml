@@ -3,7 +3,7 @@ name: SEPA Trend Template Daily Screening
 on:
   push:
     branches: [master]
-    paths: ["screening.py", "ai_tracker.py", "tests/test_ai_tracker.py", "range_screen.py", "tests/test_range_screen.py", "research_tracker.py", "tests/test_research_tracker.py", ".github/workflows/daily_screen.yml"]
+    paths: ["screening.py", "ai_tracker.py", "tests/test_ai_tracker.py", "range_screen.py", "tests/test_range_screen.py", "research_tracker.py", "tests/test_research_tracker.py", "personas/**", "tests/test_personas.py", "tests/test_personas_data.py", ".github/workflows/daily_screen.yml"]
   schedule:
     # 한국: 평일(월~금) 20:00 KST = UTC 11:00
     - cron: "0 11 * * 1-5"
@@ -47,6 +47,7 @@ jobs:
           python -m unittest discover -s tests -p "test_*screen.py" -v
           python -m unittest discover -s tests -p test_research_tracker.py -v
           python tests/test_ai_tracker.py
+          python -m unittest tests.test_personas tests.test_personas_data -v
 
       - name: 실행 시장 결정
         id: market
@@ -90,6 +91,11 @@ jobs:
         continue-on-error: true
         run: python research_tracker.py --market ${{ steps.market.outputs.market }}
 
+      - name: 페르소나 입력 수집(Yahoo 밸류에이션 + 성과 기록 점검)
+        id: personas
+        continue-on-error: true
+        run: python -m personas.collect --market "$(echo "${{ steps.market.outputs.market }}" | tr 'A-Z' 'a-z')"
+
       - name: 대시보드(docs/index.html) 생성
         run: python generate_dashboard.py
 
@@ -115,4 +121,8 @@ jobs:
 
       - name: 차트 갱신 실패 표시
         if: steps.charts.outcome == 'failure'
+        run: exit 1
+
+      - name: 페르소나 수집 실패 표시
+        if: steps.personas.outcome == 'failure'
         run: exit 1
