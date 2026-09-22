@@ -22,7 +22,10 @@ concurrency:
 jobs:
   screen:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # 첫 실행 실측: 스크리닝 단계만 56분(국내 유동성 상위 200을 뽑으려면
+    # raw 후보 전체 ~2000여 종목의 OHLCV를 먼저 받아야 해서 다른
+    # 서브시스템보다 느리다) — 60분에 거의 닿아서 여유를 둔다.
+    timeout-minutes: 90
     defaults:
       run:
         working-directory: momentum_signals
