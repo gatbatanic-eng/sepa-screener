@@ -104,7 +104,7 @@ def evaluate(row, frame, index_frame, market):
 
 def export_range(payload, frames):
     from screening import fetch_price_history, KOSPI_INDEX_CODE, KOSDAQ_INDEX_CODE, US_INDEX_CODE
-    from research_tracker import write_json, digest
+    from research_tracker import write_json, digest, strategy_series_id
     market=payload['market'];dates=[d for b in payload['benchmarks'].values() for d in b]
     codes={'KOSPI':KOSPI_INDEX_CODE,'KOSDAQ':KOSDAQ_INDEX_CODE} if market=='kr' else {'US':US_INDEX_CODE}
     indices={}
@@ -116,6 +116,7 @@ def export_range(payload, frames):
               'sourceHash':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
               'universe':payload['strategy']['config']['universe']}
     result=dict(payload,rows=rows,strategy=strategy,strategyId=digest(strategy),
+                strategySeriesId=strategy_series_id(strategy),
                 groups=['RANGE_WATCH','RANGE_GO'],horizons=[1,3,5,10,20,60])
     # Stock OHLC already came from the source screener. Extra index OHLC feeds the market gate.
     write_json(Path(__file__).parent/'output'/f'research_input_range_{market}.json',result)

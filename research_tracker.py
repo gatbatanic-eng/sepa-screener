@@ -169,27 +169,37 @@ def migrate_strategy_series(state):
     """Annotate and consolidate historical source-only versions without deleting outcomes."""
     versions = state.setdefault('strategies', {})
     series_for = {}
+    aliases = {}
     for version_id, strategy in versions.items():
         series = strategy.get('seriesId') or strategy_series_id(strategy)
         strategy['seriesId'] = series
         series_for[version_id] = series
+        aliases[version_id] = series
 
     days = list(state.get('days', {}).values())
     canonical = {}
+    series_recency = {}
     for day in days:
-        series = day.get('strategySeriesId') or series_for.get(day.get('strategyId'), day.get('strategyId'))
+        old_series = day.get('strategySeriesId') or day.get('strategyId')
+        series = series_for.get(day.get('strategyId')) or aliases.get(old_series, old_series)
+        aliases[old_series] = series
         day['strategySeriesId'] = series
+        rank = (day.get('date', ''), day.get('recordedAt', ''), day.get('rows', 0))
+        series_recency[old_series] = max(series_recency.get(old_series, ('', '', 0)), rank)
         key = f"{series}:{day['date']}"
         old = canonical.get(key)
-        if old is None or (day.get('rows', 0), old.get('recordedAt', '')) > (old.get('rows', 0), day.get('recordedAt', '')):
+        if old is None or (day.get('rows', 0), day.get('recordedAt', '')) > (old.get('rows', 0), old.get('recordedAt', '')):
             canonical[key] = day
     if days:
         state['days'] = canonical
 
     merged = {}
     for signal in state.get('signals', []):
-        series = signal.get('strategySeriesId') or series_for.get(signal.get('strategyId'), signal.get('strategyId'))
+        old_series = signal.get('strategySeriesId') or signal.get('strategyId')
+        series = series_for.get(signal.get('strategyId')) or aliases.get(old_series, old_series)
+        aliases[old_series] = series
         signal['strategySeriesId'] = series
+        signal['id'] = digest([series, signal.get('code'), signal.get('group'), signal.get('date')])
         key = (series, signal.get('code'), signal.get('group'), signal.get('date'))
         old = merged.get(key)
         if old is None or _outcome_rank(signal) > _outcome_rank(old):
@@ -197,23 +207,44 @@ def migrate_strategy_series(state):
     if state.get('signals'):
         state['signals'] = list(merged.values())
 
-    # Carry the most recent version's live membership into its stable series so
-    # a source-only deployment does not open a duplicate episode.
-    if days:
-        latest = max(days, key=lambda d: (d.get('date', ''), d.get('rows', 0), d.get('recordedAt', '')))
-        version, series = latest.get('strategyId'), latest.get('strategySeriesId')
-        members = state.setdefault('membership', {})
-        prefix = f'{version}:'
-        for key, value in list(members.items()):
-            if key.startswith(prefix):
-                members.setdefault(f'{series}:{key[len(prefix):]}', value)
+    # Strategy-series corrections (for example an experimental exporter that
+    # accidentally inherited the parent SEPA series) must also move live
+    # membership. Prefer the most recently observed source series when aliases
+    # overlap so the migration does not reopen an already active episode.
+    members = state.setdefault('membership', {})
+    migrated_members = {}
+    member_ranks = {}
+    for key, value in members.items():
+        prefix, sep, suffix = key.partition(':')
+        if not sep:
+            migrated_members[key] = value
+            continue
+        target = aliases.get(prefix, prefix)
+        migrated_key = f'{target}:{suffix}'
+        rank = series_recency.get(prefix, ('', '', 0))
+        if migrated_key not in migrated_members or rank >= member_ranks.get(migrated_key, ('', '', 0)):
+            migrated_members[migrated_key] = value
+            member_ranks[migrated_key] = rank
+    state['membership'] = migrated_members
 
 def process(payload, state, root=ROOT):
     market, strategy = payload['market'], payload['strategyId']
+    # Register the incoming strategy before migration. When a producer fixes an
+    # incorrectly inherited series identifier, all source-only versions with
+    # the same numerical config are redirected to the corrected stable series.
+    series = payload.get('strategySeriesId') or strategy
+    versions = state.setdefault('strategies', {})
+    versions[strategy] = json.loads(packed(payload['strategy']))
+    versions[strategy]['seriesId'] = series
+    if payload.get('strategySeriesId'):
+        family = strategy_series_id(payload['strategy'])
+        for stored in versions.values():
+            if strategy_series_id(stored) == family:
+                stored['seriesId'] = series
     migrate_strategy_series(state)
     # Older tests/importers without the explicit field retain legacy behaviour.
     # Current producers always export the stable series identifier.
-    series = payload.get('strategySeriesId') or strategy
+    series = versions[strategy].get('seriesId') or series
     reject_unclosed(state, market)
     benchmarks, prices = payload['benchmarks'], payload['prices']
     if not benchmarks or not all(benchmarks.values()):
@@ -236,9 +267,6 @@ def process(payload, state, root=ROOT):
     days = state.setdefault('days', {})
     signals = state.setdefault('signals', [])
     members = state.setdefault('membership', {})
-    versions = state.setdefault('strategies', {})
-    versions.setdefault(strategy, json.loads(packed(payload['strategy'])))
-    versions[strategy]['seriesId'] = series
     # First complete observation of a session is canonical; revisions are archived only.
     key = f'{series}:{day}'
     if key not in days and day >= state.get('latestSession', ''):

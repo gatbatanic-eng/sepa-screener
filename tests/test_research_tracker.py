@@ -2,7 +2,7 @@ import copy
 import tempfile
 import unittest
 from pathlib import Path
-from research_tracker import outcome, process, session_closed, strategy_series_id
+from research_tracker import digest, outcome, process, session_closed, strategy_series_id
 
 DATES = ['2026-09-01','2026-09-02','2026-09-03','2026-09-04','2026-09-07','2026-09-08']
 class ResearchTests(unittest.TestCase):
@@ -59,4 +59,40 @@ class ResearchTests(unittest.TestCase):
             p['strategySeriesId']=strategy_series_id(p['strategy'])
             process(p,state,root)
             self.assertEqual(len(state['signals']),3)
+
+    def test_wrong_inherited_series_is_migrated_and_deduplicated(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            strategy={'name':'박스권 하단 반등','config':{'version':1},'sourceHash':'old'}
+            sid=digest(strategy)
+            signal={'code':'X','name':'X','group':'RANGE_WATCH','date':DATES[0],
+                    'benchmark':'US','strategyId':sid,'originalClose':100,'snapshot':'snap',
+                    'attributes':{},'outcomes':{'1':{'status':'pending','observedSessions':0}}}
+            state={
+                'strategies':{sid:{**strategy,'seriesId':'parent-new'}},
+                'days':{
+                    f'parent-old:{DATES[0]}':{'date':DATES[0],'strategyId':sid,'strategySeriesId':'parent-old','rows':500,'recordedAt':'2026-09-02T00:00:00+00:00','snapshot':'snap','sessions':{'US':DATES[0]}},
+                    f'parent-new:{DATES[0]}':{'date':DATES[0],'strategyId':sid,'strategySeriesId':'parent-new','rows':510,'recordedAt':'2026-09-03T00:00:00+00:00','snapshot':'snap2','sessions':{'US':DATES[0]}},
+                },
+                'signals':[
+                    {**copy.deepcopy(signal),'id':'old-1','strategySeriesId':'parent-old'},
+                    {**copy.deepcopy(signal),'id':'old-2','strategySeriesId':'parent-new'},
+                ],
+                'membership':{
+                    'parent-old:X:RANGE_WATCH':False,
+                    'parent-new:X:RANGE_WATCH':True,
+                },
+                'latestSession':DATES[0],
+            }
+            corrected=strategy_series_id(strategy)
+            payload={'market':'us','strategyId':sid,'strategy':strategy,'strategySeriesId':corrected,
+                     'recordedAt':'2026-09-09T00:00:00+00:00','rows':[],
+                     'prices':{'X':{DATES[0]:100,DATES[1]:101}},
+                     'benchmarks':{'US':{DATES[0]:100,DATES[1]:100}},
+                     'groups':['RANGE_WATCH','RANGE_GO'],'horizons':[1,3,5,10,20,60]}
+            process(payload,state,Path(tmp))
+            self.assertEqual(len(state['signals']),1)
+            self.assertEqual(state['signals'][0]['strategySeriesId'],corrected)
+            self.assertEqual(len([d for d in state['days'].values() if d['date']==DATES[0]]),1)
+            self.assertTrue(state['membership'][f'{corrected}:X:RANGE_WATCH'])
+            self.assertFalse(any(k.startswith('parent-') for k in state['membership']))
 if __name__=='__main__': unittest.main()

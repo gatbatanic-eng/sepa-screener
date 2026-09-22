@@ -49,6 +49,7 @@ import sys
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 from zoneinfo import ZoneInfo
@@ -372,6 +373,86 @@ def _last_price_date(frame: pd.DataFrame) -> pd.Timestamp:
     return pd.Timestamp(valid.index.max()).tz_localize(None).normalize()
 
 
+@lru_cache(maxsize=8)
+def _latest_krx_market_snapshot(cutoff_day: str) -> tuple[pd.Timestamp, pd.DataFrame]:
+    """Return the latest actual KRX session and its all-market OHLCV snapshot.
+
+    This is the authoritative last-resort close for Korean symbols when both
+    FDR and Yahoo are delayed. Looking backwards for a non-empty KRX snapshot
+    also distinguishes a genuine exchange holiday from a stale vendor feed.
+    """
+    from pykrx import stock as pykrx_stock
+
+    cutoff = pd.Timestamp(cutoff_day).normalize()
+    last_exc: Optional[Exception] = None
+    for offset in range(15):
+        day = cutoff - pd.Timedelta(days=offset)
+        if day.weekday() >= 5:
+            continue
+        frames = []
+        for board in ("KOSPI", "KOSDAQ"):
+            try:
+                frame = pykrx_stock.get_market_ohlcv_by_ticker(
+                    day.strftime("%Y%m%d"), market=board
+                )
+                if frame is not None and not frame.empty:
+                    frames.append(frame)
+            except Exception as exc:  # noqa: BLE001
+                last_exc = exc
+        if frames:
+            snapshot = pd.concat(frames)
+            snapshot.index = snapshot.index.astype(str).str.zfill(6)
+            snapshot = snapshot[~snapshot.index.duplicated(keep="last")]
+            if len(snapshot) >= 100:
+                return day, snapshot
+    raise RuntimeError(f"최근 KRX OHLCV 스냅샷 조회 실패: {last_exc}")
+
+
+def _normalize_pykrx_history(frame: pd.DataFrame) -> pd.DataFrame:
+    rename = {"시가": "Open", "고가": "High", "저가": "Low", "종가": "Close", "거래량": "Volume"}
+    out = frame.rename(columns=rename).copy()
+    required = ["Open", "High", "Low", "Close", "Volume"]
+    if out.empty or any(column not in out.columns for column in required):
+        raise ValueError("pykrx OHLCV 열 누락")
+    out.index = pd.to_datetime(out.index).tz_localize(None).normalize()
+    return out[required].apply(pd.to_numeric, errors="coerce")
+
+
+def _download_pykrx_latest(code: str, market: Optional[str], cutoff: pd.Timestamp) -> pd.DataFrame:
+    """Fetch one authoritative latest KRX row for a stock or benchmark index."""
+    from pykrx import stock as pykrx_stock
+
+    session, snapshot = _latest_krx_market_snapshot(cutoff.date().isoformat())
+    index_ticker = {KOSPI_INDEX_CODE: "1001", KOSDAQ_INDEX_CODE: "2001"}.get(str(code))
+    if index_ticker:
+        frame = pykrx_stock.get_index_ohlcv_by_date(
+            session.strftime("%Y%m%d"), session.strftime("%Y%m%d"), index_ticker
+        )
+        return _normalize_pykrx_history(frame)
+
+    ticker = str(code).zfill(6)
+    if ticker not in snapshot.index:
+        raise ValueError(f"pykrx 최신 스냅샷에 {ticker} 없음")
+    row = snapshot.loc[ticker]
+    frame = pd.DataFrame(
+        {
+            "Open": [row.get("시가")],
+            "High": [row.get("고가")],
+            "Low": [row.get("저가")],
+            "Close": [row.get("종가")],
+            "Volume": [row.get("거래량")],
+        },
+        index=pd.DatetimeIndex([session]),
+    )
+    return _normalize_pykrx_history(frame)
+
+
+def _merge_price_patch(history: pd.DataFrame, patch: pd.DataFrame) -> pd.DataFrame:
+    merged = pd.concat([history, patch], axis=0, sort=False)
+    merged.index = pd.to_datetime(merged.index).tz_localize(None)
+    return merged[~merged.index.duplicated(keep="last")].sort_index()
+
+
 def fetch_price_history(code: str, start: str, market: Optional[str] = None) -> pd.DataFrame:
     """가격 이력을 조회하고, 한국 시세가 늦으면 Yahoo의 더 최신 데이터를 사용한다."""
     last_exc: Optional[Exception] = None
@@ -420,10 +501,27 @@ def fetch_price_history(code: str, start: str, market: Optional[str] = None) -> 
         except Exception as exc:  # noqa: BLE001 - 한 후보 실패 시 다음 후보 조회
             logger.info("[%s] Yahoo 후보 %s 조회 불가: %s", code, yahoo_symbol, exc)
 
+    krx_day: Optional[pd.Timestamp] = None
+    if best_day < cutoff:
+        try:
+            krx_patch = _download_pykrx_latest(code, market, cutoff)
+            krx_day = _last_price_date(krx_patch)
+            if krx_day > best_day:
+                best = _merge_price_patch(best, krx_patch)
+                best_day = krx_day
+        except Exception as exc:  # noqa: BLE001 - 종목 단위 실패는 확인불가로 남긴다.
+            logger.info("[%s] pykrx 최신 종가 보완 불가: %s", code, exc)
+
     if best_day > primary_day:
         logger.warning(
-            "[%s] 기본 시세가 %s까지여서 Yahoo(%s)로 %s까지 보완",
-            code, primary_day.date(), "/".join(yahoo_symbols), best_day.date(),
+            "[%s] 기본 시세가 %s까지여서 보조 소스로 %s까지 보완",
+            code, primary_day.date(), best_day.date(),
+        )
+        return best
+    if krx_day == best_day and best_day < cutoff:
+        logger.info(
+            "[%s] KRX가 확인한 마지막 실제 거래일은 %s (평일 기대일 %s)",
+            code, best_day.date(), cutoff.date(),
         )
         return best
     logger.warning(

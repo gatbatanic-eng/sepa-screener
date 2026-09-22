@@ -41,6 +41,35 @@ class KoreanPriceFallbackTest(unittest.TestCase):
         self.assertEqual(result.index.max(), pd.Timestamp("2026-09-18"))
         yahoo.assert_not_called()
 
+    @patch("screening._latest_closed_kr_session", return_value=pd.Timestamp("2026-09-21"))
+    @patch("screening._download_pykrx_latest")
+    @patch("screening._download_yahoo_history")
+    @patch("screening.fdr.DataReader")
+    @patch("screening.time.sleep", return_value=None)
+    def test_stale_primary_and_yahoo_use_latest_krx_close(self, _sleep, data_reader, yahoo, pykrx, _session):
+        data_reader.return_value = _frame("2026-09-17")
+        yahoo.return_value = _frame("2026-09-18")
+        pykrx.return_value = _frame("2026-09-21").tail(1)
+
+        result = screening.fetch_price_history("005930", "2025-01-01", market="KOSPI")
+
+        self.assertEqual(result.index.max(), pd.Timestamp("2026-09-21"))
+        self.assertIn(pd.Timestamp("2026-09-18"), result.index)
+
+    @patch("screening._latest_closed_kr_session", return_value=pd.Timestamp("2026-09-21"))
+    @patch("screening._download_pykrx_latest")
+    @patch("screening._download_yahoo_history")
+    @patch("screening.fdr.DataReader")
+    @patch("screening.time.sleep", return_value=None)
+    def test_krx_confirmed_holiday_keeps_last_actual_session(self, _sleep, data_reader, yahoo, pykrx, _session):
+        data_reader.return_value = _frame("2026-09-18")
+        yahoo.return_value = _frame("2026-09-18")
+        pykrx.return_value = _frame("2026-09-18").tail(1)
+
+        result = screening.fetch_price_history("005930", "2025-01-01", market="KOSPI")
+
+        self.assertEqual(result.index.max(), pd.Timestamp("2026-09-18"))
+
     def test_korean_yahoo_symbol_mapping(self):
         self.assertEqual(screening._kr_yahoo_symbol("KS11", "KOSPI"), "^KS11")
         self.assertEqual(screening._kr_yahoo_symbol("KQ11", "KOSDAQ"), "^KQ11")
