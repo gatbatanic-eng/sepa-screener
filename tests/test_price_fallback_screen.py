@@ -43,12 +43,14 @@ class KoreanPriceFallbackTest(unittest.TestCase):
 
     @patch("screening._latest_closed_kr_session", return_value=pd.Timestamp("2026-09-21"))
     @patch("screening._download_pykrx_latest")
+    @patch("screening._download_naver_history")
     @patch("screening._download_yahoo_history")
     @patch("screening.fdr.DataReader")
     @patch("screening.time.sleep", return_value=None)
-    def test_stale_primary_and_yahoo_use_latest_krx_close(self, _sleep, data_reader, yahoo, pykrx, _session):
+    def test_stale_primary_and_yahoo_use_latest_krx_close(self, _sleep, data_reader, yahoo, naver, pykrx, _session):
         data_reader.return_value = _frame("2026-09-17")
         yahoo.return_value = _frame("2026-09-18")
+        naver.return_value = _frame("2026-09-18")
         pykrx.return_value = _frame("2026-09-21").tail(1)
 
         result = screening.fetch_price_history("005930", "2025-01-01", market="KOSPI")
@@ -58,17 +60,35 @@ class KoreanPriceFallbackTest(unittest.TestCase):
 
     @patch("screening._latest_closed_kr_session", return_value=pd.Timestamp("2026-09-21"))
     @patch("screening._download_pykrx_latest")
+    @patch("screening._download_naver_history")
     @patch("screening._download_yahoo_history")
     @patch("screening.fdr.DataReader")
     @patch("screening.time.sleep", return_value=None)
-    def test_krx_confirmed_holiday_keeps_last_actual_session(self, _sleep, data_reader, yahoo, pykrx, _session):
+    def test_krx_confirmed_holiday_keeps_last_actual_session(self, _sleep, data_reader, yahoo, naver, pykrx, _session):
         data_reader.return_value = _frame("2026-09-18")
         yahoo.return_value = _frame("2026-09-18")
+        naver.return_value = _frame("2026-09-18")
         pykrx.return_value = _frame("2026-09-18").tail(1)
 
         result = screening.fetch_price_history("005930", "2025-01-01", market="KOSPI")
 
         self.assertEqual(result.index.max(), pd.Timestamp("2026-09-18"))
+
+    @patch("screening._latest_closed_kr_session", return_value=pd.Timestamp("2026-09-21"))
+    @patch("screening._download_pykrx_latest")
+    @patch("screening._download_naver_history")
+    @patch("screening._download_yahoo_history")
+    @patch("screening.fdr.DataReader")
+    @patch("screening.time.sleep", return_value=None)
+    def test_stale_vendor_data_uses_newer_naver_close(self, _sleep, data_reader, yahoo, naver, pykrx, _session):
+        data_reader.return_value = _frame("2026-09-17")
+        yahoo.return_value = _frame("2026-09-18")
+        naver.return_value = _frame("2026-09-21")
+
+        result = screening.fetch_price_history("005930", "2025-01-01", market="KOSPI")
+
+        self.assertEqual(result.index.max(), pd.Timestamp("2026-09-21"))
+        pykrx.assert_not_called()
 
     def test_korean_yahoo_symbol_mapping(self):
         self.assertEqual(screening._kr_yahoo_symbol("KS11", "KOSPI"), "^KS11")

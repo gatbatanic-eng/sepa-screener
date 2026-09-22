@@ -41,6 +41,7 @@ ENTRY(확인된 돌파 / 눌림목) → EXIT(FAST_FAIL·TREND_BREAK·PROFIT_ALER
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import logging
 import os
@@ -366,6 +367,48 @@ def _download_yahoo_history(symbol: str, start: str) -> pd.DataFrame:
     return frame
 
 
+def _download_naver_history(code: str, start: str, cutoff: pd.Timestamp) -> pd.DataFrame:
+    """Fetch recent Korean daily OHLCV directly from Naver's chart endpoint."""
+    symbol = {
+        KOSPI_INDEX_CODE: "KOSPI",
+        KOSDAQ_INDEX_CODE: "KOSDAQ",
+    }.get(str(code), str(code).zfill(6) if str(code).isdigit() else None)
+    if not symbol:
+        raise ValueError("Naver 국내 심볼 매핑 불가")
+    start_day = max(pd.Timestamp(start).normalize(), cutoff - pd.Timedelta(days=35))
+    params = {
+        "symbol": symbol,
+        "requestType": 1,
+        "startTime": start_day.strftime("%Y%m%d"),
+        "endTime": cutoff.strftime("%Y%m%d"),
+        "timeframe": "day",
+    }
+    endpoints = (
+        "https://m.stock.naver.com/front-api/v1/external/chart/domestic/info",
+        "https://m.stock.naver.com/front-api/external/chart/domestic/info",
+    )
+    last_exc: Optional[Exception] = None
+    for endpoint in endpoints:
+        try:
+            response = requests.get(
+                endpoint, params=params, headers={"User-Agent": "Mozilla/5.0"}, timeout=12
+            )
+            response.raise_for_status()
+            data = ast.literal_eval(response.text.strip())
+            if not isinstance(data, list) or len(data) < 2:
+                raise ValueError("Naver 차트 데이터 없음")
+            columns = [str(value).strip() for value in data[0]]
+            frame = pd.DataFrame(data[1:], columns=columns)
+            if "날짜" not in frame.columns:
+                raise ValueError("Naver 차트 날짜 열 누락")
+            frame.index = pd.to_datetime(frame.pop("날짜"), format="%Y%m%d", errors="coerce")
+            frame = frame.loc[frame.index.notna()]
+            return _normalize_pykrx_history(frame)
+        except Exception as exc:  # noqa: BLE001
+            last_exc = exc
+    raise RuntimeError(f"Naver 차트 조회 실패: {last_exc}")
+
+
 def _last_price_date(frame: pd.DataFrame) -> pd.Timestamp:
     valid = frame.dropna(subset=["Close"]) if "Close" in frame.columns else frame
     if valid.empty:
@@ -390,6 +433,7 @@ def _latest_krx_market_snapshot(cutoff_day: str) -> tuple[pd.Timestamp, pd.DataF
         if day.weekday() >= 5:
             continue
         frames = []
+        error_count = 0
         for board in ("KOSPI", "KOSDAQ"):
             try:
                 frame = pykrx_stock.get_market_ohlcv_by_ticker(
@@ -399,13 +443,19 @@ def _latest_krx_market_snapshot(cutoff_day: str) -> tuple[pd.Timestamp, pd.DataF
                     frames.append(frame)
             except Exception as exc:  # noqa: BLE001
                 last_exc = exc
+                error_count += 1
         if frames:
             snapshot = pd.concat(frames)
             snapshot.index = snapshot.index.astype(str).str.zfill(6)
             snapshot = snapshot[~snapshot.index.duplicated(keep="last")]
             if len(snapshot) >= 100:
                 return day, snapshot
-    raise RuntimeError(f"최근 KRX OHLCV 스냅샷 조회 실패: {last_exc}")
+        # KRX가 요청 자체를 거부하면 날짜를 바꿔 반복 호출하지 않는다. 빈 정상
+        # 응답(휴장일)만 다음 평일로 거슬러 올라간다.
+        if error_count == 2:
+            break
+    logger.info("KRX OHLCV 스냅샷 사용 불가: %s", last_exc)
+    return pd.NaT, pd.DataFrame()
 
 
 def _normalize_pykrx_history(frame: pd.DataFrame) -> pd.DataFrame:
@@ -423,6 +473,8 @@ def _download_pykrx_latest(code: str, market: Optional[str], cutoff: pd.Timestam
     from pykrx import stock as pykrx_stock
 
     session, snapshot = _latest_krx_market_snapshot(cutoff.date().isoformat())
+    if pd.isna(session) or snapshot.empty:
+        raise ValueError("pykrx 최신 스냅샷 사용 불가")
     index_ticker = {KOSPI_INDEX_CODE: "1001", KOSDAQ_INDEX_CODE: "2001"}.get(str(code))
     if index_ticker:
         frame = pykrx_stock.get_index_ohlcv_by_date(
@@ -500,6 +552,16 @@ def fetch_price_history(code: str, start: str, market: Optional[str] = None) -> 
                 best, best_day = fallback, fallback_day
         except Exception as exc:  # noqa: BLE001 - 한 후보 실패 시 다음 후보 조회
             logger.info("[%s] Yahoo 후보 %s 조회 불가: %s", code, yahoo_symbol, exc)
+
+    if best_day < cutoff:
+        try:
+            naver = _download_naver_history(code, start, cutoff)
+            naver_day = _last_price_date(naver)
+            if naver_day > best_day:
+                best = _merge_price_patch(best, naver)
+                best_day = naver_day
+        except Exception as exc:  # noqa: BLE001
+            logger.info("[%s] Naver 차트 최신 종가 보완 불가: %s", code, exc)
 
     krx_day: Optional[pd.Timestamp] = None
     if best_day < cutoff:
@@ -1870,4 +1932,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
