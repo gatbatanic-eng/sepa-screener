@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모멘텀 전략 — RS 강도 스코어링 자동 페이퍼 트레이딩</title>
+<style>
+  :root { --bg:#0b0e14; --panel:#131720; --border:#242b3a; --text:#e6e9ef; --muted:#8b93a7;
+          --accent:#4f8cff; --good:#3ecf8e; --warn:#f2b84b; --bad:#f2545b; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,"Segoe UI",Pretendard,sans-serif; }
+  header { padding:20px 24px; border-bottom:1px solid var(--border); }
+  header h1 { margin:0 0 4px; font-size:20px; }
+  header p { margin:0; color:var(--muted); font-size:13px; }
+  nav.top { display:flex; gap:10px; padding:12px 24px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  nav.top a { color:var(--muted); text-decoration:none; font-size:13px; padding:6px 10px; border-radius:6px; }
+  nav.top a.here, nav.top a:hover { color:var(--text); background:var(--panel); }
+  main { padding:20px 24px 60px; max-width:1200px; margin:0 auto; }
+  .banner { background:#2a1f10; border:1px solid #5a3d12; color:#f2b84b; padding:10px 14px;
+            border-radius:8px; font-size:13px; margin-bottom:16px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-bottom:20px; }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
+  .card .lbl { color:var(--muted); font-size:12px; margin-bottom:4px; }
+  .card .val { font-size:18px; font-weight:600; }
+  section { margin-bottom:28px; }
+  section h2 { font-size:15px; margin:0 0 4px; }
+  section .desc { color:var(--muted); font-size:12px; margin:0 0 10px; }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; background:var(--panel);
+          border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+  th, td { padding:7px 9px; text-align:right; border-bottom:1px solid var(--border); white-space:nowrap; }
+  th { color:var(--muted); font-weight:600; background:#0f131c; position:sticky; top:0; }
+  td.left, th.left { text-align:left; }
+  tbody tr:last-child td { border-bottom:none; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11.5px; }
+  .badge.on { background:rgba(62,207,142,.15); color:var(--good); }
+  .badge.off { background:rgba(242,84,91,.15); color:var(--bad); }
+  .badge.warn { background:rgba(242,184,75,.15); color:var(--warn); }
+  .badge.na { background:rgba(139,147,167,.15); color:var(--muted); }
+  .scroll-x { overflow-x:auto; }
+  .table-wrap { max-height:420px; overflow-y:auto; }
+  footer { border-top:1px solid var(--border); padding:18px 24px 40px; color:var(--muted); font-size:12px; line-height:1.7; }
+  footer b { color:var(--text); }
+  .empty { color:var(--muted); font-size:13px; padding:14px; text-align:center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>모멘텀 전략 — RS 강도 스코어링 자동 페이퍼 트레이딩</h1>
+  <p>국내 유동성 상위 200 + 미국 S&amp;P500 · 스캔: 국내 전일 종가 · 미국 당일 종가 · 실제 주문 절대 실행 안 함(전량 시뮬레이션, 참고용)</p>
+</header>
+<nav class="top">
+  <a href="../index.html">SEPA</a>
+  <a href="../screener/index.html">멀티팩터</a>
+  <a href="../range_vrebound/index.html">RANGE-MR</a>
+  <a href="../technical/index.html">기술적 신호</a>
+  <a class="here" href="../momentum/index.html">모멘텀 전략</a>
+  <a href="../recovery/index.html">계좌복구 공격매매</a>
+</nav>
+<main>
+  <div class="banner" id="equityBanner" style="display:none">
+    ⚠ 계좌 총자산이 momentum_signals/config.py의 자리표시자 값입니다. 실제 계좌 리스크 사이징과 다릅니다 —
+    config.py의 TOTAL_EQUITY_KRW / TOTAL_EQUITY_USD를 실제 값으로 직접 수정하세요.
+  </div>
+  <div class="cards" id="cards"></div>
+
+  <section>
+    <h2>1~3. 통합 상위 5종목 · 하드게이트 · 강도점수 산출내역</h2>
+    <p class="desc">RS 상대강도 기준 국내/미국 시장별 상위를 병합해 통합 상위 5종목을 먼저 확정한 뒤, 그 5종목에만 하드게이트(거래량·리스크)와 100점 만점 강도점수를 적용합니다. 78점 이상 &amp; 게이트 통과만 후보로 남습니다.</p>
+    <div class="scroll-x"><table id="top5Table"></table></div>
+  </section>
+
+  <section>
+    <h2>4. 최종후보 3개 · 신규진입 대상 2개</h2>
+    <p class="desc">상위 5종목 중 게이트 통과 + 78점 이상인 종목의 점수 상위 3개가 최종후보, 그중 상위 2개가 신규진입 대상입니다(동점시 RS 랭킹 우선). 시장 국면이 보류거나 동시보유 6개를 초과하면 진입하지 않습니다.</p>
+    <div class="scroll-x"><table id="finalistTable"></table></div>
+  </section>
+
+  <section>
+    <h2>5. 오늘 신규진입 종목 사이징</h2>
+    <p class="desc">진입가·손절가(ATR14×2 손절가와 최근 20일 스윙로우 중 더 타이트한 쪽)·실투입액·계좌 리스크%입니다.</p>
+    <div class="scroll-x"><table id="entryTable"></table></div>
+  </section>
+
+  <section>
+    <h2>6. 시장 국면</h2>
+    <p class="desc">코스피 / S&amp;P500이 각각 20일 이평 아래면 그 시장은 신규진입을 보류합니다(기존 보유 포지션 관리는 계속됩니다).</p>
+    <div class="cards" id="regimeCards"></div>
+  </section>
+
+  <section>
+    <h2>보유 포지션 현황</h2>
+    <p class="desc">스펙 7개 출력 항목 외에 추가한 섹션입니다 — 자동 페이퍼 진입 방식이라 보유 중인 포지션의 현재 손절가·R배수를 보여주지 않으면 시스템 상태를 확인할 방법이 없습니다.</p>
+    <div class="scroll-x"><table id="positionsTable"></table></div>
+  </section>
+
+  <section>
+    <h2>7. 최근 180세션 후보/진입 기록</h2>
+    <p class="desc">그날의 통합 상위 5종목 전부를 기록합니다(진입 여부와 무관). 진입한 종목은 보유 포지션과 연결해 현재 R배수를 함께 보여줍니다.</p>
+    <div class="table-wrap scroll-x"><table id="historyTable"></table></div>
+  </section>
+</main>
+<footer id="footer"></footer>
+
+<script id="data" type="application/json">{"latest": {"date": "2026-09-22", "top5": [{"code": "000500", "name": "가온전선", "market": "KR", "status": "OK", "reason": null, "close": 327500.0, "volume": 305502.0, "volume_sma50": 267021.12, "volume_ratio": 1.1441, "avg_trading_value20": 93973745140.0, "high20": 349500.0, "pivot_distance_pct": -6.295, "clv_value": -0.7959, "rsi_value": 76.17, "disparity20": 35.76, "atr_value": 24420.9913, "swing_low_price": 160800.0, "stop_price": 278658.0174, "risk_pct": 14.914, "rs_score": 98.5, "gate": {"volumeOk": false, "riskOk": false, "passed": false}, "scoreBreakdown": {"rs": 24.62, "volume": 11.44, "pivot": 2.84, "clv": 0.0, "rsi": 15.0, "disparity": 4.5, "riskEfficiency": 0.0, "total": 58.4}}, {"code": "MRNA", "name": "Moderna", "market": "US", "status": "OK", "reason": null, "close": 172.94000244140625, "volume": 20972300.0, "volume_sma50": 18087276.0, "volume_ratio": 1.1595, "avg_trading_value20": 2783449448.14, "high20": 176.86, "pivot_distance_pct": -2.216, "clv_value": 0.5596, "rsi_value": 69.56, "disparity20": 17.421, "atr_value": 12.5622, "swing_low_price": 130.0, "stop_price": 147.8156, "risk_pct": 14.528, "rs_score": 99.76, "gate": {"volumeOk": false, "riskOk": false, "passed": false}, "scoreBreakdown": {"rs": 24.94, "volume": 11.6, "pivot": 9.64, "clv": 13.99, "rsi": 15.0, "disparity": 10.0, "riskEfficiency": 0.0, "total": 85.17}}, {"code": "017900", "name": "광전자", "market": "KR", "status": "OK", "reason": null, "close": 10390.0, "volume": 3253928.0, "volume_sma50": 5375184.88, "volume_ratio": 0.6054, "avg_trading_value20": 81926934067.0, "high20": 12190.0, "pivot_distance_pct": -14.766, "clv_value": -0.1258, "rsi_value": 64.59, "disparity20": 20.758, "atr_value": 1009.6054, "swing_low_price": 6820.0, "stop_price": 8370.7892, "risk_pct": 19.434, "rs_score": 92.25, "gate": {"volumeOk": false, "riskOk": false, "passed": false}, "scoreBreakdown": {"rs": 23.06, "volume": 6.05, "pivot": 0.0, "clv": 0.0, "rsi": 15.0, "disparity": 10.0, "riskEfficiency": 0.0, "total": 54.11}}, {"code": "DELL", "name": "Dell Technologies", "market": "US", "status": "OK", "reason": null, "close": 575.3099975585938, "volume": 7720900.0, "volume_sma50": 7793038.0, "volume_ratio": 0.9907, "avg_trading_value20": 5364434931.15, "high20": 595.51, "pivot_distance_pct": -3.392, "clv_value": -0.3671, "rsi_value": 62.8, "disparity20": 12.732, "atr_value": 32.6496, "swing_low_price": 421.89, "stop_price": 510.0108, "risk_pct": 11.35, "rs_score": 98.03, "gate": {"volumeOk": false, "riskOk": false, "passed": false}, "scoreBreakdown": {"rs": 24.51, "volume": 9.91, "pivot": 7.68, "clv": 0.0, "rsi": 15.0, "disparity": 10.0, "riskEfficiency": 0.0, "total": 67.1}}, {"code": "064290", "name": "인텍플러스", "market": "KR", "status": "OK", "reason": null, "close": 56000.0, "volume": 544637.0, "volume_sma50": 360388.02, "volume_ratio": 1.5113, "avg_trading_value20": 16747683767.5, "high20": 58100.0, "pivot_distance_pct": -3.614, "clv_value": 0.1429, "rsi_value": 70.78, "disparity20": 33.46, "atr_value": 4656.14, "swing_low_price": 30250.0, "stop_price": 46687.72, "risk_pct": 16.629, "rs_score": 90.85, "gate": {"volumeOk": true, "riskOk": false, "passed": false}, "scoreBreakdown": {"rs": 22.71, "volume": 15.0, "pivot": 7.31, "clv": 3.57, "rsi": 15.0, "disparity": 5.42, "riskEfficiency": 0.0, "total": 69.01}}], "finalists": [], "entries": [], "openedToday": [], "regime": {"KR": {"indexClose": 6724.34, "indexSma": 6802.333, "allowNewEntry": false}, "US": {"indexClose": 7764.7002, "indexSma": 7663.4075, "allowNewEntry": true}}, "historyEntry": [{"date": "2026-09-22", "market": "KR", "code": "000500", "name": "가온전선", "rsScore": 98.5, "scoreTotal": 58.4, "gatePass": false, "entered": false, "positionId": null, "sizingAmount": null, "stopPrice": 278658.0174}, {"date": "2026-09-22", "market": "US", "code": "MRNA", "name": "Moderna", "rsScore": 99.76, "scoreTotal": 85.17, "gatePass": false, "entered": false, "positionId": null, "sizingAmount": null, "stopPrice": 147.8156}, {"date": "2026-09-22", "market": "KR", "code": "017900", "name": "광전자", "rsScore": 92.25, "scoreTotal": 54.11, "gatePass": false, "entered": false, "positionId": null, "sizingAmount": null, "stopPrice": 8370.7892}, {"date": "2026-09-22", "market": "US", "code": "DELL", "name": "Dell Technologies", "rsScore": 98.03, "scoreTotal": 67.1, "gatePass": false, "entered": false, "positionId": null, "sizingAmount": null, "stopPrice": 510.0108}, {"date": "2026-09-22", "market": "KR", "code": "064290", "name": "인텍플러스", "rsScore": 90.85, "scoreTotal": 69.01, "gatePass": false, "entered": false, "positionId": null, "sizingAmount": null, "stopPrice": 46687.72}], "totalEquity": {"KR": 10000000.0, "US": 10000.0}}, "positions": [], "history": [{"date": "2026-09-22", "market": "KR", "code": "000500", "name": "가온전선", "rsScore": 98.5, "scoreTotal": 58.4, "gatePass": false, "entered": false, "positionId": null, "sizingAmount": null, "stopPrice": 278658.0174}, {"date": "2026-09-22", "market": "US", "code": "MRNA", "name": "Moderna", "rsScore": 99.76, "scoreTotal": 85.17, "gatePass": false, "entered": false, "positionId": null, "sizingAmount": null, "stopPrice": 147.8156}, {"date": "2026-09-22", "market": "KR", "code": "017900", "name": "광전자", "rsScore": 92.25, "scoreTotal": 54.11, "gatePass": false, "entered": false, "positionId": null, "sizingAmount": null, "stopPrice": 8370.7892}, {"date": "2026-09-22", "market": "US", "code": "DELL", "name": "Dell Technologies", "rsScore": 98.03, "scoreTotal": 67.1, "gatePass": false, "entered": false, "positionId": null, "sizingAmount": null, "stopPrice": 510.0108}, {"date": "2026-09-22", "market": "KR", "code": "064290", "name": "인텍플러스", "rsScore": 90.85, "scoreTotal": 69.01, "gatePass": false, "entered": false, "positionId": null, "sizingAmount": null, "stopPrice": 46687.72}]}</script>
+<script>
+const DATA = JSON.parse(document.getElementById("data").textContent);
+const fmt = (v, d=2) => (v === null || v === undefined || Number.isNaN(v)) ? "-" : Number(v).toFixed(d);
+const fmtInt = v => (v === null || v === undefined) ? "-" : Math.round(v).toLocaleString();
+const marketLabel = m => m === "KR" ? "국내" : "미국";
+
+function badge(ok, onText, offText, naText) {
+  if (ok === null || ok === undefined) return `<span class="badge na">${naText || "확인불가"}</span>`;
+  return ok ? `<span class="badge on">${onText}</span>` : `<span class="badge off">${offText}</span>`;
+}
+
+function renderCards() {
+  const latest = DATA.latest;
+  const openCount = DATA.positions.filter(p => p.status === "OPEN").length;
+  const cards = [
+    ["기준일", latest ? latest.date : "-"],
+    ["보유 포지션", openCount],
+    ["오늘 신규진입", latest ? latest.openedToday.length : 0],
+    ["최종후보", latest ? latest.finalists.length : 0],
+  ];
+  document.getElementById("cards").innerHTML = cards.map(([l, v]) =>
+    `<div class="card"><div class="lbl">${l}</div><div class="val">${v}</div></div>`).join("");
+}
+
+function rowCommon(row) {
+  return `<td class="left">${marketLabel(row.market)}</td><td class="left">${row.name}(${row.code})</td>`;
+}
+
+function renderTop5() {
+  const el = document.getElementById("top5Table");
+  const rows = (DATA.latest && DATA.latest.top5) || [];
+  if (!rows.length) { el.innerHTML = `<tr><td class="empty">데이터 없음</td></tr>`; return; }
+  el.innerHTML = `<thead><tr>
+      <th class="left">시장</th><th class="left">종목</th><th>RS%</th>
+      <th>거래량게이트</th><th>리스크게이트</th>
+      <th>RS(25)</th><th>거래량(15)</th><th>피벗(10)</th><th>CLV(15)</th><th>RSI(15)</th><th>이격도(10)</th><th>리스크효율(10)</th>
+      <th>총점</th><th>통과</th>
+    </tr></thead><tbody>` + rows.map(r => `<tr>
+      ${rowCommon(r)}
+      <td>${fmt(r.rs_score, 1)}</td>
+      <td>${badge(r.gate.volumeOk, "OK", "미달")}</td>
+      <td>${badge(r.gate.riskOk, "OK", "초과")}</td>
+      <td>${fmt(r.scoreBreakdown.rs)}</td>
+      <td>${fmt(r.scoreBreakdown.volume)}</td>
+      <td>${fmt(r.scoreBreakdown.pivot)}</td>
+      <td>${fmt(r.scoreBreakdown.clv)}</td>
+      <td>${fmt(r.scoreBreakdown.rsi)}</td>
+      <td>${fmt(r.scoreBreakdown.disparity)}</td>
+      <td>${fmt(r.scoreBreakdown.riskEfficiency)}</td>
+      <td><b>${fmt(r.scoreBreakdown.total)}</b></td>
+      <td>${badge(r.gate.passed, "통과", "미달")}</td>
+    </tr>`).join("") + `</tbody>`;
+}
+
+function renderFinalists() {
+  const el = document.getElementById("finalistTable");
+  const rows = (DATA.latest && DATA.latest.finalists) || [];
+  const entryCodes = new Set((DATA.latest ? DATA.latest.entries : []).map(r => r.market + r.code));
+  if (!rows.length) { el.innerHTML = `<tr><td class="empty">78점 이상 &amp; 게이트 통과 후보 없음</td></tr>`; return; }
+  el.innerHTML = `<thead><tr><th class="left">시장</th><th class="left">종목</th><th>총점</th><th>신규진입대상</th></tr></thead><tbody>` +
+    rows.map(r => `<tr>${rowCommon(r)}<td><b>${fmt(r.scoreBreakdown.total)}</b></td>
+      <td>${badge(entryCodes.has(r.market + r.code), "진입대상", "후보만")}</td></tr>`).join("") + `</tbody>`;
+}
+
+function renderEntries() {
+  const el = document.getElementById("entryTable");
+  const latest = DATA.latest;
+  const opened = latest ? latest.openedToday : [];
+  const positionsById = Object.fromEntries(DATA.positions.map(p => [p.id, p]));
+  if (!opened.length) { el.innerHTML = `<tr><td class="empty">오늘 신규진입 없음(시장국면 보류·동시보유 한도·게이트 미달 등)</td></tr>`; return; }
+  el.innerHTML = `<thead><tr><th class="left">시장</th><th class="left">종목</th><th>진입가</th><th>손절가</th>
+      <th>수량</th><th>실투입액</th><th>계좌리스크%</th></tr></thead><tbody>` +
+    opened.map(id => { const p = positionsById[id]; if (!p) return ""; return `<tr>
+      <td class="left">${marketLabel(p.market)}</td><td class="left">${p.name}(${p.code})</td>
+      <td>${fmt(p.entry_price)}</td><td>${fmt(p.initial_stop)}</td>
+      <td>${fmtInt(p.shares_original)}</td><td>${fmtInt(p.invested_amount)}</td>
+      <td>${fmt(p.account_risk_pct, 3)}%</td></tr>`; }).join("") + `</tbody>`;
+}
+
+function renderRegime() {
+  const el = document.getElementById("regimeCards");
+  const regime = DATA.latest ? DATA.latest.regime : null;
+  if (!regime) { el.innerHTML = `<div class="empty">데이터 없음</div>`; return; }
+  el.innerHTML = ["KR", "US"].map(mk => {
+    const r = regime[mk];
+    const allow = r ? r.allowNewEntry : null;
+    return `<div class="card"><div class="lbl">${marketLabel(mk)} 시장</div>
+      <div class="val">${badge(allow, "신규진입 허용", "신규진입 보류", "판정불가")}</div>
+      <div class="lbl" style="margin-top:6px">지수 ${fmt(r && r.indexClose)} / 20일선 ${fmt(r && r.indexSma)}</div></div>`;
+  }).join("");
+}
+
+function renderPositions() {
+  const el = document.getElementById("positionsTable");
+  const rows = DATA.positions.filter(p => p.status === "OPEN")
+    .sort((a, b) => (b.r_multiple_display ?? -999) - (a.r_multiple_display ?? -999));
+  if (!rows.length) { el.innerHTML = `<tr><td class="empty">보유 포지션 없음</td></tr>`; return; }
+  el.innerHTML = `<thead><tr><th class="left">시장</th><th class="left">종목</th><th>진입일</th><th>진입가</th>
+      <th>현재손절가</th><th>잔여수량</th><th>1R</th><th>2R</th><th>트레일링</th><th>보유거래일</th><th>R배수(미실현)</th></tr></thead><tbody>` +
+    rows.map(p => `<tr>
+      <td class="left">${marketLabel(p.market)}</td><td class="left">${p.name}(${p.code})</td>
+      <td>${p.entry_date}</td><td>${fmt(p.entry_price)}</td><td>${fmt(p.current_stop)}</td>
+      <td>${fmtInt(p.shares_remaining)}</td>
+      <td>${badge(p.r1_hit, "도달", "대기")}</td><td>${badge(p.r2_hit, "도달", "대기")}</td>
+      <td>${badge(p.trailing_active, "가동", "미가동")}</td>
+      <td>${fmtInt(p.trading_days_held)}</td>
+      <td>${fmt(p.r_multiple_display, 2)}R</td>
+    </tr>`).join("") + `</tbody>`;
+}
+
+function renderHistory() {
+  const el = document.getElementById("historyTable");
+  const positionsById = Object.fromEntries(DATA.positions.map(p => [p.id, p]));
+  const rows = [...DATA.history].sort((a, b) => b.date.localeCompare(a.date));
+  if (!rows.length) { el.innerHTML = `<tr><td class="empty">기록 없음</td></tr>`; return; }
+  el.innerHTML = `<thead><tr><th>날짜</th><th class="left">시장</th><th class="left">종목</th>
+      <th>RS%</th><th>강도점수</th><th>게이트</th><th>진입여부</th><th>사이징</th><th>손절가</th><th>R배수/결과</th></tr></thead><tbody>` +
+    rows.map(r => { const p = r.positionId ? positionsById[r.positionId] : null;
+      const result = !p ? (r.entered ? "-" : "") :
+        (p.status === "OPEN" ? `진행중 ${fmt(p.r_multiple_display, 2)}R` : `종료 ${fmt(p.r_multiple_display, 2)}R`);
+      return `<tr><td>${r.date}</td><td class="left">${marketLabel(r.market)}</td>
+        <td class="left">${r.name}(${r.code})</td><td>${fmt(r.rsScore, 1)}</td><td>${fmt(r.scoreTotal)}</td>
+        <td>${badge(r.gatePass, "통과", "미달")}</td><td>${badge(r.entered, "진입", "미진입")}</td>
+        <td>${fmtInt(r.sizingAmount)}</td><td>${fmt(r.stopPrice)}</td><td>${result}</td></tr>`; }).join("") + `</tbody>`;
+}
+
+function computeRMultipleDisplay() {
+  // r_multiple은 서버(Python)에서 계산해 넣지 않고, 대시보드가 저장된 필드로 근사 표시한다.
+  DATA.positions.forEach(p => {
+    const r = p.entry_price - p.initial_stop;
+    if (r <= 0) { p.r_multiple_display = null; return; }
+    if (p.status === "CLOSED") {
+      const totalShares = p.exits.reduce((s, e) => s + e.shares, 0);
+      const pnl = p.exits.reduce((s, e) => s + (e.price - p.entry_price) * e.shares, 0);
+      p.r_multiple_display = totalShares > 0 ? pnl / totalShares / r : null;
+    } else {
+      p.r_multiple_display = (p.last_close != null) ? (p.last_close - p.entry_price) / r : null;
+    }
+  });
+}
+
+function renderFooter() {
+  document.getElementById("footer").innerHTML = `
+    <b>설계상 근사·한계 (정확히 읽고 판단에 참고하세요)</b><br>
+    · <b>국내 유니버스</b>: FinanceDataReader가 시가총액(Marcap)을 항상 비워서 내려줘(다른 서브시스템에서도 동일하게 확인된 한계) "시총 상위 200" 대신 20일 평균거래대금 상위 200을 씁니다.<br>
+    · <b>강도점수 손절폭 대비 변동성 효율(10점)</b>: 목표가·기대수익 모델이 없어 "리스크 상한(5.5%) 대비 실제 리스크가 작을수록 가점"하는 근사치입니다. 실제 손익비가 아닙니다.<br>
+    · <b>US 포지션 상한액</b>: 스펙의 상한액 3단계가 원화로만 주어져 있어, config.py의 자리표시자 환율로 달러 환산합니다.<br>
+    · <b>섹터·테마 동시보유 제한</b>: 업종 분류 데이터가 없어 이번 구현에서 생략했습니다(총 보유종목 6개 제한만 적용, 국내·미국 합산).<br>
+    · <b>자동 페이퍼 진입</b>: "신규진입 대상"은 익일 시가에 실제로 매수했다고 자동 가정하고 이후 손절·+1R/+2R·트레일링·시간손절까지 전부 시스템이 자동 관리합니다. 실제 계좌 체결과 100% 일치하지 않을 수 있습니다.<br>
+    · <b>+2R 부분익절 체결가</b>: 실제 시세가 아니라 +2R 목표가(진입가+2R) 자체를 체결가로 가정합니다.<br>
+    · <b>손절가</b>: ATR14×2 손절가와 최근 20일 스윙로우 중 진입가에 더 가까운(타이트한) 쪽을 씁니다.<br>
+    · 모든 산출물은 판단 참고용이며 실제 주문은 절대 실행하지 않습니다. 모든 임계값은 momentum_signals/config.py에서 조정 가능합니다.
+  `;
+}
+
+function checkEquityPlaceholder() {
+  const eq = DATA.latest && DATA.latest.totalEquity;
+  const isPlaceholder = !eq || eq.KR === 10000000 || eq.US === 10000;
+  document.getElementById("equityBanner").style.display = isPlaceholder ? "block" : "none";
+}
+
+computeRMultipleDisplay();
+renderCards();
+renderTop5();
+renderFinalists();
+renderEntries();
+renderRegime();
+renderPositions();
+renderHistory();
+renderFooter();
+checkEquityPlaceholder();
+</script>
+</body>
+</html>
