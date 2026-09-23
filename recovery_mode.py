@@ -18,6 +18,8 @@ from __future__ import annotations
 import json
 import math
 import statistics
+from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR
+from html import escape
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -394,30 +396,7 @@ def estimate_blocked(row: dict) -> bool:
 
 
 def entry_ok(row: dict, score: float) -> bool:
-    fm = row.get("fundamental") or {}
-    mr = row.get("marketRisk") or market_metrics(row)
-    gap = row.get("gapRisk") or gap_chase_metrics(row)
-    event = row.get("eventRisk") or {"status": "UNKNOWN"}
-    risk = _num(row.get("initialRiskPct"))
-    return bool(
-        rankable(row)
-        and row.get("aggressiveGo") is True
-        and row.get("breakout") is True
-        and row.get("volumeOk") is True
-        and row.get("clvOk") is True
-        and row.get("rsiOk") is True
-        and row.get("notExtended") is True
-        and risk is not None
-        and risk <= STRICT_RISK_PCT
-        and score >= MIN_ENTRY_SCORE
-        and mr.get("available") is True
-        and not mr.get("blocked")
-        and gap.get("available") is True
-        and not gap.get("chase")
-        and event.get("status") != "BLOCK"
-        and fm.get("risk") != "BLOCK"
-        and not estimate_blocked(row)
-    )
+    return not entry_failures(row, score)
 
 
 def track_record_stats(states: list[dict]) -> dict:
@@ -500,21 +479,33 @@ def load_market(market: str) -> tuple[list[dict], str | None, dict]:
     return state.get("latestRows") or [], state.get("latestSession"), state
 
 
-def rejection_reason(row: dict) -> str:
+def entry_failures(row: dict, score: float | None = None) -> list[str]:
     failures = []
-    if not row.get("aggressiveGo"):
-        failures.append("공격돌파 미충족")
+    if not rankable(row):
+        failures.append("기본 랭킹 조건 미충족")
+    for key, label in (
+        ("aggressiveGo", "공격돌파"), ("breakout", "돌파"),
+        ("volumeOk", "거래량"), ("clvOk", "종가 위치"),
+        ("rsiOk", "RSI"), ("notExtended", "과열 방지"),
+    ):
+        if row.get(key) is not True:
+            failures.append(f"{label} 미충족")
+    score = _num(row.get("strengthScore") if score is None else score)
+    if score is None:
+        failures.append("강도점수 데이터 없음")
+    elif score < MIN_ENTRY_SCORE:
+        failures.append(f"강도점수 미달 ({score:.1f} < {MIN_ENTRY_SCORE:.1f})")
     risk = _num(row.get("initialRiskPct"))
     if risk is None:
         failures.append("초기리스크 데이터 없음")
     elif risk > STRICT_RISK_PCT:
         failures.append("초기리스크 초과")
-    market_risk = row.get("marketRisk") or {}
+    market_risk = row.get("marketRisk") or market_metrics(row)
     if market_risk.get("available") is not True:
         failures.append("시장국면/breadth 데이터 미갱신")
     elif market_risk.get("blocked"):
         failures.append("시장국면/breadth")
-    gap_risk = row.get("gapRisk") or {}
+    gap_risk = row.get("gapRisk") or gap_chase_metrics(row)
     if gap_risk.get("available") is not True:
         failures.append("갭 데이터 미갱신")
     elif gap_risk.get("chase"):
@@ -525,7 +516,42 @@ def rejection_reason(row: dict) -> str:
         failures.append("실적 급악화")
     if estimate_blocked(row):
         failures.append("forward EPS 추정 하향")
+    return failures
+
+
+def rejection_reason(row: dict) -> str:
+    failures = entry_failures(row)
     return ", ".join(failures) if failures else "진입 조건 통과"
+
+
+def execution_plan(row: dict) -> dict | None:
+    """Indicative prices; upper bound obeys the upstream stop-based risk formula."""
+    values = [_num(row.get(k)) for k in ("close", "breakoutLevel", "referenceStop")]
+    if any(v is None or v <= 0 for v in values):
+        return None
+    close, pivot, stop = (Decimal(str(v)) for v in values)
+    if not stop < close or not pivot < close:
+        return None
+    unit = Decimal("0.01")
+    low = close.quantize(unit, rounding=ROUND_CEILING)
+    high = min(pivot * (1 + Decimal(str(PIVOT_CHASE_PCT)) / 100),
+               stop * (1 + Decimal(str(STRICT_RISK_PCT)) / 100))
+    high = high.quantize(unit, rounding=ROUND_FLOOR)
+    # Round the reference stop down so displayed risk is never understated.
+    stop = stop.quantize(unit, rounding=ROUND_FLOOR)
+    high = min(high, (stop * (1 + Decimal(str(STRICT_RISK_PCT)) / 100))
+               .quantize(unit, rounding=ROUND_FLOOR))
+    if stop <= 0 or high < low:
+        return None
+    risk = high - stop
+    return {
+        "currency": "USD" if row.get("marketBucket") == "US" else "KRW",
+        "entryPriceMin": float(low), "entryPriceMax": float(high),
+        "referenceStop": float(stop), "target1R": float(high + risk),
+        "target2R": float(high + 2 * risk),
+        "plannedLossPct": float(risk / high * 100),
+        "sizingRiskPct": float(risk / stop * 100),
+    }
 
 
 def build_snapshot() -> dict:
@@ -557,8 +583,18 @@ def build_snapshot() -> dict:
     entries, used_sectors = [], set()
 
     for r in strongest:
+        r["entryPass"] = False
         r["entryReason"] = rejection_reason(r)
         if not entry_ok(r, r["strengthScore"]):
+            continue
+
+        plan = execution_plan(r)
+        if plan is None:
+            r["entryReason"] = "실행 가격 데이터 누락/오류 또는 허용 진입범위 없음"
+            continue
+
+        if len(entries) >= TOP_ENTRY:
+            r["entryReason"] = "진입 후보 수 한도 초과"
             continue
 
         key = r.get("sectorKey")
@@ -566,7 +602,7 @@ def build_snapshot() -> dict:
             r["entryReason"] = "동일 섹터 신규진입 중복 제한"
             continue
 
-        risk = _num(r.get("initialRiskPct"), 0.0) or 0.0
+        risk = plan["sizingRiskPct"]
         mr = r.get("marketRisk") or {}
         ev = r.get("eventRisk") or {}
         amount = suggested_amount(
@@ -575,20 +611,23 @@ def build_snapshot() -> dict:
             event_status=ev.get("status") or "UNKNOWN",
             track_cap=int(track["amountCapKRW"]),
         )
+        r["entryPass"] = True
         e = dict(r)
+        planned_loss = math.ceil(amount * plan["plannedLossPct"] / 100)
+        plan["estimatedMaxLossKRW"] = planned_loss
         e.update(
+            executionPlan=plan,
+            executionPriority=len(entries) + 1 if len(entries) < MAX_NEW_ENTRIES_PER_DAY else None,
             suggestedAmountKRW=amount,
-            estimatedInitialRiskKRW=round(amount * risk / 100),
-            oneRKRW=round(amount * risk / 100),
-            twoRTargetPct=round(risk * 2, 2),
+            estimatedInitialRiskKRW=planned_loss,
+            oneRKRW=planned_loss,
+            twoRTargetPct=round(plan["plannedLossPct"] * 2, 2),
             managementRule="손절가 이탈 전량정리 / +1R 방어강화 / +2R 1/3 익절 / 5거래일 +3% 미만 시간손절",
             entryReason="진입 조건 통과",
         )
         entries.append(e)
         if key:
             used_sectors.add(key)
-        if len(entries) >= TOP_ENTRY:
-            break
 
     entry_ids = {(e.get("marketBucket"), e.get("code")) for e in entries}
     for r in strongest:
@@ -626,6 +665,7 @@ def compact_row(r: dict) -> dict:
         "aggressiveGo", "signalCount", "volumeRatio", "rsi14", "pivotDistancePct",
         "gapPct", "changePct1d", "referenceStop", "initialRiskPct",
         "suggestedAmountKRW", "estimatedInitialRiskKRW",
+        "executionPlan", "executionPriority",
         "marketRisk", "gapRisk", "eventRisk", "fundamental", "estimate",
     ]
     return {k: r.get(k) for k in keys}
@@ -680,6 +720,26 @@ def render_html(snapshot: dict) -> str:
         )
 
     executable = snapshot["entries"][:MAX_NEW_ENTRIES_PER_DAY]
+    execution_cards = []
+    for priority, e in enumerate(executable, 1):
+        p = e.get("executionPlan")
+        if not p:
+            continue
+        currency = p["currency"]
+        def price(key):
+            return f"{_fmt(p[key], 2)} {currency}"
+        execution_cards.append(
+            f'<article class="execution"><h2>{priority}순위 · {escape(str(e.get("name") or e.get("code")))}</h2>'
+            f'<p class="note">{escape(str(e.get("marketBucket")))} · {escape(str(e.get("code")))}'
+            f' · 가격 기준일 {escape(str(e.get("priceAsOf") or "-"))}</p><dl>'
+            f'<dt>진입가격 범위</dt><dd>{price("entryPriceMin")} ~ {price("entryPriceMax")}</dd>'
+            f'<dt>참고 손절가</dt><dd>{price("referenceStop")}</dd>'
+            f'<dt>1R 목표가</dt><dd>{price("target1R")}</dd>'
+            f'<dt>2R 목표가</dt><dd>{price("target2R")}</dd>'
+            f'<dt>종목당 제안금액</dt><dd>{_fmt(e["suggestedAmountKRW"], 0)}원</dd>'
+            f'<dt>예상 최대손실 (손절 체결 가정)</dt><dd>{_fmt(p["estimatedMaxLossKRW"], 0)}원'
+            f' ({_fmt(p["plannedLossPct"], 2)}%)</dd></dl></article>'
+        )
     entry_text = "오늘 조건 통과 종목 없음" if not executable else " / ".join(
         f"{e.get('name') or e.get('code')} {e.get('suggestedAmountKRW',0)/1_000_000:.1f}백만원"
         for e in executable
@@ -701,11 +761,20 @@ h1{{font-size:26px;margin:0 0 8px}} .sub,.note,small{{color:#666}} .hero{{font-s
 .scroll{{overflow-x:auto}} table{{width:100%;border-collapse:collapse;font-size:13px;min-width:1200px}}
 th,td{{padding:10px 7px;border-bottom:1px solid #eee;text-align:right;vertical-align:top}}
 th:nth-child(3),td:nth-child(3),th:nth-child(5),td:nth-child(5){{text-align:left}} .note{{font-size:13px;line-height:1.65}}
+.execution-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:16px}}
+.execution{{border:1px solid #dfe4ec;border-radius:12px;padding:16px}} .execution h2{{font-size:18px;margin:0}}
+.execution dl{{display:grid;grid-template-columns:1fr 1.4fr;gap:12px;font-size:14px}}
+.execution dt{{color:#555}} .execution dd{{margin:0;text-align:right;font-weight:600}}
 @media(max-width:700px){{.wrap{{padding:10px}} table{{font-size:12px}} th,td{{padding:8px 4px}}}}
 </style></head><body><div class="wrap">
 <div class="nav"><a href="../">SEPA 추세템플릿</a><a href="../range_vrebound/">RANGE-MR · V-REBOUND</a><a href="../screener/">멀티팩터</a><a href="../technical/">기술적 신호</a><a href="../momentum/">모멘텀 전략</a><a class="here" href="./">계좌복구 공격매매</a></div>
 <div class="card"><h1>계좌복구 공격매매 모드 v2</h1><div class="sub">KR {snapshot['sessions'].get('kr') or '-'} · US {snapshot['sessions'].get('us') or '-'}</div></div>
 <div class="card"><div class="hero">오늘 실행 우선순위: {entry_text}</div>
+<div class="execution-grid">{''.join(execution_cards)}</div>
+<p class="note">종가 이상에서 피벗 +{PIVOT_CHASE_PCT:.0f}% 및 손절가 대비 +{STRICT_RISK_PCT:.1f}% 이내의 참고 범위입니다. 범위 밖이면 진입을 보류합니다.
+1R/2R과 예상 손실은 범위 상단 진입 기준이며, 손실률 = (상단 − 손절가) / 상단입니다.
+원화 제안금액 전액 투자·환율 불변·손절가 체결을 가정합니다. 갭, 슬리피지, 수수료, 환율 변동으로 실제 손실은 더 클 수 있습니다.
+실제 체결가에 따라 목표가를 다시 계산하고 주문 전 호가단위를 확인하세요. 세 번째 통과 후보는 예비 후보입니다.</p>
 <p class="note">강한 5개를 먼저 찾은 뒤 시장국면/breadth, 갭 추격, 실적, 실적발표, forward EPS 추정 변화, 섹터 중복을 차례로 검사합니다. 후보는 최대 3개지만 하루 실제 신규진입 운용 한도는 2개입니다.</p></div>
 <div class="card"><b>공격모드 트랙레코드</b><p class="note">{track_text}<br>{tr.get('note','')}</p></div>
 <div class="card scroll"><table><thead><tr><th>#</th><th>시장</th><th>종목</th><th>강도</th><th>판정</th><th>시장</th><th>갭</th><th>거래량</th><th>실적</th><th>EPS추정</th><th>실적일</th><th>위험</th><th>손절</th><th>금액</th></tr></thead>
