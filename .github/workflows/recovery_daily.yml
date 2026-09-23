@@ -3,9 +3,9 @@ name: Recovery Aggressive Mode
 on:
   push:
     branches: [master]
-    paths: ["recovery_mode.py", ".gitignore"]
+    paths: ["recovery_mode.py", "personas/**", ".github/workflows/recovery_daily.yml", ".gitignore"]
   pull_request:
-    paths: ["recovery_mode.py", "aggressive_screen.py", "personas/valuation.py", "tests/test_recovery_mode.py", "tests/test_aggressive_screen.py", ".github/workflows/recovery_daily.yml"]
+    paths: ["recovery_mode.py", "aggressive_screen.py", "personas/**", "tests/test_personas*", "tests/test_recovery_mode.py", "tests/test_aggressive_screen.py", ".github/workflows/recovery_daily.yml"]
   workflow_run:
     workflows: ["SEPA Trend Template Daily Screening"]
     types: [completed]
@@ -33,6 +33,12 @@ jobs:
         run: |
           python -m unittest tests.test_recovery_mode -v
           python -m unittest tests.test_aggressive_screen -v
+          python -m unittest tests.test_personas tests.test_personas_data tests.test_personas_review -v
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: 선택 한도 및 중복 검사
+        run: node --test tests/test_personas_review.cjs
 
   build:
     if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
