@@ -96,10 +96,13 @@ jobs:
         continue-on-error: true
         run: python -m personas.collect --market "$(echo "${{ steps.market.outputs.market }}" | tr 'A-Z' 'a-z')"
 
-      - name: 페르소나 코멘트 생성(규칙 기반 · 유료 호출 없음)
+      - name: 페르소나 코멘트 생성(매수 고민 — 규칙 기반 + 선택적 Claude)
         id: personas_gen
         continue-on-error: true
-        run: python -m personas.generate --no-llm --market "$(echo "${{ steps.market.outputs.market }}" | tr 'A-Z' 'a-z')"
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}      # 없으면 규칙 텍스트로만 생성(생략되지 않음)
+          CLAUDE_MODEL: ${{ vars.CLAUDE_MODEL }}                   # 비워두면 generate.py 기본값(claude-sonnet-4-5)
+        run: python -m personas.generate --market "$(echo "${{ steps.market.outputs.market }}" | tr 'A-Z' 'a-z')"
 
       - name: 대시보드(docs/index.html) 생성
         run: python generate_dashboard.py
