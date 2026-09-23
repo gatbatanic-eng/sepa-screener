@@ -142,3 +142,131 @@ class CollectTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+# ---------------------------------------------------------------------------
+# personas/generate.py — LLM 코멘트 생성 + 규칙 기반 대체 (네트워크 불필요, fake client)
+# ---------------------------------------------------------------------------
+from personas import generate as gen  # noqa: E402
+from personas.logic import PERSONAS as _PERSONAS  # noqa: E402
+
+
+class _FakeResp:
+    def __init__(self, text):
+        self.content = [type("C", (), {"text": text})()]
+
+
+class _FakeClient:
+    def __init__(self, reply):
+        self.reply = reply
+        self.calls = 0
+
+    class _Msgs:
+        def __init__(self, outer):
+            self.outer = outer
+
+        def create(self, **kwargs):
+            self.outer.calls += 1
+            r = self.outer.reply
+            return _FakeResp(r(kwargs) if callable(r) else r)
+
+    @property
+    def messages(self):
+        return self._Msgs(self)
+
+
+def _leader_row(code="AAA", market="US"):
+    return {"code": code, "name": "Leader Co", "market": market, "trendOk": True, "close": 100.0,
+            "sma50": 90.0, "sma150": 80.0, "sma200": 70.0, "highProximity": 0.9, "highTier": "LEADER",
+            "rsScore": 90.0, "regime": "GREEN", "breadth": 0.6, "exitState": "HOLD", "entryState": "TREND_OK",
+            "zone": "READY", "atr20": 2.0, "initRisk": 6.0}
+
+
+class GenerateTests(unittest.TestCase):
+    def test_rule_based_comment_used_without_client(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "docs" / "data").mkdir(parents=True)
+            (root / "docs" / "data" / "latest_us.json").write_text(json.dumps([_leader_row()]), encoding="utf-8")
+            r = gen.generate_market("us", root, client=None, today=dt.date(2026, 9, 21))
+            self.assertEqual(r["stocks"], 1)
+            self.assertEqual(r["usedLLM"], 0)
+            self.assertTrue(any("API_KEY" in w for w in r["warnings"]))
+            out = json.loads((root / "docs" / "data" / "personas" / "us" / "AAA.json").read_text(encoding="utf-8"))
+            self.assertEqual(len(out["personas"]), len(_PERSONAS))
+            self.assertFalse(any(p["usedLLM"] for p in out["personas"]))
+            for p in out["personas"]:
+                self.assertTrue(p["comment"])
+            idx = json.loads((root / "docs" / "data" / "personas" / "us" / "index.json").read_text(encoding="utf-8"))
+            self.assertIn("AAA", idx["symbols"])
+
+    def test_valid_llm_reply_is_used(self):
+        reply = json.dumps({pid: f"{pid} 코멘트입니다. 근거를 종합하면 이렇습니다." for pid in _PERSONAS})
+        client = _FakeClient(reply)
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "docs" / "data").mkdir(parents=True)
+            (root / "docs" / "data" / "latest_us.json").write_text(json.dumps([_leader_row()]), encoding="utf-8")
+            r = gen.generate_market("us", root, client=client, model="fake-model", today=dt.date(2026, 9, 21),
+                                    sleep=lambda _: None)
+            self.assertEqual(r["usedLLM"], len(_PERSONAS))
+            self.assertFalse(r["warnings"])
+            out = json.loads((root / "docs" / "data" / "personas" / "us" / "AAA.json").read_text(encoding="utf-8"))
+            self.assertTrue(all(p["usedLLM"] for p in out["personas"]))
+            self.assertIn("코멘트입니다", out["personas"][0]["comment"])
+
+    def test_forbidden_phrase_falls_back_to_rule_text_for_that_persona(self):
+        reply_obj = {pid: "지금 매수하세요! 사세요!" if pid == "trend" else f"{pid} 정상 코멘트." for pid in _PERSONAS}
+        client = _FakeClient(json.dumps(reply_obj))
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "docs" / "data").mkdir(parents=True)
+            (root / "docs" / "data" / "latest_us.json").write_text(json.dumps([_leader_row()]), encoding="utf-8")
+            gen.generate_market("us", root, client=client, model="fake-model", today=dt.date(2026, 9, 21),
+                               sleep=lambda _: None)
+            out = json.loads((root / "docs" / "data" / "personas" / "us" / "AAA.json").read_text(encoding="utf-8"))
+            trend = next(p for p in out["personas"] if p["id"] == "trend")
+            self.assertFalse(trend["usedLLM"])
+            self.assertNotIn("매수하세요", trend["comment"])
+            other = next(p for p in out["personas"] if p["id"] != "trend")
+            self.assertTrue(other["usedLLM"])
+
+    def test_malformed_json_reply_falls_back_for_whole_stock(self):
+        client = _FakeClient("이건 JSON이 아닙니다")
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "docs" / "data").mkdir(parents=True)
+            (root / "docs" / "data" / "latest_us.json").write_text(json.dumps([_leader_row()]), encoding="utf-8")
+            r = gen.generate_market("us", root, client=client, model="fake-model", today=dt.date(2026, 9, 21),
+                                    sleep=lambda _: None)
+            self.assertEqual(r["usedLLM"], 0)
+            self.assertTrue(any("JSON" in w for w in r["warnings"]))
+
+    def test_all_llm_failure_is_a_problem_not_silent(self):
+        client = _FakeClient(lambda kwargs: (_ for _ in ()).throw(RuntimeError("boom")))
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "docs" / "data").mkdir(parents=True)
+            (root / "docs" / "data" / "latest_us.json").write_text(json.dumps([_leader_row()]), encoding="utf-8")
+            r = gen.generate_market("us", root, client=client, model="fake-model", today=dt.date(2026, 9, 21),
+                                    sleep=lambda _: None)
+            self.assertTrue(r["problems"])
+            self.assertEqual(r["usedLLM"], 0)
+
+    def test_stale_stock_file_removed_when_no_longer_trend_ok(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "docs" / "data" / "personas" / "us").mkdir(parents=True)
+            (root / "docs" / "data" / "personas" / "us" / "ZZZ.json").write_text("{}", encoding="utf-8")
+            (root / "docs" / "data").mkdir(exist_ok=True)
+            (root / "docs" / "data" / "latest_us.json").write_text(json.dumps([_leader_row()]), encoding="utf-8")
+            gen.generate_market("us", root, client=None, today=dt.date(2026, 9, 21))
+            self.assertFalse((root / "docs" / "data" / "personas" / "us" / "ZZZ.json").exists())
+
+    def test_dry_run_writes_nothing(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "docs" / "data").mkdir(parents=True)
+            (root / "docs" / "data" / "latest_us.json").write_text(json.dumps([_leader_row()]), encoding="utf-8")
+            gen.generate_market("us", root, client=None, today=dt.date(2026, 9, 21), write=False)
+            self.assertFalse((root / "docs" / "data" / "personas").exists())

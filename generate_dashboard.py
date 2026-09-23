@@ -256,6 +256,16 @@ def load_fundamentals_index(prefix: str) -> dict:
     return json.loads(path.read_text(encoding="utf-8")).get("symbols", {})
 
 
+def load_personas_index(prefix: str) -> dict:
+    """personas/generate.py 가 커밋해 둔 docs/data/personas/{prefix}/index.json.
+    code -> {name, generatedAt, usedLLM}. 버튼 노출 여부만 알면 되므로 종목별 본문은
+    대시보드에서 클릭 시 fetch 한다(재무정보 모달과 같은 패턴)."""
+    path = DATA_DIR / "personas" / prefix / "index.json"
+    if not path.exists():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8")).get("symbols", {})
+
+
 def build() -> None:
     run_date = datetime.now(ZoneInfo("Asia/Seoul")).strftime("%Y-%m-%d")
     payload: dict[str, dict] = {}
@@ -287,8 +297,10 @@ def build() -> None:
             if info and info.get("status") == "ok":
                 r.update(compute_value_metrics(prefix, r["code"], r))
 
+        personas_index = load_personas_index(prefix)
+
         payload[prefix] = {"label": label, "rows": rows, "history": history, "asOf": as_of,
-                            "charts": charts, "fundamentals": fundamentals}
+                            "charts": charts, "fundamentals": fundamentals, "personas": personas_index}
 
     if not payload:
         print("생성할 데이터가 없습니다 (output/latest_*_full.csv를 먼저 만들어야 함: screening.py를 먼저 실행하세요)")
@@ -444,6 +456,17 @@ HTML_TEMPLATE = r"""<!doctype html>
   .chart-btn:hover { border-color: var(--accent); }
   .fund-btn { border: 1px solid var(--border); background: var(--bg); border-radius: 6px; padding: 2px 6px; cursor: pointer; font-size: 12px; margin-left: 4px; }
   .fund-btn:hover { border-color: var(--accent); }
+  .persona-btn { border: 1px solid var(--border); background: var(--bg); border-radius: 6px; padding: 2px 6px; cursor: pointer; font-size: 12px; margin-left: 4px; }
+  .persona-btn:hover { border-color: var(--accent); }
+  .persona-disclaimer { background: var(--na-bg); color: var(--na-text); border: 1px solid var(--fail-border, var(--border)); border-radius: 8px; padding: 8px 12px; font-size: 12px; margin-bottom: 14px; }
+  .persona-card { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
+  .persona-card h4 { margin: 0 0 2px 0; font-size: 14px; }
+  .persona-card .lens { color: var(--text-dim); font-size: 12px; margin-bottom: 8px; }
+  .persona-card .comment { font-size: 13px; line-height: 1.6; white-space: pre-line; }
+  .persona-card .gaps { color: var(--text-dim); font-size: 11px; margin-top: 8px; }
+  .persona-badge { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 999px; margin-left: 6px; }
+  .persona-badge.llm { background: var(--watch-bg); color: var(--watch-text); }
+  .persona-badge.rule { background: var(--bg); color: var(--text-dim); border: 1px solid var(--border); }
   .fund-table { width: 100%; border-collapse: collapse; font-size: 12px; }
   .fund-table th, .fund-table td { padding: 5px 8px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
   .fund-table th.left, .fund-table td.left { text-align: left; }
@@ -539,6 +562,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     ※ "레거시판정"·"충족(8)"·"셋업점수(레거시)"·"타이밍신호"는 기존 화면과 비교하기 위해 유지합니다. 스테이지(와인스타인 4단계)·베이스 단계·펀더멘털·촉매는 여전히 자동 판정하지 않습니다. 모든 임계값은 <code>sepa/config.py</code> 에서 조정됩니다.<br>
     ※ "↗" 는 외부 차트 사이트 링크, "📈" 미니차트는 레거시 8/8 통과 + v2 진입 후보(GO/READY)에 제공됩니다. 종가/SMA/거래량/RSI(14)·매물대·변곡점 전부 참고용입니다.<br>
     ※ "📊" 재무정보는 <b>레거시 8/8 전체통과 종목</b>에 한해 한국은 OpenDART, 미국은 SEC EDGAR 공시 원문을 그대로 보여줍니다(가공·추정치 없음). 수집 시점의 공시값이며, 과거 매수 시점에 알려졌던 값이 아닐 수 있고 정정공시가 있으면 갱신됩니다 — 투자 판단은 원문 공시를 직접 확인하세요.<br>
+    ※ "💭 매수 고민"은 <b>현재 v2 추세통과(TREND_OK 이상) 종목</b>에 한해, 추세추종·기술적·퀀트·가치·성장주·리스크관리·반론가 7개 관점에서 이 화면의 다른 수치(재무, PER, 시장 성과 기록 등)를 규칙으로 먼저 계산한 뒤 문장으로 정리한 것입니다. AI(Claude)가 그 계산된 사실만 가지고 문장을 다듬을 수 있으며("AI 코멘트" 표시), 실패 시 계산된 근거·우려·체크포인트를 그대로 보여줍니다("규칙 텍스트" 표시). <b>어느 쪽도 매수·매도 신호나 목표가를 제시하지 않으며, 판단과 책임은 본인에게 있습니다.</b><br>
     ※ <b>밸류점수</b>(0~100, 랭킹용)는 최근 분기 영업이익(없으면 순이익·매출) YoY + 직전 2분기 대비 가속 여부 + (한국만) trailing PER(시총/최근4분기 순이익합) 낮음 + 52주고점 대비 여유(아직 안 오름)를 <code>generate_dashboard.py</code>에서 가중평균한 것입니다. <b>애널리스트 컨센서스(추정치)가 아니라 DART/SEC에 이미 공시된 과거 실적</b>이며, PER은 일회성 손익이 낀 분기가 있으면 왜곡될 수 있고 미국은 EPS·시가총액 결측이 많아 PER 서브지표 자체를 뺍니다. 매수 신호가 아니라 "실적은 개선되는데 아직 안 오른 후보" 1차 스크리닝용 참고 지표입니다.
   </footer>
 </div>
@@ -565,6 +589,16 @@ HTML_TEMPLATE = r"""<!doctype html>
       <button class="modal-close" id="fundModalClose">✕</button>
     </div>
     <div class="modal-body" id="fundModalBody"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="personaModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span id="personaModalTitle"></span>
+      <button class="modal-close" id="personaModalClose">✕</button>
+    </div>
+    <div class="modal-body" id="personaModalBody"></div>
   </div>
 </div>
 
@@ -833,7 +867,11 @@ function chartCell(r) {
   const fund = (fundInfo && fundInfo.status === "ok")
     ? `<button class="fund-btn" data-code="${r.code}" title="재무정보 보기 (DART/SEC 공시, 레거시 8/8 통과 종목만)">📊</button>`
     : "";
-  return ext + mini + fund;
+  const hasPersonas = !!((DATA[currentMarket].personas || {})[r.code]);
+  const persona = hasPersonas
+    ? `<button class="persona-btn" data-code="${r.code}" title="매수 고민 — 페르소나별 참고 의견 (매수·매도 권유 아님)">💭</button>`
+    : "";
+  return ext + mini + fund + persona;
 }
 
 function fmtPct(v) {
@@ -1009,6 +1047,8 @@ document.getElementById("tbody").addEventListener("click", (e) => {
   if (chartBtn) openChartModal(chartBtn.dataset.code);
   const fundBtn = e.target.closest(".fund-btn");
   if (fundBtn) openFundModal(fundBtn.dataset.code);
+  const personaBtn = e.target.closest(".persona-btn");
+  if (personaBtn) openPersonaModal(personaBtn.dataset.code);
 });
 document.getElementById("modalClose").addEventListener("click", closeChartModal);
 document.getElementById("chartModal").addEventListener("click", (e) => {
@@ -1018,8 +1058,12 @@ document.getElementById("fundModalClose").addEventListener("click", closeFundMod
 document.getElementById("fundModal").addEventListener("click", (e) => {
   if (e.target.id === "fundModal") closeFundModal();
 });
+document.getElementById("personaModalClose").addEventListener("click", closePersonaModal);
+document.getElementById("personaModal").addEventListener("click", (e) => {
+  if (e.target.id === "personaModal") closePersonaModal();
+});
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") { closeChartModal(); closeFundModal(); }
+  if (e.key === "Escape") { closeChartModal(); closeFundModal(); closePersonaModal(); }
 });
 
 function cssVar(name) {
@@ -1126,6 +1170,52 @@ async function openFundModal(code) {
 
 function closeFundModal() {
   document.getElementById("fundModal").classList.remove("open");
+}
+
+function escHtml(s) {
+  return String(s ?? "").replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+}
+
+function renderPersonas(data) {
+  const cards = (data.personas || []).map(p => {
+    const badge = p.usedLLM
+      ? `<span class="persona-badge llm">AI 코멘트</span>`
+      : `<span class="persona-badge rule">규칙 텍스트</span>`;
+    const gaps = (p.dataGaps || []).length
+      ? `<div class="gaps">데이터 없음: ${p.dataGaps.map(escHtml).join(" / ")}</div>`
+      : "";
+    return `
+    <div class="persona-card">
+      <h4>${escHtml(p.name)}${badge}</h4>
+      <div class="lens">${escHtml(p.lens)}</div>
+      <div class="comment">${escHtml(p.comment)}</div>
+      ${gaps}
+    </div>`;
+  }).join("");
+  const gaps = (data.dataGaps || []).length
+    ? `<div class="modal-note">종목 전체 데이터 갭: ${data.dataGaps.map(escHtml).join(" / ")}</div>` : "";
+  return `<div class="persona-disclaimer">${escHtml(data.disclaimer)}</div>${cards}${gaps}`;
+}
+
+async function openPersonaModal(code) {
+  const row = DATA[currentMarket].rows.find(r => r.code === code);
+  if (!row) return;
+  document.getElementById("personaModalTitle").textContent = `${row.name} (${code}) 매수 고민 — 페르소나 참고 의견`;
+  const body = document.getElementById("personaModalBody");
+  body.innerHTML = `<div class="modal-note">불러오는 중…</div>`;
+  document.getElementById("personaModal").classList.add("open");
+  try {
+    const res = await fetch(`data/personas/${currentMarket}/${code}.json`, { cache: "no-store" });
+    if (!res.ok) throw new Error("fetch failed");
+    const data = await res.json();
+    body.innerHTML = renderPersonas(data);
+  } catch (e) {
+    body.innerHTML = `<div class="modal-note">페르소나 코멘트를 불러오지 못했습니다.</div>`;
+  }
+}
+
+function closePersonaModal() {
+  document.getElementById("personaModal").classList.remove("open");
 }
 
 function plotLine(ctx, values, x, y, color, width) {

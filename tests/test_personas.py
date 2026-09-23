@@ -21,9 +21,9 @@ sys.path.insert(0, str(ROOT))
 
 from personas import PERSONAS, build_evidence, normalize_code  # noqa: E402
 from personas.fund_metrics import fund_metrics, marcap_krw  # noqa: E402
+from personas.logic import FORBIDDEN_PHRASES as FORBIDDEN  # noqa: E402  (단일 출처 — generate.py 검증과 동일 목록)
 
 TODAY = dt.date(2026, 9, 21)
-FORBIDDEN = ("매수하세요", "매수 추천", "강력 매수", "매도하세요", "매도 추천", "사세요", "파세요", "BUY", "SELL")
 
 
 def leader_row(**over):
