@@ -31,7 +31,7 @@ from personas.logic import FORBIDDEN_PHRASES, PERSONAS, build_evidence, normaliz
 
 ROOT = Path(__file__).resolve().parents[1]
 MODEL_ENV = "CLAUDE_MODEL"
-DEFAULT_MODEL = "claude-sonnet-4-5"
+DEFAULT_MODEL = "claude-sonnet-5"
 
 SYSTEM_PROMPT = (
     "당신은 아래 7명의 투자 페르소나 각각의 시각에서, 이미 규칙으로 계산된 사실(evidence)만 가지고 "
@@ -181,7 +181,7 @@ def generate_market(market: str, root: Path = ROOT, *, client: Optional[Any] = N
 
         comments, err = (None, None)
         if client is not None:
-            comments, err = call_llm(ev, client=client, model=model or os.environ.get(MODEL_ENV, DEFAULT_MODEL))
+            comments, err = call_llm(ev, client=client, model=model or os.environ.get(MODEL_ENV) or DEFAULT_MODEL)
             if err:
                 result["warnings"].append(f"{code} LLM 코멘트 실패({err}) — 규칙 텍스트로 대체")
             sleep(delay)

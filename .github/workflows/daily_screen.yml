@@ -101,7 +101,7 @@ jobs:
         continue-on-error: true
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}      # 없으면 규칙 텍스트로만 생성(생략되지 않음)
-          CLAUDE_MODEL: ${{ vars.CLAUDE_MODEL }}                   # 비워두면 generate.py 기본값(claude-sonnet-4-5)
+          CLAUDE_MODEL: ${{ vars.CLAUDE_MODEL }}                   # 비워두면 generate.py 기본값(claude-sonnet-5)
         run: python -m personas.generate --market "$(echo "${{ steps.market.outputs.market }}" | tr 'A-Z' 'a-z')"
 
       - name: 대시보드(docs/index.html) 생성
