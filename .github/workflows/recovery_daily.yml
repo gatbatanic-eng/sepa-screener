@@ -39,6 +39,14 @@ jobs:
           node-version: "22"
       - name: 선택 한도 및 중복 검사
         run: node --test tests/test_personas_review.cjs
+      - name: 실제 데이터 생성 및 게시 파일 확인
+        run: |
+          python recovery_mode.py
+          test -s docs/recovery/personas/catalog.json
+          if git check-ignore -q docs/recovery/personas/catalog.json; then
+            echo "Persona catalog must be included in published output"
+            exit 1
+          fi
 
   build:
     if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
