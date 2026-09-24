@@ -32,7 +32,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Verify frozen FPD infrastructure
-        run: python -m unittest discover -s tests -p "test_fpd_core.py" -v
+        run: python -m unittest discover -s tests -p "test_fpd_*.py" -v
       - name: Verify FMP analyst-estimates entitlement and schema
         env:
           FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
