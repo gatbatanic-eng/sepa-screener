@@ -1,0 +1,64 @@
+name: FPD PIT Revision Daily
+
+on:
+  schedule:
+    # US close after the existing SEPA US run. 22:30 UTC is after regular close
+    # in both US daylight and standard time.
+    - cron: "30 22 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sepa-screening
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Verify frozen FPD infrastructure
+        run: python -m unittest tests.test_fpd_core -v
+
+      - name: Verify FMP analyst-estimates entitlement and schema
+        env:
+          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+        run: |
+          python - <<'PY'
+          from fpd.provider_fmp import fetch_annual_estimates
+          from fpd.quality import validate_symbol_rows
+          rows = fetch_annual_estimates("AAPL", sleep_seconds=0)
+          if not rows:
+              raise SystemExit("FMP analyst-estimates returned no AAPL annual rows")
+          errors = validate_symbol_rows(rows)
+          if errors:
+              raise SystemExit(f"FMP provider contract failed: {errors}")
+          print(f"FMP contract OK: {len(rows)} annual rows")
+          PY
+
+      - name: Collect immutable US PIT estimate snapshot
+        env:
+          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+        run: python -m fpd.collector
+
+      - name: Commit PIT research observation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f research/fpd/raw/ docs/data/fpd/
+          git diff --cached --quiet || git commit -m "Record FPD PIT estimate snapshot ($(date -u +%Y-%m-%d))"
+          git pull --rebase origin master
+          git push
