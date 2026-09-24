@@ -31,7 +31,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Verify frozen FPD infrastructure
-        run: python -m unittest tests.test_fpd_core -v
+        run: python -m unittest discover -s tests -p "test_fpd_core.py" -v
 
       - name: Verify FMP analyst-estimates entitlement and schema
         env:
