@@ -1,6 +1,12 @@
 name: FPD PIT Revision Daily
 
 on:
+  pull_request:
+    paths:
+      - "fpd/**"
+      - "research/fpd/registry/**"
+      - "tests/test_fpd_core.py"
+      - ".github/workflows/fpd_daily.yml"
   schedule:
     # US close after the existing SEPA US run. 22:30 UTC is after regular close
     # in both US daylight and standard time.
@@ -15,28 +21,27 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  collect:
+  test:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: master
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
       - name: Install dependencies
         run: pip install -r requirements.txt
-
       - name: Verify frozen FPD infrastructure
         run: python -m unittest discover -s tests -p "test_fpd_core.py" -v
-
       - name: Verify FMP analyst-estimates entitlement and schema
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         env:
           FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
         run: |
+          if [ -z "$FMP_API_KEY" ]; then
+            echo "FMP_API_KEY is unavailable; live provider contract check skipped."
+            exit 0
+          fi
           python - <<'PY'
           from fpd.provider_fmp import fetch_annual_estimates
           from fpd.quality import validate_symbol_rows
@@ -49,11 +54,24 @@ jobs:
           print(f"FMP contract OK: {len(rows)} annual rows")
           PY
 
+  collect:
+    if: github.event_name != 'pull_request'
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
       - name: Collect immutable US PIT estimate snapshot
         env:
           FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
         run: python -m fpd.collector
-
       - name: Commit PIT research observation
         run: |
           git config user.name "github-actions[bot]"
