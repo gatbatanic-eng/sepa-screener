@@ -34,7 +34,6 @@ jobs:
       - name: Verify frozen FPD infrastructure
         run: python -m unittest discover -s tests -p "test_fpd_core.py" -v
       - name: Verify FMP analyst-estimates entitlement and schema
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         env:
           FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
         run: |
@@ -68,11 +67,24 @@ jobs:
           python-version: "3.11"
       - name: Install dependencies
         run: pip install -r requirements.txt
+      - name: Detect FMP key
+        id: fmp
+        env:
+          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+        run: |
+          if [ -n "$FMP_API_KEY" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "FPD collection skipped: repository secret FMP_API_KEY is not configured."
+          fi
       - name: Collect immutable US PIT estimate snapshot
+        if: steps.fmp.outputs.available == 'true'
         env:
           FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
         run: python -m fpd.collector
       - name: Commit PIT research observation
+        if: steps.fmp.outputs.available == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
