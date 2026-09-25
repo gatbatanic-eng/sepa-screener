@@ -8,6 +8,14 @@ on:
       - "research/fpd/registry/**"
       - "tests/test_fpd_*.py"
       - ".github/workflows/fpd_daily.yml"
+  push:
+    branches: ["master"]
+    paths:
+      - "fpd/**"
+      - "docs/fpd/**"
+      - "research/fpd/registry/**"
+      - "tests/test_fpd_*.py"
+      - ".github/workflows/fpd_daily.yml"
   schedule:
     # US close after the existing SEPA US run. 22:30 UTC is after regular close
     # in both US daylight and standard time.
