@@ -8,7 +8,7 @@
     :root{color-scheme:dark;--bg:#0b0f17;--card:#131a26;--line:#263146;--text:#eef3fb;--muted:#9aa8bd;--accent:#7dd3fc;--good:#86efac;--warn:#fde68a}
     *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,sans-serif}
     main{max-width:1240px;margin:auto;padding:28px 20px 60px} h1{margin:0;font-size:28px} h2{font-size:17px;margin:0 0 12px}
-    .sub{color:var(--muted);margin:6px 0 24px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:18px}
+    .sub{color:var(--muted);margin:6px 0 24px}.nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}.nav a{color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:12px}.nav a:hover{color:var(--accent);border-color:var(--accent)}.nav a.here{color:var(--text);border-color:var(--accent)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:18px}
     .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}.k{color:var(--muted);font-size:12px}.v{font-size:20px;font-weight:700;margin-top:4px}
     .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:14px;overflow:auto}
     table{width:100%;border-collapse:collapse;white-space:nowrap}th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:right}
@@ -19,6 +19,15 @@
 </head>
 <body>
 <main>
+  <div class="nav">
+    <a href="../">SEPA 추세템플릿</a>
+    <a href="../range_vrebound/">RANGE-MR · V-REBOUND</a>
+    <a href="../screener/">멀티팩터</a>
+    <a href="../technical/">기술적 신호</a>
+    <a href="../momentum/">모멘텀 전략</a>
+    <a href="../recovery/">계좌복구 공격매매</a>
+    <a class="here" href="./">FPD 연구</a>
+  </div>
   <h1>FPD Research</h1>
   <div class="sub">Forward estimate revision × price divergence · <span id="researchId">FPD-v0.2.3-FREE-SANDBOX</span> · 연구용, 매수/매도 신호 아님</div>
 
