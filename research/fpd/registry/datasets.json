@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "datasets": [
+    {
+      "datasetId": "FPD-PIT-US-2026",
+      "market": "US",
+      "universe": "S&P500 point-in-time",
+      "sourceType": "PROSPECTIVE_SELF_COLLECTED",
+      "startDate": "2026-09-25",
+      "status": "LOCKED_OOS",
+      "allowedUse": [
+        "PROSPECTIVE_VALIDATION",
+        "SHADOW_MONITORING"
+      ],
+      "prohibitedUse": [
+        "THRESHOLD_TUNING",
+        "FEATURE_SELECTION",
+        "SUBGROUP_OPTIMIZATION"
+      ],
+      "note": "Observing live signals does not authorize changing FPD-v0.2.1 from this dataset. Any change motivated by these observations requires a new research version and a later independent validation vintage."
+    }
+  ]
+}
