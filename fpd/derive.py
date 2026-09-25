@@ -69,6 +69,18 @@ def _simple_return(current, previous) -> float | None:
     return current / previous - 1.0
 
 
+def _events_inside(events: list[dict], previous_date: date, current_date: date) -> list[dict]:
+    out = []
+    for event in events:
+        try:
+            event_date = date.fromisoformat(str(event.get("date"))[:10])
+        except ValueError:
+            continue
+        if previous_date < event_date <= current_date:
+            out.append(event)
+    return out
+
+
 def _feature_for_horizon(
     ticker: str,
     current: dict,
@@ -110,6 +122,21 @@ def _feature_for_horizon(
     base["revenuePrevious"] = rev_prev.get("avg")
     base["epsRevisionRaw"] = pct_revision(eps_now.get("avg"), eps_prev.get("avg"))
     base["revenueRevisionRaw"] = pct_revision(rev_now.get("avg"), rev_prev.get("avg"))
+
+    split_events = _events_inside(
+        current_snapshot.get("events", {}).get("splits", {}).get(ticker, []),
+        previous_date,
+        current_date,
+    )
+    earnings_events = _events_inside(
+        current_snapshot.get("events", {}).get("earnings", {}).get(ticker, []),
+        previous_date,
+        current_date,
+    )
+    base["splitInsideWindow"] = bool(split_events)
+    base["splitEvents"] = split_events
+    base["earningsInsideWindow"] = bool(earnings_events)
+    base["earningsEvents"] = earnings_events
     base["epsCoverageChange"] = coverage_change(eps_now.get("analysts"), eps_prev.get("analysts"))
     base["revenueCoverageChange"] = coverage_change(rev_now.get("analysts"), rev_prev.get("analysts"))
 
@@ -126,6 +153,13 @@ def _feature_for_horizon(
     base["benchmarkReturnRaw"] = benchmark_return
     if price_return is not None and benchmark_return is not None:
         base["relativeStrengthRaw"] = price_return - benchmark_return
+
+    if base.get("splitInsideWindow"):
+        # Do not infer a split adjustment for estimate or stored point-in-time
+        # closes. Exclude contaminated EPS/PV/RS while preserving revenue revision.
+        base["epsRevisionRaw"] = None
+        base["priceReturnRaw"] = None
+        base["relativeStrengthRaw"] = None
     return base
 
 
