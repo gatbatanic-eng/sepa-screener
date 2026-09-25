@@ -29,6 +29,24 @@ class FPDCoreTests(unittest.TestCase):
         self.assertEqual(out["revenue"]["avg"], 100.0)
         self.assertEqual(validate_estimate(out), [])
 
+    def test_normalize_current_fmp_stable_fields(self):
+        row = {
+            "symbol": "AAPL",
+            "date": "2030-09-27",
+            "revenueLow": 648.0,
+            "revenueHigh": 735.0,
+            "revenueAvg": 679.0,
+            "epsAvg": 13.565,
+            "epsHigh": 15.01999,
+            "epsLow": 12.76582,
+            "numAnalystsRevenue": 16,
+            "numAnalystsEps": 7,
+        }
+        out = normalize_fmp_estimate("AAPL", row)
+        self.assertEqual(out["eps"]["analysts"], 7)
+        self.assertEqual(out["revenue"]["analysts"], 16)
+        self.assertEqual(validate_estimate(out), [])
+
     def test_same_fiscal_period_only(self):
         history = [
             {"snapshotDate": "2026-08-26", "periodEnd": "2027-12-31", "value": 10},
