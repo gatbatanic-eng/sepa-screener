@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "hypotheses": [
+    {
+      "id": "GRAVE-001",
+      "family": "EARNINGS_SURPRISE",
+      "hypothesis": "EPS Surprise >= 10% alone predicts robust subsequent excess returns.",
+      "status": "REJECTED_OR_WEAK",
+      "evidence": "Large blind earnings-event testing did not show a clear robust excess-return edge.",
+      "resurrectionRule": "Requires a new economic mechanism or an independent dataset; threshold retuning alone is insufficient."
+    },
+    {
+      "id": "GRAVE-002",
+      "family": "EARNINGS_UNDERREACTION",
+      "hypothesis": "Large EPS beat plus weak immediate post-announcement price response is a robust standalone alpha signal.",
+      "status": "REJECTED_OR_WEAK",
+      "evidence": "Validation did not establish a robust standalone edge.",
+      "resurrectionRule": "Requires a new economic mechanism or an independent dataset; threshold retuning alone is insufficient."
+    },
+    {
+      "id": "GRAVE-003",
+      "family": "EARNINGS_MOMENTUM",
+      "hypothesis": "Large beat plus immediate price rise is a robust standalone alpha signal.",
+      "status": "REJECTED_OR_WEAK",
+      "evidence": "Blind testing did not establish a clear robust edge.",
+      "resurrectionRule": "Requires a new economic mechanism or an independent dataset; threshold retuning alone is insufficient."
+    },
+    {
+      "id": "GRAVE-004",
+      "family": "PRE_EARNINGS_PRICE_LAG",
+      "hypothesis": "EPS beat plus weak pre-earnings 3-month price momentum contains a persistent standalone alpha.",
+      "status": "INCONCLUSIVE",
+      "evidence": "The validation sample showed an interesting directional result, but bootstrap confidence intervals still included zero.",
+      "resurrectionRule": "May be retested only as a preregistered hypothesis on independent point-in-time or prospective data."
+    }
+  ]
+}
