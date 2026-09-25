@@ -69,6 +69,13 @@ def collect_us(session_date: date, api_key: str | None = None) -> dict:
         }
         try:
             rows = fetch_annual_estimates(symbol, api_key=api_key)
+            rows = [
+                row for row in rows
+                if row.get("periodEnd") and date.fromisoformat(row["periodEnd"]) > session_date
+            ]
+            if not rows:
+                failures[symbol] = {"status": "NO_FORWARD_ESTIMATES"}
+                continue
             errors = validate_symbol_rows(rows)
             if errors:
                 failures[symbol] = {"status": "INVALID_PROVIDER_DATA", "errors": errors}
