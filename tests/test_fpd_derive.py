@@ -70,6 +70,26 @@ class FPDDeriveTests(unittest.TestCase):
         self.assertAlmostEqual(acc["epsRA_B"], 0.1 - (10.0 / 9.0 - 1.0))
         self.assertAlmostEqual(acc["revenueRA_B"], 0.1 - (100.0 / 90.0 - 1.0))
 
+    def test_split_window_excludes_eps_price_and_rs_but_keeps_revenue(self):
+        current = self.current()
+        current["events"] = {
+            "splits": {
+                "ABC": [{"date": "2026-09-10", "numerator": 10, "denominator": 1}]
+            },
+            "earnings": {
+                "ABC": [{"date": "2026-09-12", "epsActual": 1.0}]
+            },
+        }
+        result = derive_snapshot(current, [self.prior("2026-08-26")])
+        r30 = result["symbols"]["ABC"][0]["lookbacks"]["30D"]
+        self.assertTrue(r30["splitInsideWindow"])
+        self.assertTrue(r30["earningsInsideWindow"])
+        self.assertIsNone(r30["epsRevisionRaw"])
+        self.assertAlmostEqual(r30["revenueRevisionRaw"], 0.1)
+        self.assertIsNone(r30["priceReturnRaw"])
+        self.assertIsNone(r30["relativeStrengthRaw"])
+        self.assertAlmostEqual(r30["benchmarkReturnRaw"], 0.05)
+
     def test_rollover_not_spliced(self):
         result = derive_snapshot(self.current(), [self.prior("2026-08-26", period_end="2026-12-31")])
         r30 = result["symbols"]["ABC"][0]["lookbacks"]["30D"]
