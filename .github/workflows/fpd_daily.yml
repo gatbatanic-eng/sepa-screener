@@ -89,9 +89,13 @@ jobs:
           python - <<'PY'
           from fpd.derive import derive_latest_us
           from fpd.cross_section import publish_primary_f1
+          from fpd.research import publish_research_status, rebuild_monthly_research
           derived = derive_latest_us()
           result = publish_primary_f1(derived)
+          readiness = publish_research_status("us")
+          monthly = rebuild_monthly_research("us")
           print(f"FPD F1 rows={result['manifest']['eligibleF1']} available={result['manifest']['fpdAvailable']}")
+          print(f"FPD snapshots={readiness['rawSnapshots']} confirmed_monthly_cohorts={monthly['confirmedMonthlyCohorts']}")
           PY
       - name: Commit PIT research observation
         if: steps.fmp.outputs.available == 'true'
