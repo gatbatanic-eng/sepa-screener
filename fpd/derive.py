@@ -90,6 +90,10 @@ def _feature_for_horizon(
         "revenueRevisionRaw": None,
         "epsCoverageChange": None,
         "revenueCoverageChange": None,
+        "epsPrevious": None,
+        "revenuePrevious": None,
+        "pricePreviousClose": None,
+        "benchmarkPreviousClose": None,
         "priceReturnRaw": None,
         "benchmarkReturnRaw": None,
         "relativeStrengthRaw": None,
@@ -102,6 +106,8 @@ def _feature_for_horizon(
 
     eps_now, eps_prev = current.get("eps", {}), prior.get("eps", {})
     rev_now, rev_prev = current.get("revenue", {}), prior.get("revenue", {})
+    base["epsPrevious"] = eps_prev.get("avg")
+    base["revenuePrevious"] = rev_prev.get("avg")
     base["epsRevisionRaw"] = pct_revision(eps_now.get("avg"), eps_prev.get("avg"))
     base["revenueRevisionRaw"] = pct_revision(rev_now.get("avg"), rev_prev.get("avg"))
     base["epsCoverageChange"] = coverage_change(eps_now.get("analysts"), eps_prev.get("analysts"))
@@ -114,6 +120,8 @@ def _feature_for_horizon(
     prior_benchmark = prior_snapshot.get("benchmark", {}).get("close")
     price_return = _simple_return(current_close, prior_close)
     benchmark_return = _simple_return(current_benchmark, prior_benchmark)
+    base["pricePreviousClose"] = prior_close
+    base["benchmarkPreviousClose"] = prior_benchmark
     base["priceReturnRaw"] = price_return
     base["benchmarkReturnRaw"] = benchmark_return
     if price_return is not None and benchmark_return is not None:
@@ -156,6 +164,21 @@ def derive_snapshot(current_snapshot: dict, prior_snapshots: list[dict]) -> dict
                     current_date,
                     spec,
                 )
+
+            l30 = item["lookbacks"].get("30D", {})
+            l60 = item["lookbacks"].get("60D", {})
+            eps30, eps60 = l30.get("epsRevisionRaw"), l60.get("epsRevisionRaw")
+            rev30, rev60 = l30.get("revenueRevisionRaw"), l60.get("revenueRevisionRaw")
+            eps_previous_leg = pct_revision(l30.get("epsPrevious"), l60.get("epsPrevious"))
+            rev_previous_leg = pct_revision(l30.get("revenuePrevious"), l60.get("revenuePrevious"))
+            item["acceleration"] = {
+                "epsRA_A": None if eps30 is None or eps60 is None else eps30 - eps60 / 2.0,
+                "revenueRA_A": None if rev30 is None or rev60 is None else rev30 - rev60 / 2.0,
+                "epsPrevious30Leg": eps_previous_leg,
+                "revenuePrevious30Leg": rev_previous_leg,
+                "epsRA_B": None if eps30 is None or eps_previous_leg is None else eps30 - eps_previous_leg,
+                "revenueRA_B": None if rev30 is None or rev_previous_leg is None else rev30 - rev_previous_leg,
+            }
             derived_rows.append(item)
         symbols[ticker] = derived_rows
 
