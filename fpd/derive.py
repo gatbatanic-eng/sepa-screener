@@ -219,6 +219,8 @@ def derive_snapshot(current_snapshot: dict, prior_snapshots: list[dict]) -> dict
     return {
         "schemaVersion": 1,
         "researchId": current_snapshot["researchId"],
+        "datasetId": current_snapshot.get("datasetId"),
+        "researchCohort": current_snapshot.get("researchCohort"),
         "researchDefinitionHash": research_definition_hash(definition),
         "snapshotDate": current_snapshot["snapshotDate"],
         "market": current_snapshot["market"],
