@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "experiments": [
+    {
+      "researchId": "FPD-001",
+      "family": "REVISION",
+      "parentResearchId": null,
+      "hypothesis": "Forward EPS and revenue revision velocity is positively related to subsequent relative return.",
+      "variables": ["EPS_R30", "REV_R30", "RV_COMPOSITE_RZ"],
+      "formula": "RV_C=(RZ(EPS_R30)+RZ(REV_R30))/2",
+      "universe": "US S&P500 point-in-time",
+      "testPeriod": "PROSPECTIVE_PIT",
+      "primaryHorizons": [65, 130, 252],
+      "primaryMetrics": ["spearmanIC", "decileMonotonicity", "D10_D1"],
+      "classification": "PRIMARY",
+      "status": "PROPOSED"
+    },
+    {
+      "researchId": "FPD-002",
+      "family": "REVISION_ACCELERATION",
+      "parentResearchId": "FPD-001",
+      "hypothesis": "Accelerating forward estimate revisions contain incremental information beyond revision velocity.",
+      "variables": ["RA_EPS_30_60", "RA_REV_30_60"],
+      "formula": "RA non-overlap and R30-R60/2 variants are both reported",
+      "universe": "US S&P500 point-in-time",
+      "testPeriod": "PROSPECTIVE_PIT",
+      "primaryHorizons": [65, 130, 252],
+      "primaryMetrics": ["spearmanIC", "decileMonotonicity", "D10_D1"],
+      "classification": "PRIMARY",
+      "status": "PROPOSED"
+    },
+    {
+      "researchId": "FPD-003",
+      "family": "FPD",
+      "parentResearchId": "FPD-001",
+      "hypothesis": "Forward estimate revisions that improve faster than price changes predict subsequent relative returns.",
+      "variables": ["RV_COMPOSITE_RZ", "PV30_RZ", "FPD_C_RZ"],
+      "formula": "FPD_C_RZ=RV_COMPOSITE_RZ-RZ(PV30)",
+      "universe": "US S&P500 point-in-time",
+      "testPeriod": "PROSPECTIVE_PIT",
+      "primaryHorizons": [65, 130, 252],
+      "primaryMetrics": ["meanExcessReturn", "medianExcessReturn", "spearmanIC", "D10_D1", "decileMonotonicity"],
+      "classification": "PRIMARY",
+      "status": "PROPOSED"
+    }
+  ]
+}

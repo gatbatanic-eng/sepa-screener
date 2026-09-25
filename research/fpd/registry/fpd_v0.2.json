@@ -1,0 +1,71 @@
+{
+  "researchId": "FPD-v0.2",
+  "family": "FPD",
+  "status": "FROZEN",
+  "frozenAt": "2026-09-25",
+  "hypothesis": {
+    "primary": "Stocks whose forward fundamental estimates improve faster than their prices subsequently outperform.",
+    "mechanism": "Fundamental information may diffuse into analyst estimates and market prices at different speeds.",
+    "multibaggerExtension": "Persistent positive estimate-price divergence may identify firms undergoing structural reacceleration before full price discovery."
+  },
+  "universe": {
+    "US": {
+      "definition": "S&P500 point-in-time",
+      "normalizationScope": "same-date PIT universe"
+    }
+  },
+  "observation": {
+    "collectionFrequency": "DAILY_TRADING_SESSION",
+    "evaluationFrequency": "MONTHLY_LAST_TRADING_SESSION",
+    "estimateProvider": "FMP",
+    "estimatePeriod": "ANNUAL",
+    "forwardFiscalPeriods": "ALL_AVAILABLE"
+  },
+  "lookbacks": {
+    "7D": {"targetCalendarDays": 7, "toleranceDays": 2},
+    "30D": {"targetCalendarDays": 30, "toleranceDays": 5},
+    "60D": {"targetCalendarDays": 60, "toleranceDays": 7},
+    "90D": {"targetCalendarDays": 90, "toleranceDays": 10}
+  },
+  "primarySignal": "FPD_C_RZ",
+  "primaryHorizonsSessions": [65, 130, 252],
+  "secondaryHorizonsSessions": [504],
+  "primaryMetrics": [
+    "meanExcessReturn",
+    "medianExcessReturn",
+    "spearmanIC",
+    "D10_D1",
+    "decileMonotonicity"
+  ],
+  "outlierPolicy": {
+    "raw": "NO_WINSORIZATION",
+    "primaryNormalization": "MEDIAN_MAD_ROBUST_Z",
+    "secondaryNormalization": "PERCENTILE_RANK",
+    "robustnessWinsorization": "1_99_ONLY"
+  },
+  "missingPolicy": {
+    "forwardFill": false,
+    "zeroFill": false,
+    "compositeRequiresBothEPSAndRevenue": true
+  },
+  "integrityPolicy": {
+    "fiscalPeriodMatch": "EXACT_PERIOD_END",
+    "rawSnapshotsImmutable": true,
+    "splitWindowEPSRevision": "EXCLUDE_AND_FLAG",
+    "earningsWindow": "KEEP_AND_FLAG",
+    "actualLagDaysStored": true,
+    "annualizeRevision": false
+  },
+  "optimizationPolicy": {
+    "thresholdMining": false,
+    "sectorExclusionOptimization": false,
+    "sizeExclusionOptimization": false,
+    "analystCoverageCutoffOptimization": false
+  },
+  "governance": {
+    "discoveryValidationOOSSeparated": true,
+    "failedHypothesesRetained": true,
+    "frozenDefinitionsNotEditable": true,
+    "exploratoryFindingsRequireNewVersion": true
+  }
+}

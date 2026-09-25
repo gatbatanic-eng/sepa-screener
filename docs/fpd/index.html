@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Golden Code · FPD Research</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0b0f17;--card:#131a26;--line:#263146;--text:#eef3fb;--muted:#9aa8bd;--accent:#7dd3fc;--good:#86efac;--warn:#fde68a}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,sans-serif}
+    main{max-width:1240px;margin:auto;padding:28px 20px 60px} h1{margin:0;font-size:28px} h2{font-size:17px;margin:0 0 12px}
+    .sub{color:var(--muted);margin:6px 0 24px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:18px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}.k{color:var(--muted);font-size:12px}.v{font-size:20px;font-weight:700;margin-top:4px}
+    .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:14px;overflow:auto}
+    table{width:100%;border-collapse:collapse;white-space:nowrap}th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:right}
+    th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left} th{color:var(--muted);font-weight:600}
+    .pill{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid var(--line);font-size:12px}.good{color:var(--good)}.warn{color:var(--warn)}
+    .note{color:var(--muted);font-size:12px;margin-top:10px}.empty{color:var(--muted);padding:18px 0}.mono{font-variant-numeric:tabular-nums}
+  </style>
+</head>
+<body>
+<main>
+  <h1>FPD Research</h1>
+  <div class="sub">Forward estimate revision × price divergence · <span id="researchId">FPD-v0.2.1</span> · 연구용, 매수/매도 신호 아님</div>
+
+  <div class="grid">
+    <div class="card"><div class="k">상태</div><div class="v" id="status">불러오는 중</div></div>
+    <div class="card"><div class="k">PIT 스냅샷</div><div class="v mono" id="snapshots">—</div></div>
+    <div class="card"><div class="k">최근 관측일</div><div class="v mono" id="latestDate">—</div></div>
+    <div class="card"><div class="k">R30 준비</div><div class="v" id="r30">—</div></div>
+    <div class="card"><div class="k">월말 Cohort</div><div class="v mono" id="cohorts">—</div></div>
+    <div class="card"><div class="k">현재 FPD 계산 가능</div><div class="v mono" id="available">—</div></div>
+  </div>
+
+  <section class="panel">
+    <h2>현재 F1 Cross-section</h2>
+    <div id="signalEmpty" class="empty">PIT 데이터 축적 중입니다. R30 비교 시점이 생기면 자동으로 표시됩니다.</div>
+    <table id="signalTable" hidden>
+      <thead><tr><th>Ticker</th><th>Period</th><th>EPS R30</th><th>Revenue R30</th><th>PV30</th><th>RS30</th><th>RA-B EPS</th><th>FPD</th><th>Rank</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="note">Primary: F1 · FPD_C_RZ = RV Composite Robust-Z − PV30 Robust-Z. EPS와 Revenue revision이 모두 있어야 계산합니다.</div>
+  </section>
+
+  <section class="panel">
+    <h2>검증 현황</h2>
+    <table>
+      <thead><tr><th>Horizon</th><th>완료 Cohort</th><th>Mean IC</th><th>Positive IC</th><th>D10-D1</th><th>Decile Monotonicity</th></tr></thead>
+      <tbody id="backtestBody"></tbody>
+    </table>
+    <div class="note">월말 cohort는 다음 달 데이터가 관측된 뒤에만 확정됩니다. 65/130/252/504 거래세션 outcome이 완료되기 전에는 통계값을 만들지 않습니다.</div>
+  </section>
+
+  <section class="panel">
+    <h2>데이터 무결성 규칙</h2>
+    <div class="note">동일 fiscal period만 비교 · raw overwrite 금지 · forward-fill 금지 · split 포함 구간 EPS/PV/RS 제외 · earnings event는 제외하지 않고 flag · threshold mining 금지 · FPD-v0.2.1 정의 hash로 추적</div>
+  </section>
+</main>
+<script>
+const base='../data/fpd/';
+const get=async name=>{try{const r=await fetch(base+name,{cache:'no-store'});return r.ok?await r.json():null}catch{return null}};
+const pct=v=>v==null?'—':(v*100).toFixed(2)+'%';
+const num=(v,d=3)=>v==null?'—':Number(v).toFixed(d);
+Promise.all([
+  get('research_status_us.json'),
+  get('signal_latest_us.json'),
+  get('monthly_research_us.json'),
+  get('backtest_summary_us.json')
+]).then(([status,signal,monthly,backtest])=>{
+  const $=id=>document.getElementById(id);
+  $('status').textContent=status?.status||'NO DATA';
+  $('snapshots').textContent=status?.rawSnapshots??0;
+  $('latestDate').textContent=status?.latestSnapshotDate||'—';
+  $('r30').innerHTML=status?.R30PotentiallyAvailable?'<span class="good">READY</span>':'<span class="warn">축적 중</span>';
+  $('cohorts').textContent=monthly?.confirmedMonthlyCohorts??0;
+  $('available').textContent=signal?.manifest?.fpdAvailable??0;
+  if(signal?.researchId)$('researchId').textContent=signal.researchId;
+
+  const rows=(signal?.rows||[]).filter(x=>x.fpdCRZ!=null).sort((a,b)=>b.fpdCRZ-a.fpdCRZ);
+  if(rows.length){
+    $('signalEmpty').hidden=true;$('signalTable').hidden=false;
+    const body=$('signalTable').querySelector('tbody');
+    rows.slice(0,100).forEach(x=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML='<td>'+x.ticker+'</td><td>'+x.periodEnd+'</td><td>'+pct(x.epsR30)+'</td><td>'+pct(x.revenueR30)+'</td><td>'+pct(x.pv30)+'</td><td>'+pct(x.rs30)+'</td><td>'+num(x.epsRA_B)+'</td><td>'+num(x.fpdCRZ)+'</td><td>'+num(x.fpdCRZRank,2)+'</td>';
+      body.appendChild(tr);
+    });
+  }
+
+  const bt=$('backtestBody');
+  ['65','130','252','504'].forEach(h=>{
+    const x=backtest?.horizons?.[h]||{};
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td>'+h+' sessions</td><td>'+(x.completedCohorts??0)+'</td><td>'+num(x.meanIC)+'</td><td>'+pct(x.positiveICRate)+'</td><td>'+pct(x.meanD10_D1)+'</td><td>'+num(x.decileMonotonicity)+'</td>';
+    bt.appendChild(tr);
+  });
+});
+</script>
+</body>
+</html>

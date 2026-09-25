@@ -1,0 +1,127 @@
+name: FPD PIT Revision Daily
+
+on:
+  pull_request:
+    paths:
+      - "fpd/**"
+      - "docs/fpd/**"
+      - "research/fpd/registry/**"
+      - "tests/test_fpd_*.py"
+      - ".github/workflows/fpd_daily.yml"
+  schedule:
+    # US close after the existing SEPA US run. 22:30 UTC is after regular close
+    # in both US daylight and standard time.
+    - cron: "30 22 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  # PR validation must not queue behind production SEPA runs or dozens of
+  # superseded commits. Scheduled/master collection still shares the production
+  # SEPA lock so two writers cannot push research state concurrently.
+  group: ${{ github.event_name == 'pull_request' && format('fpd-pr-{0}', github.event.pull_request.number) || 'sepa-screening' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Verify frozen FPD infrastructure
+        run: python -m unittest discover -s tests -p "test_fpd_*.py" -v
+      - name: Verify FMP analyst-estimates entitlement and schema
+        env:
+          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+        run: |
+          if [ -z "$FMP_API_KEY" ]; then
+            echo "FMP_API_KEY is unavailable; live provider contract check skipped."
+            exit 0
+          fi
+          python - <<'PY'
+          from fpd.prices import latest_sepa_us_session
+          from fpd.provider_fmp import fetch_annual_estimates, fetch_recent_splits
+          from fpd.quality import validate_symbol_rows
+          rows = fetch_annual_estimates("AAPL", sleep_seconds=0)
+          if not rows:
+              raise SystemExit("FMP analyst-estimates returned no AAPL annual rows")
+          errors = validate_symbol_rows(rows)
+          if errors:
+              raise SystemExit(f"FMP provider contract failed: {errors}")
+          split_rows = fetch_recent_splits(latest_sepa_us_session())
+          print(f"FMP contract OK: {len(rows)} annual rows; split calendar rows={len(split_rows)}")
+          PY
+
+  collect:
+    if: github.event_name != 'pull_request'
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Detect FMP key
+        id: fmp
+        env:
+          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+        run: |
+          if [ -n "$FMP_API_KEY" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "FPD collection skipped: repository secret FMP_API_KEY is not configured."
+          fi
+      - name: Collect immutable US PIT estimate snapshot
+        if: steps.fmp.outputs.available == 'true'
+        env:
+          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+        run: python -m fpd.collector
+      - name: Build derived revision and FPD research views
+        if: steps.fmp.outputs.available == 'true'
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from fpd.derive import derive_latest_us
+          from fpd.cross_section import publish_primary_f1
+          from fpd.research import publish_research_status, rebuild_monthly_research
+          from fpd.analysis import publish_backtest_summary
+
+          derived = derive_latest_us()
+          result = publish_primary_f1(derived)
+          readiness = publish_research_status("us")
+          monthly = rebuild_monthly_research("us")
+          summary = publish_backtest_summary(
+              monthly,
+              Path("docs/data/fpd/backtest_summary_us.json"),
+          )
+
+          print(f"FPD F1 rows={result['manifest']['eligibleF1']} available={result['manifest']['fpdAvailable']}")
+          print(f"FPD snapshots={readiness['rawSnapshots']} confirmed_monthly_cohorts={monthly['confirmedMonthlyCohorts']}")
+          for horizon, stats in summary["horizons"].items():
+              print(
+                  f"FPD horizon={horizon} completed={stats['completedCohorts']} "
+                  f"meanIC={stats['meanIC']} D10-D1={stats['meanD10_D1']}"
+              )
+          PY
+      - name: Commit PIT research observation
+        if: steps.fmp.outputs.available == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f research/fpd/raw/ docs/data/fpd/
+          git diff --cached --quiet || git commit -m "Record FPD PIT estimate snapshot ($(date -u +%Y-%m-%d))"
+          git pull --rebase origin master
+          git push
