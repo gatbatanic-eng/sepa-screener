@@ -7,7 +7,7 @@ import os
 from datetime import date, datetime, timezone
 from pathlib import Path
 
-from . import COLLECTOR_VERSION, RESEARCH_ID, SCHEMA_VERSION
+from . import COLLECTOR_VERSION, DATASET_ID, RESEARCH_COHORT, RESEARCH_ID, SCHEMA_VERSION
 from .config import load_research_definition, research_definition_hash
 from .prices import benchmark_close_for_session, latest_sepa_us_session
 from .provider_fmp import FMPError, fetch_annual_estimates, fetch_recent_earnings, fetch_recent_splits
@@ -126,6 +126,8 @@ def collect_us(session_date: date, api_key: str | None = None) -> dict:
     payload = {
         "schemaVersion": SCHEMA_VERSION,
         "researchId": RESEARCH_ID,
+        "datasetId": DATASET_ID,
+        "researchCohort": RESEARCH_COHORT,
         "researchDefinitionHash": research_definition_hash(definition),
         "collectorVersion": COLLECTOR_VERSION,
         "snapshotDate": session_date.isoformat(),
@@ -157,6 +159,8 @@ def collect_us(session_date: date, api_key: str | None = None) -> dict:
     latest = {
         "schemaVersion": SCHEMA_VERSION,
         "researchId": RESEARCH_ID,
+        "datasetId": DATASET_ID,
+        "researchCohort": RESEARCH_COHORT,
         "snapshotDate": session_date.isoformat(),
         "recordedAt": recorded_at,
         "market": "US",
