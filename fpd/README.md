@@ -24,7 +24,8 @@ This package implements the point-in-time estimate-revision research pipeline fo
 7. `research.py` confirms monthly cohorts only after the next month begins.
 8. `outcomes.py` tracks 65/130/252/504-session forward outcomes.
 9. `backtest.py` provides IC, rank deciles, monotonicity, and block-bootstrap primitives.
-10. `governance.py` protects frozen experiment definitions.
+10. `analysis.py` automatically aggregates completed monthly cohorts into horizon-level IC, D10-D1, monotonicity, and block-bootstrap validation summaries.
+11. `governance.py` protects frozen experiment definitions.
 
 ## Integrity rules
 
@@ -71,6 +72,7 @@ docs/data/fpd/derived_latest_us.json
 docs/data/fpd/signal_latest_us.json
 docs/data/fpd/research_status_us.json
 docs/data/fpd/monthly_research_us.json
+docs/data/fpd/backtest_summary_us.json
 ```
 
 The absence of R30/RA/FPD during the initial accumulation period is expected and must not be filled with proxy history.
