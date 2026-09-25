@@ -49,6 +49,7 @@ def fetch_annual_estimates(
     api_key: str | None = None,
     limit: int = 10,
     sleep_seconds: float = 0.22,
+    retries: int = 3,
 ) -> list[dict]:
     key = _api_key(api_key)
     params = urllib.parse.urlencode({
@@ -58,7 +59,7 @@ def fetch_annual_estimates(
         "limit": limit,
         "apikey": key,
     })
-    payload = _request_json(f"{ESTIMATES_URL}?{params}")
+    payload = _request_json(f"{ESTIMATES_URL}?{params}", retries=retries)
     if sleep_seconds:
         time.sleep(sleep_seconds)
     return [normalize_fmp_estimate(symbol, row) for row in payload]
