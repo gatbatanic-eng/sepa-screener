@@ -13,7 +13,9 @@ class FPDFreeModeTests(unittest.TestCase):
     def test_frozen_panel_is_exactly_28(self):
         panel = load_frozen_free_panel()
         self.assertEqual(len(panel["symbols"]), 28)
-        self.assertEqual(panel["panelId"], "FPD-FREE-SANDBOX-28-20260925")\n        self.assertIn("AAPL", panel["symbols"])\n        self.assertIn("NVDA", panel["symbols"])
+        self.assertEqual(panel["panelId"], "FPD-FREE-SANDBOX-28-20260925")
+        self.assertIn("AAPL", panel["symbols"])
+        self.assertIn("NVDA", panel["symbols"])
 
     def test_panel_intersection_does_not_replace_missing_names(self):
         panel = {
