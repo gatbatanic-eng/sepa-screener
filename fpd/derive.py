@@ -46,7 +46,38 @@ def _estimate_history(prior_snapshots: Iterable[dict], ticker: str, period_end: 
     return history
 
 
-def _feature_for_horizon(current: dict, history: list[dict], current_date: date, spec: dict) -> dict:
+def _snapshot_by_date(prior_snapshots: Iterable[dict]) -> dict[str, dict]:
+    return {
+        str(snapshot.get("snapshotDate")): snapshot
+        for snapshot in prior_snapshots
+        if snapshot.get("snapshotDate")
+    }
+
+
+def _positive(value) -> float | None:
+    try:
+        out = float(value)
+        return out if out > 0 else None
+    except (TypeError, ValueError):
+        return None
+
+
+def _simple_return(current, previous) -> float | None:
+    current, previous = _positive(current), _positive(previous)
+    if current is None or previous is None:
+        return None
+    return current / previous - 1.0
+
+
+def _feature_for_horizon(
+    ticker: str,
+    current: dict,
+    history: list[dict],
+    current_snapshot: dict,
+    prior_by_date: dict[str, dict],
+    current_date: date,
+    spec: dict,
+) -> dict:
     target = int(spec["targetCalendarDays"])
     tolerance = int(spec["toleranceDays"])
     prior = closest_observation(history, current_date, current["periodEnd"], target, tolerance)
@@ -59,9 +90,13 @@ def _feature_for_horizon(current: dict, history: list[dict], current_date: date,
         "revenueRevisionRaw": None,
         "epsCoverageChange": None,
         "revenueCoverageChange": None,
+        "priceReturnRaw": None,
+        "benchmarkReturnRaw": None,
+        "relativeStrengthRaw": None,
     }
     if prior is None:
         return base
+
     previous_date = date.fromisoformat(prior["snapshotDate"])
     base["actualLagDays"] = (current_date - previous_date).days
 
@@ -71,6 +106,18 @@ def _feature_for_horizon(current: dict, history: list[dict], current_date: date,
     base["revenueRevisionRaw"] = pct_revision(rev_now.get("avg"), rev_prev.get("avg"))
     base["epsCoverageChange"] = coverage_change(eps_now.get("analysts"), eps_prev.get("analysts"))
     base["revenueCoverageChange"] = coverage_change(rev_now.get("analysts"), rev_prev.get("analysts"))
+
+    prior_snapshot = prior_by_date.get(prior["snapshotDate"], {})
+    current_close = current_snapshot.get("universe", {}).get(ticker, {}).get("close")
+    prior_close = prior_snapshot.get("universe", {}).get(ticker, {}).get("close")
+    current_benchmark = current_snapshot.get("benchmark", {}).get("close")
+    prior_benchmark = prior_snapshot.get("benchmark", {}).get("close")
+    price_return = _simple_return(current_close, prior_close)
+    benchmark_return = _simple_return(current_benchmark, prior_benchmark)
+    base["priceReturnRaw"] = price_return
+    base["benchmarkReturnRaw"] = benchmark_return
+    if price_return is not None and benchmark_return is not None:
+        base["relativeStrengthRaw"] = price_return - benchmark_return
     return base
 
 
@@ -78,6 +125,7 @@ def derive_snapshot(current_snapshot: dict, prior_snapshots: list[dict]) -> dict
     definition = load_research_definition()
     current_date = date.fromisoformat(current_snapshot["snapshotDate"])
     lookbacks = definition["lookbacks"]
+    prior_by_date = _snapshot_by_date(prior_snapshots)
     symbols: dict[str, list[dict]] = {}
 
     for ticker, rows in current_snapshot.get("observations", {}).items():
@@ -99,7 +147,15 @@ def derive_snapshot(current_snapshot: dict, prior_snapshots: list[dict]) -> dict
                 "lookbacks": {},
             }
             for label, spec in lookbacks.items():
-                item["lookbacks"][label] = _feature_for_horizon(row, history, current_date, spec)
+                item["lookbacks"][label] = _feature_for_horizon(
+                    ticker,
+                    row,
+                    history,
+                    current_snapshot,
+                    prior_by_date,
+                    current_date,
+                    spec,
+                )
             derived_rows.append(item)
         symbols[ticker] = derived_rows
 
@@ -110,11 +166,12 @@ def derive_snapshot(current_snapshot: dict, prior_snapshots: list[dict]) -> dict
         "snapshotDate": current_snapshot["snapshotDate"],
         "market": current_snapshot["market"],
         "sourceRawHash": current_snapshot.get("providerNormalizedPayloadHash"),
+        "benchmark": current_snapshot.get("benchmark"),
         "symbols": symbols,
         "notes": {
-            "crossSectionalNormalization": "NOT_YET_APPLIED",
-            "fpdSignal": "NOT_YET_APPLIED",
-            "priceVelocity": "NOT_YET_APPLIED"
+            "priceWindowAlignment": "SAME_PRIOR_SNAPSHOT_AS_REVISION",
+            "crossSectionalNormalization": "SEPARATE_STEP",
+            "fpdSignal": "SEPARATE_STEP"
         }
     }
 
