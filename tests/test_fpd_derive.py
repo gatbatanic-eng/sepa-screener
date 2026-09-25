@@ -10,6 +10,12 @@ class FPDDeriveTests(unittest.TestCase):
             "snapshotDate": "2026-09-25",
             "market": "US",
             "providerNormalizedPayloadHash": "abc",
+            "events": {
+                "splitCoverage": {"ABC": True},
+                "splits": {"ABC": []},
+                "earningsCalendarStatus": "UNAVAILABLE_FREE_MODE",
+                "earnings": {"ABC": []},
+            },
             "benchmark": {"symbol": "US500", "priceAsOf": "2026-09-25", "close": 105.0},
             "universe": {
                 "ABC": {"close": 110.0, "priceAsOf": "2026-09-25", "inUniverse": True}
@@ -73,9 +79,11 @@ class FPDDeriveTests(unittest.TestCase):
     def test_split_window_excludes_eps_price_and_rs_but_keeps_revenue(self):
         current = self.current()
         current["events"] = {
+            "splitCoverage": {"ABC": True},
             "splits": {
-                "ABC": [{"date": "2026-09-10", "numerator": 10, "denominator": 1}]
+                "ABC": [{"date": "2026-09-10", "ratio": 10.0, "source": "YAHOO_FINANCE"}]
             },
+            "earningsCalendarStatus": "OK",
             "earnings": {
                 "ABC": [{"date": "2026-09-12", "epsActual": 1.0}]
             },
@@ -89,6 +97,17 @@ class FPDDeriveTests(unittest.TestCase):
         self.assertIsNone(r30["priceReturnRaw"])
         self.assertIsNone(r30["relativeStrengthRaw"])
         self.assertAlmostEqual(r30["benchmarkReturnRaw"], 0.05)
+
+    def test_unknown_split_coverage_is_conservatively_excluded(self):
+        current = self.current()
+        current["events"]["splitCoverage"]["ABC"] = False
+        result = derive_snapshot(current, [self.prior("2026-08-26")])
+        r30 = result["symbols"]["ABC"][0]["lookbacks"]["30D"]
+        self.assertFalse(r30["splitCoverageKnown"])
+        self.assertIsNone(r30["epsRevisionRaw"])
+        self.assertAlmostEqual(r30["revenueRevisionRaw"], 0.1)
+        self.assertIsNone(r30["priceReturnRaw"])
+        self.assertIsNone(r30["relativeStrengthRaw"])
 
     def test_rollover_not_spliced(self):
         result = derive_snapshot(self.current(), [self.prior("2026-08-26", period_end="2026-12-31")])
