@@ -94,6 +94,8 @@ def score_primary_f1(derived: dict) -> dict:
     return {
         "schemaVersion": 1,
         "researchId": derived.get("researchId"),
+        "datasetId": derived.get("datasetId"),
+        "researchCohort": derived.get("researchCohort"),
         "researchDefinitionHash": derived.get("researchDefinitionHash"),
         "snapshotDate": derived.get("snapshotDate"),
         "market": derived.get("market"),
