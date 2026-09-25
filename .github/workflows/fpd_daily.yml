@@ -8,14 +8,6 @@ on:
       - "research/fpd/registry/**"
       - "tests/test_fpd_*.py"
       - ".github/workflows/fpd_daily.yml"
-  push:
-    branches: ["master"]
-    paths:
-      - "fpd/**"
-      - "docs/fpd/**"
-      - "research/fpd/registry/**"
-      - "tests/test_fpd_*.py"
-      - ".github/workflows/fpd_daily.yml"
   schedule:
     # US close after the existing SEPA US run. 22:30 UTC is after regular close
     # in both US daylight and standard time.
@@ -27,7 +19,7 @@ permissions:
 
 concurrency:
   # PR validation must not queue behind production SEPA runs or dozens of
-  # superseded commits. Scheduled/master collection still shares the production
+  # superseded commits. Scheduled/manual collection still shares the production
   # SEPA lock so two writers cannot push research state concurrently.
   group: ${{ github.event_name == 'pull_request' && format('fpd-pr-{0}', github.event.pull_request.number) || 'sepa-screening' }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
