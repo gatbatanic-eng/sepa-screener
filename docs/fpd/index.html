@@ -66,6 +66,7 @@
 </main>
 <script>
 const base='../data/fpd/';
+const EXPECTED_DATASET='FPD-PIT-US-SANDBOX-2026';
 const get=async name=>{try{const r=await fetch(base+name,{cache:'no-store'});return r.ok?await r.json():null}catch{return null}};
 const pct=v=>v==null?'—':(v*100).toFixed(2)+'%';
 const num=(v,d=3)=>v==null?'—':Number(v).toFixed(d);
@@ -76,15 +77,21 @@ Promise.all([
   get('backtest_summary_us.json')
 ]).then(([status,signal,monthly,backtest])=>{
   const $=id=>document.getElementById(id);
-  $('status').textContent=status?.status||'NO DATA';
+  const activeSignal = signal?.datasetId===EXPECTED_DATASET ? signal : null;
+  const activeData = !!activeSignal;
+  if(!activeData){
+    status=null; monthly=null; backtest=null;
+  }
+  $('status').textContent=activeData?(status?.status||'COLLECTING'):'CLEAN DATASET 대기';
   $('snapshots').textContent=status?.rawSnapshots??0;
   $('latestDate').textContent=status?.latestSnapshotDate||'—';
   $('r30').innerHTML=status?.R30PotentiallyAvailable?'<span class="good">READY</span>':'<span class="warn">축적 중</span>';
   $('cohorts').textContent=monthly?.confirmedMonthlyCohorts??0;
-  $('available').textContent=signal?.manifest?.fpdAvailable??0;
-  if(signal?.researchId)$('researchId').textContent=signal.researchId;
+  $('available').textContent=activeSignal?.manifest?.fpdAvailable??0;
+  if(activeSignal?.researchId)$('researchId').textContent=activeSignal.researchId;
+  if(!activeData)$('signalEmpty').textContent='28종목 clean sandbox의 첫 PIT 수집을 기다리는 중입니다. 이전 220종목 파일럿 데이터는 화면과 검증에서 제외됩니다.';
 
-  const rows=(signal?.rows||[]).filter(x=>x.fpdCRZ!=null).sort((a,b)=>b.fpdCRZ-a.fpdCRZ);
+  const rows=(activeSignal?.rows||[]).filter(x=>x.fpdCRZ!=null).sort((a,b)=>b.fpdCRZ-a.fpdCRZ);
   if(rows.length){
     $('signalEmpty').hidden=true;$('signalTable').hidden=false;
     const body=$('signalTable').querySelector('tbody');
