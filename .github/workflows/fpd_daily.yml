@@ -18,8 +18,11 @@ permissions:
   contents: write
 
 concurrency:
-  group: sepa-screening
-  cancel-in-progress: false
+  # PR validation must not queue behind production SEPA runs or dozens of
+  # superseded commits. Scheduled/master collection still shares the production
+  # SEPA lock so two writers cannot push research state concurrently.
+  group: ${{ github.event_name == 'pull_request' && format('fpd-pr-{0}', github.event.pull_request.number) || 'sepa-screening' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test:
