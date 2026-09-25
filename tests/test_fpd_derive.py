@@ -56,6 +56,20 @@ class FPDDeriveTests(unittest.TestCase):
         self.assertAlmostEqual(r30["benchmarkReturnRaw"], 0.05)
         self.assertAlmostEqual(r30["relativeStrengthRaw"], 0.05)
 
+    def test_revision_acceleration_a_and_b(self):
+        result = derive_snapshot(
+            self.current(),
+            [
+                self.prior("2026-07-27", eps=9.0, revenue=90.0),
+                self.prior("2026-08-26", eps=10.0, revenue=100.0),
+            ],
+        )
+        acc = result["symbols"]["ABC"][0]["acceleration"]
+        self.assertAlmostEqual(acc["epsRA_A"], 0.1 - ((11.0 / 9.0 - 1.0) / 2.0))
+        self.assertAlmostEqual(acc["epsPrevious30Leg"], 10.0 / 9.0 - 1.0)
+        self.assertAlmostEqual(acc["epsRA_B"], 0.1 - (10.0 / 9.0 - 1.0))
+        self.assertAlmostEqual(acc["revenueRA_B"], 0.1 - (100.0 / 90.0 - 1.0))
+
     def test_rollover_not_spliced(self):
         result = derive_snapshot(self.current(), [self.prior("2026-08-26", period_end="2026-12-31")])
         r30 = result["symbols"]["ABC"][0]["lookbacks"]["30D"]
