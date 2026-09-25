@@ -1,19 +1,13 @@
 from __future__ import annotations
 
 from datetime import date
+from pathlib import Path
 
 from .features import percentile_rank, robust_z
+from .storage import write_replaceable_json
 
-
-def _future_ordinal(period_end: str | None, snapshot_date: str) -> int | None:
-    if not period_end:
-        return None
-    try:
-        p = date.fromisoformat(period_end)
-        s = date.fromisoformat(snapshot_date)
-    except ValueError:
-        return None
-    return 1 if p > s else None
+ROOT = Path(__file__).resolve().parents[1]
+PUBLIC_ROOT = ROOT / "docs" / "data" / "fpd"
 
 
 def select_forward_rows(derived: dict) -> dict[str, list[dict]]:
@@ -47,14 +41,12 @@ def score_primary_f1(derived: dict) -> dict:
     Missing EPS or revenue revision keeps RV composite and FPD missing.
     """
     labelled = select_forward_rows(derived)
-    tickers = []
     rows = []
     for ticker, items in labelled.items():
         row = next((x for x in items if x.get("forwardOrdinal") == "F1"), None)
         if row is None:
             continue
         l30 = row.get("lookbacks", {}).get("30D", {})
-        tickers.append(ticker)
         rows.append({
             "ticker": ticker,
             "periodEnd": row.get("periodEnd"),
@@ -63,6 +55,11 @@ def score_primary_f1(derived: dict) -> dict:
             "revenueR30": l30.get("revenueRevisionRaw"),
             "pv30": l30.get("priceReturnRaw"),
             "rs30": l30.get("relativeStrengthRaw"),
+            "actualLagDays": l30.get("actualLagDays"),
+            "epsAnalysts": row.get("epsAnalysts"),
+            "revenueAnalysts": row.get("revenueAnalysts"),
+            "epsDispersion": row.get("epsDispersion"),
+            "revenueDispersion": row.get("revenueDispersion"),
         })
 
     eps_z = robust_z([r["epsR30"] for r in rows])
@@ -89,6 +86,7 @@ def score_primary_f1(derived: dict) -> dict:
     for i, row in enumerate(rows):
         row["fpdCRZRank"] = fpd_rank[i]
 
+    available = sum(row.get("fpdCRZ") is not None for row in rows)
     return {
         "schemaVersion": 1,
         "researchId": derived.get("researchId"),
@@ -96,5 +94,16 @@ def score_primary_f1(derived: dict) -> dict:
         "snapshotDate": derived.get("snapshotDate"),
         "market": derived.get("market"),
         "signalFiscalSelector": "F1",
+        "status": "READY" if available else "DATA_ACCUMULATING",
+        "manifest": {
+            "eligibleF1": len(rows),
+            "fpdAvailable": available,
+        },
         "rows": rows,
     }
+
+
+def publish_primary_f1(derived: dict) -> dict:
+    result = score_primary_f1(derived)
+    write_replaceable_json(PUBLIC_ROOT / "signal_latest_us.json", result)
+    return result
