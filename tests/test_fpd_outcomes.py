@@ -43,6 +43,30 @@ class FPDOutcomeTests(unittest.TestCase):
         self.assertEqual(result["status"], "unavailable")
         self.assertEqual(result["reason"], "PRICE_OR_BENCHMARK_MISSING")
 
+    def test_market_session_horizon_ignores_missing_intermediate_raw_snapshot(self):
+        snaps = [
+            snapshot("2027-01-04", 100, 100),
+            snapshot("2027-01-06", 110, 102),
+        ]
+        sessions = ["2027-01-04", "2027-01-05", "2027-01-06"]
+        result = forward_outcome(snaps, 0, "ABC", 2, market_sessions=sessions)
+        self.assertEqual(result["status"], "complete")
+        self.assertEqual(result["targetDate"], "2027-01-06")
+        self.assertAlmostEqual(result["returnRaw"], 0.10)
+        self.assertEqual(result["pathStatus"], "missing")
+        self.assertIsNone(result["maxUpRaw"])
+
+    def test_missing_exact_target_snapshot_is_unavailable_not_shifted(self):
+        snaps = [
+            snapshot("2027-01-04", 100, 100),
+            snapshot("2027-01-07", 120, 103),
+        ]
+        sessions = ["2027-01-04", "2027-01-05", "2027-01-06", "2027-01-07"]
+        result = forward_outcome(snaps, 0, "ABC", 2, market_sessions=sessions)
+        self.assertEqual(result["status"], "unavailable")
+        self.assertEqual(result["targetDate"], "2027-01-06")
+        self.assertEqual(result["reason"], "RAW_SNAPSHOT_MISSING_AT_TARGET")
+
     def test_attach_outcomes_preserves_signal(self):
         signal = {
             "researchId": "FPD-v0.2.1",
