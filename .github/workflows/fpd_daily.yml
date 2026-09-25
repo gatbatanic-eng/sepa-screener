@@ -89,15 +89,28 @@ jobs:
         if: steps.fmp.outputs.available == 'true'
         run: |
           python - <<'PY'
+          from pathlib import Path
           from fpd.derive import derive_latest_us
           from fpd.cross_section import publish_primary_f1
           from fpd.research import publish_research_status, rebuild_monthly_research
+          from fpd.analysis import publish_backtest_summary
+
           derived = derive_latest_us()
           result = publish_primary_f1(derived)
           readiness = publish_research_status("us")
           monthly = rebuild_monthly_research("us")
+          summary = publish_backtest_summary(
+              monthly,
+              Path("docs/data/fpd/backtest_summary_us.json"),
+          )
+
           print(f"FPD F1 rows={result['manifest']['eligibleF1']} available={result['manifest']['fpdAvailable']}")
           print(f"FPD snapshots={readiness['rawSnapshots']} confirmed_monthly_cohorts={monthly['confirmedMonthlyCohorts']}")
+          for horizon, stats in summary["horizons"].items():
+              print(
+                  f"FPD horizon={horizon} completed={stats['completedCohorts']} "
+                  f"meanIC={stats['meanIC']} D10-D1={stats['meanD10_D1']}"
+              )
           PY
       - name: Commit PIT research observation
         if: steps.fmp.outputs.available == 'true'
