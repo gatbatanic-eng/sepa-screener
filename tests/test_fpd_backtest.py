@@ -44,6 +44,25 @@ class FPDBacktestTests(unittest.TestCase):
             ["2027-01-29", "2027-02-26"],
         )
 
+    def test_missing_true_month_end_is_not_backfilled(self):
+        snapshots = [
+            "2027-01-28",
+            "2027-02-01",
+            "2027-02-26",
+            "2027-03-01",
+        ]
+        sessions = [
+            "2027-01-28",
+            "2027-01-29",
+            "2027-02-01",
+            "2027-02-26",
+            "2027-03-01",
+        ]
+        self.assertEqual(
+            confirmed_monthly_cohort_dates(snapshots, sessions),
+            ["2027-02-26"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
