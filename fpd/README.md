@@ -76,3 +76,14 @@ docs/data/fpd/backtest_summary_us.json
 ```
 
 The absence of R30/RA/FPD during the initial accumulation period is expected and must not be filled with proxy history.
+
+
+## Research dashboard
+
+A standalone research-only page is published at:
+
+```
+docs/fpd/index.html
+```
+
+It reads only the public FPD JSON views and deliberately shows `DATA_ACCUMULATING` / empty validation metrics until the required PIT history and forward outcomes exist. It is not a production buy/sell surface.
