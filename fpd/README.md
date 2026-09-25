@@ -2,45 +2,59 @@
 
 This package implements the point-in-time estimate-revision research pipeline for Golden Code. It is intentionally separate from production SEPA screening.
 
-## Active frozen definition
+## Active free sandbox definition
 
-- Research model: `FPD-v0.2.2-FREE`
-- Dataset: `FPD-PIT-US-FREE-2026`
-- Frozen panel: `FPD-FREE-US-220-20260925`
-- Collector: `PIT-Collector-v0.2-free`
+- Research model: `FPD-v0.2.3-FREE-SANDBOX`
+- Dataset: `FPD-PIT-US-SANDBOX-2026`
+- Frozen panel: `FPD-FREE-SANDBOX-28-20260925`
+- Collector: `PIT-Collector-v0.3-free-sandbox`
 - Schema: `1`
-- Primary fiscal selector: **F1**, the nearest annual fiscal period whose `periodEnd` is strictly after the snapshot date
+- Primary fiscal selector: **F1**
 - Revision history always compares the exact same `periodEnd`
+- Revision/cohort/outcome history is restricted to the exact same `datasetId`
 
-The full-S&P500 `FPD-v0.2.1` protocol is retained unchanged. The free variant was created before the first successful PIT estimate snapshot because FMP's free plan allows 250 calls/day and paid corporate calendars are unavailable.
+## Why the panel is 28 symbols
 
-## Free-tier design
+The first live free-tier scan on the 2026-09-24 US session tested 220 frozen symbols. FMP returned analyst estimates for 27 and HTTP 402 for the other 193. AAPL was separately verified by the live contract check.
 
-- 220 symbols are frozen from the 2026-09-25 Golden Code US universe.
-- Selection uses only a deterministic ticker-string hash; no price, momentum, valuation, sector, or performance variable is used.
-- The panel is **not** re-optimized or performance-replaced.
-- FMP usage: 1 AAPL live contract check + at most 220 estimate calls = 221 calls/day.
-- Estimate requests use `retries=1` in collection so retries cannot silently consume the reserved free quota.
-- 29 calls/day are deliberately left unused.
-- FMP paid split/earnings calendars are not used.
-- Split events are collected with a Yahoo Finance multi-ticker actions download.
-- If Yahoo split coverage is unknown for a symbol, EPS revision/PV/RS are conservatively excluded while revenue revision remains available.
-- Earnings-window diagnostics are unavailable in the free variant.
+That 220-symbol run is retained as an **entitlement-discovery pilot** and excluded from primary sandbox validation. The active 28-symbol panel contains only symbols whose analyst-estimates access was empirically verified. Membership was selected by provider entitlement only; no return, momentum, valuation, sector, or future-outcome information was used.
+
+The full-S&P500 `FPD-v0.2.1` protocol and the earlier 220-symbol free experiment remain preserved separately.
+
+## Scope
+
+The active free dataset is a **sandbox proof of concept**, not full-universe validation. It is suitable for:
+
+- validating PIT estimate collection
+- validating revision/price divergence calculations
+- building prospective history
+- testing directional IC and operational stability
+
+It is not sufficient by itself to claim that FPD generalizes across the full S&P500.
+
+## Free-tier operation
+
+- FMP: 1 AAPL contract check + at most 28 panel estimate calls/day
+- FMP estimate collection uses `retries=1`
+- paid FMP corporate calendars are not used
+- split events come from Yahoo Finance multi-ticker actions
+- unknown split coverage conservatively excludes EPS/PV/RS
+- earnings-window diagnostics are unavailable in this free variant
+- no performance-based panel replacement is allowed
 
 ## Pipeline
 
 1. `provider_fmp.py` fetches annual analyst estimates.
-2. `provider_yahoo.py` fetches split actions without consuming FMP quota.
-3. `normalize.py` maps provider fields to the internal schema.
-4. `quality.py` rejects malformed provider rows.
-5. `collector.py` records one immutable snapshot for the latest closed SEPA US session.
-6. `derive.py` creates R7/R30/R60/R90, coverage, dispersion, price/benchmark returns, RS, and RA.
-7. `cross_section.py` computes robust-Z F1 RV and FPD within the same-date free panel.
-8. `research.py` confirms monthly cohorts only on the actual SEPA US month-end session.
-9. `outcomes.py` tracks 65/130/252/504 actual-market-session forward outcomes.
-10. `backtest.py` provides IC, rank deciles, monotonicity, and block-bootstrap primitives.
-11. `analysis.py` aggregates completed cohorts into validation summaries.
-12. `governance.py` protects frozen experiment definitions.
+2. `provider_yahoo.py` fetches split actions without FMP quota.
+3. `normalize.py` normalizes estimate fields.
+4. `quality.py` validates provider rows.
+5. `collector.py` writes one immutable PIT snapshot for the latest closed SEPA US session.
+6. `derive.py` computes R7/R30/R60/R90, coverage, dispersion, price/benchmark returns, RS, and RA using same-dataset history only.
+7. `cross_section.py` computes robust-Z F1 RV and FPD.
+8. `research.py` builds same-dataset month-end cohorts.
+9. `outcomes.py` tracks 65/130/252/504 actual-market-session outcomes.
+10. `backtest.py` and `analysis.py` provide IC and diagnostic portfolio summaries.
+11. `governance.py` protects frozen definitions.
 
 ## Integrity rules
 
@@ -48,24 +62,24 @@ The full-S&P500 `FPD-v0.2.1` protocol is retained unchanged. The free variant wa
 - no forward-fill or zero-fill
 - no epsilon adjustment for EPS
 - no fiscal-period splicing
-- no paid-FMP calendar dependency in free mode
+- no cross-dataset revision history
+- no paid-FMP calendar dependency
 - unknown split coverage excludes EPS/PV/RS rather than guessing
-- price and benchmark returns use the same prior snapshot selected for the revision window
 - raw variables are not winsorized
-- primary cross-sectional normalization uses median/MAD robust Z
 - FPD composite requires both EPS and revenue revisions
-- missing/delisted prices remain explicit unavailable outcomes
 - research signals do not change production buy/sell classifications
 
 ## Required secret
-
-GitHub Actions expects:
 
 ```
 FMP_API_KEY
 ```
 
-The free key is sufficient for the active 220-stock panel design. The workflow performs a single AAPL analyst-estimates contract check before collection.
+The current free key has been verified successfully for the AAPL analyst-estimates contract.
+
+## Schedule
+
+The workflow runs after the US close on weekdays and can also be launched manually from GitHub Actions. Code merges do not automatically consume another daily FMP collection.
 
 ## Tests
 
@@ -73,7 +87,7 @@ The free key is sufficient for the active 220-stock panel design. The workflow p
 python -m unittest discover -s tests -p "test_fpd_*.py" -v
 ```
 
-## Generated data
+## Data
 
 Immutable raw snapshots:
 
@@ -81,7 +95,7 @@ Immutable raw snapshots:
 research/fpd/raw/us/YYYY/MM/YYYY-MM-DD.json.gz
 ```
 
-Public rebuildable views:
+Public views:
 
 ```
 docs/data/fpd/latest_us.json
@@ -92,14 +106,12 @@ docs/data/fpd/monthly_research_us.json
 docs/data/fpd/backtest_summary_us.json
 ```
 
-The absence of R30/RA/FPD during the initial accumulation period is expected and must not be filled with proxy history.
+The absence of R30/RA/FPD during the initial accumulation period is expected. Proxy history must not be inserted.
 
 ## Research dashboard
-
-A standalone research-only page is published at:
 
 ```
 docs/fpd/index.html
 ```
 
-It deliberately shows data-accumulation / empty validation states until the required PIT history and forward outcomes exist. It is not a production buy/sell surface.
+This page is research-only and not a production buy/sell surface.
