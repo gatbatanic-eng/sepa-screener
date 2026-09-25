@@ -168,6 +168,8 @@ def attach_outcomes(
     return {
         "schemaVersion": 1,
         "researchId": signal.get("researchId"),
+        "datasetId": signal.get("datasetId"),
+        "researchCohort": signal.get("researchCohort"),
         "researchDefinitionHash": signal.get("researchDefinitionHash"),
         "snapshotDate": signal.get("snapshotDate"),
         "market": signal.get("market"),
