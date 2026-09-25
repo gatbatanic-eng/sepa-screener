@@ -3,7 +3,7 @@ name: SEPA Trend Template Daily Screening
 on:
   push:
     branches: [master]
-    paths: ["screening.py", "ai_tracker.py", "tests/test_ai_tracker.py", "range_screen.py", "tests/test_range_screen.py", "aggressive_screen.py", "tests/test_aggressive_screen.py", "research_tracker.py", "tests/test_research_tracker.py", ".gitignore", "personas/**", "tests/test_personas.py", "tests/test_personas_data.py", ".github/workflows/daily_screen.yml"]
+    paths: ["screening.py", "ai_tracker.py", "tests/test_ai_tracker.py", "range_screen.py", "tests/test_range_screen.py", "aggressive_screen.py", "tests/test_aggressive_screen.py", "research_tracker.py", "tests/test_research_tracker.py", "generate_dashboard.py", ".gitignore", "personas/**", "tests/test_personas.py", "tests/test_personas_data.py", ".github/workflows/daily_screen.yml"]
   schedule:
     # 한국: 평일(월~금) 20:00 KST = UTC 11:00
     - cron: "0 11 * * 1-5"
