@@ -50,3 +50,24 @@ def benchmark_close_for_session(session_date: date) -> dict:
         "priceAsOf": session_date.isoformat(),
         "close": matches[-1],
     }
+
+
+def sepa_us_sessions(path: Path = US_RESEARCH_STATE) -> list[str]:
+    """Return unique closed US trading sessions already recorded by SEPA research."""
+    state = json.loads(path.read_text(encoding="utf-8"))
+    sessions: set[str] = set()
+    for item in state.get("days", {}).values():
+        value = item.get("date") if isinstance(item, dict) else None
+        if not value:
+            continue
+        try:
+            sessions.add(date.fromisoformat(str(value)).isoformat())
+        except ValueError:
+            continue
+    latest = state.get("latestSession")
+    if latest:
+        try:
+            sessions.add(date.fromisoformat(str(latest)).isoformat())
+        except ValueError:
+            pass
+    return sorted(sessions)
