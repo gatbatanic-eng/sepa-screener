@@ -60,6 +60,10 @@ def score_primary_f1(derived: dict) -> dict:
             "revenueAnalysts": row.get("revenueAnalysts"),
             "epsDispersion": row.get("epsDispersion"),
             "revenueDispersion": row.get("revenueDispersion"),
+            "epsRA_A": row.get("acceleration", {}).get("epsRA_A"),
+            "revenueRA_A": row.get("acceleration", {}).get("revenueRA_A"),
+            "epsRA_B": row.get("acceleration", {}).get("epsRA_B"),
+            "revenueRA_B": row.get("acceleration", {}).get("revenueRA_B"),
         })
 
     eps_z = robust_z([r["epsR30"] for r in rows])
