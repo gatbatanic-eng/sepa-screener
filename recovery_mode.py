@@ -767,7 +767,7 @@ th:nth-child(3),td:nth-child(3),th:nth-child(5),td:nth-child(5){{text-align:left
 .execution dt{{color:#555}} .execution dd{{margin:0;text-align:right;font-weight:600}}
 @media(max-width:700px){{.wrap{{padding:10px}} table{{font-size:12px}} th,td{{padding:8px 4px}}}}
 </style></head><body><div class="wrap">
-<div class="nav"><a href="../">SEPA 추세템플릿</a><a href="../range_vrebound/">RANGE-MR · V-REBOUND</a><a href="../screener/">멀티팩터</a><a href="../technical/">기술적 신호</a><a href="../momentum/">모멘텀 전략</a><a class="here" href="./">계좌복구 공격매매</a></div>
+<div class="nav"><a href="../">SEPA 추세템플릿</a><a href="../range_vrebound/">RANGE-MR · V-REBOUND</a><a href="../screener/">멀티팩터</a><a href="../technical/">기술적 신호</a><a href="../momentum/">모멘텀 전략</a><a class="here" href="./">계좌복구 공격매매</a><a href="../fpd/">FPD 연구</a></div>
 <div class="card"><h1>계좌복구 공격매매 모드 v2</h1><div class="sub">KR {snapshot['sessions'].get('kr') or '-'} · US {snapshot['sessions'].get('us') or '-'}</div></div>
 <div class="card"><a href="personas/">여섯 관점으로 종목 검토하기 →</a><p class="note">자동 5개 · 보유 점검 3개 · 직접 선택 2개. 근거·우려·판단 변경 조건을 확인하세요.</p></div>
 <div class="card"><div class="hero">오늘 실행 우선순위: {entry_text}</div>
