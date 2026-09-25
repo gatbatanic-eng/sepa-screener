@@ -5,7 +5,7 @@ on:
     paths:
       - "fpd/**"
       - "research/fpd/registry/**"
-      - "tests/test_fpd_core.py"
+      - "tests/test_fpd_*.py"
       - ".github/workflows/fpd_daily.yml"
   schedule:
     # US close after the existing SEPA US run. 22:30 UTC is after regular close
@@ -83,6 +83,16 @@ jobs:
         env:
           FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
         run: python -m fpd.collector
+      - name: Build derived revision and FPD research views
+        if: steps.fmp.outputs.available == 'true'
+        run: |
+          python - <<'PY'
+          from fpd.derive import derive_latest_us
+          from fpd.cross_section import publish_primary_f1
+          derived = derive_latest_us()
+          result = publish_primary_f1(derived)
+          print(f"FPD F1 rows={result['manifest']['eligibleF1']} available={result['manifest']['fpdAvailable']}")
+          PY
       - name: Commit PIT research observation
         if: steps.fmp.outputs.available == 'true'
         run: |
