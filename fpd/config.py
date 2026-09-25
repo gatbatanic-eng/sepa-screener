@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-RESEARCH_DEFINITION_PATH = ROOT / "research" / "fpd" / "registry" / "fpd_v0.2.2_free.json"
+RESEARCH_DEFINITION_PATH = ROOT / "research" / "fpd" / "registry" / "fpd_v0.2.3_free_sandbox.json"
 
 
 def canonical_json(value) -> str:

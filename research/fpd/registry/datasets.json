@@ -26,7 +26,7 @@
       "panelId": "FPD-FREE-US-220-20260925",
       "sourceType": "PROSPECTIVE_SELF_COLLECTED",
       "startDate": "2026-09-25",
-      "status": "LOCKED_OOS",
+      "status": "PILOT_ENTITLEMENT_DISCOVERY_EXHAUSTED",
       "allowedUse": [
         "PROSPECTIVE_VALIDATION",
         "SHADOW_MONITORING"
@@ -37,7 +37,31 @@
         "SUBGROUP_OPTIMIZATION",
         "PERFORMANCE_BASED_PANEL_REPLACEMENT"
       ],
-      "note": "Free-tier FMP dataset. Daily same-date panel is preserved within the 250-call budget. The full S&P500 FPD-v0.2.1 protocol remains separate and uncollected."
+      "note": "2026-09-24 pilot used solely to discover FMP free-tier analyst-estimates symbol entitlement. 27 of 220 symbols were accessible; this dataset is excluded from the clean sandbox OOS revision history.",
+      "excludedFromPrimaryValidation": true
+    },
+    {
+      "datasetId": "FPD-PIT-US-SANDBOX-2026",
+      "market": "US",
+      "universe": "FMP free analyst-estimates supported-symbol sandbox",
+      "panelId": "FPD-FREE-SANDBOX-28-20260925",
+      "sourceType": "PROSPECTIVE_SELF_COLLECTED",
+      "startDate": "2026-09-25",
+      "status": "LOCKED_OOS",
+      "researchScope": "SANDBOX_POC_NOT_FULL_UNIVERSE_VALIDATION",
+      "allowedUse": [
+        "PROSPECTIVE_PIPELINE_VALIDATION",
+        "DIRECTIONAL_SIGNAL_RESEARCH",
+        "SHADOW_MONITORING"
+      ],
+      "prohibitedUse": [
+        "THRESHOLD_TUNING",
+        "FEATURE_SELECTION",
+        "SUBGROUP_OPTIMIZATION",
+        "PERFORMANCE_BASED_PANEL_REPLACEMENT",
+        "FULL_UNIVERSE_GENERALIZATION"
+      ],
+      "note": "Panel membership is based only on verified FMP free-tier endpoint access. The prior 220-symbol entitlement-discovery snapshot is quarantined and cannot enter this dataset's revision history."
     }
   ]
 }

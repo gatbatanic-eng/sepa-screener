@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date
 from pathlib import Path
 
+from . import DATASET_ID
 from .backtest import confirmed_monthly_cohort_dates
 from .cross_section import score_primary_f1
 from .derive import derive_snapshot, raw_snapshot_paths
@@ -14,8 +15,16 @@ ROOT = Path(__file__).resolve().parents[1]
 PUBLIC_ROOT = ROOT / "docs" / "data" / "fpd"
 
 
-def load_all_raw(market: str = "us") -> list[dict]:
+def load_all_raw(
+    market: str = "us",
+    dataset_id: str | None = DATASET_ID,
+) -> list[dict]:
     snapshots = [read_gzip_json(path) for path in raw_snapshot_paths(market)]
+    if dataset_id is not None:
+        snapshots = [
+            snapshot for snapshot in snapshots
+            if snapshot.get("datasetId") == dataset_id
+        ]
     return sorted(snapshots, key=lambda x: x["snapshotDate"])
 
 
@@ -45,6 +54,7 @@ def rebuild_monthly_research(market: str = "us") -> dict:
     status = {
         "schemaVersion": 1,
         "market": market.upper(),
+        "datasetId": DATASET_ID,
         "rawSnapshots": len(snapshots),
         "firstSnapshotDate": snapshots[0]["snapshotDate"] if snapshots else None,
         "latestSnapshotDate": latest["snapshotDate"] if latest else None,
@@ -61,6 +71,7 @@ def research_readiness(market: str = "us") -> dict:
     if not snapshots:
         return {
             "status": "NO_DATA",
+            "datasetId": DATASET_ID,
             "rawSnapshots": 0,
             "firstSnapshotDate": None,
             "latestSnapshotDate": None,
@@ -70,6 +81,7 @@ def research_readiness(market: str = "us") -> dict:
     calendar_span = (latest - first).days
     return {
         "status": "COLLECTING",
+        "datasetId": DATASET_ID,
         "rawSnapshots": len(snapshots),
         "firstSnapshotDate": first.isoformat(),
         "latestSnapshotDate": latest.isoformat(),

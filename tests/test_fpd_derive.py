@@ -1,6 +1,8 @@
 import unittest
+from datetime import date
+from unittest.mock import patch
 
-from fpd.derive import derive_snapshot
+from fpd.derive import derive_snapshot, load_prior_snapshots
 
 
 class FPDDeriveTests(unittest.TestCase):
@@ -127,6 +129,20 @@ class FPDDeriveTests(unittest.TestCase):
         current["observations"]["ABC"][0]["eps"]["avg"] = 0.06
         result = derive_snapshot(current, [self.prior("2026-08-26", eps=0.01)])
         self.assertAlmostEqual(result["symbols"]["ABC"][0]["lookbacks"]["30D"]["epsRevisionRaw"], 5.0)
+
+    def test_prior_snapshots_are_filtered_by_dataset_id(self):
+        snapshots = [
+            {"snapshotDate": "2026-08-26", "datasetId": "OLD"},
+            {"snapshotDate": "2026-08-27", "datasetId": "ACTIVE"},
+        ]
+        with patch("fpd.derive.raw_snapshot_paths", return_value=["a", "b"]),              patch("fpd.derive.read_gzip_json", side_effect=snapshots):
+            result = load_prior_snapshots(
+                date(2026, 9, 25),
+                "us",
+                dataset_id="ACTIVE",
+            )
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["datasetId"], "ACTIVE")
 
 
 if __name__ == "__main__":

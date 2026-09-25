@@ -4,6 +4,7 @@ from datetime import date
 from pathlib import Path
 from typing import Iterable
 
+from . import DATASET_ID
 from .config import load_research_definition, research_definition_hash
 from .features import closest_observation, coverage_change, dispersion, pct_revision
 from .storage import read_gzip_json, write_replaceable_json
@@ -18,10 +19,16 @@ def raw_snapshot_paths(market: str = "us") -> list[Path]:
     return sorted((RAW_ROOT / market.lower()).glob("*/*/*.json.gz"))
 
 
-def load_prior_snapshots(current_date: date, market: str = "us") -> list[dict]:
+def load_prior_snapshots(
+    current_date: date,
+    market: str = "us",
+    dataset_id: str | None = None,
+) -> list[dict]:
     out = []
     for path in raw_snapshot_paths(market):
         snapshot = read_gzip_json(path)
+        if dataset_id is not None and snapshot.get("datasetId") != dataset_id:
+            continue
         try:
             observed = date.fromisoformat(snapshot["snapshotDate"])
         except (KeyError, ValueError):
@@ -251,11 +258,20 @@ def derive_snapshot(current_snapshot: dict, prior_snapshots: list[dict]) -> dict
 
 def derive_latest_us() -> dict:
     paths = raw_snapshot_paths("us")
-    if not paths:
-        raise RuntimeError("No US FPD raw snapshots available")
-    current = read_gzip_json(paths[-1])
+    current = None
+    for path in reversed(paths):
+        candidate = read_gzip_json(path)
+        if candidate.get("datasetId") == DATASET_ID:
+            current = candidate
+            break
+    if current is None:
+        raise RuntimeError(f"No US FPD raw snapshots available for active dataset {DATASET_ID}")
     current_date = date.fromisoformat(current["snapshotDate"])
-    prior = load_prior_snapshots(current_date, "us")
+    prior = load_prior_snapshots(
+        current_date,
+        "us",
+        dataset_id=current.get("datasetId"),
+    )
     result = derive_snapshot(current, prior)
     out = DERIVED_ROOT / "us" / f"{current_date.year:04d}" / f"{current_date.month:02d}" / f"{current_date.isoformat()}.json"
     write_replaceable_json(out, result)

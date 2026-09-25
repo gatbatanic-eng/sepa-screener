@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_US_SOURCE = ROOT / "docs" / "data" / "latest_us.json"
-FREE_PANEL_PATH = ROOT / "research" / "fpd" / "registry" / "free_panel_us_20260925.json"
+FREE_PANEL_PATH = ROOT / "research" / "fpd" / "registry" / "free_sandbox_panel_us_20260925.json"
 
 
 def load_us_pit_universe(path: Path = DEFAULT_US_SOURCE) -> list[dict]:
@@ -36,8 +36,8 @@ def load_frozen_free_panel(path: Path = FREE_PANEL_PATH) -> dict:
     symbols = panel.get("symbols")
     if not isinstance(symbols, list) or not symbols:
         raise RuntimeError("FPD free panel registry is empty")
-    if len(symbols) > 220:
-        raise RuntimeError("FPD free panel exceeds frozen 220-symbol call budget")
+    if len(symbols) > 28:
+        raise RuntimeError("FPD free panel exceeds frozen 28-symbol sandbox budget")
     return panel
 
 
