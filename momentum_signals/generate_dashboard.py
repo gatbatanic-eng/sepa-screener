@@ -84,6 +84,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   <a href="../technical/index.html">기술적 신호</a>
   <a class="here" href="../momentum/index.html">모멘텀 전략</a>
   <a href="../recovery/index.html">계좌복구 공격매매</a>
+  <a href="../fpd/index.html">FPD 연구</a>
 </nav>
 <main>
   <div class="banner" id="equityBanner" style="display:none">
