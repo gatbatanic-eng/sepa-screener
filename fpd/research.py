@@ -7,6 +7,7 @@ from .backtest import confirmed_monthly_cohort_dates
 from .cross_section import score_primary_f1
 from .derive import derive_snapshot, raw_snapshot_paths
 from .outcomes import attach_outcomes
+from .prices import sepa_us_sessions
 from .storage import read_gzip_json, write_replaceable_json
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -21,7 +22,8 @@ def load_all_raw(market: str = "us") -> list[dict]:
 def rebuild_monthly_research(market: str = "us") -> dict:
     snapshots = load_all_raw(market)
     dates = [x["snapshotDate"] for x in snapshots]
-    confirmed = set(confirmed_monthly_cohort_dates(dates))
+    market_sessions = sepa_us_sessions() if market.lower() == "us" else dates
+    confirmed = set(confirmed_monthly_cohort_dates(dates, market_sessions))
     cohorts = []
 
     for i, current in enumerate(snapshots):
@@ -29,7 +31,12 @@ def rebuild_monthly_research(market: str = "us") -> dict:
             continue
         derived = derive_snapshot(current, snapshots[:i])
         signal = score_primary_f1(derived)
-        cohort = attach_outcomes(signal, snapshots, i)
+        cohort = attach_outcomes(
+            signal,
+            snapshots,
+            i,
+            market_sessions=market_sessions,
+        )
         cohort["status"] = signal.get("status")
         cohort["manifest"] = signal.get("manifest")
         cohorts.append(cohort)
@@ -42,6 +49,7 @@ def rebuild_monthly_research(market: str = "us") -> dict:
         "firstSnapshotDate": snapshots[0]["snapshotDate"] if snapshots else None,
         "latestSnapshotDate": latest["snapshotDate"] if latest else None,
         "confirmedMonthlyCohorts": len(cohorts),
+        "marketSessionsObserved": len(market_sessions),
         "cohorts": cohorts,
     }
     write_replaceable_json(PUBLIC_ROOT / f"monthly_research_{market.lower()}.json", status)
