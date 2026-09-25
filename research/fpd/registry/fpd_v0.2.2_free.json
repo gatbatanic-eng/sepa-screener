@@ -12,12 +12,14 @@
   },
   "universe": {
     "US": {
-      "source": "S&P500 point-in-time",
-      "researchPanel": "DETERMINISTIC_HASH_SAMPLE",
+      "source": "Golden Code US inUniverse snapshot on 2026-09-25",
+      "researchPanel": "FPD-FREE-US-220-20260925",
       "panelSize": 220,
-      "panelSeed": "FPD-FREE-PANEL-v1",
-      "normalizationScope": "same-date selected panel",
-      "selectionUsesMarketOrSignalData": false
+      "selection": "FNV1A32_LOWEST_HASH on ticker string with seed FPD-FREE-PANEL-v1|",
+      "panelRegistry": "research/fpd/registry/free_panel_us_20260925.json",
+      "normalizationScope": "same-date frozen panel members with valid observations",
+      "selectionUsesMarketOrSignalData": false,
+      "replacementPolicy": "NO_PERFORMANCE_BASED_REPLACEMENT"
     }
   },
   "freeMode": {
@@ -37,18 +39,38 @@
   },
   "signalFiscalSelector": {
     "primary": "F1",
-    "secondary": ["F2"],
+    "secondary": [
+      "F2"
+    ],
     "definition": "For each snapshot, sort annual fiscal periods with periodEnd strictly after snapshotDate. The nearest future period is F1, the next is F2. Revision history always matches the exact same periodEnd."
   },
   "lookbacks": {
-    "7D": {"targetCalendarDays": 7, "toleranceDays": 2},
-    "30D": {"targetCalendarDays": 30, "toleranceDays": 5},
-    "60D": {"targetCalendarDays": 60, "toleranceDays": 7},
-    "90D": {"targetCalendarDays": 90, "toleranceDays": 10}
+    "7D": {
+      "targetCalendarDays": 7,
+      "toleranceDays": 2
+    },
+    "30D": {
+      "targetCalendarDays": 30,
+      "toleranceDays": 5
+    },
+    "60D": {
+      "targetCalendarDays": 60,
+      "toleranceDays": 7
+    },
+    "90D": {
+      "targetCalendarDays": 90,
+      "toleranceDays": 10
+    }
   },
   "primarySignal": "FPD_C_RZ",
-  "primaryHorizonsSessions": [65, 130, 252],
-  "secondaryHorizonsSessions": [504],
+  "primaryHorizonsSessions": [
+    65,
+    130,
+    252
+  ],
+  "secondaryHorizonsSessions": [
+    504
+  ],
   "primaryMetrics": [
     "meanExcessReturn",
     "medianExcessReturn",
