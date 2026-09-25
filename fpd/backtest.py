@@ -98,20 +98,35 @@ def block_bootstrap_mean_ci(
     }
 
 
-def confirmed_monthly_cohort_dates(snapshot_dates: Iterable[str]) -> list[str]:
-    """Return month-end observations only after a later month proves the month closed.
+def confirmed_monthly_cohort_dates(
+    snapshot_dates: Iterable[str],
+    market_session_dates: Iterable[str] | None = None,
+) -> list[str]:
+    """Return only true month-end market sessions with an exact FPD snapshot.
 
-    The latest observed month remains unconfirmed, preventing a mid-month run from
-    being mislabeled as the primary monthly cohort.
+    When an authoritative market-session calendar is supplied, a missed FPD
+    collection on the actual month-end is *not* replaced by an earlier snapshot.
+    The latest market month remains unconfirmed until a later month is observed.
     """
-    parsed = sorted({date.fromisoformat(str(value)) for value in snapshot_dates})
-    if not parsed:
+    snapshots = {date.fromisoformat(str(value)) for value in snapshot_dates}
+    if not snapshots:
         return []
+
+    basis_values = market_session_dates if market_session_dates is not None else snapshot_dates
+    basis = sorted({date.fromisoformat(str(value)) for value in basis_values})
+    if not basis:
+        return []
+
     months: dict[tuple[int, int], list[date]] = defaultdict(list)
-    for day in parsed:
+    for day in basis:
         months[(day.year, day.month)].append(day)
     ordered = sorted(months)
     if len(ordered) < 2:
         return []
-    confirmed = ordered[:-1]
-    return [max(months[key]).isoformat() for key in confirmed]
+
+    result = []
+    for key in ordered[:-1]:
+        month_end = max(months[key])
+        if month_end in snapshots:
+            result.append(month_end.isoformat())
+    return result
