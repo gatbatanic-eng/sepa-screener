@@ -1,0 +1,119 @@
+{
+  "researchId": "FPD-v0.2.3-FREE-SANDBOX",
+  "family": "FPD",
+  "status": "FROZEN",
+  "frozenAt": "2026-09-25",
+  "parentResearchId": "FPD-v0.2.2-FREE",
+  "researchScope": "SANDBOX_POC_NOT_FULL_UNIVERSE_VALIDATION",
+  "changeReason": "The first live free-tier entitlement scan showed that analyst-estimates is restricted to a supported-symbol sandbox. This version freezes only empirically accessible symbols plus the AAPL contract-check symbol. Selection uses provider entitlement only, not performance or outcomes.",
+  "hypothesis": {
+    "primary": "Within the FMP free supported-symbol sandbox, forward estimate revisions relative to price can be collected prospectively and evaluated without look-ahead.",
+    "mechanism": "Same FPD information-diffusion mechanism as the full-universe protocol; this sandbox version validates pipeline mechanics and directional behavior, not full-universe generalizability."
+  },
+  "universe": {
+    "US": {
+      "source": "FMP free analyst-estimates supported-symbol sandbox",
+      "researchPanel": "FPD-FREE-SANDBOX-28-20260925",
+      "panelSize": 28,
+      "panelRegistry": "research/fpd/registry/free_sandbox_panel_us_20260925.json",
+      "normalizationScope": "same-date supported sandbox panel with valid observations",
+      "selectionUsesMarketOrSignalData": false,
+      "selectionUsesOutcomeData": false,
+      "replacementPolicy": "NO_PERFORMANCE_BASED_REPLACEMENT"
+    }
+  },
+  "freeMode": {
+    "fmpDailyCallBudget": 250,
+    "contractCheckCalls": 1,
+    "panelEstimateCallsMax": 28,
+    "reservedCalls": 221,
+    "splitSource": "YAHOO_FINANCE_ACTIONS",
+    "earningsCalendar": "UNAVAILABLE_FREE_MODE"
+  },
+  "observation": {
+    "collectionFrequency": "DAILY_TRADING_SESSION",
+    "evaluationFrequency": "MONTHLY_LAST_TRADING_SESSION",
+    "estimateProvider": "FMP",
+    "estimatePeriod": "ANNUAL",
+    "forwardFiscalPeriods": "ALL_AVAILABLE"
+  },
+  "signalFiscalSelector": {
+    "primary": "F1",
+    "secondary": [
+      "F2"
+    ],
+    "definition": "Nearest future annual period is F1; exact periodEnd matching is mandatory."
+  },
+  "lookbacks": {
+    "7D": {
+      "targetCalendarDays": 7,
+      "toleranceDays": 2
+    },
+    "30D": {
+      "targetCalendarDays": 30,
+      "toleranceDays": 5
+    },
+    "60D": {
+      "targetCalendarDays": 60,
+      "toleranceDays": 7
+    },
+    "90D": {
+      "targetCalendarDays": 90,
+      "toleranceDays": 10
+    }
+  },
+  "primarySignal": "FPD_C_RZ",
+  "primaryHorizonsSessions": [
+    65,
+    130,
+    252
+  ],
+  "secondaryHorizonsSessions": [
+    504
+  ],
+  "primaryMetrics": [
+    "spearmanIC",
+    "meanExcessReturn",
+    "medianExcessReturn"
+  ],
+  "diagnosticMetrics": [
+    "D10_D1",
+    "decileMonotonicity"
+  ],
+  "smallPanelWarning": "Decile portfolio statistics are diagnostic only because the free sandbox panel is small.",
+  "outlierPolicy": {
+    "raw": "NO_WINSORIZATION",
+    "primaryNormalization": "MEDIAN_MAD_ROBUST_Z",
+    "secondaryNormalization": "PERCENTILE_RANK",
+    "robustnessWinsorization": "1_99_ONLY"
+  },
+  "missingPolicy": {
+    "forwardFill": false,
+    "zeroFill": false,
+    "compositeRequiresBothEPSAndRevenue": true,
+    "unknownSplitCoverage": "EXCLUDE_EPS_PV_RS"
+  },
+  "integrityPolicy": {
+    "fiscalPeriodMatch": "EXACT_PERIOD_END",
+    "rawSnapshotsImmutable": true,
+    "datasetIsolation": "SAME_DATASET_ID_ONLY",
+    "priceWindowAlignment": "SAME_PRIOR_SNAPSHOT_AS_REVISION",
+    "splitWindowEPSRevision": "EXCLUDE_AND_FLAG",
+    "earningsWindow": "NOT_AVAILABLE_IN_FREE_MODE",
+    "actualLagDaysStored": true,
+    "annualizeRevision": false
+  },
+  "optimizationPolicy": {
+    "thresholdMining": false,
+    "sectorExclusionOptimization": false,
+    "sizeExclusionOptimization": false,
+    "analystCoverageCutoffOptimization": false,
+    "panelReselectionOptimization": false
+  },
+  "governance": {
+    "discoveryValidationOOSSeparated": true,
+    "failedHypothesesRetained": true,
+    "frozenDefinitionsNotEditable": true,
+    "exploratoryFindingsRequireNewVersion": true
+  }
+}
