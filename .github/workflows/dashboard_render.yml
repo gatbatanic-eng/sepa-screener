@@ -1,0 +1,44 @@
+name: Golden Code Dashboard Render
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "generate_dashboard.py"
+      - ".github/workflows/dashboard_render.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: golden-code-dashboard-render
+  cancel-in-progress: true
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Render dashboard from stored snapshots
+        run: python generate_dashboard.py
+
+      - name: Commit rendered dashboard
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/index.html
+          git diff --cached --quiet || git commit -m "메인 대시보드 렌더 갱신 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+          git pull --rebase origin master
+          git push
