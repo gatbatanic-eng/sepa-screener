@@ -56,6 +56,7 @@ def normalize_fmp_estimate(symbol: str, row: dict) -> dict:
         "numberAnalystsEstimatedEps",
         "numberOfAnalystsEstimatedEps",
         "epsAnalystCount",
+        "numAnalystsEps",
     ))
     revenue_avg = finite(first(row, "estimatedRevenueAvg", "revenueAvg"))
     revenue_low = finite(first(row, "estimatedRevenueLow", "revenueLow"))
@@ -66,6 +67,7 @@ def normalize_fmp_estimate(symbol: str, row: dict) -> dict:
         "numberAnalystsEstimatedRevenue",
         "numberOfAnalystsEstimatedRevenue",
         "revenueAnalystCount",
+        "numAnalystsRevenue",
     ))
     return {
         "ticker": symbol,
