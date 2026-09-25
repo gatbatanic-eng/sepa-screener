@@ -10,7 +10,7 @@ from pathlib import Path
 from . import COLLECTOR_VERSION, RESEARCH_ID, SCHEMA_VERSION
 from .config import load_research_definition, research_definition_hash
 from .prices import benchmark_close_for_session, latest_sepa_us_session
-from .provider_fmp import FMPError, fetch_annual_estimates
+from .provider_fmp import FMPError, fetch_annual_estimates, fetch_recent_earnings, fetch_recent_splits
 from .quality import validate_symbol_rows
 from .storage import write_immutable_gzip_json, write_replaceable_json
 from .universe import load_us_pit_universe
@@ -53,6 +53,40 @@ def collect_us(session_date: date, api_key: str | None = None) -> dict:
     definition = load_research_definition()
     universe = load_us_pit_universe()
     benchmark = benchmark_close_for_session(session_date)
+    symbols = {item["ticker"] for item in universe}
+
+    # Split coverage is integrity-critical: a missed split can create false EPS
+    # revision and price-velocity jumps. Earnings events are diagnostic only.
+    split_rows = fetch_recent_splits(session_date, api_key=api_key)
+    split_events: dict[str, list[dict]] = {symbol: [] for symbol in symbols}
+    for event in split_rows:
+        symbol = str(event.get("symbol") or "").strip()
+        if symbol in split_events and event.get("date"):
+            split_events[symbol].append({
+                "date": str(event.get("date"))[:10],
+                "numerator": event.get("numerator"),
+                "denominator": event.get("denominator"),
+                "splitType": event.get("splitType"),
+            })
+
+    earnings_status = "OK"
+    earnings_events: dict[str, list[dict]] = {symbol: [] for symbol in symbols}
+    try:
+        earnings_rows = fetch_recent_earnings(session_date, api_key=api_key)
+        for event in earnings_rows:
+            symbol = str(event.get("symbol") or "").strip()
+            if symbol in earnings_events and event.get("date"):
+                earnings_events[symbol].append({
+                    "date": str(event.get("date"))[:10],
+                    "epsActual": event.get("epsActual"),
+                    "epsEstimated": event.get("epsEstimated"),
+                    "revenueActual": event.get("revenueActual"),
+                    "revenueEstimated": event.get("revenueEstimated"),
+                    "lastUpdated": event.get("lastUpdated"),
+                })
+    except FMPError as exc:
+        earnings_status = f"UNAVAILABLE:{exc}"
+
     recorded_at = datetime.now(timezone.utc).isoformat()
     observations: dict[str, list[dict]] = {}
     failures: dict[str, dict] = {}
@@ -99,6 +133,12 @@ def collect_us(session_date: date, api_key: str | None = None) -> dict:
         "market": "US",
         "provider": "FMP",
         "benchmark": benchmark,
+        "events": {
+            "splitCalendarStatus": "OK",
+            "earningsCalendarStatus": earnings_status,
+            "splits": split_events,
+            "earnings": earnings_events,
+        },
         "sourceCommit": os.environ.get("GITHUB_SHA"),
         "githubRunId": os.environ.get("GITHUB_RUN_ID"),
         "universe": universe_snapshot,
