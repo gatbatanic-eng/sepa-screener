@@ -1,0 +1,115 @@
+{
+  "researchId": "FPD-v0.2.2-FREE",
+  "family": "FPD",
+  "status": "FROZEN",
+  "frozenAt": "2026-09-25",
+  "parentResearchId": "FPD-v0.2.1",
+  "changeReason": "Free-tier operational research variant created before the first successful PIT estimate snapshot. The full S&P500 protocol remains frozen separately. This variant uses a deterministic daily 220-stock panel so same-date cross-sectional normalization is preserved within the free FMP call budget.",
+  "hypothesis": {
+    "primary": "Within a deterministic point-in-time S&P500 panel, stocks whose forward fundamental estimates improve faster than their prices subsequently outperform.",
+    "mechanism": "Fundamental information may diffuse into analyst estimates and market prices at different speeds.",
+    "multibaggerExtension": "Persistent positive estimate-price divergence may identify firms undergoing structural reacceleration before full price discovery."
+  },
+  "universe": {
+    "US": {
+      "source": "Golden Code US inUniverse snapshot on 2026-09-25",
+      "researchPanel": "FPD-FREE-US-220-20260925",
+      "panelSize": 220,
+      "selection": "FNV1A32_LOWEST_HASH on ticker string with seed FPD-FREE-PANEL-v1|",
+      "panelRegistry": "research/fpd/registry/free_panel_us_20260925.json",
+      "normalizationScope": "same-date frozen panel members with valid observations",
+      "selectionUsesMarketOrSignalData": false,
+      "replacementPolicy": "NO_PERFORMANCE_BASED_REPLACEMENT"
+    }
+  },
+  "freeMode": {
+    "fmpDailyCallBudget": 250,
+    "contractCheckCalls": 1,
+    "panelEstimateCallsMax": 220,
+    "reservedCalls": 29,
+    "splitSource": "YAHOO_FINANCE_ACTIONS",
+    "earningsCalendar": "UNAVAILABLE_FREE_MODE"
+  },
+  "observation": {
+    "collectionFrequency": "DAILY_TRADING_SESSION",
+    "evaluationFrequency": "MONTHLY_LAST_TRADING_SESSION",
+    "estimateProvider": "FMP",
+    "estimatePeriod": "ANNUAL",
+    "forwardFiscalPeriods": "ALL_AVAILABLE"
+  },
+  "signalFiscalSelector": {
+    "primary": "F1",
+    "secondary": [
+      "F2"
+    ],
+    "definition": "For each snapshot, sort annual fiscal periods with periodEnd strictly after snapshotDate. The nearest future period is F1, the next is F2. Revision history always matches the exact same periodEnd."
+  },
+  "lookbacks": {
+    "7D": {
+      "targetCalendarDays": 7,
+      "toleranceDays": 2
+    },
+    "30D": {
+      "targetCalendarDays": 30,
+      "toleranceDays": 5
+    },
+    "60D": {
+      "targetCalendarDays": 60,
+      "toleranceDays": 7
+    },
+    "90D": {
+      "targetCalendarDays": 90,
+      "toleranceDays": 10
+    }
+  },
+  "primarySignal": "FPD_C_RZ",
+  "primaryHorizonsSessions": [
+    65,
+    130,
+    252
+  ],
+  "secondaryHorizonsSessions": [
+    504
+  ],
+  "primaryMetrics": [
+    "meanExcessReturn",
+    "medianExcessReturn",
+    "spearmanIC",
+    "D10_D1",
+    "decileMonotonicity"
+  ],
+  "outlierPolicy": {
+    "raw": "NO_WINSORIZATION",
+    "primaryNormalization": "MEDIAN_MAD_ROBUST_Z",
+    "secondaryNormalization": "PERCENTILE_RANK",
+    "robustnessWinsorization": "1_99_ONLY"
+  },
+  "missingPolicy": {
+    "forwardFill": false,
+    "zeroFill": false,
+    "compositeRequiresBothEPSAndRevenue": true,
+    "unknownSplitCoverage": "EXCLUDE_EPS_PV_RS"
+  },
+  "integrityPolicy": {
+    "fiscalPeriodMatch": "EXACT_PERIOD_END",
+    "rawSnapshotsImmutable": true,
+    "priceWindowAlignment": "SAME_PRIOR_SNAPSHOT_AS_REVISION",
+    "splitWindowEPSRevision": "EXCLUDE_AND_FLAG",
+    "earningsWindow": "NOT_AVAILABLE_IN_FREE_MODE",
+    "actualLagDaysStored": true,
+    "annualizeRevision": false
+  },
+  "optimizationPolicy": {
+    "thresholdMining": false,
+    "sectorExclusionOptimization": false,
+    "sizeExclusionOptimization": false,
+    "analystCoverageCutoffOptimization": false,
+    "panelReselectionOptimization": false
+  },
+  "governance": {
+    "discoveryValidationOOSSeparated": true,
+    "failedHypothesesRetained": true,
+    "frozenDefinitionsNotEditable": true,
+    "exploratoryFindingsRequireNewVersion": true
+  }
+}

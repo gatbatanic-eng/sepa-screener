@@ -18,6 +18,26 @@
         "SUBGROUP_OPTIMIZATION"
       ],
       "note": "Observing live signals does not authorize changing FPD-v0.2.1 from this dataset. Any change motivated by these observations requires a new research version and a later independent validation vintage."
+    },
+    {
+      "datasetId": "FPD-PIT-US-FREE-2026",
+      "market": "US",
+      "universe": "Frozen 220-stock panel selected from Golden Code US universe on 2026-09-25",
+      "panelId": "FPD-FREE-US-220-20260925",
+      "sourceType": "PROSPECTIVE_SELF_COLLECTED",
+      "startDate": "2026-09-25",
+      "status": "LOCKED_OOS",
+      "allowedUse": [
+        "PROSPECTIVE_VALIDATION",
+        "SHADOW_MONITORING"
+      ],
+      "prohibitedUse": [
+        "THRESHOLD_TUNING",
+        "FEATURE_SELECTION",
+        "SUBGROUP_OPTIMIZATION",
+        "PERFORMANCE_BASED_PANEL_REPLACEMENT"
+      ],
+      "note": "Free-tier FMP dataset. Daily same-date panel is preserved within the 250-call budget. The full S&P500 FPD-v0.2.1 protocol remains separate and uncollected."
     }
   ]
 }

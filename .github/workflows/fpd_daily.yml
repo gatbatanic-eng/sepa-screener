@@ -8,6 +8,14 @@ on:
       - "research/fpd/registry/**"
       - "tests/test_fpd_*.py"
       - ".github/workflows/fpd_daily.yml"
+  push:
+    branches: ["master"]
+    paths:
+      - "fpd/**"
+      - "docs/fpd/**"
+      - "research/fpd/registry/**"
+      - "tests/test_fpd_*.py"
+      - ".github/workflows/fpd_daily.yml"
   schedule:
     # US close after the existing SEPA US run. 22:30 UTC is after regular close
     # in both US daylight and standard time.
@@ -46,17 +54,15 @@ jobs:
             exit 0
           fi
           python - <<'PY'
-          from fpd.prices import latest_sepa_us_session
-          from fpd.provider_fmp import fetch_annual_estimates, fetch_recent_splits
+          from fpd.provider_fmp import fetch_annual_estimates
           from fpd.quality import validate_symbol_rows
-          rows = fetch_annual_estimates("AAPL", sleep_seconds=0)
+          rows = fetch_annual_estimates("AAPL", sleep_seconds=0, retries=1)
           if not rows:
               raise SystemExit("FMP analyst-estimates returned no AAPL annual rows")
           errors = validate_symbol_rows(rows)
           if errors:
               raise SystemExit(f"FMP provider contract failed: {errors}")
-          split_rows = fetch_recent_splits(latest_sepa_us_session())
-          print(f"FMP contract OK: {len(rows)} annual rows; split calendar rows={len(split_rows)}")
+          print(f"FMP free-tier contract OK: {len(rows)} AAPL annual rows")
           PY
 
   collect:
