@@ -159,8 +159,16 @@ MARKET_GATE_FAVORABLE = "우호적"
 MARKET_GATE_NEUTRAL = "중립"
 MARKET_GATE_UNFAVORABLE = "비우호적"
 
-# --- B. 종목별 진입 체크리스트 (8/8 통과 종목 대상, 7개 항목 중 충족 개수로 판정) ---
-# 7개 전부=GO, 5~6개=WATCH, 4개 이하=NO-GO. 임계치는 초기 임의값(추후 조정 예정).
+# --- B. 종목별 진입 체크리스트 (8/8 통과 종목 대상, 6개 항목 중 충족 개수로 판정) ---
+# 6개 전부=GO, 5개=WATCH, 4개 이하=NO-GO. 임계치는 초기 임의값(추후 조정 예정).
+# 예전에는 "피벗임박(피벗 아래)"과 "돌파(피벗 위)"를 별개 항목 2개로 세서 7/7이
+# 원리적으로 불가능했다(2주간 8/8 통과 1,056종목-일 중 동시 충족 0건 → GO 0건).
+# 지금은 이 둘을 "진입 위치/트리거" 하나로 합쳤다.
+GO_MIN_COUNT = 6
+WATCH_MIN_COUNT = 5
+GO_RECENT_BREAKOUT_DAYS = 3            # 최근 N거래일 내 v2 '확인된 돌파'가 있었으면 트리거로 인정
+GO_RECENT_BREAKOUT_DIST_MIN_PCT = -5.0  # 그 뒤 v2 피벗거리(%)가 이 범위 안이어야 "유효 구간"
+GO_RECENT_BREAKOUT_DIST_MAX_PCT = 5.0   # (하한은 pivot_near 하한과 같고, 상한은 v2 LATE 경계)
 GO_RS_THRESHOLD = 85
 GO_HIGH52W_POSITION_MIN = -0.10   # 52주 고점 대비 -10% 이내
 GO_DRYUP_MAX = 0.7                # 초기값, 조정 예정
@@ -298,8 +306,9 @@ class StockResult:
     market_gate_status: Optional[str] = None    # 우호적/중립/비우호적 (이 종목이 속한 지수 기준)
 
     # --- B. 종목별 진입 체크리스트 (8/8 통과 종목에만 계산, 참고용) ---
-    entry_checklist_count: Optional[int] = None  # 7개 항목 중 충족 개수
+    entry_checklist_count: Optional[int] = None  # 6개 항목 중 충족 개수
     entry_verdict: Optional[str] = None          # GO / WATCH / NO-GO
+    entry_verdict_reason: Optional[str] = None   # 판정 근거 (트리거 종류, v2 GO 승격 등)
 
     # --- SEPA Screener v2 ---
     avg_trading_value_20: Optional[float] = None  # 최근 20거래일 평균 거래대금 (원, KR)
@@ -1106,32 +1115,66 @@ def compute_market_gate(index_close: pd.Series) -> Optional[str]:
     return MARKET_GATE_NEUTRAL
 
 
-def compute_entry_checklist(r: "StockResult") -> tuple[Optional[int], Optional[str]]:
+def entry_trigger(r: "StockResult") -> Optional[str]:
     """
-    B. 종목별 진입 체크리스트: 8/8 통과 종목에만 계산한다(그 외에는 None, None).
-    7개 항목 중 충족 개수로 GO(7)/WATCH(5~6)/NO-GO(4이하)를 판정한다.
-    8개 조건 판정과는 무관한 참고 지표이며 매수 신호가 아니다.
+    '진입 위치/트리거' 항목: 충족하면 근거 문자열, 아니면 None.
+    (1) 피벗임박(피벗 -5%~0%) (2) 당일 돌파(피벗 위 + 거래량 1.5배) (3) v2가 '최근 N일 내
+    확인된 돌파'로 본 종목이 아직 피벗 -5%~+5% 유효 구간에 있음(돌파 직후 눌림/안착).
+    (3)은 v2 필드(recent_breakout_days_ago, pivot_distance_pct)를 읽으므로 v2 단계가
+    끝난 뒤에 호출해야 하고, v2가 없으면 (1)(2)만 본다.
+    """
+    if r.pivot_near is True:
+        return "피벗임박"
+    if r.breakout_signal is True:
+        return "당일돌파"
+    v2 = r.v2 or {}
+    days = v2.get("recent_breakout_days_ago")
+    dist = v2.get("pivot_distance_pct")
+    if (days is not None and dist is not None and days <= GO_RECENT_BREAKOUT_DAYS
+            and GO_RECENT_BREAKOUT_DIST_MIN_PCT <= dist <= GO_RECENT_BREAKOUT_DIST_MAX_PCT):
+        return f"최근돌파({int(days)}일전, 피벗{dist:+.1f}%)"
+    return None
+
+
+def compute_entry_checklist(r: "StockResult") -> tuple[Optional[int], Optional[str], Optional[str]]:
+    """
+    B. 종목별 진입 체크리스트: 8/8 통과 종목에만 계산한다(그 외에는 None, None, None).
+    6개 항목 중 충족 개수로 GO(6)/WATCH(5)/NO-GO(4이하)를 판정하고, v2 진입상태가
+    GO_BREAKOUT/GO_PULLBACK이면 (8/8 통과 종목 한정) 개수와 무관하게 GO로 승격한다.
+    8개 조건 판정과는 무관한 참고 지표이며 매수 신호가 아니다. 반환: (개수, 판정, 근거).
     """
     if r.pass_all is not True:
-        return None, None
+        return None, None, None
 
+    trigger = entry_trigger(r)
     checks = [
         r.market_gate_status == MARKET_GATE_FAVORABLE,
-        r.pivot_near is True,
+        trigger is not None,
         r.rs_percentile is not None and r.rs_percentile >= GO_RS_THRESHOLD,
         r.high52w_position is not None and r.high52w_position >= GO_HIGH52W_POSITION_MIN,
         r.dryup_ratio is not None and r.dryup_ratio <= GO_DRYUP_MAX,
-        r.breakout_signal is True,
         r.setup_score is not None and r.setup_score >= GO_SETUP_SCORE_MIN,
     ]
     count = sum(checks)
-    if count == 7:
+    if count >= GO_MIN_COUNT:
         verdict = ENTRY_VERDICT_GO
-    elif count >= 5:
+    elif count >= WATCH_MIN_COUNT:
         verdict = ENTRY_VERDICT_WATCH
     else:
         verdict = ENTRY_VERDICT_NOGO
-    return count, verdict
+
+    reason = f"트리거: {trigger}" if trigger else "트리거 없음(피벗임박/돌파/최근돌파 모두 아님)"
+    if r.market_gate_status != MARKET_GATE_FAVORABLE:
+        reason += f" | 시장게이트 {r.market_gate_status or '미확인'}"
+
+    v2_state = (r.v2 or {}).get("entry_state")
+    if v2_state in v2_states.GO_STATES:
+        if verdict != ENTRY_VERDICT_GO:
+            reason += f" | v2 {v2_state}로 GO 승격"
+        else:
+            reason += f" | v2 {v2_state}"
+        verdict = ENTRY_VERDICT_GO
+    return count, verdict, reason
 
 
 # ----------------------------------------------------------------------------
@@ -1397,10 +1440,6 @@ def run_screening(market_key: str, top_n: int, max_workers: int, limit: Optional
             r.breakout_signal = compute_breakout_signal(r)
             r.market_gate_status = market_gates.get(r.market)
 
-    # --- B. 종목별 진입 체크리스트 (레거시. 8/8 통과 종목에만) ---
-    for r in results:
-        r.entry_checklist_count, r.entry_verdict = compute_entry_checklist(r)
-
     # ========================================================================
     # SEPA Screener v2 단계 (유니버스 확정 → RS v2 → SETUP/ENTRY/EXIT → 시장국면)
     # ========================================================================
@@ -1411,6 +1450,12 @@ def run_screening(market_key: str, top_n: int, max_workers: int, limit: Optional
             logger.error("v2 단계 실패 (레거시 결과는 정상): %s", exc, exc_info=True)
     else:
         logger.info("--skip-v2: v2 단계 생략")
+
+    # --- B. 종목별 진입 체크리스트 (레거시. 8/8 통과 종목에만) ---
+    # v2 결과(최근 돌파 이력, GO 상태)를 읽으므로 v2 단계 뒤에 계산한다. v2가 실패/생략돼도
+    # r.v2가 비어 있을 뿐 (피벗임박/당일돌파 기반) 판정은 그대로 나온다.
+    for r in results:
+        r.entry_checklist_count, r.entry_verdict, r.entry_verdict_reason = compute_entry_checklist(r)
 
     frame = results_to_dataframe(results)
     if os.getenv("SEPA_RESEARCH_EXPORT") == "1":
@@ -1555,6 +1600,7 @@ def results_to_dataframe(results: list[StockResult]) -> pd.DataFrame:
             "시장게이팅_참고용": r.market_gate_status,
             "진입체크리스트_충족수_참고용": r.entry_checklist_count,
             "진입판정_참고용_매수신호아님": r.entry_verdict,
+            "진입판정사유_참고용": r.entry_verdict_reason,
             # --- v2 ---
             "20일평균거래대금": r.avg_trading_value_20,
             "유니버스포함": r.in_universe,
@@ -1815,8 +1861,10 @@ def upload_to_google_sheets(df: pd.DataFrame, run_date: str, cfg: MarketConfig) 
                    "'RS상승중'은 RS_3개월>RS_6개월>RS_12개월 여부입니다. "
                    "VCP/피벗/셋업점수/돌파/시장게이팅/진입판정은 8개 조건 판정과 무관한 진입 타이밍 참고 지표이며, "
                    "VCP는 실제 미너비니 방법론(스윙 고점/저점 기반 다중 파동 탐지)이 아닌 "
-                   "고정 4주 구간 비교 근사치입니다. '진입판정(GO/WATCH/NO-GO)'은 8/8 통과 종목에만 계산되며, "
-                   "Dry-up≤0.7·셋업점수≥7 등 임계치는 초기값으로 추후 조정 예정입니다. "
+                   "고정 4주 구간 비교 근사치입니다. '진입판정(GO/WATCH/NO-GO)'은 8/8 통과 종목에만 계산되며 "
+                   "6개 항목(시장게이트·진입위치/트리거·RS≥85·52주고점·Dry-up≤0.7·셋업점수≥7) 중 6=GO, 5=WATCH입니다. "
+                   "진입위치/트리거는 피벗임박·당일돌파·최근3일내 돌파 후 유효구간 중 하나이고, "
+                   "v2가 GO_BREAKOUT/GO_PULLBACK이면 GO로 승격합니다. 임계치는 초기값으로 추후 조정 예정입니다. "
                    "이 지표들은 전부 매수 신호가 아닙니다."]
         values = [header, list(df.columns)] + df.astype(object).where(pd.notnull(df), "").values.tolist()
 
