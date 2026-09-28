@@ -15,8 +15,9 @@ SEPA(미너비니) 추세 템플릿 1차 스크리너
 3. 개별 종목의 데이터가 부족하거나 조회에 실패하면 추정치로 채우지 않고
    "확인 불가"로 표시해 제외한다. v2 지표도 데이터 부족 시 None 을 유지한다.
 4. 8번 조건은 IBD RS가 없어 지수 대비 초과수익률 백분위로 계산한 "대체 지표"다.
-   레거시(3·6·12개월 달력일 단순평균)와 v2(21·63·126·252 거래일 가중 percentile)
-   를 **둘 다** 출력해 비교 가능하게 둔다.
+   공식 판정('전체통과')의 8번 조건은 v2(21·63·126·252 거래일 가중 percentile,
+   RS_Score>=80)이며 == v2 TREND_OK 다(v2 단계를 쓸 수 없는 실행은 예외, 아래 참고).
+   레거시(3·6·12개월 달력일 단순평균 백분위>=70)는 비교용 참고 컬럼으로 함께 출력한다.
 5. look-ahead 금지: 오늘 신호를 계산할 때 미래 봉을 쓰지 않는다.
 
 SEPA Screener v2 (sepa/ 패키지)
@@ -104,7 +105,8 @@ MA_TREND_LOOKBACK = 20
 # RS(대체 지표) 계산에 쓰는 기간 (달력일 기준, asof 방식으로 조회)
 RS_PERIODS_DAYS = {"3m": 91, "6m": 182, "12m": 365}
 
-# RS 백분위 통과 기준
+# 레거시 RS 백분위 기준 (조건8_RS랭킹70이상_대체지표 참고 컬럼용).
+# 공식 '전체통과'는 v2 RS_Score>=80(sepa/config.py rs_min)을 쓴다 — apply_v2_trend_as_pass_all().
 RS_RANK_THRESHOLD = 70
 
 # 12개월 상대수익률 계산이 가능하려면 상장/데이터 이력이 최소 이만큼은
@@ -1115,6 +1117,34 @@ def compute_market_gate(index_close: pd.Series) -> Optional[str]:
     return MARKET_GATE_NEUTRAL
 
 
+def apply_v2_trend_as_pass_all(results: list["StockResult"]) -> None:
+    """
+    '전체통과(8개AND)'와 '충족조건수'의 조건8을 레거시 RS(3/6/12개월 단순평균 백분위>=70)에서
+    v2 RS(RS_Score>=80, sepa/config.py rs_min)로 바꾼다 -> 전체통과 == v2 TREND_OK.
+    레거시 RS(조건8_RS랭킹70이상_대체지표, RS_백분위랭킹)는 비교용 참고 컬럼으로만 남긴다.
+
+    v2를 평가할 수 없는 종목(KR 유동성 유니버스 밖, v2 개별 종목 평가 실패, 데이터 부족)은
+    조건8을 판정할 수 없으므로 전체통과 False로 둔다(추정으로 채우지 않는다).
+    v2 단계가 성공한 실행에서만 호출한다(실패/생략 시엔 레거시 판정이 그대로 남는다).
+    """
+    for r in results:
+        if r.status != "OK":
+            continue
+        v2 = r.v2 or {}
+        trend = v2.get("trend_ok") if r.in_universe else None
+        r.pass_all = bool(trend) if trend is not None else False
+
+        conds_1_7 = [
+            r.cond1_above_150_200, r.cond2_150_above_200, r.cond3_200_rising,
+            r.cond4_50_above_150_200, r.cond5_above_50, r.cond6_30pct_above_low,
+            r.cond7_within_25pct_high,
+        ]
+        if any(c is None for c in conds_1_7):
+            continue
+        cond8_v2 = v2.get("cond8_v2") if r.in_universe else None
+        r.met_count = sum(conds_1_7) + (1 if cond8_v2 is True else 0)
+
+
 def entry_trigger(r: "StockResult") -> Optional[str]:
     """
     '진입 위치/트리거' 항목: 충족하면 근거 문자열, 아니면 None.
@@ -1443,13 +1473,22 @@ def run_screening(market_key: str, top_n: int, max_workers: int, limit: Optional
     # ========================================================================
     # SEPA Screener v2 단계 (유니버스 확정 → RS v2 → SETUP/ENTRY/EXIT → 시장국면)
     # ========================================================================
+    v2_ok = False
     if not skip_v2:
         try:
             _run_v2_stage(market_key, results, ohlcv_map, index_close, cfg)
+            v2_ok = True
         except Exception as exc:  # noqa: BLE001 - v2 실패가 레거시 결과를 죽이지 않도록
             logger.error("v2 단계 실패 (레거시 결과는 정상): %s", exc, exc_info=True)
     else:
         logger.info("--skip-v2: v2 단계 생략")
+
+    # --- 전체통과(8개AND)의 조건8을 v2 RS(RS_Score>=80)로 통일 ---
+    if v2_ok:
+        apply_v2_trend_as_pass_all(results)
+    else:
+        logger.warning("v2 RS를 쓸 수 없어 이번 실행의 '전체통과'는 레거시 RS(백분위>=%d) 기준입니다 "
+                       "(v2 TREND_OK와 일치하지 않을 수 있음)", RS_RANK_THRESHOLD)
 
     # --- B. 종목별 진입 체크리스트 (레거시. 8/8 통과 종목에만) ---
     # v2 결과(최근 돌파 이력, GO 상태)를 읽으므로 v2 단계 뒤에 계산한다. v2가 실패/생략돼도
@@ -1856,7 +1895,9 @@ def upload_to_google_sheets(df: pd.DataFrame, run_date: str, cfg: MarketConfig) 
 
         ws = sh.add_worksheet(title=sheet_name, rows=str(len(df) + 10), cols=str(len(df.columns) + 2))
 
-        header = [f"※ [{cfg.label}] 8번 RS는 IBD RS가 없어 {cfg.rs_note}로 계산한 대체 지표입니다. "
+        header = [f"※ [{cfg.label}] 8번 RS는 IBD RS가 없어 대체 지표로 계산합니다: '전체통과'의 8번 조건은 v2 RS_Score≥80"
+                   f"(21·63·126·252거래일 초과수익 percentile 가중합)이며 v2 TREND_OK와 같습니다. "
+                   f"'조건8'·'RS백분위'는 {cfg.rs_note}(레거시 ≥70)로 계산한 비교용 참고 값입니다. "
                    "'충족조건수'는 참고용이며, '전체통과'만 8개 조건 전부 충족(AND) 여부의 공식 판정입니다. "
                    "'RS상승중'은 RS_3개월>RS_6개월>RS_12개월 여부입니다. "
                    "VCP/피벗/셋업점수/돌파/시장게이팅/진입판정은 8개 조건 판정과 무관한 진입 타이밍 참고 지표이며, "
@@ -1929,7 +1970,7 @@ def run_market(market_key: str, run_date: str, args) -> None:
     logger.info("CSV 저장 완료: %s (전체 %d행), %s (통과 %d행)", full_path, len(df), pass_path, len(pass_df))
 
     chart_start_date = (pd.Timestamp.today() - pd.Timedelta(days=HISTORY_CALENDAR_DAYS)).strftime("%Y-%m-%d")
-    # 미니차트: 레거시 8/8 통과 종목 + v2 진입 후보(GO/READY/BREAKOUT_UNCONFIRMED)
+    # 미니차트: 8/8 전체통과 종목 + v2 진입 후보(GO/READY/BREAKOUT_UNCONFIRMED)
     chart_states = {v2_states.GO_BREAKOUT, v2_states.GO_PULLBACK, v2_states.READY,
                     v2_states.BREAKOUT_UNCONFIRMED}
     chart_mask = (df["전체통과(8개AND)"] == True) | (df["EntryState"].isin(chart_states))  # noqa: E712

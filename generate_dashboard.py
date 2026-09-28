@@ -248,7 +248,7 @@ def save_chart_snapshot(prefix: str, charts: dict) -> None:
 
 
 def load_fundamentals_index(prefix: str) -> dict:
-    """publish_fundamentals.py/publish_us_fundamentals.py가 레거시 8/8 통과 종목에
+    """publish_fundamentals.py/publish_us_fundamentals.py가 8/8 전체통과 종목에
     대해 이미 docs/data/fundamentals/{prefix}/index.json 으로 커밋해 둔 것을 그대로
     읽는다(이 스크립트가 새로 수집하지 않음). code -> {status, latestPeriod}."""
     path = DATA_DIR / "fundamentals" / prefix / "index.json"
@@ -528,7 +528,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <button class="filter-btn" data-filter="go_pullback">GO_PULLBACK</button>
       <button class="filter-btn" data-filter="extended">LATE·EXTENDED</button>
       <button class="filter-btn" data-filter="exitwarn">매도경고</button>
-      <button class="filter-btn" data-filter="pass">레거시 8/8</button>
+      <button class="filter-btn" data-filter="pass">8/8 전체통과</button>
       <button class="filter-btn" data-filter="na">확인불가</button>
       <button class="filter-btn" data-filter="value">실적개선·밸류</button>
       <select id="sortSelect">
@@ -558,12 +558,12 @@ HTML_TEMPLATE = r"""<!doctype html>
     <b>SEPA Screener v2</b> — TREND(8조건) → SETUP(변동성·매물 수축) → READY(피벗 대기) → ENTRY(확인된 돌파/눌림목) → EXIT(실패·매도 경고)<br>
     ※ <b>Entry State</b>: GO_BREAKOUT(거래량·종가위치 확인된 돌파) · GO_PULLBACK(돌파 후 눌림목 반등) · READY(피벗 -2~0%) · SETUP/WATCH · BREAKOUT_UNCONFIRMED(돌파구간이나 미확인) · LATE(+3~5%)/EXTENDED(+5%↑, 추격 금지) · TREND_OK(셋업 전) · FAILED(돌파 빠른 실패). <b>단순히 올랐다고 매수 신호가 아닙니다.</b><br>
     ※ <b>Exit State</b>: HOLD · WATCH_EXIT(EMA10/20 이탈) · TREND_BREAK(SMA50 대량거래 이탈) · FAST_FAIL(돌파 직후 실패) · PROFIT_ALERT(클라이맥스 경고, 강제매도 아님). STOP/TIME_STOP 은 진입가·진입일(포지션)이 있어야 판정되며 스크리너 단독에선 표시되지 않습니다.<br>
-    ※ <b>RS Score</b>(0~100) = 거래일 기준 초과수익 21·63·126·252일의 유니버스 내 percentile 가중합(0.10/0.40/0.30/0.20). ≥80 이면 TREND 통과, ≥90 강한 리더(★). RS Δ20d = 20거래일 전 대비 RS Score 변화. <b>레거시 "RS백분위"</b>(3·6·12개월 달력일 단순평균)도 별도 컬럼으로 비교 가능하게 남겨둡니다.<br>
+    ※ <b>RS Score</b>(0~100) = 거래일 기준 초과수익 21·63·126·252일의 유니버스 내 percentile 가중합(0.10/0.40/0.30/0.20). ≥80 이면 TREND 통과, ≥90 강한 리더(★). RS Δ20d = 20거래일 전 대비 RS Score 변화. <b>"8/8 전체통과"의 8번 조건이 바로 이 RS Score ≥ 80</b>이라 전체통과 = Trend OK 입니다. 이전 레거시 <b>"RS백분위"</b>(3·6·12개월 달력일 단순평균, ≥70)는 비교용 참고 컬럼으로만 남깁니다(2026-09 통일 이전 기록은 레거시 기준 통과 수라 추이 그래프에 계단이 있습니다).<br>
     ※ <b>52W거리</b> = 종가/52주 고가 − 1. SUPER(≥90%) / LEADER(≥85%) / NORMAL(≥75%) / FAIL. <b>ATR수축</b> = ATR20/ATR60 (≤0.75 목표), <b>Dry-up</b> = 평균거래량10/50 (≤0.70 목표). VCP 는 "완전한 Minervini 재현" 이 아니라 스윙 기반 deterministic heuristic 입니다.<br>
     ※ 상단 <b>시장 국면</b>(GREEN/YELLOW/RED/RECOVERY) + breadth50 + 권장 진입비중은 신규진입 리스크 참고용이며 실제 주문 기능이 아닙니다. 상단 배지(우호적/중립/비우호적)는 기존 시장 게이팅(레거시)입니다.<br>
-    ※ "레거시판정"·"충족(8)"·"셋업점수(레거시)"·"타이밍신호"는 기존 화면과 비교하기 위해 유지합니다. 스테이지(와인스타인 4단계)·베이스 단계·펀더멘털·촉매는 여전히 자동 판정하지 않습니다. 모든 임계값은 <code>sepa/config.py</code> 에서 조정됩니다.<br>
-    ※ "↗" 는 외부 차트 사이트 링크, "📈" 미니차트는 레거시 8/8 통과 + v2 진입 후보(GO/READY)에 제공됩니다. 종가/SMA/거래량/RSI(14)·매물대·변곡점 전부 참고용입니다.<br>
-    ※ "📊" 재무정보는 <b>레거시 8/8 전체통과 종목</b>에 한해 한국은 OpenDART, 미국은 SEC EDGAR 공시 원문을 그대로 보여줍니다(가공·추정치 없음). 수집 시점의 공시값이며, 과거 매수 시점에 알려졌던 값이 아닐 수 있고 정정공시가 있으면 갱신됩니다 — 투자 판단은 원문 공시를 직접 확인하세요.<br>
+    ※ "8/8 판정"·"충족(8)"·"셋업점수(레거시)"·"타이밍신호"는 기존 화면과 비교하기 위해 유지합니다("충족(8)"의 8번째 조건도 RS Score ≥ 80). 스테이지(와인스타인 4단계)·베이스 단계·펀더멘털·촉매는 여전히 자동 판정하지 않습니다. 모든 임계값은 <code>sepa/config.py</code> 에서 조정됩니다.<br>
+    ※ "↗" 는 외부 차트 사이트 링크, "📈" 미니차트는 8/8 전체통과 + v2 진입 후보(GO/READY)에 제공됩니다. 종가/SMA/거래량/RSI(14)·매물대·변곡점 전부 참고용입니다.<br>
+    ※ "📊" 재무정보는 <b>8/8 전체통과 종목</b>에 한해 한국은 OpenDART, 미국은 SEC EDGAR 공시 원문을 그대로 보여줍니다(가공·추정치 없음). 수집 시점의 공시값이며, 과거 매수 시점에 알려졌던 값이 아닐 수 있고 정정공시가 있으면 갱신됩니다 — 투자 판단은 원문 공시를 직접 확인하세요.<br>
     ※ "💭 매수 고민"은 <b>현재 v2 추세통과(TREND_OK 이상) 종목</b>에 한해, 추세추종·기술적·퀀트·가치·성장주·리스크관리·반론가 7개 관점에서 이 화면의 다른 수치(재무, PER, 시장 성과 기록 등)를 규칙으로 먼저 계산한 뒤 문장으로 정리한 것입니다. AI(Claude)가 그 계산된 사실만 가지고 문장을 다듬을 수 있으며("AI 코멘트" 표시), 실패 시 계산된 근거·우려·체크포인트를 그대로 보여줍니다("규칙 텍스트" 표시). <b>어느 쪽도 매수·매도 신호나 목표가를 제시하지 않으며, 판단과 책임은 본인에게 있습니다.</b><br>
     ※ <b>밸류점수</b>(0~100, 랭킹용)는 최근 분기 영업이익(없으면 순이익·매출) YoY + 직전 2분기 대비 가속 여부 + (한국만) trailing PER(시총/최근4분기 순이익합) 낮음 + 52주고점 대비 여유(아직 안 오름)를 <code>generate_dashboard.py</code>에서 가중평균한 것입니다. <b>애널리스트 컨센서스(추정치)가 아니라 DART/SEC에 이미 공시된 과거 실적</b>이며, PER은 일회성 손익이 낀 분기가 있으면 왜곡될 수 있고 미국은 EPS·시가총액 결측이 많아 PER 서브지표 자체를 뺍니다. 매수 신호가 아니라 "실적은 개선되는데 아직 안 오른 후보" 1차 스크리닝용 참고 지표입니다.
   </footer>
@@ -693,7 +693,7 @@ function renderCards() {
     ["기준일", market.asOf || "-"],
     ["스크리닝종목수", latest.total ?? rows.length],
     ["정상판정", latest.ok ?? rows.filter(r => r.status === "OK").length],
-    ["레거시 8/8 통과", latest.pass ?? rows.filter(r => r.passAll === true).length],
+    ["8/8 전체통과", latest.pass ?? rows.filter(r => r.passAll === true).length],
   ];
   if (hasV2) {
     cards.push(["TREND_OK (v2)", nTrend], ["READY", nReady], ["GO 후보", nGo]);
@@ -789,7 +789,7 @@ function getCols() {
   cols.push(
     { key: "setupScore", label: "셋업점수(레거시)", fmt: v => setupScoreBadge(v) },
     { key: "signals", label: "타이밍신호", fmt: (v, r) => timingSignals(r) },
-    { key: "passAll", label: "레거시판정", fmt: (v, r) => statusBadge(r) },
+    { key: "passAll", label: "8/8 판정", fmt: (v, r) => statusBadge(r) },
   );
   return cols;
 }
@@ -867,7 +867,7 @@ function chartCell(r) {
     : "";
   const fundInfo = (DATA[currentMarket].fundamentals || {})[r.code];
   const fund = (fundInfo && fundInfo.status === "ok")
-    ? `<button class="fund-btn" data-code="${r.code}" title="재무정보 보기 (DART/SEC 공시, 레거시 8/8 통과 종목만)">📊</button>`
+    ? `<button class="fund-btn" data-code="${r.code}" title="재무정보 보기 (DART/SEC 공시, 8/8 전체통과 종목만)">📊</button>`
     : "";
   const hasPersonas = !!((DATA[currentMarket].personas || {})[r.code]);
   const persona = hasPersonas
@@ -1156,7 +1156,7 @@ async function openFundModal(code) {
   const info = (DATA[currentMarket].fundamentals || {})[code];
   const row = DATA[currentMarket].rows.find(r => r.code === code);
   if (!info || !row) return;
-  document.getElementById("fundModalTitle").textContent = `${row.name} (${code}) 재무정보 — 레거시 8/8 통과`;
+  document.getElementById("fundModalTitle").textContent = `${row.name} (${code}) 재무정보 — 8/8 전체통과`;
   const body = document.getElementById("fundModalBody");
   body.innerHTML = `<div class="modal-note">불러오는 중…</div>`;
   document.getElementById("fundModal").classList.add("open");

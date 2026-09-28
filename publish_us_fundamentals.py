@@ -103,7 +103,7 @@ def fetch(url):
 def main():
     now=dt.datetime.now(dt.timezone.utc)
     stocks=json.loads((ROOT/'docs/data/latest_us.json').read_text())
-    # 레거시 8개 조건(c1~c8) 전부 통과 종목 전체(passAll); v2 TREND_OK 는 더 좁은 부분집합.
+    # 8개 조건 전부 통과 종목 전체(passAll). 조건8은 v2 RS_Score>=80으로 통일돼 passAll == v2 TREND_OK.
     selected=[r for r in stocks if r.get('status')=='OK' and r.get('passAll') is True]
     tickers=fetch('https://www.sec.gov/files/company_tickers.json')
     mapping={v['ticker'].replace('.','-').upper():v['cik_str'] for v in tickers.values()}
