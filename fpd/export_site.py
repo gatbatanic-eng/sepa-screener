@@ -12,18 +12,18 @@ from .storage import read_gzip_json, write_replaceable_json
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def build_view(latest, derived, signal, raw, history, monthly, pipeline=None):
+def build_view(latest, derived, signal, raw, history, monthly, pipeline=None, dataset_id=DATASET_ID, research_id=RESEARCH_ID):
     for doc in (latest, derived, signal, raw, monthly):
-        if doc.get('datasetId') != DATASET_ID:
+        if doc.get('datasetId') != dataset_id:
             raise ValueError('Dataset mismatch: refusing mixed research data')
     for doc in (derived, signal, raw):
         if doc.get('snapshotDate') != latest['snapshotDate']:
             raise ValueError('Snapshot date mismatch: refusing mixed publication')
         if doc.get('researchDefinitionHash') != latest['researchDefinitionHash']:
             raise ValueError('Research definition mismatch')
-    if latest.get('researchId') != RESEARCH_ID:
+    if latest.get('researchId') != research_id:
         raise ValueError('Unexpected research model')
-    history = sorted((s for s in history if s.get('datasetId') == DATASET_ID), key=lambda s:s['snapshotDate'])
+    history = sorted((s for s in history if s.get('datasetId') == dataset_id), key=lambda s:s['snapshotDate'])
     scored = {r['ticker']: r for r in signal.get('rows', [])}
     rows = []
     for ticker, meta in sorted(raw.get('universe', {}).items()):
@@ -50,7 +50,7 @@ def build_view(latest, derived, signal, raw, history, monthly, pipeline=None):
         })
     return {
         'schemaVersion': 'fpd-site-v1', 'revisionUnit': 'ratio',
-        'researchId': RESEARCH_ID, 'datasetId': DATASET_ID,
+        'researchId': research_id, 'datasetId': dataset_id,
         'researchDefinitionHash': latest['researchDefinitionHash'],
         'snapshotDate': latest['snapshotDate'], 'recordedAt': raw['recordedAt'],
         'status': signal.get('status'), 'collectionStatus': latest.get('status'),

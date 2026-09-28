@@ -184,8 +184,8 @@ def _feature_for_horizon(
     return base
 
 
-def derive_snapshot(current_snapshot: dict, prior_snapshots: list[dict]) -> dict:
-    definition = load_research_definition()
+def derive_snapshot(current_snapshot: dict, prior_snapshots: list[dict], definition: dict | None = None) -> dict:
+    definition = definition or load_research_definition()
     current_date = date.fromisoformat(current_snapshot["snapshotDate"])
     lookbacks = definition["lookbacks"]
     prior_by_date = _snapshot_by_date(prior_snapshots)

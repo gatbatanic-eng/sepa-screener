@@ -1,0 +1,47 @@
+name: FPD Korea Consensus Daily
+on:
+  schedule:
+    - cron: '10 9 * * 1-5'
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - 'fpd/provider_naver.py'
+      - 'fpd/kr_pipeline.py'
+      - 'tests/test_fpd_kr.py'
+      - '.github/workflows/fpd_kr_daily.yml'
+permissions:
+  contents: write
+concurrency:
+  group: sepa-screening
+  cancel-in-progress: false
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install research dependencies
+        run: pip install requests pandas yfinance
+      - name: Check isolated KR pipeline
+        run: python -m unittest discover -s tests -p 'test_fpd_*.py' -v
+      - name: Observe Korean annual consensus
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            python -m fpd.kr_pipeline --initial
+          else
+            python -m fpd.kr_pipeline
+          fi
+      - name: Persist observations and publish Site feed
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -f research/fpd/raw/kr/ docs/data/fpd/*_kr.json
+          git diff --cached --quiet || git commit -m 'Record Korean FPD consensus observation'
+          git pull --rebase origin master
+          git push
