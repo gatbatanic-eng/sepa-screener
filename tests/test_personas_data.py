@@ -200,6 +200,35 @@ class GenerateTests(unittest.TestCase):
             idx = json.loads((root / "docs" / "data" / "personas" / "us" / "index.json").read_text(encoding="utf-8"))
             self.assertIn("AAA", idx["symbols"])
 
+    def test_no_llm_mode_is_silent_and_never_a_problem(self):
+        # --no-llm 은 의도된 규칙 텍스트 전용 모드: 경고/문제 없이 규칙 텍스트가 생성돼야 한다(크레딧 무관).
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "docs" / "data").mkdir(parents=True)
+            (root / "docs" / "data" / "latest_us.json").write_text(json.dumps([_leader_row()]), encoding="utf-8")
+            r = gen.generate_market("us", root, client=None, today=dt.date(2026, 9, 21), llm_disabled=True)
+            self.assertEqual(r["warnings"], [])
+            self.assertEqual(r["problems"], [])
+            self.assertEqual(r["stocks"], 1)
+            out = json.loads((root / "docs" / "data" / "personas" / "us" / "AAA.json").read_text(encoding="utf-8"))
+            self.assertEqual(len(out["personas"]), len(_PERSONAS))
+            for p in out["personas"]:
+                self.assertTrue(p["comment"])
+
+    def test_main_no_llm_exits_zero_even_with_api_key_set(self):
+        import os
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "docs" / "data").mkdir(parents=True)
+            (root / "docs" / "data" / "latest_us.json").write_text(json.dumps([_leader_row()]), encoding="utf-8")
+            real = gen.generate_market  # main()이 기본 root(실제 저장소)에 쓰지 않도록 임시 root를 주입
+            with mock.patch.object(gen, "generate_market", side_effect=lambda m, **kw: real(m, root, **kw)), \
+                    mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": "sk-test"}), \
+                    mock.patch.object(gen, "_make_client", side_effect=AssertionError("LLM client must not be created")):
+                code = gen.main(["--no-llm", "--market", "us"])
+            self.assertEqual(code, 0)
+
     def test_valid_llm_reply_is_used(self):
         reply = json.dumps({pid: f"{pid} 코멘트입니다. 근거를 종합하면 이렇습니다." for pid in _PERSONAS})
         client = _FakeClient(reply)

@@ -156,7 +156,8 @@ def _load_fund(root: Path, market: str, code: str) -> Optional[dict]:
 
 def generate_market(market: str, root: Path = ROOT, *, client: Optional[Any] = None, model: Optional[str] = None,
                     limit: Optional[int] = None, sleep: Callable[[float], None] = time.sleep,
-                    delay: float = 0.2, today: Optional[dt.date] = None, write: bool = True) -> dict:
+                    delay: float = 0.2, today: Optional[dt.date] = None, write: bool = True,
+                    llm_disabled: bool = False) -> dict:
     m = market.lower()
     result: dict = {"market": m, "problems": [], "warnings": [], "stocks": 0, "usedLLM": 0, "ruleOnly": 0}
     latest_path = root / "docs" / "data" / f"latest_{m}.json"
@@ -202,7 +203,8 @@ def generate_market(market: str, root: Path = ROOT, *, client: Optional[Any] = N
                     {"schemaVersion": 1, "market": m, "generatedAt": stamp, "symbols": index})
 
     if client is None:
-        result["warnings"].append("ANTHROPIC_API_KEY 없음 → 전 종목 규칙 기반 텍스트로만 생성(자연어 코멘트 생략)")
+        if not llm_disabled:  # --no-llm 은 의도된 규칙 텍스트 전용 모드라 경고를 내지 않는다
+            result["warnings"].append("ANTHROPIC_API_KEY 없음 → 전 종목 규칙 기반 텍스트로만 생성(자연어 코멘트 생략)")
     elif trend_rows and result["usedLLM"] == 0:
         result["problems"].append(f"{m.upper()} 전 종목 LLM 코멘트 생성 실패 — API 상태 확인 필요")
     return result
@@ -230,7 +232,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     on_actions = bool(os.environ.get("GITHUB_ACTIONS"))
     exit_code = 0
     for m in (["kr", "us"] if a.market == "all" else [a.market]):
-        r = generate_market(m, client=client, limit=a.limit, write=not a.dry_run)
+        r = generate_market(m, client=client, limit=a.limit, write=not a.dry_run, llm_disabled=a.no_llm)
         print(f"[{m.upper()}] 종목 {r['stocks']} | LLM 코멘트 {r['usedLLM']} | 규칙 텍스트 대체 {r['ruleOnly']}")
         for msg in r["warnings"]:
             print(f"  경고: {msg}")

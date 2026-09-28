@@ -30,7 +30,7 @@ from src.market.regime import compute_regime_series
 from src.models.market_data import OHLCVBar
 from src.models.signal import Signal
 from src.pipeline import evaluate_range_mr, evaluate_v_rebound, range_mr_row_to_signal, v_rebound_row_to_signal
-from src.storage import get_engine, get_session_factory, save_signal
+from src.storage import dedupe_signals, get_engine, get_session_factory, save_signal
 
 logger = logging.getLogger(__name__)
 
@@ -132,6 +132,9 @@ def run_daily_screen(
 
     summary = {"processed": 0, "errors": 0, "range_mr_signals": 0, "v_rebound_signals": 0}
     try:
+        removed = dedupe_signals(session)
+        if removed:
+            logger.info("기존 중복 신호 %d행 정리", removed)
         for row in universe.itertuples(index=False):
             symbol = row.Code
             name = getattr(row, "Name", None)

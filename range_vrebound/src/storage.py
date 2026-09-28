@@ -100,7 +100,24 @@ def get_session_factory(engine) -> sessionmaker:
     return sessionmaker(bind=engine)
 
 
+def dedupe_signals(session: Session) -> int:
+    """(symbol, strategy, date)가 같은 중복 행은 가장 최근(id 최대) 것만 남기고 지운다.
+    같은 마지막 거래일로 스크리닝이 여러 번 돌면(휴장, 수동 재실행) 예전 save_signal이
+    행을 계속 쌓아 같은 종목이 여러 번 보였다 — 이미 쌓인 중복을 정리한다. 지운 행 수 반환."""
+    result = session.execute(text(
+        "DELETE FROM signals WHERE id NOT IN "
+        "(SELECT MAX(id) FROM signals GROUP BY symbol, strategy, date)"
+    ))
+    return result.rowcount or 0
+
+
 def save_signal(session: Session, signal: Signal) -> SignalRecord:
+    # 같은 (종목, 전략, 날짜)를 다시 저장하면 새로 쌓지 않고 덮어쓴다(멱등).
+    session.query(SignalRecord).filter(
+        SignalRecord.symbol == signal.symbol,
+        SignalRecord.strategy == signal.strategy,
+        SignalRecord.date == signal.date,
+    ).delete(synchronize_session=False)
     record = SignalRecord(
         symbol=signal.symbol,
         name=signal.name,
