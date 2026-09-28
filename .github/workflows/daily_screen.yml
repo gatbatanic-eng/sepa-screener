@@ -96,13 +96,13 @@ jobs:
         continue-on-error: true
         run: python -m personas.collect --market "$(echo "${{ steps.market.outputs.market }}" | tr 'A-Z' 'a-z')"
 
-      - name: 페르소나 코멘트 생성(매수 고민 — 규칙 기반 + 선택적 Claude)
+      - name: 페르소나 코멘트 생성(매수 고민 — 규칙 기반 텍스트만)
         id: personas_gen
         continue-on-error: true
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}      # 없으면 규칙 텍스트로만 생성(생략되지 않음)
-          CLAUDE_MODEL: ${{ vars.CLAUDE_MODEL }}                   # 비워두면 generate.py 기본값(claude-sonnet-5)
-        run: python -m personas.generate --market "$(echo "${{ steps.market.outputs.market }}" | tr 'A-Z' 'a-z')"
+        # Claude API(크레딧 필요)를 쓰지 않는다: 크레딧이 떨어지면 이 단계가 실패로 표시돼 SEPA 워크플로우가
+        # 실패 처리되고, workflow_run 으로 이어지는 계좌복구·재무정보 워크플로우가 건너뛰어졌다.
+        # 규칙 기반 근거/우려/체크 텍스트는 그대로 생성된다(AI 코멘트만 없음).
+        run: python -m personas.generate --no-llm --market "$(echo "${{ steps.market.outputs.market }}" | tr 'A-Z' 'a-z')"
 
       - name: 대시보드(docs/index.html) 생성
         run: python generate_dashboard.py
