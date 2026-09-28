@@ -62,6 +62,7 @@ COLUMN_MAP = {
     "시장게이팅_참고용": "marketGate",
     "진입체크리스트_충족수_참고용": "entryChecklistCount",
     "진입판정_참고용_매수신호아님": "entryVerdict",
+    "진입판정사유_참고용": "entryVerdictReason",
     # --- SEPA Screener v2 ---
     "20일평균거래대금": "avgTradingValue20", "유니버스포함": "inUniverse",
     "TREND_OK_v2": "trendOk", "조건8_RS_v2": "c8v2",
