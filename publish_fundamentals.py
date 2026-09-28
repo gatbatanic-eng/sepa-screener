@@ -120,8 +120,8 @@ def main():
         raise RuntimeError('DART_API_KEY is not configured')
     now = dt.datetime.now(dt.timezone.utc)
     stocks = json.loads((ROOT / 'docs/data/latest_kr.json').read_text())
-    # 레거시 8개 조건(c1~c8) 전부 통과 종목 전체(passAll). v2 TREND_OK/유니버스는
-    # 더 좁은 부분집합이라 trendOk 로만 거르면 legacy 통과 종목 일부가 누락된다.
+    # 8개 조건 전부 통과 종목 전체(passAll). passAll의 조건8은 v2 RS_Score>=80으로 통일돼
+    # 있어(screening.apply_v2_trend_as_pass_all) passAll == v2 TREND_OK 다.
     selected = [r for r in stocks if r.get('status') == 'OK' and r.get('passAll') is True]
     api = Dart(key)
     corps = api.corporations()
