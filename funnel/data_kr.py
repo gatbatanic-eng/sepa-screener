@@ -8,9 +8,13 @@
 from __future__ import annotations
 
 import datetime as dt
+import gzip
+import json
 import logging
 import re
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
 
 from publish_fundamentals import Dart, account, number
 
@@ -28,6 +32,7 @@ FLOW = ("revenue", "operatingProfit", "netIncome")
 DILUTION = ("유상증자결정", "전환사채권발행결정", "신주인수권부사채권발행결정")
 SPLIT = ("회사분할결정", "물적분할")
 MIN_MARCAP = 500e8  # 500억 원
+DART_WORKERS = 4
 
 
 def load_universe(min_marcap: float = MIN_MARCAP):
@@ -110,30 +115,71 @@ def build_quarters(raw: dict[tuple[int, int], dict]) -> list[dict]:
     return quarters
 
 
-def fetch_quarters(api: Dart, corps: dict[str, str], codes: list[str], today: dt.date) -> dict[str, list[dict]]:
+def _cache_path(cache_dir: Path, year: int, q: int) -> Path:
+    return cache_dir / f"{year}Q{q}.json.gz"
+
+
+def _load_cache(path: Path) -> dict[str, dict] | None:
+    if not path.exists():
+        return None
+    data = json.loads(gzip.open(path, "rt", encoding="utf-8").read())
+    return {code: {k: (tuple(v) if isinstance(v, list) else v) for k, v in rec.items()} for code, rec in data.items()}
+
+
+def _save_cache(path: Path, parsed: dict[str, dict]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with gzip.open(path, "wt", encoding="utf-8") as f:
+        json.dump(parsed, f, ensure_ascii=False, separators=(",", ":"))
+
+
+def _fetch_period(api: Dart, corp_list: list[str], corp_to_code: dict, year: int, q: int) -> tuple[dict[str, dict], int]:
+    """한 분기 보고서를 100개사 단위로 병렬 조회. 반환: (파싱 결과, 실패 배치 수)."""
+    def one(batch):
+        rows = api.request("fnlttMultiAcnt.json", corp_code=",".join(batch), bsns_year=year, reprt_code=REPORTS[q])
+        for r in rows:
+            if not r.get("stock_code") and r.get("corp_code") in corp_to_code:
+                r["stock_code"] = corp_to_code[r["corp_code"]]
+        return parse_multi(rows)
+
+    parsed: dict[str, dict] = {}
+    failed = 0
+    batches = [corp_list[i:i + 100] for i in range(0, len(corp_list), 100)]
+    with ThreadPoolExecutor(max_workers=DART_WORKERS) as pool:
+        for fut in as_completed([pool.submit(one, b) for b in batches]):
+            try:
+                parsed.update(fut.result())
+            except RuntimeError as exc:
+                failed += 1
+                log.warning("DART 다중계정 %s년 %d분기 배치 실패: %s", year, q, exc)
+    return parsed, failed
+
+
+def fetch_quarters(api: Dart, corps: dict[str, str], codes: list[str], today: dt.date,
+                   cache_dir: Path | None = None) -> dict[str, list[dict]]:
+    """분기 실적. 확정된 과거 분기는 캐시를 쓰고, 최근 2개 분기와 캐시 없는 분기만 조회한다."""
     periods = _periods(today)
-    years = sorted({y for y, _ in periods})
-    wanted = {c: corps[c] for c in codes if c in corps}
-    corp_list = list(wanted.values())
-    corp_to_code = {v: k for k, v in wanted.items()}
+    wanted = sorted({(y, q) for y, q in periods} | {(y, 3) for y, q in periods if q == 4})
+    refresh = set(periods[-2:])
+    selected = {c: corps[c] for c in codes if c in corps}
+    corp_list = sorted(selected.values())
+    corp_to_code = {v: k for k, v in selected.items()}
     raw: dict[str, dict[tuple[int, int], dict]] = {}
-    for year in years:
-        for q, report in REPORTS.items():
-            if (year, q) not in periods and not (q == 3 and (year, 4) in periods):
-                continue
-            for i in range(0, len(corp_list), 100):
-                batch = corp_list[i:i + 100]
-                try:
-                    rows = api.request("fnlttMultiAcnt.json", corp_code=",".join(batch), bsns_year=year, reprt_code=report)
-                except RuntimeError as exc:
-                    log.warning("DART 다중계정 %s %sQ 실패: %s", year, q, exc)
-                    continue
-                for r in rows:
-                    if not r.get("stock_code") and r.get("corp_code") in corp_to_code:
-                        r["stock_code"] = corp_to_code[r["corp_code"]]
-                for code, rec in parse_multi(rows).items():
-                    raw.setdefault(code, {})[(year, q)] = rec
-            log.info("DART 다중계정 %s년 %d분기 완료 (누적 %d개사)", year, q, len(raw))
+    for year, q in wanted:
+        cached = _load_cache(_cache_path(cache_dir, year, q)) if cache_dir else None
+        missing = [c for c in corp_list if corp_to_code[c] not in (cached or {})]
+        if cached is not None and (year, q) not in refresh and len(missing) < 0.1 * len(corp_list):
+            parsed, source = cached, "캐시"
+        else:
+            parsed, failed = _fetch_period(api, corp_list, corp_to_code, year, q)
+            source = "조회"
+            if cached:
+                parsed = {**cached, **parsed}
+            if cache_dir and not failed:
+                _save_cache(_cache_path(cache_dir, year, q), parsed)
+        for code, rec in parsed.items():
+            if code in selected:
+                raw.setdefault(code, {})[(year, q)] = rec
+        log.info("DART 다중계정 %s년 %d분기 %s (누적 %d개사)", year, q, source, len(raw))
     return {code: build_quarters(v) for code, v in raw.items()}
 
 
@@ -213,12 +259,12 @@ def enrich_detail(api: Dart, corp_code: str, year: int, quarter: int) -> dict:
     return out
 
 
-def collect(api: Dart, today: dt.date, limit: int | None = None) -> tuple[list[dict], dict[str, str]]:
+def collect(api: Dart, today: dt.date, limit: int | None = None, cache_dir: Path | None = None) -> tuple[list[dict], dict[str, str]]:
     universe = load_universe()
     if limit:
         universe = sorted(universe, key=lambda r: -r["marcap"])[:limit]
     corps = api.corporations()
-    quarters = fetch_quarters(api, corps, [r["symbol"] for r in universe], today)
+    quarters = fetch_quarters(api, corps, [r["symbol"] for r in universe], today, cache_dir)
     events = fetch_events(api, today)
     for r in universe:
         r["quarters"] = quarters.get(r["symbol"], [])

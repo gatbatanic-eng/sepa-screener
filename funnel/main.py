@@ -160,7 +160,7 @@ def run_market(market: str, args, today: dt.date) -> None:
         if not key:
             raise RuntimeError("DART_API_KEY is not configured")
         api = Dart(key)
-        records, _ = data_kr.collect(api, today, args.limit)
+        records, _ = data_kr.collect(api, today, args.limit, ROOT / "research" / "funnel" / "cache" / "kr")
     else:
         from funnel import data_us
         records = data_us.collect(today, args.limit)

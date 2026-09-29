@@ -134,6 +134,26 @@ class DartParsingTest(unittest.TestCase):
         raw[(2025, 3)]["basis"] = "OFS"
         self.assertIsNone({(r["year"], r["quarter"]): r for r in build_quarters(raw)}[(2025, 4)]["revenue"])
 
+    def test_quarter_cache_skips_settled_periods(self):
+        from funnel import data_kr
+
+        class FakeDart:
+            calls = []
+
+            def request(self, endpoint, **params):
+                self.calls.append((params["bsns_year"], params["reprt_code"]))
+                return [{"corp_code": "C1", "stock_code": "000001", "fs_div": "CFS", "account_nm": "매출액",
+                         "thstrm_amount": "100", "thstrm_add_amount": "100"}]
+
+        with tempfile.TemporaryDirectory() as d:
+            api = FakeDart()
+            today = dt.date(2026, 9, 29)
+            first = data_kr.fetch_quarters(api, {"000001": "C1"}, ["000001"], today, Path(d))
+            n_first = len(api.calls)
+            second = data_kr.fetch_quarters(api, {"000001": "C1"}, ["000001"], today, Path(d))
+            self.assertEqual(first, second)
+            self.assertEqual(len(api.calls) - n_first, 2)  # 최근 2개 분기만 재조회
+
     def test_disclosure_classification(self):
         self.assertEqual(classify_disclosure("주요사항보고서(유상증자결정)"), "dilution")
         self.assertEqual(classify_disclosure("주요사항보고서(전환사채권발행결정)"), "dilution")

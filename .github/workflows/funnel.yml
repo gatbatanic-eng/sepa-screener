@@ -21,14 +21,17 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: funnel-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
   funnel:
+    strategy:
+      fail-fast: false
+      matrix:
+        market: [kr, us]
+    concurrency:
+      group: funnel-${{ github.ref }}-${{ matrix.market }}
+      cancel-in-progress: false
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 170
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -38,19 +41,22 @@ jobs:
         run: pip install -r requirements.txt
       - name: Verify funnel rules
         run: python -m unittest tests.test_funnel -v
-      - name: Screen full KR/US universe
+      - name: Screen full universe (${{ matrix.market }})
+        if: github.event.inputs.market == '' || github.event.inputs.market == 'all' || github.event.inputs.market == matrix.market
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
           SEC_USER_AGENT: 'GoldenCodeResearch gatbatanic@gmail.com'
-        run: python -m funnel.main --market "${{ github.event.inputs.market || 'all' }}"
+        run: python -m funnel.main --market "${{ matrix.market }}"
       - name: Save funnel results
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f docs/research/funnel_*.json research/funnel || true
+          for p in "docs/research/funnel_${{ matrix.market }}.json" "research/funnel/${{ matrix.market }}" "research/funnel/cache/${{ matrix.market }}"; do
+            if [ -e "$p" ]; then git add -f "$p"; fi
+          done
           git diff --cached --quiet && exit 0
-          git commit -m "깔때기 스크리너 갱신 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+          git commit -m "깔때기 스크리너 갱신 ${{ matrix.market }} ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
           for i in 1 2 3; do
             git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && break
             sleep $((i * 5))
