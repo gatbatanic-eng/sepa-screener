@@ -1,0 +1,56 @@
+name: Tenbagger Funnel Screen (KR+US)
+
+on:
+  workflow_dispatch:
+    inputs:
+      market:
+        description: "kr | us | all"
+        default: "all"
+  schedule:
+    # 매주 토요일 09:17 KST (한국·미국 주간 마감 뒤)
+    - cron: "17 0 * * 6"
+  push:
+    branches: [master, "claude/**"]
+    paths:
+      - funnel/**
+      - tests/test_funnel.py
+      - data/funnel_manual.csv
+      - .github/workflows/funnel.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: funnel-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  funnel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Verify funnel rules
+        run: python -m unittest tests.test_funnel -v
+      - name: Screen full KR/US universe
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+          SEC_USER_AGENT: 'GoldenCodeResearch gatbatanic@gmail.com'
+        run: python -m funnel.main --market "${{ github.event.inputs.market || 'all' }}"
+      - name: Save funnel results
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f docs/research/funnel_*.json research/funnel || true
+          git diff --cached --quiet && exit 0
+          git commit -m "깔때기 스크리너 갱신 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+          for i in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && break
+            sleep $((i * 5))
+          done
