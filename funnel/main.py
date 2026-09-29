@@ -233,9 +233,6 @@ def run_market(market: str, args, today: dt.date) -> None:
            "excludedSample": [{"symbol": r["symbol"], "name": r["name"], "hits": results[r["symbol"]]["gates"]["hits"]}
                               for r in sorted(records, key=lambda r: -(r.get("marcap") or 0))
                               if results[r["symbol"]]["gates"]["excluded"]][:100]}
-    public = ROOT / "docs" / "research" / f"funnel_{market}.json"
-    public.parent.mkdir(parents=True, exist_ok=True)
-    public.write_text(json.dumps(doc, ensure_ascii=False, indent=1, allow_nan=False), encoding="utf-8")
 
     base = ROOT / "research" / "funnel" / market
     write_report(base / "report.md", market, today, top, stats, heat)
@@ -252,8 +249,11 @@ def run_market(market: str, args, today: dt.date) -> None:
     with gzip.open(snap_dir / f"{today.isoformat()}.json.gz", "wt", encoding="utf-8") as f:
         json.dump(snap, f, ensure_ascii=False, separators=(",", ":"))
     current = {r["symbol"]: (r.get("prices") or {}).get("price") for r in records}
-    validation.update(snap_dir, base / "validation.json", current,
-                      (bench_metrics or {}).get("price"), today, args.top)
+    doc["validation"] = validation.update(snap_dir, base / "validation.json", current,
+                                          (bench_metrics or {}).get("price"), today, args.top)
+    public = ROOT / "docs" / "research" / f"funnel_{market}.json"
+    public.parent.mkdir(parents=True, exist_ok=True)
+    public.write_text(json.dumps(doc, ensure_ascii=False, indent=1, allow_nan=False), encoding="utf-8")
     log.info("%s 완료: 순위 대상 %d, 상위 %d 기록", market, len(ranked), len(top))
 
 
