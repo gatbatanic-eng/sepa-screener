@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from funnel import rules, validation
+from funnel import rules, sectorheat, validation
 from funnel.data_kr import build_quarters, classify_disclosure, parse_multi
 from funnel.prices import price_metrics
 
@@ -88,6 +88,30 @@ class RulesTest(unittest.TestCase):
         self.assertEqual(rules.p1_multiple(1e12, 0.1, 0.1, 10, 1e12)["verdict"], "제외(3배 미만)")
         self.assertEqual(rules.p1_multiple(None, 0.1, 0.1, 10, 1e12)["verdict"], "입력 부족")
         self.assertEqual(rules.p1_multiple(10e12, 0.2, 0.25, 20, 2e12, other=2e12)["multipleX"], 6)
+
+
+class SectorHeatTest(unittest.TestCase):
+    def member(self, sym, tier, ret, op=1.0, sg=0.0, ev=None):
+        return {"symbol": sym, "tier": tier, "ret6m": ret, "opTTM": op, "shareGrowth": sg, "dilutionEvents12m": ev}
+
+    def test_froth_2000_style_is_red(self):
+        members = [self.member("C1", "core", 0.3), self.member("C2", "core", 0.2),
+                   self.member("F1", "fringe", 2.5, op=-1, sg=0.2), self.member("F2", "fringe", 1.5, op=-1, sg=0.1)]
+        heat = sectorheat.compute(members)
+        self.assertEqual(heat["flags"], {"A": True, "B": True, "C": True, "D": True})
+        self.assertEqual(heat["level"], "r")
+        self.assertEqual(heat["topMovers"][0]["symbol"], "F1")
+
+    def test_quiet_market_is_green_and_missing_is_none(self):
+        members = [self.member("C1", "core", 0.1), self.member("F1", "fringe", 0.05, sg=None)]
+        heat = sectorheat.compute(members)
+        self.assertEqual(heat["level"], "g")
+        self.assertIsNone(sectorheat.compute([])["flags"]["A"])
+        self.assertEqual(sectorheat.compute([])["level"], "")
+
+    def test_korean_dilution_events_count(self):
+        members = [self.member(f"K{i}", "fringe", 0.1, sg=None, ev=1 if i < 2 else 0) for i in range(5)]
+        self.assertTrue(sectorheat.compute(members)["flags"]["D"])
 
 
 class DartParsingTest(unittest.TestCase):

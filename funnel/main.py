@@ -21,10 +21,11 @@ from collections import Counter
 from pathlib import Path
 
 from funnel import prices as px
-from funnel import rules, validation
+from funnel import rules, sectorheat, validation
 
 ROOT = Path(__file__).resolve().parent.parent
 MANUAL = ROOT / "data" / "funnel_manual.csv"
+BASKET = ROOT / "data" / "ai_infra_basket.csv"
 BENCHMARK = {"kr": "^KS11", "us": "^GSPC"}
 UNIT = {"kr": 1e8, "us": 1e6}          # 수작업 P1 입력 단위: 한국 억원, 미국 백만$
 MIN_MARCAP = {"kr": 500e8, "us": 3e8}
@@ -98,6 +99,23 @@ def row_out(r: dict, res: dict, rank_no: int | None) -> dict:
     }
 
 
+def sector_heat(records: list[dict], results: dict[str, dict], market: str) -> dict:
+    basket = sectorheat.load_basket(BASKET, market)
+    by_symbol = {r["symbol"]: r for r in records}
+    members = []
+    for sym, info in basket.items():
+        r = by_symbol.get(sym)
+        if r is None:
+            continue
+        res = results[sym]
+        members.append({"symbol": sym, "tier": info["tier"], "ret6m": (r.get("prices") or {}).get("ret6m"),
+                        "opTTM": res["metrics"]["opTTM"], "shareGrowth": res["shareGrowth"],
+                        "dilutionEvents12m": r.get("dilutionEvents12m")})
+    heat = sectorheat.compute(members)
+    heat["missing"] = sorted(set(basket) - set(by_symbol))
+    return heat
+
+
 def fmt_pct(v) -> str:
     return "N/A" if v is None else f"{v * 100:.0f}%"
 
@@ -108,12 +126,18 @@ def fmt_cap(v, market) -> str:
     return f"{v / 1e8:,.0f}억" if market == "kr" else f"${v / 1e9:,.2f}B"
 
 
-def write_report(path: Path, market: str, today: dt.date, top: list[dict], stats: dict) -> None:
+def write_report(path: Path, market: str, today: dt.date, top: list[dict], stats: dict, heat: dict) -> None:
     lines = [f"# 깔때기 스크리너 — {market.upper()} ({today.isoformat()})", "",
              "투자 추천이 아니라 검증·분석용 후보 목록입니다. S3·S5·P1·비중은 수작업 단계입니다.", "",
              f"- 유니버스 {stats['universe']}종목 → 관문 탈락 {stats['excluded']} / 점수 불가(실적 결측) {stats['noScore']} / 순위 대상 {stats['ranked']}",
              f"- 관문 탈락 사유: {', '.join(f'{k} {v}' for k, v in sorted(stats['gateHits'].items())) or '없음'}",
-             "", "| # | 종목 | 시총 | 종합 | S1 | S2 | S6 | S4 | T1 | 매출 YoY(최근→) | 근거 | P1 |",
+             "", "## 관찰 지표 7번: 섹터 동반 급등 (AI 인프라 바스켓)", "",
+             f"- 판정 {({'g': '양호', 'y': '주의', 'r': '경계'}).get(heat['level'], '미확인')} (경계 세부 {heat['hits']}개)",
+             f"- A 6개월 +100% 이상 비율 {fmt_pct(heat['A_share100'])} · B 변두리−대장 {fmt_pct(heat['B_fringeMinusCore'])} · "
+             f"C 적자−흑자 {fmt_pct(heat['C_lossMinusProfit'])} · D 주식 수 증가율 중앙값 {fmt_pct(heat['D_shareGrowthMedian'])}, "
+             f"증자·CB 공시 종목 비율 {fmt_pct(heat['D_dilutionEventShare'])}",
+             "- 6개월 상위: " + ", ".join("{}({}) {}".format(m["symbol"], m["tier"], fmt_pct(m["ret6m"])) for m in heat["topMovers"][:5]),
+             "", "## 깔때기 상위 후보", "", "| # | 종목 | 시총 | 종합 | S1 | S2 | S6 | S4 | T1 | 매출 YoY(최근→) | 근거 | P1 |",
              "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in top:
         s = r["scores"]
@@ -183,10 +207,11 @@ def run_market(market: str, args, today: dt.date) -> None:
     manual_rows = [row_out(r, results[r["symbol"]], ranks.get(r["symbol"])) for r in records
                    if r.get("manual") and r["symbol"] not in {t["symbol"] for t in top}]
 
+    heat = sector_heat(records, results, market)
     doc = {"schemaVersion": 1, "market": market, "recordedAt": dt.datetime.now(dt.timezone.utc).isoformat(),
            "note": "투자 추천이 아닌 검증·분석용 규칙 판정. 결측은 null.",
            "thresholds": {"minMarcap": MIN_MARCAP[market], "weights": rules.WEIGHTS, "P1Cutoff": rules.P1_CUTOFF},
-           "stats": stats, "top": top, "manualTracked": manual_rows,
+           "stats": stats, "sectorHeat": heat, "top": top, "manualTracked": manual_rows,
            "excludedSample": [{"symbol": r["symbol"], "name": r["name"], "hits": results[r["symbol"]]["gates"]["hits"]}
                               for r in sorted(records, key=lambda r: -(r.get("marcap") or 0))
                               if results[r["symbol"]]["gates"]["excluded"]][:100]}
@@ -195,9 +220,11 @@ def run_market(market: str, args, today: dt.date) -> None:
     public.write_text(json.dumps(doc, ensure_ascii=False, indent=1, allow_nan=False), encoding="utf-8")
 
     base = ROOT / "research" / "funnel" / market
-    write_report(base / "report.md", market, today, top, stats)
+    write_report(base / "report.md", market, today, top, stats, heat)
     snap = {"recordedAt": doc["recordedAt"], "market": market, "topK": args.top,
             "benchmark": {"symbol": bench, "price": (bench_metrics or {}).get("price")},
+            "sectorHeat": {k: heat[k] for k in ("level", "hits", "flags", "A_share100", "B_fringeMinusCore",
+                                                 "C_lossMinusProfit", "D_shareGrowthMedian", "D_dilutionEventShare")},
             "rows": [{"symbol": r["symbol"], "price": (r.get("prices") or {}).get("price"), "rank": ranks.get(r["symbol"]),
                       "composite": results[r["symbol"]]["composite"], "excluded": results[r["symbol"]]["gates"]["excluded"],
                       "T1": results[r["symbol"]]["T1"]} for r in records]}

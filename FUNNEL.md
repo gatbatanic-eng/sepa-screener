@@ -40,3 +40,16 @@ DART_API_KEY=... SEC_USER_AGENT="name email" python -m funnel.main --market all
 python -m unittest tests.test_funnel -v
 ```
 GitHub Actions `funnel.yml`이 매주 토요일 09:17 KST에 실행한다.
+
+## 관찰 지표 7번: 섹터 동반 급등 (`funnel/sectorheat.py`)
+AI 인프라 바스켓(`data/ai_infra_basket.csv`: 대장 core = 기존 AI 유니버스, 변두리 fringe = 소형·테마주)의
+가격·자본시장 과열도를 시장별로 계산해 `sectorHeat`와 리포트에 남긴다. 2000년 광통신 버블 말기 특징 기준.
+
+| 세부 | 계산 | 경계 |
+|---|---|---|
+| A 급등 폭 | 6개월 +100% 이상 종목 비율 | 25% 이상 |
+| B 변두리 추월 | 6개월 수익률 중앙값 변두리 − 대장 | +20%p 이상 |
+| C 저질 주도 | 6개월 수익률 중앙값 영업적자 − 흑자 | +20%p 이상 |
+| D 주식 공급 | 주식 수 증가율 중앙값 / 12개월 내 증자·CB 공시 종목 비율(한국) | 5% 이상 / 20% 이상 |
+
+경계 세부 3개 이상 → 경계, 1~2개 → 주의, 0개 → 양호. 기준값은 첫 6개월 관찰 뒤 재검토하되, 변경은 기록과 함께 남긴다.
