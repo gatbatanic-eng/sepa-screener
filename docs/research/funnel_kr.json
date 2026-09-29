@@ -1,7 +1,7 @@
 {
  "schemaVersion": 1,
  "market": "kr",
- "recordedAt": "2026-09-29T16:15:41.640593+00:00",
+ "recordedAt": "2026-09-29T19:29:15.826038+00:00",
  "note": "투자 추천이 아닌 검증·분석용 규칙 판정. 결측은 null.",
  "thresholds": {
   "minMarcap": 50000000000.0,
@@ -23,6 +23,89 @@
    "G2": 121,
    "G1": 5
   }
+ },
+ "sectorHeat": {
+  "level": "g",
+  "hits": 0,
+  "flags": {
+   "A": false,
+   "B": false,
+   "C": false,
+   "D": false
+  },
+  "A_share100": 0.13636363636363635,
+  "B_fringeMinusCore": 0.004290957557898656,
+  "C_lossMinusProfit": -0.34571898624698666,
+  "D_shareGrowthMedian": 0.005348564251017263,
+  "D_dilutionEventShare": 0.1590909090909091,
+  "n": {
+   "members": 44,
+   "withPrice": 44,
+   "core": 28,
+   "fringe": 16,
+   "loss": 14,
+   "profit": 30
+  },
+  "topMovers": [
+   {
+    "symbol": "036930",
+    "tier": "core",
+    "ret6m": 2.5691318327974275
+   },
+   {
+    "symbol": "009150",
+    "tier": "core",
+    "ret6m": 2.3508771929824563
+   },
+   {
+    "symbol": "222800",
+    "tier": "fringe",
+    "ret6m": 2.0716448032290615
+   },
+   {
+    "symbol": "017900",
+    "tier": "fringe",
+    "ret6m": 1.121212121212121
+   },
+   {
+    "symbol": "083450",
+    "tier": "core",
+    "ret6m": 1.0464216634429402
+   },
+   {
+    "symbol": "000660",
+    "tier": "core",
+    "ret6m": 1.015614013913304
+   },
+   {
+    "symbol": "319660",
+    "tier": "core",
+    "ret6m": 0.9578947368421054
+   },
+   {
+    "symbol": "072950",
+    "tier": "fringe",
+    "ret6m": 0.8421768707482993
+   },
+   {
+    "symbol": "440110",
+    "tier": "fringe",
+    "ret6m": 0.6554455445544554
+   },
+   {
+    "symbol": "353200",
+    "tier": "core",
+    "ret6m": 0.603448275862069
+   }
+  ],
+  "thresholds": {
+   "A": 0.25,
+   "B": 0.2,
+   "C": 0.2,
+   "D_shareGrowth": 0.05,
+   "D_eventShare": 0.2
+  },
+  "missing": []
  },
  "top": [
   {
@@ -374,7 +457,7 @@
    "priceDate": "2026-09-28",
    "high52Ratio": 0.7351683574676112,
    "ret6m": 0.05163871383173446,
-   "ret36to6m": -0.21986934719763007,
+   "ret36to6m": -0.2198694379132392,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -545,7 +628,7 @@
    "priceDate": "2026-09-28",
    "high52Ratio": 0.6266266266266266,
    "ret6m": -0.22042341220423411,
-   "ret36to6m": 0.1351236585606257,
+   "ret36to6m": 0.13512358021029702,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -1225,7 +1308,7 @@
    "priceDate": "2026-09-28",
    "high52Ratio": 0.6246397694524496,
    "ret6m": -0.08059384941675507,
-   "ret36to6m": -0.104213943728095,
+   "ret36to6m": -0.1042140102074659,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -1566,7 +1649,7 @@
    "priceDate": "2026-09-28",
    "high52Ratio": 0.8367669261259066,
    "ret6m": 0.030874785591766818,
-   "ret36to6m": -0.5244858045561083,
+   "ret36to6m": -0.5244858424316128,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -1736,7 +1819,7 @@
    "priceDate": "2026-09-28",
    "high52Ratio": 0.5097087378640777,
    "ret6m": 0.650294695481336,
-   "ret36to6m": 1.3593327258645451,
+   "ret36to6m": 1.3593324588710973,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -2077,7 +2160,7 @@
    "priceDate": "2026-09-28",
    "high52Ratio": 0.7706229346399516,
    "ret6m": 0.46509413229800023,
-   "ret36to6m": 1.9643950259846195,
+   "ret36to6m": 1.9643948414273393,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -2693,7 +2776,7 @@
    "priceDate": "2026-09-28",
    "high52Ratio": 0.757496740547588,
    "ret6m": -0.015254237288135575,
-   "ret36to6m": -0.05459104521707503,
+   "ret36to6m": -0.054591104393322154,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -2716,7 +2799,7 @@
     "S1": 80.0,
     "S2": 70.0,
     "S6": 100.0,
-    "S4": 63.2
+    "S4": 63.14
    },
    "reasons": {
     "S1": [
@@ -2732,7 +2815,7 @@
      "증자·CB 공시 0건"
     ]
    },
-   "composite": 79.67,
+   "composite": 79.66,
    "T1": "OFF",
    "inflection": true,
    "manual": null,
@@ -2852,7 +2935,824 @@
    "P1": null
   }
  ],
- "manualTracked": [],
+ "manualTracked": [
+  {
+   "rank": 796,
+   "symbol": "010120",
+   "name": "LS ELECTRIC",
+   "exchange": "KOSPI",
+   "marcap": 30750000000000.0,
+   "marcapEstimated": false,
+   "price": 205000.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.6549520766773163,
+   "ret6m": 0.3328998699609882,
+   "ret36to6m": 8.502924047180581,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.3218290257857319,
+     0.333759445614372,
+     0.12123992210988233
+    ],
+    "opTTM": 535586941997.0,
+    "opmTTM": 0.09405796579226273,
+    "opmTTMPrev": 0.08299302913322455,
+    "debtToEquity": 1.7212073900147675
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 50.0,
+    "S2": 40.0,
+    "S6": 100.0,
+    "S4": 1.24
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 32%",
+     "영업레버리지(TTM 영업이익 40%)"
+    ],
+    "S2": [
+     "영업이익률 +1.1%p"
+    ],
+    "S6": [
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 52.04,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "950000",
+    "share": "0.105",
+    "margin": "0.10",
+    "multiple": "25",
+    "other": "",
+    "note": "전력기기 95조(5년 뒤 매출 10조 가정). 시총 30.7조(9/28)"
+   },
+   "P1": {
+    "value5y": 24937500000000.0,
+    "multipleX": 0.81,
+    "verdict": "제외(3배 미만)"
+   }
+  },
+  {
+   "rank": 1044,
+   "symbol": "000150",
+   "name": "두산",
+   "exchange": "KOSPI",
+   "marcap": 22363686135000.0,
+   "marcapEstimated": false,
+   "price": 1381000.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.7008604698962412,
+   "ret6m": 0.2912239430879724,
+   "ret36to6m": 11.443385869613628,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.04483507620679861,
+     0.17716873753686024,
+     0.09362945587688021
+    ],
+    "opTTM": 1335731000000.0,
+    "opmTTM": 0.0642628297879905,
+    "opmTTMPrev": 0.046752690727619735,
+    "debtToEquity": 1.6129772814095777
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 25.0,
+    "S2": 40.0,
+    "S6": 100.0,
+    "S4": 0.51
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 4%",
+     "영업레버리지(TTM 영업이익 53%)"
+    ],
+    "S2": [
+     "영업이익률 +1.8%p"
+    ],
+    "S6": [
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 45.09,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "679000",
+    "share": "0.05",
+    "margin": "0.18",
+    "multiple": "18",
+    "other": "",
+    "note": "CCL 470억$(모건스탠리 2030), 전자BG만. 지주사라 SOTP 필요. 시총 23.0조(9/28)"
+   },
+   "P1": {
+    "value5y": 10999800000000.0,
+    "multipleX": 0.49,
+    "verdict": "제외(3배 미만)"
+   }
+  },
+  {
+   "rank": 194,
+   "symbol": "007660",
+   "name": "이수페타시스",
+   "exchange": "KOSPI",
+   "marcap": 8662287842000.0,
+   "marcapEstimated": false,
+   "price": 118000.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.7692307692307693,
+   "ret6m": 0.15009746588693962,
+   "ret36to6m": 2.6847740449687887,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.5735616038401434,
+     0.3477051149894914,
+     0.3179000540819634
+    ],
+    "opTTM": 259255308229.0,
+    "opmTTM": 0.1972594196421419,
+    "opmTTMPrev": 0.15235238117711908,
+    "debtToEquity": 0.7059452396015496
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 90.0,
+    "S2": 70.0,
+    "S6": 100.0,
+    "S4": 6.67
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 57%",
+     "2분기 연속 가속",
+     "영업레버리지(TTM 영업이익 84%)"
+    ],
+    "S2": [
+     "영업이익률 +4.5%p"
+    ],
+    "S6": [
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 72.12,
+   "T1": "NEAR",
+   "inflection": true,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "244000",
+    "share": "0.08",
+    "margin": "0.15",
+    "multiple": "15",
+    "other": "",
+    "note": "AI 고다층 PCB 180억$. 시총 8.24조(9/28)"
+   },
+   "P1": {
+    "value5y": 4392000000000.0,
+    "multipleX": 0.51,
+    "verdict": "제외(3배 미만)"
+   }
+  },
+  {
+   "rank": 730,
+   "symbol": "214450",
+   "name": "파마리서치",
+   "exchange": "KOSDAQ",
+   "marcap": 3288323592000.0,
+   "marcapEstimated": false,
+   "price": 316500.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.5790297912199691,
+   "ret6m": 0.0895008605851979,
+   "ret36to6m": 1.3757748150874223,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.2709483210568362,
+     0.24968178611582648,
+     0.39057912742710554
+    ],
+    "opTTM": 237546488344.0,
+    "opmTTM": 0.39356466941595664,
+    "opmTTMPrev": 0.37623265097203645,
+    "debtToEquity": 0.40349265791500183
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 50.0,
+    "S2": 40.0,
+    "S6": 100.0,
+    "S4": 14.25
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 27%",
+     "1분기 가속"
+    ],
+    "S2": [
+     "영업이익률 +1.7%p"
+    ],
+    "S6": [
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 54.41,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "11500",
+    "share": "1",
+    "margin": "0.28",
+    "multiple": "20",
+    "other": "",
+    "note": "매출 기준: 5년 뒤 매출 1.15조(연 12%) × 28% × PER20. 시총 3.32조(9/28)"
+   },
+   "P1": {
+    "value5y": 6440000000000.001,
+    "multipleX": 1.96,
+    "verdict": "제외(3배 미만)"
+   }
+  },
+  {
+   "rank": 758,
+   "symbol": "010170",
+   "name": "대한광통신",
+   "exchange": "KOSDAQ",
+   "marcap": 2581061956000.0,
+   "marcapEstimated": false,
+   "price": 16600.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.6831275720164609,
+   "ret6m": 0.3029827315541602,
+   "ret36to6m": 7.326797385620916,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.1780933348431053,
+     0.34871089655950716,
+     -0.1865093866062687
+    ],
+    "opTTM": -14721567041.0,
+    "opmTTM": -0.09454037592970312,
+    "opmTTMPrev": -0.18981183523436826,
+    "debtToEquity": 1.552181476415858
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 45.0,
+    "S2": 100.0,
+    "S6": 50.0,
+    "S4": 1.64
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 18%",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +9.5%p"
+    ],
+    "S6": [
+     "증자·CB 공시 1건"
+    ]
+   },
+   "composite": 53.48,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "271000",
+    "share": "0.02",
+    "margin": "0.06",
+    "multiple": "15",
+    "other": "",
+    "note": "광케이블 200억$. 시총 2.69조(9/28)"
+   },
+   "P1": {
+    "value5y": 487800000000.0,
+    "multipleX": 0.19,
+    "verdict": "제외(3배 미만)"
+   }
+  },
+  {
+   "rank": 1388,
+   "symbol": "257720",
+   "name": "실리콘투",
+   "exchange": "KOSDAQ",
+   "marcap": 2501734013800.0,
+   "marcapEstimated": false,
+   "price": 38150.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.7157598499061913,
+   "ret6m": -0.029262086513994867,
+   "ret36to6m": 3.033849970555437,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.517593798207981,
+     0.4106192697807345,
+     0.7627831136802752
+    ],
+    "opTTM": 252960816158.0,
+    "opmTTM": 0.18675895987703545,
+    "opmTTMPrev": 0.19409588699779473,
+    "debtToEquity": 0.4000046185516568
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 60.0,
+    "S2": 0.0,
+    "S6": 50.0,
+    "S4": 5.71
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 52%",
+     "1분기 가속"
+    ],
+    "S2": [
+     "영업이익률 -0.7%p"
+    ],
+    "S6": [
+     "증자·CB 공시 1건"
+    ]
+   },
+   "composite": 31.04,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "35000",
+    "share": "1",
+    "margin": "0.15",
+    "multiple": "15",
+    "other": "",
+    "note": "매출 기준: 5년 뒤 매출 3.5조 × 순이익률 15% × PER15. 시총 2.54조(9/28)"
+   },
+   "P1": {
+    "value5y": 7875000000000.0,
+    "multipleX": 3.15,
+    "verdict": "보류(3~10배)"
+   }
+  },
+  {
+   "rank": 417,
+   "symbol": "020150",
+   "name": "롯데에너지머티리얼즈",
+   "exchange": "KOSPI",
+   "marcap": 2228150450650.0,
+   "marcapEstimated": false,
+   "price": 42550.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.59593837535014,
+   "ret6m": 0.05191594561186652,
+   "ret36to6m": 0.055863426219310064,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     -0.05244308648617202,
+     0.011861554222478254,
+     -0.08311371085009855
+    ],
+    "opTTM": -89977800354.0,
+    "opmTTM": -0.13456503047360133,
+    "opmTTMPrev": -0.1957612504619757,
+    "debtToEquity": 0.315357851997182
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 0.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 55.51
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY -5%"
+    ],
+    "S2": [
+     "영업이익률 +6.1%p"
+    ],
+    "S6": [
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 64.64,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "68000",
+    "share": "0.15",
+    "margin": "0.15",
+    "multiple": "15",
+    "other": "6000",
+    "note": "HVLP 전체 약 50억$(1,356.7원) + 전지박 0.6조. 낙관(30%·20%·PER20) 3.9배. 시총 2.23조(9/28)"
+   },
+   "P1": {
+    "value5y": 2895000000000.0,
+    "multipleX": 1.3,
+    "verdict": "제외(3배 미만)"
+   }
+  },
+  {
+   "rank": 1014,
+   "symbol": "214150",
+   "name": "클래시스",
+   "exchange": "KOSDAQ",
+   "marcap": 2005996514250.0,
+   "marcapEstimated": false,
+   "price": 30750.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.4138627187079408,
+   "ret6m": -0.41650853889943074,
+   "ret36to6m": 0.6255182459940984,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.26693678964207,
+     0.13048336297701346,
+     0.25565096572338253
+    ],
+    "opTTM": 169948473499.0,
+    "opmTTM": 0.46042378230228703,
+    "opmTTMPrev": 0.4980649492887801,
+    "debtToEquity": 0.39569158208614347
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 50.0,
+    "S2": 0.0,
+    "S6": 100.0,
+    "S4": 27.13
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 27%",
+     "1분기 가속"
+    ],
+    "S2": [
+     "영업이익률 -3.8%p"
+    ],
+    "S6": [
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 45.84,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "7000",
+    "share": "1",
+    "margin": "0.30",
+    "multiple": "20",
+    "other": "",
+    "note": "매출 기준(현재 매출 확인 필요): 5년 뒤 7,000억 × 30% × PER20. 시총 2.01조(9/28)"
+   },
+   "P1": {
+    "value5y": 4200000000000.0,
+    "multipleX": 2.09,
+    "verdict": "제외(3배 미만)"
+   }
+  },
+  {
+   "rank": 772,
+   "symbol": "241710",
+   "name": "코스메카코리아",
+   "exchange": "KOSDAQ",
+   "marcap": 1384128000000.0,
+   "marcapEstimated": false,
+   "price": 129600.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.8421052631578947,
+   "ret6m": 0.6897001303780965,
+   "ret36to6m": 2.0307487825806034,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.39785126354261946,
+     null,
+     0.3904725955201038
+    ],
+    "opTTM": 102167181776.0,
+    "opmTTM": 0.1323320079469366,
+    "opmTTMPrev": null,
+    "debtToEquity": 1.195558093861425
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 35.0,
+    "S2": null,
+    "S6": 100.0,
+    "S4": 9.1
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 40%"
+    ],
+    "S2": [],
+    "S6": [
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 52.9,
+   "T1": "NEAR",
+   "inflection": false,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "22400",
+    "share": "1",
+    "margin": "0.09",
+    "multiple": "18",
+    "other": "",
+    "note": "매출 기준: 5년 뒤 매출 2.24조(연 20%) × 순이익률 9% × PER18. 낙관(연 25%·10%·PER20) 4.1배. 시총 1.34조(9/28)"
+   },
+   "P1": {
+    "value5y": 3628800000000.0,
+    "multipleX": 2.62,
+    "verdict": "제외(3배 미만)"
+   }
+  },
+  {
+   "rank": 1152,
+   "symbol": "251970",
+   "name": "펌텍코리아",
+   "exchange": "KOSDAQ",
+   "marcap": 781200000000.0,
+   "marcapEstimated": false,
+   "price": 63000.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.9603658536585366,
+   "ret6m": 0.3830954994511526,
+   "ret36to6m": 0.9244811787183158,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.10836179707169236,
+     0.00019874017927867804,
+     -0.14172883278041704
+    ],
+    "opTTM": 58268106373.0,
+    "opmTTM": 0.15197640383171063,
+    "opmTTMPrev": 0.15660733589182615,
+    "debtToEquity": 0.339160006493463
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 40.0,
+    "S2": 0.0,
+    "S6": 100.0,
+    "S4": 20.58
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 11%",
+     "2분기 연속 가속"
+    ],
+    "S2": [
+     "영업이익률 -0.5%p"
+    ],
+    "S6": [
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 41.92,
+   "T1": "ON",
+   "inflection": true,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "9000",
+    "share": "1",
+    "margin": "0.13",
+    "multiple": "15",
+    "other": "",
+    "note": "매출 기준: 5년 뒤 매출 9,000억(연 15%) × 13% × PER15. 시총 7,626억(9/28)"
+   },
+   "P1": {
+    "value5y": 1755000000000.0,
+    "multipleX": 2.25,
+    "verdict": "제외(3배 미만)"
+   }
+  },
+  {
+   "rank": null,
+   "symbol": "069540",
+   "name": "빛과전자",
+   "exchange": "KOSDAQ",
+   "marcap": 453584885425.0,
+   "marcapEstimated": false,
+   "price": 4025.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.6089258698940998,
+   "ret6m": 0.2384615384615385,
+   "ret36to6m": 0.11111111111111116,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     -0.45730916553176093,
+     0.0,
+     0.294947920318426
+    ],
+    "opTTM": -14915591706.0,
+    "opmTTM": -0.530387830764347,
+    "opmTTMPrev": -0.41927736223130097,
+    "debtToEquity": 0.24435071485762794
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": true,
+    "hits": [
+     {
+      "code": "G2",
+      "reason": "12개월 내 증자·CB·BW 결정 6건"
+     }
+    ],
+    "flags": []
+   },
+   "scores": {
+    "S1": 0.0,
+    "S2": 0.0,
+    "S6": 0.0,
+    "S4": 52.23
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY -46%"
+    ],
+    "S2": [
+     "영업이익률 -11.1%p"
+    ],
+    "S6": [
+     "증자·CB 공시 6건"
+    ]
+   },
+   "composite": 9.5,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "543000",
+    "share": "0.001",
+    "margin": "0.10",
+    "multiple": "20",
+    "other": "",
+    "note": "광부품. 5년 적자. 시총 4,502억(9/28)"
+   },
+   "P1": {
+    "value5y": 108600000000.0,
+    "multipleX": 0.24,
+    "verdict": "제외(3배 미만)"
+   }
+  },
+  {
+   "rank": 605,
+   "symbol": "138080",
+   "name": "오이솔루션",
+   "exchange": "KOSDAQ",
+   "marcap": 347814999800.0,
+   "marcapEstimated": false,
+   "price": 28100.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.5272045028142589,
+   "ret6m": -0.33333333333333337,
+   "ret36to6m": 2.170626337833874,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.23786168374146066,
+     0.28126039005910775,
+     0.57616676408293
+    ],
+    "opTTM": -7784799432.0,
+    "opmTTM": -0.11956294912646427,
+    "opmTTMPrev": -0.528627318761706,
+    "debtToEquity": 0.5262608723503076
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 10.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 8.25
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 24%"
+    ],
+    "S2": [
+     "영업이익률 +40.9%p"
+    ],
+    "S6": [
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 58.77,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "543000",
+    "share": "0.005",
+    "margin": "0.10",
+    "multiple": "20",
+    "other": "",
+    "note": "광트랜시버 400억$. 낙관(점유율 1%) 3.2배. 시총 3,429억(9/28)"
+   },
+   "P1": {
+    "value5y": 543000000000.0,
+    "multipleX": 1.56,
+    "verdict": "제외(3배 미만)"
+   }
+  }
+ ],
  "excludedSample": [
   {
    "symbol": "298040",
