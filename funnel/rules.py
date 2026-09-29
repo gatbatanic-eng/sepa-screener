@@ -266,15 +266,15 @@ def evaluate(stock: dict, pct_past: float | None) -> dict[str, Any]:
 
 
 def p1_multiple(tam: float | None, share: float | None, margin: float | None,
-                multiple: float | None, marcap: float | None) -> dict[str, Any]:
-    """③ P1 10배 산수: 목표시장 × 점유율 × 성숙기 이익률 × 적정 배수 ÷ 현재 시총.
+                multiple: float | None, marcap: float | None, other: float | None = None) -> dict[str, Any]:
+    """③ P1 10배 산수: (목표시장 × 점유율 × 성숙기 이익률 × 적정 배수 + 기타 사업 가치) ÷ 현재 시총.
 
-    tam과 marcap은 같은 통화·단위여야 한다. share·margin은 비율(0.2 = 20%).
+    tam·other·marcap은 같은 통화·단위여야 한다. share·margin은 비율(0.2 = 20%).
     """
     vals = [finite(v) for v in (tam, share, margin, multiple, marcap)]
     if any(v is None for v in vals) or vals[4] <= 0:
         return {"value5y": None, "multipleX": None, "verdict": "입력 부족"}
-    value = vals[0] * vals[1] * vals[2] * vals[3]
+    value = vals[0] * vals[1] * vals[2] * vals[3] + (finite(other) or 0.0)
     x = value / vals[4]
     verdict = "텐배거 산수 통과" if x >= P1_TENBAGGER else "보류(3~10배)" if x >= P1_CUTOFF else "제외(3배 미만)"
     return {"value5y": value, "multipleX": round(x, 2), "verdict": verdict}

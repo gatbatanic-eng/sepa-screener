@@ -51,10 +51,11 @@ def apply_manual(row: dict, manual: dict | None, market: str) -> None:
     if not manual:
         return
     num = rules.finite
-    tam = num(manual.get("tam"))
+    tam, other = num(manual.get("tam")), num(manual.get("other"))
     p1 = rules.p1_multiple(tam * UNIT[market] if tam is not None else None, num(manual.get("share")),
-                           num(manual.get("margin")), num(manual.get("multiple")), row.get("marcap"))
-    row["manual"] = {k: manual.get(k) for k in ("recordedAt", "S3", "S5", "tam", "share", "margin", "multiple", "note")}
+                           num(manual.get("margin")), num(manual.get("multiple")), row.get("marcap"),
+                           other * UNIT[market] if other is not None else None)
+    row["manual"] = {k: manual.get(k) for k in ("recordedAt", "S3", "S5", "tam", "share", "margin", "multiple", "other", "note")}
     row["P1"] = p1
 
 

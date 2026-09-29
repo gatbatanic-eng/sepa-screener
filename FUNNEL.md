@@ -26,7 +26,8 @@
 ## 수작업 단계 (`data/funnel_manual.csv`)
 S3 병목, S5 확장성, P1 10배 산수 입력값을 기록일과 함께 남긴다.
 `tam` 단위는 한국 억 원, 미국 백만 달러. `share`·`margin`은 비율(0.2 = 20%).
-P1 = tam × share × margin × multiple ÷ 현재 시총 → 3배 미만 제외, 10배 이상 통과.
+`other`는 목표시장 밖 기존 사업 가치(같은 단위).
+P1 = (tam × share × margin × multiple + other) ÷ 현재 시총 → 3배 미만 제외, 10배 이상 통과.
 
 ## 전향적 검증
 실행마다 `research/funnel/{market}/snapshots/YYYY-MM-DD.json.gz`에 기록 당시 가격·순위를 남기고,

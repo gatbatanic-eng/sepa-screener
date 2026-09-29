@@ -87,6 +87,7 @@ class RulesTest(unittest.TestCase):
         self.assertEqual(res["verdict"], "텐배거 산수 통과")
         self.assertEqual(rules.p1_multiple(1e12, 0.1, 0.1, 10, 1e12)["verdict"], "제외(3배 미만)")
         self.assertEqual(rules.p1_multiple(None, 0.1, 0.1, 10, 1e12)["verdict"], "입력 부족")
+        self.assertEqual(rules.p1_multiple(10e12, 0.2, 0.25, 20, 2e12, other=2e12)["multipleX"], 6)
 
 
 class DartParsingTest(unittest.TestCase):
