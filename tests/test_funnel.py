@@ -59,8 +59,37 @@ class RulesTest(unittest.TestCase):
     def test_g3_debt_and_capital_impairment(self):
         s = stock(quarters=quarters([100] * 8, [5] * 8, equity=10.0, liabilities=50.0))
         self.assertIn("G3", [h["code"] for h in rules.evaluate(s, 0.5)["gates"]["hits"]])
-        s = stock(quarters=quarters([100] * 8, [5] * 8, equity=-1.0))
+        s = stock(quarters=quarters([100] * 8, [-5] * 8, equity=-1.0))
         self.assertEqual(rules.evaluate(s, 0.5)["gates"]["hits"][0]["reason"], "자본잠식")
+
+    def test_g3_softened_for_buybacks_and_financials(self):
+        # 자본 마이너스 + 영업흑자(자사주 매입형) → 제외 대신 확인 필요
+        res = rules.evaluate(stock(quarters=quarters([100] * 8, [5] * 8, equity=-1.0)), 0.5)
+        self.assertFalse(res["gates"]["excluded"])
+        self.assertEqual(res["gates"]["flags"][0]["code"], "G3?")
+        # 금융업은 부채비율 기준 미적용
+        bank = stock(quarters=quarters([100] * 8, [5] * 8, equity=10.0, liabilities=100.0),
+                     industry=rules.classify_industry("us", "6022"))
+        self.assertFalse(rules.evaluate(bank, 0.5)["gates"]["excluded"])
+
+    def test_s1_floor_and_recovery(self):
+        # 역성장 회복: -50% → -28% → +20% 는 가속이 아니라 회복
+        s = stock(quarters=quarters([200, 200, 200, 200, 100, 144, 240], [5] * 7))
+        res = rules.evaluate(s, 0.5)
+        self.assertIn("역성장 회복(가속 아님)", res["reasons"]["S1"])
+        self.assertFalse(res["inflection"])
+        # 매출 +2% 는 순위 최소 조건 미달
+        flat = stock(quarters=quarters([100, 100, 100, 100, 102, 102, 102, 102], [5] * 8))
+        self.assertFalse(rules.evaluate(flat, 0.5)["meetsS1Floor"])
+        self.assertTrue(rules.evaluate(stock(), 0.5)["meetsS1Floor"])
+
+    def test_industry_classification(self):
+        self.assertEqual(rules.classify_industry("us", "2911")["cyclical"], "정유")
+        self.assertTrue(rules.classify_industry("us", "6798")["financial"])
+        self.assertEqual(rules.classify_industry("kr", "50112")["cyclical"], "해운")
+        self.assertTrue(rules.classify_industry("kr", "64191")["financial"])
+        self.assertEqual(rules.classify_industry("us", "3674", "MU")["cyclical"], "메모리 반도체")
+        self.assertIsNone(rules.classify_industry("kr", "20423")["cyclical"])
 
     def test_g4_is_flag_not_exclusion(self):
         res = rules.evaluate(stock(splitEvents12m=1), 0.5)
@@ -133,6 +162,12 @@ class DartParsingTest(unittest.TestCase):
         self.assertEqual(q[(2025, 4)]["revenue"], 120.0)
         raw[(2025, 3)]["basis"] = "OFS"
         self.assertIsNone({(r["year"], r["quarter"]): r for r in build_quarters(raw)}[(2025, 4)]["revenue"])
+
+    def test_missing_q1_derived_from_q2_cumulative(self):
+        raw = {(2025, 1): {"basis": "CFS"},
+               (2025, 2): {"basis": "CFS", "revenue": (161.7, 280.1)}}
+        q = {(r["year"], r["quarter"]): r for r in build_quarters(raw)}
+        self.assertAlmostEqual(q[(2025, 1)]["revenue"], 118.4)
 
     def test_quarter_cache_skips_settled_periods(self):
         from funnel import data_kr

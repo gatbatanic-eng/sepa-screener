@@ -134,6 +134,28 @@ def collect(today: dt.date, limit: int | None = None) -> list[dict]:
     return universe
 
 
+def fetch_sic(cik: int) -> str | None:
+    """SEC submissions의 SIC 업종코드."""
+    try:
+        return str(fetch(f"https://data.sec.gov/submissions/CIK{cik:010d}.json").get("sic") or "") or None
+    except RuntimeError:
+        return None
+
+
+def companyfacts_quarters(normalized: list[dict]) -> list[dict]:
+    """companyfacts 정규화 분기(실제 회계기간) → 표준 분기 레코드. 분기 끝 달로 달력 분기를 정한다."""
+    out: dict[tuple[int, int], dict] = {}
+    for rec in normalized:
+        end = dt.date.fromisoformat(rec["periodEnd"])
+        # 월초에 끝나는 회계분기(예: 8월 2일)는 직전 달 분기로 본다
+        ref = end - dt.timedelta(days=10)
+        key = (ref.year, (ref.month - 1) // 3 + 1)
+        out[key] = {"year": key[0], "quarter": key[1], "revenue": rec.get("revenue"),
+                    "operatingProfit": rec.get("operatingProfit"), "netIncome": rec.get("netIncome"),
+                    "liabilities": rec.get("liabilities"), "equity": rec.get("equity")}
+    return [out[k] for k in sorted(out)]
+
+
 def enrich_detail(cik: int, today: dt.date) -> dict:
     """최종 후보용 companyfacts 정밀 조회."""
     out = {"ocfToNi": None, "ocfTTMPositive": None, "sharesNow": None, "sharesYearAgo": None}
@@ -141,7 +163,11 @@ def enrich_detail(cik: int, today: dt.date) -> dict:
         data = fetch(f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik:010d}.json")
     except RuntimeError:
         return out
-    quarters = normalize(data, today.isoformat())[-4:]
+    normalized = normalize(data, today.isoformat())
+    cf_quarters = companyfacts_quarters(normalized)
+    if len(cf_quarters) >= 5:
+        out["quarters"] = cf_quarters
+    quarters = normalized[-4:]
     ocf = [q.get("operatingCashFlow") for q in quarters]
     ni = [q.get("netIncome") for q in quarters]
     if len(quarters) == 4 and None not in ocf:

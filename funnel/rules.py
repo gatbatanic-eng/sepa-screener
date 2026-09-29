@@ -25,6 +25,8 @@ G1_RUNUP = 1.5            # 6개월 +150% 이상
 G2_SHARE_GROWTH = 0.10    # 주식 수 전년 대비 +10% 초과
 G2_EVENTS = 2             # 12개월 내 유상증자·CB·BW 결정 2건 이상
 G3_DEBT_TO_EQUITY = 2.0   # 부채비율 200% 초과
+S1_FLOOR = 0.15           # 순위 최소 조건: 최근 매출 YoY 15% 이상
+S1_FLOOR_TURNAROUND = 0.10  # 또는 영업 흑자전환 + 매출 YoY 10% 이상
 ACCEL_STEP = 0.01         # 가속 인정: 매출 YoY가 직전 분기보다 1%p 이상 높을 때
 
 P1_CUTOFF = 3.0           # 5년 가치 ÷ 현재 시총 3배 미만이면 텐배거 후보 제외
@@ -124,11 +126,19 @@ def evaluate_gates(stock: dict, m: dict) -> dict[str, Any]:
         hits.append({"code": "G2", "reason": f"주식 수 전년 대비 +{sg * 100:.1f}%"})
     elif events is not None and events >= G2_EVENTS:
         hits.append({"code": "G2", "reason": f"12개월 내 증자·CB·BW 결정 {events}건"})
-    if m["equity"] is not None and m["equity"] <= 0:
-        hits.append({"code": "G3", "reason": "자본잠식"})
-    elif m["debtToEquity"] is not None and m["debtToEquity"] > G3_DEBT_TO_EQUITY:
-        hits.append({"code": "G3", "reason": f"부채비율 {m['debtToEquity'] * 100:.0f}% (금융업이면 수동 확인)"})
     flags = []
+    industry = stock.get("industry") or {}
+    op_positive = op is not None and op > 0
+    if m["equity"] is not None and m["equity"] <= 0:
+        if op_positive and stock.get("ocfTTMPositive") is not False:
+            flags.append({"code": "G3?", "reason": "자본 마이너스지만 영업흑자(자사주 매입 등 가능) — 확인 필요"})
+        else:
+            hits.append({"code": "G3", "reason": "자본잠식"})
+    elif m["debtToEquity"] is not None and m["debtToEquity"] > G3_DEBT_TO_EQUITY:
+        if industry.get("financial"):
+            flags.append({"code": "G3?", "reason": f"금융·부동산업 부채비율 {m['debtToEquity'] * 100:.0f}% — 업종 기준으로 별도 판단"})
+        else:
+            hits.append({"code": "G3", "reason": f"부채비율 {m['debtToEquity'] * 100:.0f}%"})
     if (stock.get("splitEvents12m") or 0) >= 1:
         flags.append({"code": "G4", "reason": "12개월 내 분할 결정 공시 — 물적분할 여부 확인"})
     return {"excluded": bool(hits), "hits": hits, "flags": flags}
@@ -151,7 +161,11 @@ def score_s1(m: dict) -> tuple[float | None, list[str], bool]:
     step = ACCEL_STEP
     accel2 = len(g) >= 3 and None not in g[:3] and g[0] > g[1] + step and g[1] > g[2] + step
     accel1 = len(g) >= 2 and g[1] is not None and g[0] > g[1] + step
-    if accel2:
+    recovery = (accel2 or accel1) and any(x is not None and x < 0 for x in g[1:3])
+    if recovery:
+        pts += 10
+        why.append("역성장 회복(가속 아님)")
+    elif accel2:
         pts += 30
         why.append("2분기 연속 가속")
     elif accel1:
@@ -169,8 +183,44 @@ def score_s1(m: dict) -> tuple[float | None, list[str], bool]:
         why.append(f"영업레버리지(TTM 영업이익 {op_g * 100:.0f}%)")
     elif op_g is not None and op_g > 0:
         pts += 10
-    inflection = (accel2 or turnaround) and g0 >= 0.10
+    inflection = ((accel2 and not recovery) or turnaround) and g0 >= 0.10
     return min(pts, 100.0), why, inflection
+
+
+def meets_s1_floor(m: dict) -> bool:
+    """순위 최소 조건. 미달 종목은 점수는 남기되 후보 순위에서 뺀다."""
+    g = m["revYoY"]
+    g0 = g[0] if g else None
+    if g0 is None:
+        return False
+    turnaround = (m["opLatest"] is not None and m["opLatest"] > 0
+                  and m["opYearAgo"] is not None and m["opYearAgo"] <= 0)
+    return g0 >= S1_FLOOR or (turnaround and g0 >= S1_FLOOR_TURNAROUND)
+
+
+# 사이클 업종(P2: 정상 이익 기준 평가 필요). SIC 4자리 범위 / KSIC 앞자리.
+CYCLICAL_SIC = [((1000, 1499), "광업·석유가스"), ((2400, 2499), "목재"), ((2600, 2631), "제지"),
+                ((2810, 2829), "기초화학"), ((2900, 2999), "정유"), ((3310, 3399), "1차 금속"),
+                ((4400, 4499), "해운")]
+CYCLICAL_KSIC = [("05", "광업"), ("06", "광업"), ("07", "광업"), ("08", "광업"), ("19", "정유"),
+                 ("201", "기초화학"), ("24", "1차 금속"), ("50", "해운"), ("26111", "메모리 반도체")]
+MEMORY_SYMBOLS = {"005930", "000660", "MU", "WDC", "STX", "SNDK"}
+
+
+def classify_industry(market: str, code: str | None, symbol: str = "") -> dict[str, Any]:
+    """업종 코드 → 금융·부동산 여부, 사이클 업종 라벨."""
+    code = str(code or "").strip()
+    financial, cyclical = False, None
+    if market == "us" and code.isdigit():
+        sic = int(code)
+        financial = 6000 <= sic <= 6799
+        cyclical = next((label for (lo, hi), label in CYCLICAL_SIC if lo <= sic <= hi), None)
+    elif market == "kr" and code:
+        financial = code[:2] in {"64", "65", "66", "68"}
+        cyclical = next((label for prefix, label in CYCLICAL_KSIC if code.startswith(prefix)), None)
+    if symbol in MEMORY_SYMBOLS:
+        cyclical = "메모리 반도체"
+    return {"code": code or None, "financial": financial, "cyclical": cyclical}
 
 
 def score_s2(stock: dict, m: dict) -> tuple[float | None, list[str]]:
@@ -262,6 +312,8 @@ def evaluate(stock: dict, pct_past: float | None) -> dict[str, Any]:
         "composite": composite(scores),
         "T1": timing_t1(stock, inflection),
         "inflection": inflection,
+        "meetsS1Floor": meets_s1_floor(m),
+        "cyclical": (stock.get("industry") or {}).get("cyclical"),
     }
 
 

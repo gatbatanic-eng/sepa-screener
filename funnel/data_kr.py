@@ -22,7 +22,7 @@ log = logging.getLogger("funnel.kr")
 
 REPORTS = {1: "11013", 2: "11012", 3: "11014", 4: "11011"}
 MULTI_ACCOUNTS = {
-    "revenue": {"매출액", "수익(매출액)", "영업수익", "매출"},
+    "revenue": {"매출액", "수익(매출액)", "매출액(수익)", "영업수익", "매출", "수익"},
     "operatingProfit": {"영업이익", "영업이익(손실)", "영업손익"},
     "netIncome": {"당기순이익", "당기순이익(손실)", "분기순이익", "반기순이익"},
     "liabilities": {"부채총계"},
@@ -110,9 +110,25 @@ def build_quarters(raw: dict[tuple[int, int], dict]) -> list[dict]:
                 q3 = raw.get((y, 3))
                 ytd = q3.get(field, (None, None))[1] if q3 and q3["basis"] == rec["basis"] else None
                 cur = cur - ytd if cur is not None and ytd is not None else None
+            if cur is None and q in (1, 2) and field in FLOW:
+                cur = _derive_from_next(raw, y, q, field, rec["basis"])
             row[field] = cur
         quarters.append(row)
     return quarters
+
+
+def _derive_from_next(raw: dict, y: int, q: int, field: str, basis: str) -> float | None:
+    """계정명이 달라 빠진 분기값을 다음 분기 누적 − 다음 분기 3개월 − 앞선 분기로 보충(같은 기준일 때만)."""
+    nxt = raw.get((y, q + 1))
+    if not nxt or nxt["basis"] != basis:
+        return None
+    three, ytd = nxt.get(field, (None, None))
+    if three is None or ytd is None:
+        return None
+    earlier = [raw.get((y, k), {}).get(field, (None, None))[0] for k in range(1, q)]
+    if any(v is None for v in earlier):
+        return None
+    return ytd - three - sum(earlier)
 
 
 def _cache_path(cache_dir: Path, year: int, q: int) -> Path:
@@ -219,6 +235,14 @@ def fetch_events(api: Dart, today: dt.date) -> dict[str, Counter]:
         end = start - dt.timedelta(days=1)
     log.info("DART 주요사항 공시: 증자·CB·BW/분할 해당 %d개사", len(counts))
     return counts
+
+
+def fetch_industry(api: Dart, corp_code: str) -> str | None:
+    """DART 기업개황의 업종코드(KSIC)."""
+    try:
+        return (api.request("company.json", corp_code=corp_code) or {}).get("induty_code")
+    except RuntimeError:
+        return None
 
 
 def enrich_detail(api: Dart, corp_code: str, year: int, quarter: int) -> dict:

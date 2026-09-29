@@ -83,7 +83,7 @@ def evaluate_all(records: list[dict]) -> dict[str, dict]:
 
 def rank(records: list[dict], results: dict[str, dict]) -> list[dict]:
     passed = [r for r in records if not results[r["symbol"]]["gates"]["excluded"]
-              and results[r["symbol"]]["composite"] is not None]
+              and results[r["symbol"]]["composite"] is not None and results[r["symbol"]]["meetsS1Floor"]]
     return sorted(passed, key=lambda r: -results[r["symbol"]]["composite"])
 
 
@@ -129,7 +129,9 @@ def fmt_cap(v, market) -> str:
 def write_report(path: Path, market: str, today: dt.date, top: list[dict], stats: dict, heat: dict) -> None:
     lines = [f"# 깔때기 스크리너 — {market.upper()} ({today.isoformat()})", "",
              "투자 추천이 아니라 검증·분석용 후보 목록입니다. S3·S5·P1·비중은 수작업 단계입니다.", "",
-             f"- 유니버스 {stats['universe']}종목 → 관문 탈락 {stats['excluded']} / 점수 불가(실적 결측) {stats['noScore']} / 순위 대상 {stats['ranked']}",
+             f"- 유니버스 {stats['universe']}종목 → 관문 탈락 {stats['excluded']} / 점수 불가(실적 결측) {stats['noScore']} / "
+             f"S1 최소 조건 미달 {stats['belowS1Floor']} / 순위 대상 {stats['ranked']}",
+             f"- 상위 {len(top)} 중 사이클 업종(⚠P2, 정상 이익 기준 평가 필요) {stats['cyclicalInTop']}종목",
              f"- 관문 탈락 사유: {', '.join(f'{k} {v}' for k, v in sorted(stats['gateHits'].items())) or '없음'}",
              "", "## 관찰 지표 7번: 섹터 동반 급등 (AI 인프라 바스켓)", "",
              f"- 판정 {({'g': '양호', 'y': '주의', 'r': '경계'}).get(heat['level'], '미확인')} (경계 세부 {heat['hits']}개)",
@@ -143,7 +145,8 @@ def write_report(path: Path, market: str, today: dt.date, top: list[dict], stats
         s = r["scores"]
         yoy = " → ".join(fmt_pct(v) for v in r["metrics"]["revYoY"])
         why = "; ".join(r["reasons"]["S1"] + r["reasons"]["S2"][:1])
-        flag = " ⚠G4" if r["gates"]["flags"] else ""
+        flag = "".join(" ⚠" + f["code"] for f in r["gates"]["flags"])
+        flag += f" ⚠P2({r['cyclical']})" if r.get("cyclical") else ""
         p1 = r["P1"]["multipleX"] if r.get("P1") and r["P1"].get("multipleX") is not None else "—"
         cell = lambda v: "—" if v is None else f"{v:.0f}"  # noqa: E731
         lines.append(f"| {r['rank']} | {r['name']} ({r['symbol']}){flag} | {fmt_cap(r['marcap'], market)} | {r['composite']:.0f} | "
@@ -153,8 +156,9 @@ def write_report(path: Path, market: str, today: dt.date, top: list[dict], stats
 
 
 def run_market(market: str, args, today: dt.date) -> None:
+    from funnel import data_kr, data_us
+
     if market == "kr":
-        from funnel import data_kr
         from publish_fundamentals import Dart
         key = os.environ.get("DART_API_KEY", "").strip()
         if not key:
@@ -162,7 +166,7 @@ def run_market(market: str, args, today: dt.date) -> None:
         api = Dart(key)
         records, _ = data_kr.collect(api, today, args.limit, ROOT / "research" / "funnel" / "cache" / "kr")
     else:
-        from funnel import data_us
+        api = None
         records = data_us.collect(today, args.limit)
 
     bench = BENCHMARK[market]
@@ -172,25 +176,36 @@ def run_market(market: str, args, today: dt.date) -> None:
     records = attach_prices(records, series, market)
     log.info("%s: 가격·시총 하한 통과 %d/%d", market, len(records), universe_n)
 
+    manual = load_manual(market)
     results = evaluate_all(records)
     shortlist = rank(records, results)[:args.shortlist]
-    # 정밀 조회(현금흐름·주식 수)는 1차 상위 후보에만
-    for r in shortlist:
+    detail_set = {r["symbol"] for r in shortlist} | set(manual)
+    g3_set = {sym for sym, v in results.items() if any(h["code"] == "G3" for h in v["gates"]["hits"])}
+    # 업종 조회: G3 해당(금융업 판별) + 정밀 조회 대상(사이클 태그)
+    for r in records:
+        if r["symbol"] not in detail_set | g3_set:
+            continue
+        if market == "kr":
+            code = data_kr.fetch_industry(api, r["corpCode"]) if r.get("corpCode") else None
+        else:
+            code = data_us.fetch_sic(r["cik"])
+        r["industry"] = rules.classify_industry(market, code, r["symbol"])
+    # 정밀 조회(현금흐름·주식 수, 미국은 실제 회계분기 실적)는 1차 상위 + 추적 후보에만
+    for r in records:
+        if r["symbol"] not in detail_set:
+            continue
         if market == "kr" and r.get("corpCode"):
-            from funnel import data_kr
             period = results[r["symbol"]]["metrics"]["latestPeriod"]
             if period:
                 y, q = int(period[:4]), int(period[-1])
                 r.update({k: v for k, v in data_kr.enrich_detail(api, r["corpCode"], y, q).items() if v is not None})
         elif market == "us":
-            from funnel import data_us
             detail = data_us.enrich_detail(r["cik"], today)
             r.update({k: v for k, v in detail.items() if v is not None})
             price = (r.get("prices") or {}).get("price")
             if detail.get("sharesNow") and price:
                 r["marcap"] = price * detail["sharesNow"]
     results = evaluate_all(records)
-    manual = load_manual(market)
     for r in records:
         apply_manual(r, manual.get(r["symbol"]), market)
 
@@ -201,6 +216,9 @@ def run_market(market: str, args, today: dt.date) -> None:
         "universe": len(records),
         "excluded": sum(1 for v in results.values() if v["gates"]["excluded"]),
         "noScore": sum(1 for v in results.values() if not v["gates"]["excluded"] and v["composite"] is None),
+        "belowS1Floor": sum(1 for v in results.values() if not v["gates"]["excluded"] and v["composite"] is not None
+                            and not v["meetsS1Floor"]),
+        "cyclicalInTop": sum(1 for t in top if t.get("cyclical")),
         "ranked": len(ranked),
         "gateHits": dict(Counter(h["code"] for v in results.values() for h in v["gates"]["hits"])),
     }
@@ -227,6 +245,7 @@ def run_market(market: str, args, today: dt.date) -> None:
                                                  "C_lossMinusProfit", "D_shareGrowthMedian", "D_dilutionEventShare")},
             "rows": [{"symbol": r["symbol"], "price": (r.get("prices") or {}).get("price"), "rank": ranks.get(r["symbol"]),
                       "composite": results[r["symbol"]]["composite"], "excluded": results[r["symbol"]]["gates"]["excluded"],
+                      "meetsS1Floor": results[r["symbol"]]["meetsS1Floor"],
                       "T1": results[r["symbol"]]["T1"]} for r in records]}
     snap_dir = base / "snapshots"
     snap_dir.mkdir(parents=True, exist_ok=True)
