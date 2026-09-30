@@ -105,11 +105,24 @@ def quarter_metrics(quarters: list[dict]) -> dict[str, Any]:
     return out
 
 
+SPLIT_TOLERANCE = 0.02  # 주식 수 비율이 정수배에서 2% 이내면 액면분할로 본다
+
+
+def split_factor(ratio: float, dilution_events: int | None) -> int:
+    """주식 수 비율이 2·3·4·5·10배 등 정수배에 가깝고 증자·CB 공시가 없으면 액면분할 배수."""
+    k = round(ratio)
+    if k >= 2 and abs(ratio - k) <= SPLIT_TOLERANCE * k and not dilution_events:
+        return k
+    return 1
+
+
 def share_growth(stock: dict) -> float | None:
+    """주식 수 전년 대비 증가율. 액면분할로 보이는 정수배 증가는 분할 효과를 뺀다."""
     now, ago = finite(stock.get("sharesNow")), finite(stock.get("sharesYearAgo"))
     if now is None or ago is None or ago <= 0:
         return None
-    return now / ago - 1
+    ratio = now / ago
+    return ratio / split_factor(ratio, stock.get("dilutionEvents12m")) - 1
 
 
 def evaluate_gates(stock: dict, m: dict) -> dict[str, Any]:
