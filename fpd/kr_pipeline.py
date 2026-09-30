@@ -5,7 +5,7 @@ import hashlib
 import json
 import os
 import time
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time as dtime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 import requests
@@ -44,9 +44,25 @@ def split_checks(panel,day):
 def history():
     return sorted([read_gzip_json(p) for p in (ROOT/'research/fpd/raw/kr').rglob('*.json.gz')],key=lambda s:s['recordedAt'])
 
+def close_session(now):
+    """Trading day whose close a run at `now` (KST) observes, or None during market hours/weekends.
+
+    GitHub delays scheduled runs by hours, so a run started before the next 09:00 open still
+    records the previous weekday's close instead of failing.
+    """
+    if now.weekday()<=4 and now.hour>=16:return now.date()
+    if now.hour<9:
+        day=now.date()-timedelta(days=1)
+        while day.weekday()>4:day-=timedelta(days=1)
+        return day if now.weekday()<=5 else None
+    return None
+
 def collect(initial=False):
-    definition=json.loads(REG.read_text());now=datetime.now(ZoneInfo('Asia/Seoul'));day=now.date();phase='initial' if initial else 'close'
-    if not initial and (now.hour<16 or now.weekday()>4):raise RuntimeError('KR scheduled collection requires weekday after 16:00 KST')
+    definition=json.loads(REG.read_text());now=datetime.now(ZoneInfo('Asia/Seoul'));phase='initial' if initial else 'close'
+    day=now.date() if initial else close_session(now)
+    if day is None:raise RuntimeError('KR scheduled collection requires a weekday close (16:00 KST until next 09:00 open)')
+    # Closing prices are read as of that session's close, even when the run started after midnight.
+    close_at=now if initial or day==now.date() else datetime.combine(day,dtime(16),ZoneInfo('Asia/Seoul'))
     path=ROOT/f'research/fpd/raw/kr/{day:%Y/%m}/{day.isoformat()}-{phase}.json.gz'
     if path.exists():return read_gzip_json(path)
     prior=history();observations={};failures={};universe={};retrieved={}
@@ -61,7 +77,7 @@ def collect(initial=False):
             failures[ticker]={'status':'PROVIDER_ERROR','kind':type(e).__name__}
         if not initial:
             try:
-                close=fetch_close(session,ticker,now)
+                close=fetch_close(session,ticker,close_at)
                 universe[ticker].update(close=close,priceAsOf=day.isoformat() if close else None)
             except Exception:
                 universe[ticker]['priceStatus']='UNAVAILABLE'

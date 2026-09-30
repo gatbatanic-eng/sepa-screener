@@ -37,3 +37,15 @@ class KoreanConsensusTest(unittest.TestCase):
         session=Mock();session.get.return_value.json.return_value=[{'localTradedAt':'2026-09-28','closePrice':'100'}]
         self.assertIsNone(fetch_close(session,'005930',datetime(2026,9,28,9,tzinfo=ZoneInfo('Asia/Seoul'))))
         self.assertEqual(fetch_close(session,'005930',datetime(2026,9,28,18,tzinfo=ZoneInfo('Asia/Seoul'))),100)
+    def test_delayed_run_records_previous_weekday_close(self):
+        from fpd.kr_pipeline import close_session
+        from datetime import datetime
+        from zoneinfo import ZoneInfo
+        kst=ZoneInfo('Asia/Seoul')
+        self.assertEqual(close_session(datetime(2026,9,29,18,tzinfo=kst)),date(2026,9,29))
+        self.assertEqual(close_session(datetime(2026,9,30,0,40,tzinfo=kst)),date(2026,9,29))
+        self.assertEqual(close_session(datetime(2026,10,3,2,tzinfo=kst)),date(2026,10,2))  # Sat early -> Fri
+        self.assertEqual(close_session(datetime(2026,10,5,1,tzinfo=kst)),date(2026,10,2))  # Mon early -> Fri
+        self.assertIsNone(close_session(datetime(2026,9,30,10,tzinfo=kst)))  # market hours
+        self.assertIsNone(close_session(datetime(2026,10,3,18,tzinfo=kst)))  # Saturday evening
+        self.assertIsNone(close_session(datetime(2026,10,4,1,tzinfo=kst)))  # Sunday early
