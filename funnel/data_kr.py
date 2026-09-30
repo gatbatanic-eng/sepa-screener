@@ -228,29 +228,39 @@ def classify_disclosure(title: str) -> str | None:
     return None
 
 
+def _events_window(api: Dart, start: dt.date, end: dt.date) -> list[tuple[str, str]]:
+    """3개월 구간의 주요사항보고를 페이지 순서대로 읽어 (종목코드, 종류) 목록으로."""
+    found, page = [], 1
+    while True:
+        try:
+            obj = api.request("list.json", bgn_de=start.strftime("%Y%m%d"), end_de=end.strftime("%Y%m%d"),
+                              pblntf_ty="B", page_no=page, page_count=100)
+        except RuntimeError as exc:
+            log.warning("DART 공시검색 실패 %s~%s p%d: %s", start, end, page, exc)
+            break
+        for r in obj:
+            kind = classify_disclosure(r.get("report_nm", ""))
+            code = str(r.get("stock_code") or "").strip()
+            if kind and code:
+                found.append((code, kind))
+        if len(obj) < 100:
+            break
+        page += 1
+    return found
+
+
 def fetch_events(api: Dart, today: dt.date) -> dict[str, Counter]:
-    """최근 12개월 주요사항보고 → 종목별 {dilution, split} 건수."""
-    counts: dict[str, Counter] = {}
-    end = today
+    """최근 12개월 주요사항보고 → 종목별 {dilution, split} 건수. 3개월 구간 4개를 동시에 조회."""
+    windows, end = [], today
     for _ in range(4):  # corp_code 없이 조회하면 기간이 3개월로 제한된다
         start = end - dt.timedelta(days=90)
-        page = 1
-        while True:
-            try:
-                obj = api.request("list.json", bgn_de=start.strftime("%Y%m%d"), end_de=end.strftime("%Y%m%d"),
-                                  pblntf_ty="B", page_no=page, page_count=100)
-            except RuntimeError as exc:
-                log.warning("DART 공시검색 실패 %s~%s p%d: %s", start, end, page, exc)
-                break
-            for r in obj:
-                kind = classify_disclosure(r.get("report_nm", ""))
-                code = str(r.get("stock_code") or "").strip()
-                if kind and code:
-                    counts.setdefault(code, Counter())[kind] += 1
-            if len(obj) < 100:
-                break
-            page += 1
+        windows.append((start, end))
         end = start - dt.timedelta(days=1)
+    counts: dict[str, Counter] = {}
+    with ThreadPoolExecutor(max_workers=len(windows)) as pool:
+        for found in pool.map(lambda w: _events_window(api, *w), windows):
+            for code, kind in found:
+                counts.setdefault(code, Counter())[kind] += 1
     log.info("DART 주요사항 공시: 증자·CB·BW/분할 해당 %d개사", len(counts))
     return counts
 
