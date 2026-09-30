@@ -153,17 +153,27 @@ def _cache_path(cache_dir: Path, year: int, q: int) -> Path:
     return cache_dir / f"{year}Q{q}.json.gz"
 
 
-def _load_cache(path: Path) -> dict[str, dict] | None:
+CHECKED_KEY = "_checked"  # 조회했지만 보고서가 없던 종목(캐시 파일 안 예약 키)
+SETTLE_DAYS = 150  # 분기 말 후 이 기간이 지나면 미제출 종목은 다시 묻지 않는다
+
+
+def _load_cache(path: Path) -> tuple[dict[str, dict], set[str]] | None:
     if not path.exists():
         return None
     data = json.loads(gzip.open(path, "rt", encoding="utf-8").read())
-    return {code: {k: (tuple(v) if isinstance(v, list) else v) for k, v in rec.items()} for code, rec in data.items()}
+    checked = set(data.pop(CHECKED_KEY, []))
+    parsed = {code: {k: (tuple(v) if isinstance(v, list) else v) for k, v in rec.items()} for code, rec in data.items()}
+    return parsed, checked
 
 
-def _save_cache(path: Path, parsed: dict[str, dict]) -> None:
+def _save_cache(path: Path, parsed: dict[str, dict], checked: set[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with gzip.open(path, "wt", encoding="utf-8") as f:
-        json.dump(parsed, f, ensure_ascii=False, separators=(",", ":"))
+        json.dump({**parsed, CHECKED_KEY: sorted(checked - parsed.keys())}, f, ensure_ascii=False, separators=(",", ":"))
+
+
+def _period_end(year: int, q: int) -> dt.date:
+    return dt.date(year + q // 4, q % 4 * 3 + 1, 1) - dt.timedelta(days=1)
 
 
 def _fetch_period(api: Dart, corp_list: list[str], corp_to_code: dict, year: int, q: int) -> tuple[dict[str, dict], int]:
@@ -190,30 +200,35 @@ def _fetch_period(api: Dart, corp_list: list[str], corp_to_code: dict, year: int
 
 def fetch_quarters(api: Dart, corps: dict[str, str], codes: list[str], today: dt.date,
                    cache_dir: Path | None = None) -> dict[str, list[dict]]:
-    """분기 실적. 확정된 과거 분기는 캐시를 쓰고, 최근 2개 분기와 캐시 없는 분기만 조회한다."""
+    """분기 실적. 캐시에 있는 종목은 다시 묻지 않고, 없는 종목만 조회한다.
+
+    분기 말 후 SETTLE_DAYS 안(보고서가 들어오는 중)에는 캐시에 없는 종목을 매번 다시 묻고,
+    그 뒤로는 한 번 조회해 보고서가 없던 종목(_checked)도 건너뛴다. 새 상장 종목은 한 번만 조회한다.
+    """
     periods = _periods(today)
     wanted = sorted({(y, q) for y, q in periods} | {(y, 3) for y, q in periods if q == 4})
-    refresh = set(periods[-2:])
     selected = {c: corps[c] for c in codes if c in corps}
-    corp_list = sorted(selected.values())
     corp_to_code = {v: k for k, v in selected.items()}
     raw: dict[str, dict[tuple[int, int], dict]] = {}
     for year, q in wanted:
-        cached = _load_cache(_cache_path(cache_dir, year, q)) if cache_dir else None
-        missing = [c for c in corp_list if corp_to_code[c] not in (cached or {})]
-        if cached is not None and (year, q) not in refresh and len(missing) < 0.1 * len(corp_list):
-            parsed, source = cached, "캐시"
-        else:
-            parsed, failed = _fetch_period(api, corp_list, corp_to_code, year, q)
-            source = "조회"
-            if cached:
-                parsed = {**cached, **parsed}
-            if cache_dir and not failed:
-                _save_cache(_cache_path(cache_dir, year, q), parsed)
+        loaded = _load_cache(_cache_path(cache_dir, year, q)) if cache_dir else None
+        cached, checked = loaded or ({}, set())
+        settled = (today - _period_end(year, q)).days > SETTLE_DAYS
+        skip = cached.keys() | (checked if settled else set())
+        todo = sorted(corp for corp, code in corp_to_code.items() if code not in skip)
+        parsed = cached
+        if todo:
+            fetched, failed = _fetch_period(api, todo, corp_to_code, year, q)
+            parsed = {**cached, **fetched}
+            if not failed:
+                checked |= {corp_to_code[c] for c in todo}
+            if cache_dir:
+                _save_cache(_cache_path(cache_dir, year, q), parsed, checked)
         for code, rec in parsed.items():
             if code in selected:
                 raw.setdefault(code, {})[(year, q)] = rec
-        log.info("DART 다중계정 %s년 %d분기 %s (누적 %d개사)", year, q, source, len(raw))
+        log.info("DART 다중계정 %s년 %d분기 조회 %d개사, 보유 %d개사 (누적 %d개사)",
+                 year, q, len(todo), len(parsed), len(raw))
     return {code: build_quarters(v) for code, v in raw.items()}
 
 
