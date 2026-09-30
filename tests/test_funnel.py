@@ -209,6 +209,20 @@ class DartParsingTest(unittest.TestCase):
             self.assertEqual(first, second)
             self.assertEqual(len(api.calls) - n_first, 2)  # 최근 2개 분기만 재조회
 
+    def test_events_windows_counted_once_each(self):
+        from funnel import data_kr
+
+        class FakeDart:
+            def request(self, endpoint, **params):
+                if params["page_no"] > 1:
+                    return []
+                return [{"stock_code": "000001", "report_nm": "주요사항보고서(유상증자결정)"},
+                        {"stock_code": "000002", "report_nm": "주요사항보고서(회사분할결정)"}]
+
+        counts = data_kr.fetch_events(FakeDart(), dt.date(2026, 9, 30))
+        self.assertEqual(counts["000001"]["dilution"], 4)  # 3개월 구간 4개
+        self.assertEqual(counts["000002"]["split"], 4)
+
     def test_disclosure_classification(self):
         self.assertEqual(classify_disclosure("주요사항보고서(유상증자결정)"), "dilution")
         self.assertEqual(classify_disclosure("주요사항보고서(전환사채권발행결정)"), "dilution")

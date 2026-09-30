@@ -17,6 +17,7 @@ import gzip
 import json
 import logging
 import os
+from concurrent.futures import ThreadPoolExecutor
 from collections import Counter
 from pathlib import Path
 
@@ -29,6 +30,19 @@ BASKET = ROOT / "data" / "ai_infra_basket.csv"
 BENCHMARK = {"kr": "^KS11", "us": "^GSPC"}
 UNIT = {"kr": 1e8, "us": 1e6}          # 수작업 P1 입력 단위: 한국 억원, 미국 백만$
 MIN_MARCAP = {"kr": 500e8, "us": 3e8}
+DETAIL_WORKERS = {"kr": 4, "us": 2}  # SEC는 초당 10건 제한이 있어 미국은 2건만 동시에
+
+
+def load_json(path: Path, default):
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return default
+
+
+def save_json(path: Path, obj) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(obj, ensure_ascii=False, sort_keys=True, indent=0), encoding="utf-8")
 
 log = logging.getLogger("funnel")
 
@@ -184,21 +198,28 @@ def run_market(market: str, args, today: dt.date) -> None:
     shortlist = rank(records, results)[:args.shortlist]
     detail_set = {r["symbol"] for r in shortlist} | set(manual)
     g3_set = {sym for sym, v in results.items() if any(h["code"] == "G3" for h in v["gates"]["hits"])}
-    # 업종 조회: G3 해당(금융업 판별) + 정밀 조회 대상(사이클 태그)
-    for r in records:
-        if r["symbol"] not in detail_set | g3_set:
-            continue
-        if market == "kr":
-            code = data_kr.fetch_industry(api, r["corpCode"]) if r.get("corpCode") else None
-        else:
-            code = data_us.fetch_sic(r["cik"])
-        r["industry"] = rules.classify_industry(market, code, r["symbol"])
-    # 정밀 조회(현금흐름·주식 수, 미국은 실제 회계분기 실적)는 1차 상위 + 추적 후보에만
-    for r in records:
-        if r["symbol"] not in detail_set:
-            continue
+    # 업종 조회(G3 해당: 금융업 판별 / 정밀 조회 대상: 사이클 태그)와 정밀 조회를 종목별로 병렬 처리.
+    # 업종 코드는 거의 바뀌지 않아 캐시한다.
+    industry_path = ROOT / "research" / "funnel" / "cache" / market / "industry.json"
+    industry_cache = load_json(industry_path, {})
+
+    def enrich(r: dict) -> None:
+        sym = r["symbol"]
+        if sym in detail_set | g3_set:
+            code = industry_cache.get(sym)
+            if code is None:
+                if market == "kr":
+                    code = data_kr.fetch_industry(api, r["corpCode"]) if r.get("corpCode") else None
+                else:
+                    code = data_us.fetch_sic(r["cik"])
+                if code:
+                    industry_cache[sym] = code
+            r["industry"] = rules.classify_industry(market, code, sym)
+        if sym not in detail_set:
+            return
+        # 정밀 조회(현금흐름·주식 수, 미국은 실제 회계분기 실적)는 1차 상위 + 추적 후보에만
         if market == "kr" and r.get("corpCode"):
-            period = results[r["symbol"]]["metrics"]["latestPeriod"]
+            period = results[sym]["metrics"]["latestPeriod"]
             if period:
                 y, q = int(period[:4]), int(period[-1])
                 r.update({k: v for k, v in data_kr.enrich_detail(api, r["corpCode"], y, q).items() if v is not None})
@@ -208,6 +229,12 @@ def run_market(market: str, args, today: dt.date) -> None:
             price = (r.get("prices") or {}).get("price")
             if detail.get("sharesNow") and price:
                 r["marcap"] = price * detail["sharesNow"]
+
+    targets = [r for r in records if r["symbol"] in detail_set | g3_set]
+    with ThreadPoolExecutor(max_workers=DETAIL_WORKERS[market]) as pool:
+        list(pool.map(enrich, targets))
+    save_json(industry_path, industry_cache)
+    log.info("%s: 업종·정밀 조회 %d종목 완료 (업종 캐시 %d)", market, len(targets), len(industry_cache))
     results = evaluate_all(records)
     for r in records:
         apply_manual(r, manual.get(r["symbol"]), market)
