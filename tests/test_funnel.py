@@ -56,6 +56,17 @@ class RulesTest(unittest.TestCase):
         self.assertIn("G2", [h["code"] for h in rules.evaluate(stock(sharesNow=120.0), 0.5)["gates"]["hits"]])
         self.assertIn("G2", [h["code"] for h in rules.evaluate(stock(dilutionEvents12m=2), 0.5)["gates"]["hits"]])
 
+    def test_stock_split_is_not_dilution(self):
+        # 1→5 액면분할(LS일렉트릭형): G2가 아니다
+        res = rules.evaluate(stock(sharesNow=500.0, sharesYearAgo=100.0), 0.5)
+        self.assertAlmostEqual(res["shareGrowth"], 0.0)
+        self.assertNotIn("G2", [h["code"] for h in res["gates"]["hits"]])
+        # 정수배가 아닌 2.4배 증가(유상증자형)는 희석
+        self.assertIn("G2", [h["code"] for h in rules.evaluate(stock(sharesNow=240.0, sharesYearAgo=100.0), 0.5)["gates"]["hits"]])
+        # 정수배라도 증자·CB 공시가 있으면 분할로 보지 않는다
+        self.assertIn("G2", [h["code"] for h in rules.evaluate(
+            stock(sharesNow=200.0, sharesYearAgo=100.0, dilutionEvents12m=1), 0.5)["gates"]["hits"]])
+
     def test_g3_debt_and_capital_impairment(self):
         s = stock(quarters=quarters([100] * 8, [5] * 8, equity=10.0, liabilities=50.0))
         self.assertIn("G3", [h["code"] for h in rules.evaluate(s, 0.5)["gates"]["hits"]])
