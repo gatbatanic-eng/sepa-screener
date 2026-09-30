@@ -73,7 +73,8 @@
   .table-scroll { overflow-x: auto; }
   table { border-collapse: collapse; width: 100%; font-size: 13px; }
   th, td { padding: 7px 8px; border-bottom: 1px solid var(--border); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
-  th { color: var(--text-dim); font-weight: 600; font-size: 12px; position: sticky; top: 0; background: var(--panel); }
+  th { color: var(--text-dim); font-weight: 600; font-size: 12px; position: sticky; top: 0; background: var(--panel); vertical-align: bottom; cursor: help; }
+  th .ko { font-weight: 400; font-size: 11px; }
   th.l, td.l { text-align: left; }
   td.why { white-space: normal; min-width: 240px; max-width: 420px; text-align: left; color: var(--text-dim); font-size: 12px; }
   tbody tr:hover { background: var(--row-hover); }
@@ -129,6 +130,7 @@
 </div>
 
 <script>
+const GATE_KO = { G1: "이익 없는 급등", G2: "희석", G3: "재무 위험", "G3?": "재무 확인", G4: "분할 공시" };
 const LEVEL = { g: ["양호", "g"], y: ["주의", "y"], r: ["경계", "r"], "": ["미확인", "n"] };
 const cache = {};
 let market = "kr";
@@ -172,9 +174,9 @@ function nameCell(r) {
   const td = el("td", "l");
   td.appendChild(el("span", "name", r.name || r.symbol));
   td.appendChild(el("span", "sym", r.symbol));
-  if (r.cyclical) td.appendChild(el("span", "tag p2", `P2 ${r.cyclical}`));
-  (r.gates?.flags || []).forEach(f => { const t = el("span", "tag flag", f.code); t.title = f.reason; td.appendChild(t); });
-  (r.gates?.hits || []).forEach(h => { const t = el("span", "tag gate", `${h.code} 제외`); t.title = h.reason; td.appendChild(t); });
+  if (r.cyclical) { const t = el("span", "tag p2", `P2 (사이클: ${r.cyclical})`); t.title = "사이클 업종 — 정상 이익 기준으로 따로 평가 필요"; td.appendChild(t); }
+  (r.gates?.flags || []).forEach(f => { const t = el("span", "tag flag", `${f.code} (${GATE_KO[f.code] || "확인"})`); t.title = f.reason; td.appendChild(t); });
+  (r.gates?.hits || []).forEach(h => { const t = el("span", "tag gate", `${h.code} (${GATE_KO[h.code] || ""}) 제외`); t.title = h.reason; td.appendChild(t); });
   return td;
 }
 
@@ -202,11 +204,28 @@ function scoreRow(r, m, showP1) {
 function scoreTable(rows, m, showP1) {
   const box = el("div", "table-scroll");
   const t = el("table");
-  const head = ["#", "종목", "시총", "종합", "S1", "S2", "S6", "S4", "T1", "매출 YoY (최근→과거)"];
-  if (showP1) head.push("P1", "P1 판정");
-  head.push("근거");
+  const head = [
+    ["#", "", "관문 통과 + S1 최소 조건을 넘은 종목 중 종합 점수 순위"],
+    ["종목", "", "옆 태그: G1~G3 관문 탈락, G3?·G4 확인 필요, P2 사이클 업종"],
+    ["시총", "", "*는 주가 × 주식 수로 계산한 추정치"],
+    ["종합", "", "(3×S1 + 3×S2 + 3×S6 + 2×S4) ÷ 가중치 합. 값 없는 항목은 제외"],
+    ["S1", "이익 가속", "매출 증가율 수준 + 성장률 가속 + 흑자 전환·영업레버리지. 0~100"],
+    ["S2", "이익의 질", "TTM 영업이익률 변화 + 영업현금흐름 ÷ 순이익. 0~100"],
+    ["S6", "자본 배분", "주식 수 증가율 + 12개월 내 증자·CB 공시 건수. 희석이 적을수록 높음"],
+    ["S4", "소외도", "36→6개월 전 수익률이 전체 중 낮을수록 높음. 100 = 가장 소외, 0 = 이미 많이 오름"],
+    ["T1", "타이밍", "ON: 이익 전환 + 52주 고점 90% 이상 + 40주선 위 / NEAR: 고점 75% 이상 + 40주선 위 / OFF: 그 외"],
+    ["매출 YoY", "최근→과거", "최근 3개 분기 매출의 전년 대비 증가율"],
+  ];
+  if (showP1) head.push(
+    ["P1", "10배 산수", "(목표시장 × 점유율 × 이익률 × 적정 PER + 기타 가치) ÷ 현재 시총. 5년 뒤 가치가 지금의 몇 배인지"],
+    ["P1 판정", "", "3배 미만 제외, 3~10배 보류, 10배 이상 통과"]);
+  head.push(["근거", "", "점수가 나온 이유"]);
   const tr = el("tr");
-  head.forEach((h, i) => { const th = el("th", i === 1 || h === "근거" || h === "P1 판정" ? "l" : null, h); th.scope = "col"; tr.appendChild(th); });
+  head.forEach(([label, ko, tip], i) => {
+    const th = el("th", i === 1 || label === "근거" || label === "P1 판정" ? "l" : null, label);
+    if (ko) { th.appendChild(el("br")); th.appendChild(el("span", "ko", `(${ko})`)); }
+    th.title = tip; th.scope = "col"; tr.appendChild(th);
+  });
   const thead = el("thead"); thead.appendChild(tr); t.appendChild(thead);
   const tb = el("tbody");
   rows.forEach(r => tb.appendChild(scoreRow(r, m, showP1)));
@@ -299,7 +318,7 @@ function render(d, m) {
   cards.appendChild(card("유니버스", (s.universe ?? 0).toLocaleString(), m === "kr" ? "시총 500억 원 이상" : "추정 시총 3억 달러 이상"));
   const hits = Object.entries(s.gateHits || {}).sort().map(([k, v]) => `${k} ${v}`).join(" · ");
   cards.appendChild(card("관문 탈락", (s.excluded ?? 0).toLocaleString(), hits));
-  cards.appendChild(card("S1 최소 조건 미달", s.belowS1Floor == null ? "N/A" : s.belowS1Floor.toLocaleString(), "매출 YoY 15% 미만"));
+  cards.appendChild(card("S1(이익 가속) 최소 조건 미달", s.belowS1Floor == null ? "N/A" : s.belowS1Floor.toLocaleString(), "매출 YoY 15% 미만"));
   cards.appendChild(card("순위 대상", (s.ranked ?? 0).toLocaleString(), s.cyclicalInTop == null ? null : `상위 중 사이클 업종 ${s.cyclicalInTop}`));
   app.appendChild(cards);
 
@@ -309,13 +328,13 @@ function render(d, m) {
     .sort((a, b) => (a.rank ?? 1e9) - (b.rank ?? 1e9));
   const tp = el("section", "panel");
   tp.appendChild(el("h2", null, "추적 후보"));
-  tp.appendChild(el("p", "desc", "수작업으로 P1 가정을 기록한 종목입니다. 순위가 '—'이면 관문 탈락 또는 S1 최소 조건 미달입니다."));
+  tp.appendChild(el("p", "desc", "수작업으로 P1(10배 산수) 가정을 기록한 종목입니다. 순위가 '—'이면 관문 탈락 또는 S1(이익 가속) 최소 조건 미달입니다."));
   tp.appendChild(tracked.length ? scoreTable(tracked, m, true) : el("p", "empty", "이 시장에 기록된 추적 후보가 없습니다."));
   app.appendChild(tp);
 
   const top = el("section", "panel");
   top.appendChild(el("h2", null, "깔때기 상위 후보"));
-  top.appendChild(el("p", "desc", "관문을 통과하고 S1 최소 조건을 넘은 종목의 자동 점수 순위입니다. P2는 사이클 업종이라 정상 이익 기준으로 따로 평가해야 합니다. * 표시 시총은 주가 × 희석주식수 추정치입니다."));
+  top.appendChild(el("p", "desc", "관문을 통과하고 S1(이익 가속) 최소 조건을 넘은 종목의 자동 점수 순위입니다. P2(사이클)는 사이클 업종이라 정상 이익 기준으로 따로 평가해야 합니다. * 표시 시총은 주가 × 희석주식수 추정치입니다. 표 머리글에 마우스를 올리면 항목 설명이 나옵니다."));
   const filters = el("div", "filters");
   const mk = (id, label, checked, onChange) => {
     const lab = el("label", "chk");
@@ -324,7 +343,7 @@ function render(d, m) {
     lab.append(cb, document.createTextNode(label));
     return lab;
   };
-  filters.appendChild(mk("f-t1", "T1 ON·NEAR만", onlyT1, v => { onlyT1 = v; render(d, m); }));
+  filters.appendChild(mk("f-t1", "T1(타이밍) ON·NEAR만", onlyT1, v => { onlyT1 = v; render(d, m); }));
   filters.appendChild(mk("f-p2", "사이클 업종(P2) 숨기기", hideP2, v => { hideP2 = v; render(d, m); }));
   top.appendChild(filters);
   const rows = (d.top || []).filter(r => (!onlyT1 || r.T1 === "ON" || r.T1 === "NEAR") && (!hideP2 || !r.cyclical));
