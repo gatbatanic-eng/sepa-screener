@@ -163,6 +163,15 @@ class DartParsingTest(unittest.TestCase):
         raw[(2025, 3)]["basis"] = "OFS"
         self.assertIsNone({(r["year"], r["quarter"]): r for r in build_quarters(raw)}[(2025, 4)]["revenue"])
 
+    def test_marcap_units_normalized(self):
+        import pandas as pd
+        from funnel.data_kr import normalize_marcap
+        # 네이버 보완값(억 원 단위 숫자) → 원 단위
+        eok = normalize_marcap(pd.Series([3337100.0, 22282.0, 450.0]))
+        self.assertEqual(eok.iloc[0], 3337100.0 * 1e8)
+        won = pd.Series([3.3e14, 2.2e12])
+        self.assertTrue(normalize_marcap(won).equals(won))
+
     def test_missing_q1_derived_from_q2_cumulative(self):
         raw = {(2025, 1): {"basis": "CFS"},
                (2025, 2): {"basis": "CFS", "revenue": (161.7, 280.1)}}

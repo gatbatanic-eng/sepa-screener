@@ -1,7 +1,7 @@
 {
  "schemaVersion": 1,
  "market": "kr",
- "recordedAt": "2026-09-30T00:35:50.055844+00:00",
+ "recordedAt": "2026-09-29T19:29:15.826038+00:00",
  "note": "투자 추천이 아닌 검증·분석용 규칙 판정. 결측은 null.",
  "thresholds": {
   "minMarcap": 50000000000.0,
@@ -14,37 +14,90 @@
   "P1Cutoff": 3.0
  },
  "stats": {
-  "universe": 0,
-  "excluded": 0,
-  "noScore": 0,
-  "belowS1Floor": 0,
-  "cyclicalInTop": 0,
-  "ranked": 0,
-  "gateHits": {}
+  "universe": 1868,
+  "excluded": 314,
+  "noScore": 114,
+  "ranked": 1440,
+  "gateHits": {
+   "G3": 212,
+   "G2": 121,
+   "G1": 5
+  }
  },
  "sectorHeat": {
-  "level": "",
+  "level": "g",
   "hits": 0,
   "flags": {
-   "A": null,
-   "B": null,
-   "C": null,
-   "D": null
+   "A": false,
+   "B": false,
+   "C": false,
+   "D": false
   },
-  "A_share100": null,
-  "B_fringeMinusCore": null,
-  "C_lossMinusProfit": null,
-  "D_shareGrowthMedian": null,
-  "D_dilutionEventShare": null,
+  "A_share100": 0.13636363636363635,
+  "B_fringeMinusCore": 0.004290957557898656,
+  "C_lossMinusProfit": -0.34571898624698666,
+  "D_shareGrowthMedian": 0.005348564251017263,
+  "D_dilutionEventShare": 0.1590909090909091,
   "n": {
-   "members": 0,
-   "withPrice": 0,
-   "core": 0,
-   "fringe": 0,
-   "loss": 0,
-   "profit": 0
+   "members": 44,
+   "withPrice": 44,
+   "core": 28,
+   "fringe": 16,
+   "loss": 14,
+   "profit": 30
   },
-  "topMovers": [],
+  "topMovers": [
+   {
+    "symbol": "036930",
+    "tier": "core",
+    "ret6m": 2.5691318327974275
+   },
+   {
+    "symbol": "009150",
+    "tier": "core",
+    "ret6m": 2.3508771929824563
+   },
+   {
+    "symbol": "222800",
+    "tier": "fringe",
+    "ret6m": 2.0716448032290615
+   },
+   {
+    "symbol": "017900",
+    "tier": "fringe",
+    "ret6m": 1.121212121212121
+   },
+   {
+    "symbol": "083450",
+    "tier": "core",
+    "ret6m": 1.0464216634429402
+   },
+   {
+    "symbol": "000660",
+    "tier": "core",
+    "ret6m": 1.015614013913304
+   },
+   {
+    "symbol": "319660",
+    "tier": "core",
+    "ret6m": 0.9578947368421054
+   },
+   {
+    "symbol": "072950",
+    "tier": "fringe",
+    "ret6m": 0.8421768707482993
+   },
+   {
+    "symbol": "440110",
+    "tier": "fringe",
+    "ret6m": 0.6554455445544554
+   },
+   {
+    "symbol": "353200",
+    "tier": "core",
+    "ret6m": 0.603448275862069
+   }
+  ],
   "thresholds": {
    "A": 0.25,
    "B": 0.2,
@@ -52,79 +105,4686 @@
    "D_shareGrowth": 0.05,
    "D_eventShare": 0.2
   },
-  "missing": [
-   "000660",
-   "005930",
-   "007660",
-   "009150",
-   "010120",
-   "010170",
-   "011790",
-   "017900",
-   "018260",
-   "020150",
-   "033100",
-   "035420",
-   "036930",
-   "042700",
-   "046970",
-   "056360",
-   "058470",
-   "062040",
-   "064400",
-   "069540",
-   "072950",
-   "083450",
-   "089030",
-   "095340",
-   "103590",
-   "138080",
-   "140860",
-   "204320",
-   "222800",
-   "240810",
-   "267260",
-   "277810",
-   "298040",
-   "307950",
-   "319660",
-   "336370",
-   "348210",
-   "353200",
-   "356860",
-   "399720",
-   "403870",
-   "432720",
-   "440110",
-   "454910"
-  ]
+  "missing": []
  },
- "top": [],
- "manualTracked": [],
- "excludedSample": [],
- "validation": {
-  "schemaVersion": 1,
-  "snapshots": {
-   "2026-09-29": {
-    "frozen": {},
-    "ageDays": 1,
-    "current": {
-     "top": {
-      "avgReturnPct": null,
-      "n": 0
-     },
-     "passed": {
-      "avgReturnPct": null,
-      "n": 0
-     },
-     "excluded": {
-      "avgReturnPct": null,
-      "n": 0
-     },
-     "benchmarkReturnPct": 1.13
-    },
-    "measuredAt": "2026-09-30"
+ "top": [
+  {
+   "rank": 1,
+   "symbol": "032580",
+   "name": "피델릭스",
+   "exchange": "KOSDAQ",
+   "marcap": 254122930880.0,
+   "marcapEstimated": false,
+   "price": 7670.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.9066193853427896,
+   "ret6m": 6.134883720930232,
+   "ret36to6m": -0.24772568229531144,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     1.7982493865315878,
+     0.9752085929980561,
+     0.42964660317268577
+    ],
+    "opTTM": 14089313413.0,
+    "opmTTM": 0.16438080766005492,
+    "opmTTMPrev": -0.09790328354367452,
+    "debtToEquity": 0.4050019229155876
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 100.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 77.73
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 180%",
+     "2분기 연속 가속",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +26.2%p"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 95.95,
+   "T1": "ON",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 2,
+   "symbol": "049550",
+   "name": "잉크테크",
+   "exchange": "KOSDAQ",
+   "marcap": 67837718420.0,
+   "marcapEstimated": false,
+   "price": 3460.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.8671679197994987,
+   "ret6m": 0.06955177743431218,
+   "ret36to6m": -0.19125000000000003,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.2667344005034391,
+     0.23746782558085422,
+     0.1127752379728777
+    ],
+    "opTTM": 4757199349.0,
+    "opmTTM": 0.05490037323293914,
+    "opmTTMPrev": 0.0008688740169352848,
+    "debtToEquity": 0.9615032081789452
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 90.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 73.77
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 27%",
+     "2분기 연속 가속",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +5.4%p",
+     "영업현금/순이익 1.31"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 92.5,
+   "T1": "NEAR",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 3,
+   "symbol": "049950",
+   "name": "미래컴퍼니",
+   "exchange": "KOSDAQ",
+   "marcap": 95585862560.0,
+   "marcapEstimated": false,
+   "price": 10840.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.5631168831168831,
+   "ret6m": -0.19104477611940296,
+   "ret36to6m": -0.5593896318487416,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     3.4277492908716525,
+     0.6755632420791011,
+     -0.30955994001273435
+    ],
+    "opTTM": -5418629898.0,
+    "opmTTM": -0.0802771285292146,
+    "opmTTMPrev": -0.32304562564071826,
+    "debtToEquity": 0.21031176835444176
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 100.0,
+    "S2": 75.0,
+    "S6": 100.0,
+    "S4": 94.06
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 343%",
+     "2분기 연속 가속",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +24.3%p",
+     "순손실·영업현금 플러스"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 92.1,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 4,
+   "symbol": "302550",
+   "name": "리메드",
+   "exchange": "KOSDAQ",
+   "marcap": 80531534580.0,
+   "marcapEstimated": false,
+   "price": 2660.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.7524752475247525,
+   "ret6m": -0.11480865224625625,
+   "ret36to6m": -0.16759002770083098,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.326758625714467,
+     0.1137091176419387,
+     0.038642105687370254
+    ],
+    "opTTM": 1953037651.0,
+    "opmTTM": 0.07219439611768873,
+    "opmTTMPrev": 0.011288628708222151,
+    "debtToEquity": 0.44709987502067494
+   },
+   "shareGrowth": -0.01868131882088153,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 80.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 71.85
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 33%",
+     "2분기 연속 가속",
+     "영업레버리지(TTM 영업이익 607%)"
+    ],
+    "S2": [
+     "영업이익률 +6.1%p",
+     "영업현금/순이익 1.54"
+    ],
+    "S6": [
+     "주식 수 -1.9%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 89.43,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 5,
+   "symbol": "005950",
+   "name": "이수화학",
+   "exchange": "KOSPI",
+   "marcap": 275825832810.0,
+   "marcapEstimated": false,
+   "price": 10490.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.6281437125748504,
+   "ret6m": 0.34143222506393855,
+   "ret36to6m": -0.4676650782845473,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     1.1875120750285824,
+     0.5871581608622416,
+     0.044198104770059254
+    ],
+    "opTTM": 124946576000.0,
+    "opmTTM": 0.054365006328218814,
+    "opmTTMPrev": -0.022391167593909998,
+    "debtToEquity": 1.5109518937742004
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 65.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 89.66
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 119%",
+     "2분기 연속 가속"
+    ],
+    "S2": [
+     "영업이익률 +7.7%p"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 88.57,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 6,
+   "symbol": "108230",
+   "name": "톱텍",
+   "exchange": "KOSDAQ",
+   "marcap": 121294151550.0,
+   "marcapEstimated": false,
+   "price": 3190.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.6577319587628866,
+   "ret6m": -0.24228028503562948,
+   "ret36to6m": -0.4084968481585296,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.5802746284487821,
+     -0.2803032917284096,
+     -0.5008856320852088
+    ],
+    "opTTM": 3232535385.0,
+    "opmTTM": 0.018653394714904268,
+    "opmTTMPrev": -0.10544653834214618,
+    "debtToEquity": 0.3936248467736418
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 65.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 87.17
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 58%",
+     "2분기 연속 가속"
+    ],
+    "S2": [
+     "영업이익률 +12.4%p",
+     "영업현금/순이익 5.64"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 88.12,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 7,
+   "symbol": "396470",
+   "name": "워트",
+   "exchange": "KOSDAQ",
+   "marcap": 111066800000.0,
+   "marcapEstimated": false,
+   "price": 6890.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.7351683574676112,
+   "ret6m": 0.05163871383173446,
+   "ret36to6m": -0.2198694379132392,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     2.410714186298919,
+     -0.057684416748923883,
+     0.31329000880493285
+    ],
+    "opTTM": 4515370517.0,
+    "opmTTM": 0.22132259029713502,
+    "opmTTMPrev": 0.1770443807252474,
+    "debtToEquity": 0.058444753086525365
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 85.0,
+    "S2": 85.0,
+    "S6": 100.0,
+    "S4": 75.92
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 241%",
+     "1분기 가속",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +4.4%p",
+     "영업현금/순이익 1.49"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 87.44,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 8,
+   "symbol": "102370",
+   "name": "케이옥션",
+   "exchange": "KOSDAQ",
+   "marcap": 77405987100.0,
+   "marcapEstimated": false,
+   "price": 2990.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.6873563218390805,
+   "ret6m": -0.05529225908372826,
+   "ret36to6m": -0.12448132780082988,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.812159656845969,
+     -0.3470032556496373,
+     -0.39038181510112024
+    ],
+    "opTTM": -2505708821.0,
+    "opmTTM": -0.19887442342655656,
+    "opmTTMPrev": -0.25573290713971925,
+    "debtToEquity": 0.8800734534680185
+   },
+   "shareGrowth": -0.049245644658805765,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 100.0,
+    "S2": 75.0,
+    "S6": 100.0,
+    "S4": 68.06
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 81%",
+     "2분기 연속 가속",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +5.7%p",
+     "순손실·영업현금 플러스"
+    ],
+    "S6": [
+     "주식 수 -4.9%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 87.37,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 9,
+   "symbol": "020120",
+   "name": "키다리스튜디오",
+   "exchange": "KOSPI",
+   "marcap": 296880765660.0,
+   "marcapEstimated": false,
+   "price": 8010.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.9513064133016627,
+   "ret6m": 1.4608294930875574,
+   "ret36to6m": -0.30597014925373134,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.24456487442367947,
+     0.2093451703953244,
+     0.15950039010761374
+    ],
+    "opTTM": 18949548711.0,
+    "opmTTM": 0.0788790867542806,
+    "opmTTMPrev": 0.01619288075506318,
+    "debtToEquity": 0.6851222781804835
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 65.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 80.95
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 24%",
+     "2분기 연속 가속",
+     "영업레버리지(TTM 영업이익 468%)"
+    ],
+    "S2": [
+     "영업이익률 +6.3%p",
+     "영업현금/순이익 1.04"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 86.99,
+   "T1": "ON",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 10,
+   "symbol": "413390",
+   "name": "엠오티",
+   "exchange": "KOSDAQ",
+   "marcap": 70647355200.0,
+   "marcapEstimated": false,
+   "price": 6260.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.6266266266266266,
+   "ret6m": -0.22042341220423411,
+   "ret36to6m": 0.13512358021029702,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     2.1311220573296543,
+     -0.30496525525276874,
+     null
+    ],
+    "opTTM": 6194662221.0,
+    "opmTTM": 0.06758203363644298,
+    "opmTTMPrev": null,
+    "debtToEquity": 1.3399169452469881
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 85.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 50.42
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 213%",
+     "1분기 가속",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업현금/순이익 5.23"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 86.89,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 11,
+   "symbol": "123890",
+   "name": "한국자산신탁",
+   "exchange": "KOSPI",
+   "marcap": 296756770550.0,
+   "marcapEstimated": false,
+   "price": 2425.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.8591353013547157,
+   "ret6m": -0.052734375,
+   "ret36to6m": -0.08419102504130227,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.5079819861204156,
+     0.32626161807343057,
+     -0.0556214362882862
+    ],
+    "opTTM": 50019135860.0,
+    "opmTTM": 0.20188897976284303,
+    "opmTTMPrev": 0.17343701065778225,
+    "debtToEquity": 0.5560730120174596
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 90.0,
+    "S2": 85.0,
+    "S6": 100.0,
+    "S4": 65.18
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 51%",
+     "2분기 연속 가속",
+     "영업레버리지(TTM 영업이익 35%)"
+    ],
+    "S2": [
+     "영업이익률 +2.8%p",
+     "영업현금/순이익 4.73"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 86.85,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 12,
+   "symbol": "044990",
+   "name": "에이치엔에스하이텍",
+   "exchange": "KOSDAQ",
+   "marcap": 83540569750.0,
+   "marcapEstimated": false,
+   "price": 10870.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.4671246616446692,
+   "ret6m": -0.27629826897470044,
+   "ret36to6m": -0.07064042296746853,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.38573909769078396,
+     0.09314479886238969,
+     null
+    ],
+    "opTTM": 11187134001.0,
+    "opmTTM": 0.12412418999114526,
+    "opmTTMPrev": null,
+    "debtToEquity": 0.1607079630803624
+   },
+   "shareGrowth": -0.04363317663970823,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 75.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 64.27
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 39%",
+     "1분기 가속",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업현금/순이익 2.05"
+    ],
+    "S6": [
+     "주식 수 -4.4%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 86.69,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 13,
+   "symbol": "420570",
+   "name": "제이투케이바이오",
+   "exchange": "KOSDAQ",
+   "marcap": 55551088500.0,
+   "marcapEstimated": false,
+   "price": 9500.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.8953817153628653,
+   "ret6m": 0.24345549738219896,
+   "ret36to6m": -0.5506881741377377,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.8295107361605232,
+     0.5308187538899509,
+     0.2722454420973093
+    ],
+    "opTTM": 6499251604.0,
+    "opmTTM": 0.14804888009958858,
+    "opmTTMPrev": 0.031268384563435475,
+    "debtToEquity": 0.18724251392398816
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 90.0,
+    "S2": 65.0,
+    "S6": 100.0,
+    "S4": 93.56
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 83%",
+     "2분기 연속 가속",
+     "영업레버리지(TTM 영업이익 615%)"
+    ],
+    "S2": [
+     "영업이익률 +11.7%p",
+     "영업현금/순이익 0.64"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 86.56,
+   "T1": "NEAR",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 14,
+   "symbol": "052790",
+   "name": "액토즈소프트",
+   "exchange": "KOSDAQ",
+   "marcap": 51399993635.0,
+   "marcapEstimated": false,
+   "price": 4705.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.7172256097560976,
+   "ret6m": -0.11560150375939848,
+   "ret36to6m": -0.2507042253521127,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.8035471200358433,
+     -0.24968219251232482,
+     -0.39647357423763874
+    ],
+    "opTTM": 37931235275.0,
+    "opmTTM": 0.5112832834517034,
+    "opmTTMPrev": 0.34806149106767337,
+    "debtToEquity": 0.23975567733042413
+   },
+   "shareGrowth": -0.03584008243842929,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 100.0,
+    "S2": 65.0,
+    "S6": 100.0,
+    "S4": 78.01
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 80%",
+     "2분기 연속 가속",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +16.3%p",
+     "영업현금/순이익 0.52"
+    ],
+    "S6": [
+     "주식 수 -3.6%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 86.46,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 15,
+   "symbol": "228670",
+   "name": "레이",
+   "exchange": "KOSDAQ",
+   "marcap": 67643090825.0,
+   "marcapEstimated": false,
+   "price": 4325.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.3971533516988062,
+   "ret6m": -0.14862204724409445,
+   "ret36to6m": -0.7598108747044917,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.2414217627071371,
+     0.04936723924112263,
+     0.9014969215885675
+    ],
+    "opTTM": -5921545215.0,
+    "opmTTM": -0.049689383217070116,
+    "opmTTMPrev": -0.22716394050608035,
+    "debtToEquity": 1.2335603336002958
+   },
+   "shareGrowth": 0.003257760884353811,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 60.0,
+    "S2": 100.0,
+    "S6": 90.0,
+    "S4": 98.36
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 24%",
+     "1분기 가속",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +17.7%p",
+     "영업현금/순이익 1.87"
+    ],
+    "S6": [
+     "주식 수 +0.3%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 86.07,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 16,
+   "symbol": "086980",
+   "name": "쇼박스",
+   "exchange": "KOSDAQ",
+   "marcap": 111451830000.0,
+   "marcapEstimated": false,
+   "price": 1785.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.596989966555184,
+   "ret6m": -0.29862475442043224,
+   "ret36to6m": -0.1227089216686601,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     2.5762625874071508,
+     5.7200268592545624,
+     0.8377256548486711
+    ],
+    "opTTM": 29403930757.0,
+    "opmTTM": 0.16467792577291115,
+    "opmTTMPrev": -0.1810110853486886,
+    "debtToEquity": 0.7381958440498979
+   },
+   "shareGrowth": -0.0031929499664740124,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 70.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 67.83
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 258%",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +34.6%p"
+    ],
+    "S6": [
+     "주식 수 -0.3%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 85.97,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 17,
+   "symbol": "107600",
+   "name": "새빗켐",
+   "exchange": "KOSDAQ",
+   "marcap": 70060669600.0,
+   "marcapEstimated": false,
+   "price": 12400.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.328042328042328,
+   "ret6m": -0.5079365079365079,
+   "ret36to6m": -0.6222153667553739,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.6061322412015093,
+     0.3632064300160638,
+     0.37575515726759834
+    ],
+    "opTTM": -5259059306.0,
+    "opmTTM": -0.10833851689523395,
+    "opmTTMPrev": -0.2138068726369674,
+    "debtToEquity": 0.8439426791304048
+   },
+   "shareGrowth": 0.003552363796155422,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 85.0,
+    "S2": 75.0,
+    "S6": 90.0,
+    "S4": 95.93
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 61%",
+     "1분기 가속",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +10.5%p",
+     "순손실·영업현금 플러스"
+    ],
+    "S6": [
+     "주식 수 +0.4%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 85.62,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 18,
+   "symbol": "003720",
+   "name": "삼영",
+   "exchange": "KOSPI",
+   "marcap": 215220000000.0,
+   "marcapEstimated": false,
+   "price": 6330.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.4802731411229135,
+   "ret6m": -0.14111261872455905,
+   "ret36to6m": 0.44105761983027625,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.619370244334283,
+     0.5451769454629125,
+     0.3303880278293434
+    ],
+    "opTTM": 23518029711.0,
+    "opmTTM": 0.12315146517187858,
+    "opmTTMPrev": 0.06887441103195215,
+    "debtToEquity": 1.1797831692028813
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 90.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 33.69
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 62%",
+     "2분기 연속 가속",
+     "영업레버리지(TTM 영업이익 167%)"
+    ],
+    "S2": [
+     "영업이익률 +5.4%p",
+     "영업현금/순이익 1.04"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 85.22,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 19,
+   "symbol": "355150",
+   "name": "코스텍시스",
+   "exchange": "KOSDAQ",
+   "marcap": 164134217500.0,
+   "marcapEstimated": false,
+   "price": 21050.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.382032667876588,
+   "ret6m": -0.15800000000000003,
+   "ret36to6m": 1.0408163265306123,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.6687794612120059,
+     0.6452823076047072,
+     0.45916028976618706
+    ],
+    "opTTM": 3236696590.0,
+    "opmTTM": 0.16599750130688834,
+    "opmTTMPrev": -0.22072189143857246,
+    "debtToEquity": 0.9456660132992135
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 100.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 18.15
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 67%",
+     "2분기 연속 가속",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +38.7%p",
+     "영업현금/순이익 1.52"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 85.12,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 20,
+   "symbol": "009160",
+   "name": "SIMPAC",
+   "exchange": "KOSPI",
+   "marcap": 314434356080.0,
+   "marcapEstimated": false,
+   "price": 4810.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.48149291897163865,
+   "ret6m": -0.07499999999999996,
+   "ret36to6m": -0.23875183206792217,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.5295118892290156,
+     0.3696177345738356,
+     0.4015941417912421
+    ],
+    "opTTM": 81662185947.0,
+    "opmTTM": 0.05733969348965293,
+    "opmTTMPrev": 0.022038443231552286,
+    "debtToEquity": 1.0546828619429336
+   },
+   "shareGrowth": -0.0008948255096369317,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 75.0,
+    "S2": 85.0,
+    "S6": 100.0,
+    "S4": 77.28
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 53%",
+     "1분기 가속",
+     "영업레버리지(TTM 영업이익 283%)"
+    ],
+    "S2": [
+     "영업이익률 +3.5%p",
+     "영업현금/순이익 2.10"
+    ],
+    "S6": [
+     "주식 수 -0.1%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 84.96,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 21,
+   "symbol": "172670",
+   "name": "에이엘티",
+   "exchange": "KOSDAQ",
+   "marcap": 116304161820.0,
+   "marcapEstimated": false,
+   "price": 12980.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.6639386189258312,
+   "ret6m": 0.22222222222222232,
+   "ret36to6m": -0.48329982861994636,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.46367119720065353,
+     0.3702909284806586,
+     0.5185830791150987
+    ],
+    "opTTM": -735719952.0,
+    "opmTTM": -0.012840910802396365,
+    "opmTTMPrev": -0.30924192646938603,
+    "debtToEquity": 1.109293389996909
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 75.0,
+    "S2": 75.0,
+    "S6": 100.0,
+    "S4": 90.5
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 46%",
+     "1분기 가속",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +29.6%p",
+     "순손실·영업현금 플러스"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 84.64,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 22,
+   "symbol": "004000",
+   "name": "롯데정밀화학",
+   "exchange": "KOSPI",
+   "marcap": 1118430000000.0,
+   "marcapEstimated": false,
+   "price": 43350.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.6246397694524496,
+   "ret6m": -0.08059384941675507,
+   "ret36to6m": -0.1042140102074659,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.3805297084590984,
+     0.1460185029776544,
+     0.024362550804493566
+    ],
+    "opTTM": 141443213639.0,
+    "opmTTM": 0.07145949797327117,
+    "opmTTMPrev": 0.029071634679724716,
+    "debtToEquity": 0.11084158233264739
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 80.0,
+    "S2": 85.0,
+    "S6": 100.0,
+    "S4": 66.65
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 38%",
+     "2분기 연속 가속",
+     "영업레버리지(TTM 영업이익 183%)"
+    ],
+    "S2": [
+     "영업이익률 +4.2%p",
+     "영업현금/순이익 1.15"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 84.39,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 23,
+   "symbol": "159010",
+   "name": "아스플로",
+   "exchange": "KOSDAQ",
+   "marcap": 390041115750.0,
+   "marcapEstimated": false,
+   "price": 29250.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.9815436241610739,
+   "ret6m": 4.078125,
+   "ret36to6m": -0.45351043643263755,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     1.1253429831375934,
+     0.08903043154227741,
+     -0.3661070504948388
+    ],
+    "opTTM": 2231043684.0,
+    "opmTTM": 0.025634952477046294,
+    "opmTTMPrev": -0.10480440478593459,
+    "debtToEquity": 1.4365489420776465
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 100.0,
+    "S2": 50.0,
+    "S6": 100.0,
+    "S4": 88.81
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 113%",
+     "2분기 연속 가속",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +13.0%p",
+     "영업현금/순이익 0.05"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 84.33,
+   "T1": "ON",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 24,
+   "symbol": "234920",
+   "name": "자이글",
+   "exchange": "KOSDAQ",
+   "marcap": 71849132100.0,
+   "marcapEstimated": false,
+   "price": 5310.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.9186851211072664,
+   "ret6m": 0.0,
+   "ret36to6m": -0.6874632136550912,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.399529027254345,
+     0.0798870949190238,
+     -0.3296230015057715
+    ],
+    "opTTM": -1293401253.0,
+    "opmTTM": -0.14069681437872109,
+    "opmTTMPrev": -0.391785457988882,
+    "debtToEquity": 1.589682691439951
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 90.0,
+    "S2": 50.0,
+    "S6": 100.0,
+    "S4": 97.23
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 40%",
+     "2분기 연속 가속",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +25.1%p",
+     "순손실·영업현금 마이너스"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 83.13,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 25,
+   "symbol": "067310",
+   "name": "하나마이크론",
+   "exchange": "KOSDAQ",
+   "marcap": 3091825408500.0,
+   "marcapEstimated": false,
+   "price": 46500.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.8790170132325141,
+   "ret6m": 0.6089965397923875,
+   "ret36to6m": 0.36463272742833586,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     1.0082365818420467,
+     0.6283534405415336,
+     0.173028955914454
+    ],
+    "opTTM": 300097705493.0,
+    "opmTTM": 0.14474378151525363,
+    "opmTTMPrev": 0.08852022369505536,
+    "debtToEquity": 1.9444426869448113
+   },
+   "shareGrowth": 0.003145780426647704,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 90.0,
+    "S2": 100.0,
+    "S6": 90.0,
+    "S4": 37.08
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 101%",
+     "2분기 연속 가속",
+     "영업레버리지(TTM 영업이익 152%)"
+    ],
+    "S2": [
+     "영업이익률 +5.6%p",
+     "영업현금/순이익 1.08"
+    ],
+    "S6": [
+     "주식 수 +0.3%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 83.11,
+   "T1": "NEAR",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 26,
+   "symbol": "382800",
+   "name": "지앤비에스 에코",
+   "exchange": "KOSDAQ",
+   "marcap": 169977758940.0,
+   "marcapEstimated": false,
+   "price": 5340.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.5948006502586404,
+   "ret6m": -0.053679367119002674,
+   "ret36to6m": -0.29811954884039793,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.4385438429021884,
+     1.2329338732508837,
+     0.5509055452095843
+    ],
+    "opTTM": 19194071699.0,
+    "opmTTM": 0.15215035109962663,
+    "opmTTMPrev": 0.08145502775956173,
+    "debtToEquity": 0.24793535789669718
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 50.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 80.55
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 44%",
+     "영업레버리지(TTM 영업이익 220%)"
+    ],
+    "S2": [
+     "영업이익률 +7.1%p",
+     "영업현금/순이익 1.17"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 82.83,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 27,
+   "symbol": "323350",
+   "name": "다원넥스뷰",
+   "exchange": "KOSDAQ",
+   "marcap": 77784596120.0,
+   "marcapEstimated": false,
+   "price": 9710.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.3763565891472868,
+   "ret6m": -0.12285456187895216,
+   "ret36to6m": 0.05428571428571427,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.34525822614992685,
+     0.1536153801527056,
+     0.9316666372091933
+    ],
+    "opTTM": 5657277135.0,
+    "opmTTM": 0.19232107656187816,
+    "opmTTMPrev": 0.09256679017344789,
+    "debtToEquity": 0.9112238852353305
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 65.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 55.68
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 35%",
+     "1분기 가속",
+     "영업레버리지(TTM 영업이익 224%)"
+    ],
+    "S2": [
+     "영업이익률 +10.0%p",
+     "영업현금/순이익 2.46"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 82.4,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 28,
+   "symbol": "237880",
+   "name": "클리오",
+   "exchange": "KOSDAQ",
+   "marcap": 217217663060.0,
+   "marcapEstimated": false,
+   "price": 12020.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.8367669261259066,
+   "ret6m": 0.030874785591766818,
+   "ret36to6m": -0.5244858424316128,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.05692853221766114,
+     -0.0484360543970036,
+     0.0303156802966702
+    ],
+    "opTTM": 29178013860.0,
+    "opmTTM": 0.0885279513103825,
+    "opmTTMPrev": 0.0338728035746331,
+    "debtToEquity": 0.29667271800740713
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 40.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 92.26
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 6%",
+     "1분기 가속",
+     "영업레버리지(TTM 영업이익 161%)"
+    ],
+    "S2": [
+     "영업이익률 +5.5%p",
+     "영업현금/순이익 1.59"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 82.23,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 29,
+   "symbol": "424980",
+   "name": "마이크로투나노",
+   "exchange": "KOSDAQ",
+   "marcap": 53980276800.0,
+   "marcapEstimated": false,
+   "price": 9120.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.5941368078175896,
+   "ret6m": -0.2290786136939983,
+   "ret36to6m": -0.23131903833658218,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     1.0891470950082858,
+     0.5803204259124912,
+     0.06983632839086118
+    ],
+    "opTTM": -907183699.0,
+    "opmTTM": -0.029047482238139723,
+    "opmTTMPrev": -0.20641255477265102,
+    "debtToEquity": 0.889814975622367
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 100.0,
+    "S2": 50.0,
+    "S6": 100.0,
+    "S4": 76.43
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 109%",
+     "2분기 연속 가속",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +17.7%p",
+     "순손실·영업현금 마이너스"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 82.08,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 30,
+   "symbol": "009520",
+   "name": "포스코엠텍",
+   "exchange": "KOSDAQ",
+   "marcap": 511372392840.0,
+   "marcapEstimated": false,
+   "price": 12280.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.5875598086124402,
+   "ret6m": -0.32266960838389414,
+   "ret36to6m": -0.33957448310164695,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.1997838475266287,
+     0.1973413612367514,
+     0.033159175800151264
+    ],
+    "opTTM": 17221845851.0,
+    "opmTTM": 0.043898102079856005,
+    "opmTTMPrev": -0.017063029822710584,
+    "debtToEquity": 0.3380141196492994
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 45.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 83.1
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 20%",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +6.1%p",
+     "영업현금/순이익 1.20"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 81.93,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 31,
+   "symbol": "031330",
+   "name": "에스에이엠티",
+   "exchange": "KOSDAQ",
+   "marcap": 839958562800.0,
+   "marcapEstimated": false,
+   "price": 8400.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.5097087378640777,
+   "ret6m": 0.650294695481336,
+   "ret36to6m": 1.3593324588710973,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     1.8109311090053075,
+     1.3488512825888046,
+     0.3990565460831117
+    ],
+    "opTTM": 547056358579.0,
+    "opmTTM": 0.08481412184707268,
+    "opmTTMPrev": 0.023011192564760106,
+    "debtToEquity": 1.7891517016062908
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 90.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 14.64
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 181%",
+     "2분기 연속 가속",
+     "영업레버리지(TTM 영업이익 651%)"
+    ],
+    "S2": [
+     "영업이익률 +6.2%p"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 81.75,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 32,
+   "symbol": "008060",
+   "name": "대덕",
+   "exchange": "KOSPI",
+   "marcap": 476502502540.0,
+   "marcapEstimated": false,
+   "price": 15230.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.6799107142857143,
+   "ret6m": 0.22624798711755223,
+   "ret36to6m": 1.4726485149717945,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.4868840550326754,
+     0.471562938104396,
+     0.3478206372291035
+    ],
+    "opTTM": 169329703535.0,
+    "opmTTM": 0.10052248490437202,
+    "opmTTMPrev": -0.03482266384790296,
+    "debtToEquity": 0.32225804478133036
+   },
+   "shareGrowth": -0.07415572910504653,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 90.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 13.51
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 49%",
+     "2분기 연속 가속",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +13.5%p",
+     "영업현금/순이익 1.59"
+    ],
+    "S6": [
+     "주식 수 -7.4%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 81.55,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 33,
+   "symbol": "086390",
+   "name": "유니테스트",
+   "exchange": "KOSDAQ",
+   "marcap": 277491074380.0,
+   "marcapEstimated": false,
+   "price": 13130.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.6178823529411764,
+   "ret6m": -0.18447204968944098,
+   "ret36to6m": 0.3990964564749073,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.7305039480162676,
+     7.51941948606838e-05,
+     -0.2674734980614266
+    ],
+    "opTTM": -7359610142.0,
+    "opmTTM": -0.05595554557242057,
+    "opmTTMPrev": -0.13313024810724797,
+    "debtToEquity": 0.9472556312517826
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 100.0,
+    "S2": 75.0,
+    "S6": 100.0,
+    "S4": 35.27
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 73%",
+     "2분기 연속 가속",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +7.7%p",
+     "순손실·영업현금 플러스"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 81.41,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 34,
+   "symbol": "000020",
+   "name": "동화약품",
+   "exchange": "KOSPI",
+   "marcap": 141612552900.0,
+   "marcapEstimated": false,
+   "price": 5070.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.7744513169467314,
+   "ret6m": -0.1348122866894198,
+   "ret36to6m": -0.3826761181217908,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.09524448815248943,
+     0.03930468466027848,
+     0.025389254872716815
+    ],
+    "opTTM": 18891749505.0,
+    "opmTTM": 0.03680867212022546,
+    "opmTTMPrev": 0.010681066591244553,
+    "debtToEquity": 0.573351411590895
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 55.0,
+    "S2": 85.0,
+    "S6": 100.0,
+    "S4": 86.04
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 10%",
+     "2분기 연속 가속",
+     "영업레버리지(TTM 영업이익 267%)"
+    ],
+    "S2": [
+     "영업이익률 +2.6%p",
+     "영업현금/순이익 1.18"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 81.1,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 35,
+   "symbol": "000230",
+   "name": "일동홀딩스",
+   "exchange": "KOSPI",
+   "marcap": 68319168000.0,
+   "marcapEstimated": false,
+   "price": 5920.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.37802634563162396,
+   "ret6m": -0.411530815109344,
+   "ret36to6m": -0.1557334405101477,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.03456267719669559,
+     -0.00588478441128637,
+     -0.07523520491386815
+    ],
+    "opTTM": 24592353026.0,
+    "opmTTM": 0.040501138692637155,
+    "opmTTMPrev": 0.010867772575839305,
+    "debtToEquity": 1.2183021070169613
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 65.0,
+    "S2": 85.0,
+    "S6": 100.0,
+    "S4": 71.06
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 3%",
+     "2분기 연속 가속",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +3.0%p",
+     "영업현금/순이익 1.15"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 81.1,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 36,
+   "symbol": "396300",
+   "name": "HT로보틱스",
+   "exchange": "KOSDAQ",
+   "marcap": 146222040000.0,
+   "marcapEstimated": false,
+   "price": 5520.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.8,
+   "ret6m": 0.5726495726495726,
+   "ret36to6m": -0.151148730350665,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     1.0460164306797788,
+     0.7150677192055686,
+     0.1179090410873036
+    ],
+    "opTTM": 3753139013.0,
+    "opmTTM": 0.03154188763871587,
+    "opmTTMPrev": -0.06197744134758075,
+    "debtToEquity": 1.0625544380688001
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 100.0,
+    "S2": 50.0,
+    "S6": 100.0,
+    "S4": 70.77
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 105%",
+     "2분기 연속 가속",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +9.4%p",
+     "영업현금/순이익 -1.23"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 81.05,
+   "T1": "NEAR",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 37,
+   "symbol": "005930",
+   "name": "삼성전자",
+   "exchange": "KOSPI",
+   "marcap": 1593110920680000.0,
+   "marcapEstimated": false,
+   "price": 272500.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.7706229346399516,
+   "ret6m": 0.46509413229800023,
+   "ret36to6m": 1.9643948414273393,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     1.2999589747740927,
+     0.6915920284206432,
+     0.2381516590648085
+    ],
+    "opTTM": 178964931000000.0,
+    "opmTTM": 0.3687930051571569,
+    "opmTTMPrev": 0.08761485567014919,
+    "debtToEquity": 0.3110095471631653
+   },
+   "shareGrowth": -0.012910893239428956,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 90.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 9.67
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 130%",
+     "2분기 연속 가속",
+     "영업레버리지(TTM 영업이익 562%)"
+    ],
+    "S2": [
+     "영업이익률 +28.1%p"
+    ],
+    "S6": [
+     "주식 수 -1.3%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 80.85,
+   "T1": "NEAR",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 38,
+   "symbol": "122870",
+   "name": "와이지엔터테인먼트",
+   "exchange": "KOSDAQ",
+   "marcap": 803715107000.0,
+   "marcapEstimated": false,
+   "price": 43000.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.43374433183080535,
+   "ret6m": -0.1568627450980392,
+   "ret36to6m": -0.13757444662678386,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.27237100228876554,
+     0.46889821873418036,
+     0.6505431500104935
+    ],
+    "opTTM": 83843509953.0,
+    "opmTTM": 0.13529339400459114,
+    "opmTTMPrev": 0.03946106206064248,
+    "debtToEquity": 0.2712440225692088
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 50.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 69.36
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 27%",
+     "영업레버리지(TTM 영업이익 447%)"
+    ],
+    "S2": [
+     "영업이익률 +9.6%p",
+     "영업현금/순이익 1.57"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 80.79,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 39,
+   "symbol": "126730",
+   "name": "코칩",
+   "exchange": "KOSDAQ",
+   "marcap": 206097961000.0,
+   "marcapEstimated": false,
+   "price": 23500.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.7794361525704809,
+   "ret6m": 0.3766842413591096,
+   "ret36to6m": -0.23318055155858464,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     1.0860291408465579,
+     0.40886812161445785,
+     0.19162823719166644
+    ],
+    "opTTM": 5692662903.0,
+    "opmTTM": 0.11128966209613492,
+    "opmTTMPrev": 0.07302477818386069,
+    "debtToEquity": 0.17815374222604477
+   },
+   "shareGrowth": 0.03135970534347199,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 90.0,
+    "S2": 85.0,
+    "S6": 70.0,
+    "S4": 76.6
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 109%",
+     "2분기 연속 가속",
+     "영업레버리지(TTM 영업이익 132%)"
+    ],
+    "S2": [
+     "영업이익률 +3.8%p",
+     "영업현금/순이익 1.83"
+    ],
+    "S6": [
+     "주식 수 +3.1%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 80.75,
+   "T1": "NEAR",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 40,
+   "symbol": "054450",
+   "name": "텔레칩스",
+   "exchange": "KOSDAQ",
+   "marcap": 154016849610.0,
+   "marcapEstimated": false,
+   "price": 10170.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.5784982935153583,
+   "ret6m": -0.14249578414839803,
+   "ret36to6m": -0.5013232468847074,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.33565675120675165,
+     0.461826042518761,
+     0.11375491895756529
+    ],
+    "opTTM": 9265701957.0,
+    "opmTTM": 0.04054144273573958,
+    "opmTTMPrev": -0.018217710424219487,
+    "debtToEquity": 1.7588906173552876
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 60.0,
+    "S2": 75.0,
+    "S6": 100.0,
+    "S4": 91.07
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 34%",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +5.9%p",
+     "순손실·영업현금 플러스"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 80.65,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 41,
+   "symbol": "032560",
+   "name": "황금에스티",
+   "exchange": "KOSPI",
+   "marcap": 93670000000.0,
+   "marcapEstimated": false,
+   "price": 5510.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.859594383775351,
+   "ret6m": -0.07239057239057234,
+   "ret36to6m": -0.10757702546655878,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.314601771332623,
+     0.20816564217774736,
+     -0.038949701982136875
+    ],
+    "opTTM": 29905409254.0,
+    "opmTTM": 0.08387997118530308,
+    "opmTTMPrev": 0.06378351376218774,
+    "debtToEquity": 0.279630575013332
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 80.0,
+    "S2": 70.0,
+    "S6": 100.0,
+    "S4": 66.76
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 31%",
+     "2분기 연속 가속",
+     "영업레버리지(TTM 영업이익 49%)"
+    ],
+    "S2": [
+     "영업이익률 +2.0%p",
+     "영업현금/순이익 0.74"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 80.32,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 42,
+   "symbol": "253450",
+   "name": "스튜디오드래곤",
+   "exchange": "KOSDAQ",
+   "marcap": 620707983700.0,
+   "marcapEstimated": false,
+   "price": 20650.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.41886409736308317,
+   "ret6m": -0.3961988304093568,
+   "ret36to6m": -0.3104838709677419,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.26902032884655847,
+     0.1604518967898949,
+     0.11728549701934421
+    ],
+    "opTTM": 50861797498.0,
+    "opmTTM": 0.08724833347096114,
+    "opmTTMPrev": 0.01230372259898543,
+    "debtToEquity": 0.32508711541931
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 90.0,
+    "S2": 50.0,
+    "S6": 100.0,
+    "S4": 81.46
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 27%",
+     "2분기 연속 가속",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +7.5%p",
+     "영업현금/순이익 -3.02"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 80.27,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 43,
+   "symbol": "111380",
+   "name": "동인기연",
+   "exchange": "KOSPI",
+   "marcap": 79296320000.0,
+   "marcapEstimated": false,
+   "price": 12940.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.7971047971047971,
+   "ret6m": -0.05616338439095547,
+   "ret36to6m": -0.44478139501332137,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.14788427295825746,
+     0.07593721552663091,
+     0.007342658042648997
+    ],
+    "opTTM": 29049073277.0,
+    "opmTTM": 0.11272169961058322,
+    "opmTTMPrev": 0.0772851869349188,
+    "debtToEquity": 0.9256606216256252
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 65.0,
+    "S2": 70.0,
+    "S6": 100.0,
+    "S4": 88.47
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 15%",
+     "2분기 연속 가속",
+     "영업레버리지(TTM 영업이익 55%)"
+    ],
+    "S2": [
+     "영업이익률 +3.5%p",
+     "영업현금/순이익 0.76"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 80.18,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 44,
+   "symbol": "950200",
+   "name": "소마젠",
+   "exchange": "KOSDAQ",
+   "marcap": 58381420855.0,
+   "marcapEstimated": false,
+   "price": 3035.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.7484586929716399,
+   "ret6m": -0.08721804511278197,
+   "ret36to6m": -0.41666666666666663,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     -0.27315589636194015,
+     0.12375822969631756,
+     0.1831385689634415
+    ],
+    "opTTM": -556213.0,
+    "opmTTM": -0.014066988813919813,
+    "opmTTMPrev": -0.07368575839033348,
+    "debtToEquity": 0.6622613791187739
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 35.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 87.73
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY -27%",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +6.0%p"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 80.04,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 45,
+   "symbol": "136150",
+   "name": "원일티엔아이",
+   "exchange": "KOSDAQ",
+   "marcap": 67048240000.0,
+   "marcapEstimated": false,
+   "price": 8000.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.3076923076923077,
+   "ret6m": -0.5404939689833429,
+   "ret36to6m": null,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.4446641771427329,
+     null,
+     null
+    ],
+    "opTTM": -1537836411.0,
+    "opmTTM": -0.05151592254328557,
+    "opmTTMPrev": null,
+    "debtToEquity": 0.5356695777618712
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 60.0,
+    "S2": null,
+    "S6": 100.0,
+    "S4": null
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 44%",
+     "영업 흑자전환"
+    ],
+    "S2": [],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 80.0,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 46,
+   "symbol": "146320",
+   "name": "비씨엔씨",
+   "exchange": "KOSDAQ",
+   "marcap": 131818606900.0,
+   "marcapEstimated": false,
+   "price": 10300.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.5741360089186176,
+   "ret6m": -0.2003105590062112,
+   "ret36to6m": -0.28839779005524857,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.21982531782191606,
+     0.1951084097064446,
+     0.14845600011675653
+    ],
+    "opTTM": 5025405517.0,
+    "opmTTM": 0.052196174320021826,
+    "opmTTMPrev": -0.008548360373315644,
+    "debtToEquity": 1.4601697062405559
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 40.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 79.76
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 22%",
+     "2분기 연속 가속"
+    ],
+    "S2": [
+     "영업이익률 +6.1%p"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 79.96,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 47,
+   "symbol": "039200",
+   "name": "오스코텍",
+   "exchange": "KOSDAQ",
+   "marcap": 1363903974400.0,
+   "marcapEstimated": false,
+   "price": 35650.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.575,
+   "ret6m": -0.27170582226761997,
+   "ret36to6m": 0.6453781512605041,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     4.256064197611603,
+     0.8839588559279488,
+     32.79266323730266
+    ],
+    "opTTM": 89718043909.0,
+    "opmTTM": 0.6222544898614023,
+    "opmTTMPrev": 0.08433007369784713,
+    "debtToEquity": 0.19214728398601866
+   },
+   "shareGrowth": 0.0002614503760911546,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 85.0,
+    "S2": 100.0,
+    "S6": 90.0,
+    "S4": 26.4
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 426%",
+     "1분기 가속",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +53.8%p",
+     "영업현금/순이익 2.73"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 79.8,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 48,
+   "symbol": "011780",
+   "name": "금호석유화학",
+   "exchange": "KOSPI",
+   "marcap": 2923281165000.0,
+   "marcapEstimated": false,
+   "price": 116200.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.757496740547588,
+   "ret6m": -0.015254237288135575,
+   "ret36to6m": -0.054591104393322154,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.27900919216065967,
+     -0.0672201270447984,
+     -0.12029915589673346
+    ],
+    "opTTM": 484392384196.0,
+    "opmTTM": 0.06652225367319692,
+    "opmTTMPrev": 0.035656761896567156,
+    "debtToEquity": 0.3440278755732372
+   },
+   "shareGrowth": -0.044169819068724636,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 80.0,
+    "S2": 70.0,
+    "S6": 100.0,
+    "S4": 63.14
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 28%",
+     "2분기 연속 가속",
+     "영업레버리지(TTM 영업이익 86%)"
+    ],
+    "S2": [
+     "영업이익률 +3.1%p"
+    ],
+    "S6": [
+     "주식 수 -4.4%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 79.66,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 49,
+   "symbol": "311320",
+   "name": "지오엘리먼트",
+   "exchange": "KOSDAQ",
+   "marcap": 106466886400.0,
+   "marcapEstimated": false,
+   "price": 8440.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.7442680776014109,
+   "ret6m": 0.21387108279989975,
+   "ret36to6m": -0.36713294296730037,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.3640192536893141,
+     0.12493755648187443,
+     0.23335417914029777
+    ],
+    "opTTM": 7972189421.0,
+    "opmTTM": 0.1308855482779761,
+    "opmTTMPrev": 0.08437608401035217,
+    "debtToEquity": 0.2480582684530423
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 65.0,
+    "S2": 70.0,
+    "S6": 100.0,
+    "S4": 85.02
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 36%",
+     "1분기 가속",
+     "영업레버리지(TTM 영업이익 88%)"
+    ],
+    "S2": [
+     "영업이익률 +4.7%p",
+     "영업현금/순이익 0.85"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 79.55,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 50,
+   "symbol": "060590",
+   "name": "씨티씨바이오",
+   "exchange": "KOSDAQ",
+   "marcap": 73993921200.0,
+   "marcapEstimated": false,
+   "price": 3060.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.53125,
+   "ret6m": -0.18832891246684347,
+   "ret36to6m": -0.6775021385799829,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     -0.04890651257264855,
+     0.010004539828219139,
+     -0.22138401596539714
+    ],
+    "opTTM": 11349264241.0,
+    "opmTTM": 0.0862804526623988,
+    "opmTTMPrev": 0.006504972633580923,
+    "debtToEquity": 0.9057472287618623
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 25.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 97.06
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY -5%",
+     "영업레버리지(TTM 영업이익 1096%)"
+    ],
+    "S2": [
+     "영업이익률 +8.0%p",
+     "영업현금/순이익 1.24"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 79.01,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": null,
+   "P1": null
+  }
+ ],
+ "manualTracked": [
+  {
+   "rank": 796,
+   "symbol": "010120",
+   "name": "LS ELECTRIC",
+   "exchange": "KOSPI",
+   "marcap": 30750000000000.0,
+   "marcapEstimated": false,
+   "price": 205000.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.6549520766773163,
+   "ret6m": 0.3328998699609882,
+   "ret36to6m": 8.502924047180581,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.3218290257857319,
+     0.333759445614372,
+     0.12123992210988233
+    ],
+    "opTTM": 535586941997.0,
+    "opmTTM": 0.09405796579226273,
+    "opmTTMPrev": 0.08299302913322455,
+    "debtToEquity": 1.7212073900147675
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 50.0,
+    "S2": 40.0,
+    "S6": 100.0,
+    "S4": 1.24
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 32%",
+     "영업레버리지(TTM 영업이익 40%)"
+    ],
+    "S2": [
+     "영업이익률 +1.1%p"
+    ],
+    "S6": [
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 52.04,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "950000",
+    "share": "0.105",
+    "margin": "0.10",
+    "multiple": "25",
+    "other": "",
+    "note": "전력기기 95조(5년 뒤 매출 10조 가정). 시총 30.7조(9/28)"
+   },
+   "P1": {
+    "value5y": 24937500000000.0,
+    "multipleX": 0.81,
+    "verdict": "제외(3배 미만)"
+   }
+  },
+  {
+   "rank": 1044,
+   "symbol": "000150",
+   "name": "두산",
+   "exchange": "KOSPI",
+   "marcap": 22363686135000.0,
+   "marcapEstimated": false,
+   "price": 1381000.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.7008604698962412,
+   "ret6m": 0.2912239430879724,
+   "ret36to6m": 11.443385869613628,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.04483507620679861,
+     0.17716873753686024,
+     0.09362945587688021
+    ],
+    "opTTM": 1335731000000.0,
+    "opmTTM": 0.0642628297879905,
+    "opmTTMPrev": 0.046752690727619735,
+    "debtToEquity": 1.6129772814095777
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 25.0,
+    "S2": 40.0,
+    "S6": 100.0,
+    "S4": 0.51
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 4%",
+     "영업레버리지(TTM 영업이익 53%)"
+    ],
+    "S2": [
+     "영업이익률 +1.8%p"
+    ],
+    "S6": [
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 45.09,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "679000",
+    "share": "0.05",
+    "margin": "0.18",
+    "multiple": "18",
+    "other": "",
+    "note": "CCL 470억$(모건스탠리 2030), 전자BG만. 지주사라 SOTP 필요. 시총 23.0조(9/28)"
+   },
+   "P1": {
+    "value5y": 10999800000000.0,
+    "multipleX": 0.49,
+    "verdict": "제외(3배 미만)"
+   }
+  },
+  {
+   "rank": 194,
+   "symbol": "007660",
+   "name": "이수페타시스",
+   "exchange": "KOSPI",
+   "marcap": 8662287842000.0,
+   "marcapEstimated": false,
+   "price": 118000.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.7692307692307693,
+   "ret6m": 0.15009746588693962,
+   "ret36to6m": 2.6847740449687887,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.5735616038401434,
+     0.3477051149894914,
+     0.3179000540819634
+    ],
+    "opTTM": 259255308229.0,
+    "opmTTM": 0.1972594196421419,
+    "opmTTMPrev": 0.15235238117711908,
+    "debtToEquity": 0.7059452396015496
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 90.0,
+    "S2": 70.0,
+    "S6": 100.0,
+    "S4": 6.67
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 57%",
+     "2분기 연속 가속",
+     "영업레버리지(TTM 영업이익 84%)"
+    ],
+    "S2": [
+     "영업이익률 +4.5%p"
+    ],
+    "S6": [
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 72.12,
+   "T1": "NEAR",
+   "inflection": true,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "244000",
+    "share": "0.08",
+    "margin": "0.15",
+    "multiple": "15",
+    "other": "",
+    "note": "AI 고다층 PCB 180억$. 시총 8.24조(9/28)"
+   },
+   "P1": {
+    "value5y": 4392000000000.0,
+    "multipleX": 0.51,
+    "verdict": "제외(3배 미만)"
+   }
+  },
+  {
+   "rank": 730,
+   "symbol": "214450",
+   "name": "파마리서치",
+   "exchange": "KOSDAQ",
+   "marcap": 3288323592000.0,
+   "marcapEstimated": false,
+   "price": 316500.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.5790297912199691,
+   "ret6m": 0.0895008605851979,
+   "ret36to6m": 1.3757748150874223,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.2709483210568362,
+     0.24968178611582648,
+     0.39057912742710554
+    ],
+    "opTTM": 237546488344.0,
+    "opmTTM": 0.39356466941595664,
+    "opmTTMPrev": 0.37623265097203645,
+    "debtToEquity": 0.40349265791500183
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 50.0,
+    "S2": 40.0,
+    "S6": 100.0,
+    "S4": 14.25
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 27%",
+     "1분기 가속"
+    ],
+    "S2": [
+     "영업이익률 +1.7%p"
+    ],
+    "S6": [
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 54.41,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "11500",
+    "share": "1",
+    "margin": "0.28",
+    "multiple": "20",
+    "other": "",
+    "note": "매출 기준: 5년 뒤 매출 1.15조(연 12%) × 28% × PER20. 시총 3.32조(9/28)"
+   },
+   "P1": {
+    "value5y": 6440000000000.001,
+    "multipleX": 1.96,
+    "verdict": "제외(3배 미만)"
+   }
+  },
+  {
+   "rank": 758,
+   "symbol": "010170",
+   "name": "대한광통신",
+   "exchange": "KOSDAQ",
+   "marcap": 2581061956000.0,
+   "marcapEstimated": false,
+   "price": 16600.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.6831275720164609,
+   "ret6m": 0.3029827315541602,
+   "ret36to6m": 7.326797385620916,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.1780933348431053,
+     0.34871089655950716,
+     -0.1865093866062687
+    ],
+    "opTTM": -14721567041.0,
+    "opmTTM": -0.09454037592970312,
+    "opmTTMPrev": -0.18981183523436826,
+    "debtToEquity": 1.552181476415858
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 45.0,
+    "S2": 100.0,
+    "S6": 50.0,
+    "S4": 1.64
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 18%",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +9.5%p"
+    ],
+    "S6": [
+     "증자·CB 공시 1건"
+    ]
+   },
+   "composite": 53.48,
+   "T1": "OFF",
+   "inflection": true,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "271000",
+    "share": "0.02",
+    "margin": "0.06",
+    "multiple": "15",
+    "other": "",
+    "note": "광케이블 200억$. 시총 2.69조(9/28)"
+   },
+   "P1": {
+    "value5y": 487800000000.0,
+    "multipleX": 0.19,
+    "verdict": "제외(3배 미만)"
+   }
+  },
+  {
+   "rank": 1388,
+   "symbol": "257720",
+   "name": "실리콘투",
+   "exchange": "KOSDAQ",
+   "marcap": 2501734013800.0,
+   "marcapEstimated": false,
+   "price": 38150.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.7157598499061913,
+   "ret6m": -0.029262086513994867,
+   "ret36to6m": 3.033849970555437,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.517593798207981,
+     0.4106192697807345,
+     0.7627831136802752
+    ],
+    "opTTM": 252960816158.0,
+    "opmTTM": 0.18675895987703545,
+    "opmTTMPrev": 0.19409588699779473,
+    "debtToEquity": 0.4000046185516568
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 60.0,
+    "S2": 0.0,
+    "S6": 50.0,
+    "S4": 5.71
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 52%",
+     "1분기 가속"
+    ],
+    "S2": [
+     "영업이익률 -0.7%p"
+    ],
+    "S6": [
+     "증자·CB 공시 1건"
+    ]
+   },
+   "composite": 31.04,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "35000",
+    "share": "1",
+    "margin": "0.15",
+    "multiple": "15",
+    "other": "",
+    "note": "매출 기준: 5년 뒤 매출 3.5조 × 순이익률 15% × PER15. 시총 2.54조(9/28)"
+   },
+   "P1": {
+    "value5y": 7875000000000.0,
+    "multipleX": 3.15,
+    "verdict": "보류(3~10배)"
+   }
+  },
+  {
+   "rank": 417,
+   "symbol": "020150",
+   "name": "롯데에너지머티리얼즈",
+   "exchange": "KOSPI",
+   "marcap": 2228150450650.0,
+   "marcapEstimated": false,
+   "price": 42550.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.59593837535014,
+   "ret6m": 0.05191594561186652,
+   "ret36to6m": 0.055863426219310064,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     -0.05244308648617202,
+     0.011861554222478254,
+     -0.08311371085009855
+    ],
+    "opTTM": -89977800354.0,
+    "opmTTM": -0.13456503047360133,
+    "opmTTMPrev": -0.1957612504619757,
+    "debtToEquity": 0.315357851997182
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 0.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 55.51
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY -5%"
+    ],
+    "S2": [
+     "영업이익률 +6.1%p"
+    ],
+    "S6": [
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 64.64,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "68000",
+    "share": "0.15",
+    "margin": "0.15",
+    "multiple": "15",
+    "other": "6000",
+    "note": "HVLP 전체 약 50억$(1,356.7원) + 전지박 0.6조. 낙관(30%·20%·PER20) 3.9배. 시총 2.23조(9/28)"
+   },
+   "P1": {
+    "value5y": 2895000000000.0,
+    "multipleX": 1.3,
+    "verdict": "제외(3배 미만)"
+   }
+  },
+  {
+   "rank": 1014,
+   "symbol": "214150",
+   "name": "클래시스",
+   "exchange": "KOSDAQ",
+   "marcap": 2005996514250.0,
+   "marcapEstimated": false,
+   "price": 30750.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.4138627187079408,
+   "ret6m": -0.41650853889943074,
+   "ret36to6m": 0.6255182459940984,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.26693678964207,
+     0.13048336297701346,
+     0.25565096572338253
+    ],
+    "opTTM": 169948473499.0,
+    "opmTTM": 0.46042378230228703,
+    "opmTTMPrev": 0.4980649492887801,
+    "debtToEquity": 0.39569158208614347
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 50.0,
+    "S2": 0.0,
+    "S6": 100.0,
+    "S4": 27.13
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 27%",
+     "1분기 가속"
+    ],
+    "S2": [
+     "영업이익률 -3.8%p"
+    ],
+    "S6": [
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 45.84,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "7000",
+    "share": "1",
+    "margin": "0.30",
+    "multiple": "20",
+    "other": "",
+    "note": "매출 기준(현재 매출 확인 필요): 5년 뒤 7,000억 × 30% × PER20. 시총 2.01조(9/28)"
+   },
+   "P1": {
+    "value5y": 4200000000000.0,
+    "multipleX": 2.09,
+    "verdict": "제외(3배 미만)"
+   }
+  },
+  {
+   "rank": 772,
+   "symbol": "241710",
+   "name": "코스메카코리아",
+   "exchange": "KOSDAQ",
+   "marcap": 1384128000000.0,
+   "marcapEstimated": false,
+   "price": 129600.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.8421052631578947,
+   "ret6m": 0.6897001303780965,
+   "ret36to6m": 2.0307487825806034,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.39785126354261946,
+     null,
+     0.3904725955201038
+    ],
+    "opTTM": 102167181776.0,
+    "opmTTM": 0.1323320079469366,
+    "opmTTMPrev": null,
+    "debtToEquity": 1.195558093861425
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 35.0,
+    "S2": null,
+    "S6": 100.0,
+    "S4": 9.1
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 40%"
+    ],
+    "S2": [],
+    "S6": [
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 52.9,
+   "T1": "NEAR",
+   "inflection": false,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "22400",
+    "share": "1",
+    "margin": "0.09",
+    "multiple": "18",
+    "other": "",
+    "note": "매출 기준: 5년 뒤 매출 2.24조(연 20%) × 순이익률 9% × PER18. 낙관(연 25%·10%·PER20) 4.1배. 시총 1.34조(9/28)"
+   },
+   "P1": {
+    "value5y": 3628800000000.0,
+    "multipleX": 2.62,
+    "verdict": "제외(3배 미만)"
+   }
+  },
+  {
+   "rank": 1152,
+   "symbol": "251970",
+   "name": "펌텍코리아",
+   "exchange": "KOSDAQ",
+   "marcap": 781200000000.0,
+   "marcapEstimated": false,
+   "price": 63000.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.9603658536585366,
+   "ret6m": 0.3830954994511526,
+   "ret36to6m": 0.9244811787183158,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.10836179707169236,
+     0.00019874017927867804,
+     -0.14172883278041704
+    ],
+    "opTTM": 58268106373.0,
+    "opmTTM": 0.15197640383171063,
+    "opmTTMPrev": 0.15660733589182615,
+    "debtToEquity": 0.339160006493463
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 40.0,
+    "S2": 0.0,
+    "S6": 100.0,
+    "S4": 20.58
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 11%",
+     "2분기 연속 가속"
+    ],
+    "S2": [
+     "영업이익률 -0.5%p"
+    ],
+    "S6": [
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 41.92,
+   "T1": "ON",
+   "inflection": true,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "9000",
+    "share": "1",
+    "margin": "0.13",
+    "multiple": "15",
+    "other": "",
+    "note": "매출 기준: 5년 뒤 매출 9,000억(연 15%) × 13% × PER15. 시총 7,626억(9/28)"
+   },
+   "P1": {
+    "value5y": 1755000000000.0,
+    "multipleX": 2.25,
+    "verdict": "제외(3배 미만)"
+   }
+  },
+  {
+   "rank": null,
+   "symbol": "069540",
+   "name": "빛과전자",
+   "exchange": "KOSDAQ",
+   "marcap": 453584885425.0,
+   "marcapEstimated": false,
+   "price": 4025.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.6089258698940998,
+   "ret6m": 0.2384615384615385,
+   "ret36to6m": 0.11111111111111116,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     -0.45730916553176093,
+     0.0,
+     0.294947920318426
+    ],
+    "opTTM": -14915591706.0,
+    "opmTTM": -0.530387830764347,
+    "opmTTMPrev": -0.41927736223130097,
+    "debtToEquity": 0.24435071485762794
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": true,
+    "hits": [
+     {
+      "code": "G2",
+      "reason": "12개월 내 증자·CB·BW 결정 6건"
+     }
+    ],
+    "flags": []
+   },
+   "scores": {
+    "S1": 0.0,
+    "S2": 0.0,
+    "S6": 0.0,
+    "S4": 52.23
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY -46%"
+    ],
+    "S2": [
+     "영업이익률 -11.1%p"
+    ],
+    "S6": [
+     "증자·CB 공시 6건"
+    ]
+   },
+   "composite": 9.5,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "543000",
+    "share": "0.001",
+    "margin": "0.10",
+    "multiple": "20",
+    "other": "",
+    "note": "광부품. 5년 적자. 시총 4,502억(9/28)"
+   },
+   "P1": {
+    "value5y": 108600000000.0,
+    "multipleX": 0.24,
+    "verdict": "제외(3배 미만)"
+   }
+  },
+  {
+   "rank": 605,
+   "symbol": "138080",
+   "name": "오이솔루션",
+   "exchange": "KOSDAQ",
+   "marcap": 347814999800.0,
+   "marcapEstimated": false,
+   "price": 28100.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.5272045028142589,
+   "ret6m": -0.33333333333333337,
+   "ret36to6m": 2.170626337833874,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.23786168374146066,
+     0.28126039005910775,
+     0.57616676408293
+    ],
+    "opTTM": -7784799432.0,
+    "opmTTM": -0.11956294912646427,
+    "opmTTMPrev": -0.528627318761706,
+    "debtToEquity": 0.5262608723503076
+   },
+   "shareGrowth": null,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 10.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 8.25
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 24%"
+    ],
+    "S2": [
+     "영업이익률 +40.9%p"
+    ],
+    "S6": [
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 58.77,
+   "T1": "OFF",
+   "inflection": false,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "543000",
+    "share": "0.005",
+    "margin": "0.10",
+    "multiple": "20",
+    "other": "",
+    "note": "광트랜시버 400억$. 낙관(점유율 1%) 3.2배. 시총 3,429억(9/28)"
+   },
+   "P1": {
+    "value5y": 543000000000.0,
+    "multipleX": 1.56,
+    "verdict": "제외(3배 미만)"
    }
   }
- }
+ ],
+ "excludedSample": [
+  {
+   "symbol": "298040",
+   "name": "효성중공업",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 214% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "096770",
+   "name": "SK이노베이션",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "주식 수 전년 대비 +11.8%"
+    }
+   ]
+  },
+  {
+   "symbol": "138040",
+   "name": "메리츠금융지주",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 1062% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "015760",
+   "name": "한국전력",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 406% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "010140",
+   "name": "삼성중공업",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 281% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "006800",
+   "name": "미래에셋증권",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 1104% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "079550",
+   "name": "LIG디펜스앤에어로스페이스",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 434% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "047810",
+   "name": "한국항공우주",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 484% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "003490",
+   "name": "대한항공",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 391% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "036930",
+   "name": "주성엔지니어링",
+   "hits": [
+    {
+     "code": "G1",
+     "reason": "영업적자인데 6개월 257% 급등"
+    }
+   ]
+  },
+  {
+   "symbol": "071050",
+   "name": "한국금융지주",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 1119% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "006260",
+   "name": "LS",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 270% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "323410",
+   "name": "카카오뱅크",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 1037% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "000500",
+   "name": "가온전선",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 213% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "047040",
+   "name": "대우건설",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 267% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "000880",
+   "name": "한화",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 458% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "039490",
+   "name": "키움증권",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 1329% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "222800",
+   "name": "심텍",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "주식 수 전년 대비 +17.6%"
+    }
+   ]
+  },
+  {
+   "symbol": "377300",
+   "name": "카카오페이",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 237% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "028300",
+   "name": "HLB",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 3건"
+    }
+   ]
+  },
+  {
+   "symbol": "029780",
+   "name": "삼성카드",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 292% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "066970",
+   "name": "엘앤에프",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 373% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "440110",
+   "name": "파두",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 201% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "034220",
+   "name": "LG디스플레이",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 260% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "082740",
+   "name": "한화엔진",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 234% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "036460",
+   "name": "한국가스공사",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 345% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "192820",
+   "name": "코스맥스",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 276% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "141080",
+   "name": "리가켐바이오",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 2건"
+    }
+   ]
+  },
+  {
+   "symbol": "006360",
+   "name": "GS건설",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 229% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "336260",
+   "name": "두산퓨얼셀",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 346% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "080220",
+   "name": "제주반도체",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 3건"
+    }
+   ]
+  },
+  {
+   "symbol": "178320",
+   "name": "서진시스템",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 5건"
+    },
+    {
+     "code": "G3",
+     "reason": "부채비율 206% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "226950",
+   "name": "올릭스",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 2건"
+    }
+   ]
+  },
+  {
+   "symbol": "001720",
+   "name": "신영증권",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 552% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "140410",
+   "name": "메지온",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 221% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "032820",
+   "name": "우리기술",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 2건"
+    }
+   ]
+  },
+  {
+   "symbol": "457190",
+   "name": "이수스페셜티케미컬",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 201% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "089030",
+   "name": "테크윙",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 214% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "089860",
+   "name": "롯데렌탈",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 413% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "083650",
+   "name": "비에이치아이",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 445% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "043260",
+   "name": "성호전자",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 4건"
+    },
+    {
+     "code": "G3",
+     "reason": "부채비율 223% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "183300",
+   "name": "코미코",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 222% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "020560",
+   "name": "아시아나항공",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 5496% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "475150",
+   "name": "SK이터닉스",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 363% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "023590",
+   "name": "다우기술",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 1212% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "008770",
+   "name": "호텔신라",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 207% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "005070",
+   "name": "코스모신소재",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 2건"
+    }
+   ]
+  },
+  {
+   "symbol": "097230",
+   "name": "HJ중공업",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 251% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "003540",
+   "name": "대신증권",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 4건"
+    },
+    {
+     "code": "G3",
+     "reason": "부채비율 835% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "030610",
+   "name": "교보증권",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 867% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "127120",
+   "name": "제이에스링크",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 3건"
+    }
+   ]
+  },
+  {
+   "symbol": "347700",
+   "name": "스피어",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 2건"
+    },
+    {
+     "code": "G3",
+     "reason": "부채비율 258% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "003530",
+   "name": "한화투자증권",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 856% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "032350",
+   "name": "롯데관광개발",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 484% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "071320",
+   "name": "지역난방공사",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 219% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "077970",
+   "name": "STX엔진",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 217% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "079160",
+   "name": "CJ CGV",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 412% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "003470",
+   "name": "유안타증권",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 1190% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "115180",
+   "name": "큐리언트",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 3건"
+    }
+   ]
+  },
+  {
+   "symbol": "085660",
+   "name": "차바이오텍",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 3건"
+    }
+   ]
+  },
+  {
+   "symbol": "032190",
+   "name": "다우데이타",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 1186% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "064290",
+   "name": "인텍플러스",
+   "hits": [
+    {
+     "code": "G1",
+     "reason": "영업적자인데 6개월 162% 급등"
+    }
+   ]
+  },
+  {
+   "symbol": "059090",
+   "name": "미코",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 260% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "090710",
+   "name": "휴림로봇",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 2건"
+    }
+   ]
+  },
+  {
+   "symbol": "298050",
+   "name": "HS효성첨단소재",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 348% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "005090",
+   "name": "SGC에너지",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 337% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "033790",
+   "name": "피노",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 2건"
+    }
+   ]
+  },
+  {
+   "symbol": "293940",
+   "name": "신한알파리츠",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 301% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "017940",
+   "name": "E1",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 644% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "001680",
+   "name": "대상",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 203% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "126340",
+   "name": "비나텍",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 2건"
+    }
+   ]
+  },
+  {
+   "symbol": "004710",
+   "name": "한솔테크닉스",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 2건"
+    }
+   ]
+  },
+  {
+   "symbol": "456160",
+   "name": "지투지바이오",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 3건"
+    }
+   ]
+  },
+  {
+   "symbol": "001270",
+   "name": "부국증권",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 770% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "397030",
+   "name": "에이프릴바이오",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 3건"
+    }
+   ]
+  },
+  {
+   "symbol": "024850",
+   "name": "HLB이노베이션",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 2건"
+    }
+   ]
+  },
+  {
+   "symbol": "009410",
+   "name": "태영건설",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 2건"
+    },
+    {
+     "code": "G3",
+     "reason": "부채비율 510% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "003620",
+   "name": "KG모빌리티",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 2건"
+    }
+   ]
+  },
+  {
+   "symbol": "475830",
+   "name": "오름테라퓨틱",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 2건"
+    }
+   ]
+  },
+  {
+   "symbol": "001500",
+   "name": "현대차증권",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 794% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "211050",
+   "name": "인카금융서비스",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 357% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "187660",
+   "name": "페니트리움바이오",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 2건"
+    }
+   ]
+  },
+  {
+   "symbol": "376900",
+   "name": "로킷헬스케어",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 1510% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "002990",
+   "name": "금호건설",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 406% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "039130",
+   "name": "하나투어",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 256% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "082270",
+   "name": "젬백스",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 5건"
+    }
+   ]
+  },
+  {
+   "symbol": "069540",
+   "name": "빛과전자",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 6건"
+    }
+   ]
+  },
+  {
+   "symbol": "348370",
+   "name": "엔켐",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 3건"
+    }
+   ]
+  },
+  {
+   "symbol": "365340",
+   "name": "성일하이텍",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 3건"
+    },
+    {
+     "code": "G3",
+     "reason": "부채비율 308% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "016610",
+   "name": "DB증권",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 1006% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "174900",
+   "name": "앱클론",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 2건"
+    }
+   ]
+  },
+  {
+   "symbol": "089010",
+   "name": "켐트로닉스",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 213% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "357120",
+   "name": "코람코라이프인프라리츠",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 4건"
+    }
+   ]
+  },
+  {
+   "symbol": "403550",
+   "name": "쏘카",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 210% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "417840",
+   "name": "저스템",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "주식 수 전년 대비 +214.9%"
+    }
+   ]
+  },
+  {
+   "symbol": "001200",
+   "name": "유진투자증권",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 1137% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "092190",
+   "name": "서울바이오시스",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 2건"
+    },
+    {
+     "code": "G3",
+     "reason": "부채비율 280% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "441270",
+   "name": "파인엠텍",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 3건"
+    }
+   ]
+  },
+  {
+   "symbol": "089590",
+   "name": "제주항공",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 1009% (금융업이면 수동 확인)"
+    }
+   ]
+  },
+  {
+   "symbol": "194370",
+   "name": "제이에스코퍼레이션",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 2건"
+    },
+    {
+     "code": "G3",
+     "reason": "부채비율 226% (금융업이면 수동 확인)"
+    }
+   ]
+  }
+ ]
 }

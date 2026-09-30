@@ -32,6 +32,7 @@ FLOW = ("revenue", "operatingProfit", "netIncome")
 DILUTION = ("유상증자결정", "전환사채권발행결정", "신주인수권부사채권발행결정")
 SPLIT = ("회사분할결정", "물적분할")
 MIN_MARCAP = 500e8  # 500억 원
+MIN_UNIVERSE = 1000  # 이보다 적으면 시총 데이터 이상으로 보고 중단
 DART_WORKERS = 4
 
 
@@ -44,19 +45,36 @@ def load_universe(min_marcap: float = MIN_MARCAP):
     listing = listing[listing["Market"].isin(["KOSPI", "KOSDAQ", "KOSDAQ GLOBAL"])].copy()
     listing["Market"] = listing["Market"].replace({"KOSDAQ GLOBAL": "KOSDAQ"})
     listing = screening.enrich_kr_listing_market_data(listing)
-    listing["Marcap"] = pd.to_numeric(listing["Marcap"], errors="coerce")
+    listing["Marcap"] = normalize_marcap(pd.to_numeric(listing["Marcap"], errors="coerce"))
     listing = listing[listing["Marcap"] >= min_marcap]
     listing = listing[~listing["Name"].map(is_preferred_kr) & ~listing["Name"].map(is_spac_kr)]
     rows = []
     for r in listing.itertuples(index=False):
         code = str(r.Code).zfill(6)
+        shares = pd.to_numeric(getattr(r, "Stocks", None), errors="coerce")
         rows.append({
             "market": "kr", "symbol": code, "name": r.Name, "exchange": r.Market,
             "marcap": float(r.Marcap), "currency": "KRW",
+            "listedShares": float(shares) if shares == shares and shares > 0 else None,
             "yahoo": code + (".KS" if r.Market == "KOSPI" else ".KQ"),
         })
     log.info("KR 유니버스 %d종목 (시총 %.0f억 원 이상, 우선주·스팩 제외)", len(rows), min_marcap / 1e8)
+    if len(rows) < MIN_UNIVERSE:
+        # 장전·장애로 시총이 비정상이면 결과를 덮어쓰지 않도록 여기서 멈춘다.
+        raise RuntimeError(f"KR 유니버스가 {len(rows)}종목뿐 — 시총 데이터 이상으로 판단해 중단")
     return rows
+
+
+def normalize_marcap(marcap):
+    """시총을 원 단위로 맞춘다. 네이버 보완값은 억 원 단위 숫자로 올 수 있다.
+
+    한국 시총 1위는 1조 원을 훨씬 넘으므로, 최댓값이 1조 원 미만이면 억 원 단위로 본다.
+    """
+    top = marcap.max()
+    if top == top and 0 < top < 1e12:
+        log.warning("KR 시총 최댓값 %.0f — 억 원 단위로 보고 원 단위로 환산", top)
+        return marcap * 1e8
+    return marcap
 
 
 def _periods(today: dt.date, count: int = 11) -> list[tuple[int, int]]:

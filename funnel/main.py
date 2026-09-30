@@ -65,10 +65,13 @@ def attach_prices(records: list[dict], series: dict, market: str) -> list[dict]:
     for r in records:
         s = series.get(r["yahoo"])
         r["prices"] = px.price_metrics(s) if s is not None else None
+        price = (r["prices"] or {}).get("price")
         if market == "us":
-            price = (r["prices"] or {}).get("price")
             r["marcap"] = price * r["sharesNow"] if price and r.get("sharesNow") else None
             r["marcapEstimated"] = True
+        elif price and r.get("listedShares"):
+            # 목록 시총(장전에는 전일값·보완값)보다 상장주식수 × 최근 종가가 일관적이다.
+            r["marcap"] = price * r["listedShares"]
         if r.get("marcap") is None or r["marcap"] < MIN_MARCAP[market]:
             continue
         kept.append(r)
@@ -210,6 +213,8 @@ def run_market(market: str, args, today: dt.date) -> None:
         apply_manual(r, manual.get(r["symbol"]), market)
 
     ranked = rank(records, results)
+    if not ranked:
+        raise RuntimeError(f"{market}: 순위 대상 0종목 — 입력 데이터 이상으로 보고 결과를 기록하지 않음")
     ranks = {r["symbol"]: i + 1 for i, r in enumerate(ranked)}
     top = [row_out(r, results[r["symbol"]], ranks[r["symbol"]]) for r in ranked[:args.top]]
     stats = {
