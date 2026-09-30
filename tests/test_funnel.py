@@ -193,21 +193,37 @@ class DartParsingTest(unittest.TestCase):
         from funnel import data_kr
 
         class FakeDart:
-            calls = []
+            def __init__(self):
+                self.calls = []
 
             def request(self, endpoint, **params):
-                self.calls.append((params["bsns_year"], params["reprt_code"]))
-                return [{"corp_code": "C1", "stock_code": "000001", "fs_div": "CFS", "account_nm": "매출액",
-                         "thstrm_amount": "100", "thstrm_add_amount": "100"}]
+                self.calls.append((params["bsns_year"], params["reprt_code"], params["corp_code"]))
+                return [{"corp_code": c, "stock_code": "", "fs_div": "CFS", "account_nm": "매출액",
+                         "thstrm_amount": "100", "thstrm_add_amount": "100"}
+                        for c in params["corp_code"].split(",")
+                        if not (c == "C2" and params["bsns_year"] == 2026)]  # C2는 2026년 보고서 미제출
 
+        corps = {"000001": "C1", "000002": "C2"}
         with tempfile.TemporaryDirectory() as d:
             api = FakeDart()
             today = dt.date(2026, 9, 29)
-            first = data_kr.fetch_quarters(api, {"000001": "C1"}, ["000001"], today, Path(d))
+            first = data_kr.fetch_quarters(api, corps, list(corps), today, Path(d))
             n_first = len(api.calls)
-            second = data_kr.fetch_quarters(api, {"000001": "C1"}, ["000001"], today, Path(d))
+            second = data_kr.fetch_quarters(api, corps, list(corps), today, Path(d))
             self.assertEqual(first, second)
-            self.assertEqual(len(api.calls) - n_first, 2)  # 최근 2개 분기만 재조회
+            # 둘째 실행: 보고서가 아직 들어오는 2026Q2(분기 말 후 150일 안)의 미제출 C2만 다시 묻는다
+            self.assertEqual(api.calls[n_first:], [(2026, "11012", "C2")])
+            # 새 상장 종목은 모든 분기를 한 번 조회
+            api.calls.clear()
+            data_kr.fetch_quarters(api, {**corps, "000003": "C3"}, [*corps, "000003"], today, Path(d))
+            asked = [c for *_, batch in api.calls for c in batch.split(",")]
+            self.assertEqual(set(asked), {"C2", "C3"})
+            self.assertEqual(asked.count("C2"), 1)
+
+    def test_period_end(self):
+        from funnel import data_kr
+        self.assertEqual(data_kr._period_end(2025, 4), dt.date(2025, 12, 31))
+        self.assertEqual(data_kr._period_end(2026, 2), dt.date(2026, 6, 30))
 
     def test_events_windows_counted_once_each(self):
         from funnel import data_kr
