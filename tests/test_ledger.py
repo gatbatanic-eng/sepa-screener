@@ -162,6 +162,27 @@ class AdapterTest(unittest.TestCase):
             self.assertEqual({(s["group"], s["date"]) for s in kr}, {("BUY", "2026-09-30"), ("CONTROL", "2026-09-30")})
             self.assertEqual(sorted({s["date"] for s in us}), ["2026-09-29", "2026-09-30"])
 
+    def test_multifactor_ingest_reads_bom_csv_and_fails_loudly_on_unusable_rows(self):
+        with tempfile.TemporaryDirectory() as d:
+            ledger = Path(d) / "ledger"
+            path = Path(d) / "bom.csv"
+            cols = ["symbol", "name", "market", "signal", "composite_score", "price"]
+            row = {"symbol": "005930", "name": "삼성전자", "market": "KOSPI", "signal": "BUY", "composite_score": "81", "price": "268500"}
+            with open(path, "w", newline="", encoding="utf-8-sig") as f:  # screener.main과 같은 저장 방식
+                w = csv.DictWriter(f, cols)
+                w.writeheader()
+                w.writerow(row)
+            self.assertEqual(adapters.ingest_multifactor(path, "2026-10-01T18:17:00+00:00", ledger), 1)
+            self.assertEqual({s["symbol"] for s in adapters.ledger_signals("multifactor", "kr", ledger)}, {"005930"})
+            # 행은 있지만 쓸 수 있는 신호가 없으면 조용히 넘어가지 않고 실패한다
+            bad = Path(d) / "bad.csv"
+            with open(bad, "w", newline="", encoding="utf-8") as f:
+                w = csv.DictWriter(f, ["ticker", "price"])
+                w.writeheader()
+                w.writerow({"ticker": "005930", "price": "1"})
+            with self.assertRaises(ValueError):
+                adapters.ingest_multifactor(bad, "2026-10-01T18:17:00+00:00", ledger)
+
     def test_sepa_adapter_maps_existing_outcomes(self):
         with tempfile.TemporaryDirectory() as d:
             research = Path(d)
