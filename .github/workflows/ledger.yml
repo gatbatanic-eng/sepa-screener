@@ -1,0 +1,52 @@
+name: Strategy Performance Ledger
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 평일 22:40 UTC (미국 장 마감 뒤). 신호 파일은 하루가 끝난 스냅샷만 고정한다.
+    - cron: "40 22 * * 1-5"
+  push:
+    branches: [master, "claude/**"]
+    paths:
+      - ledger/**
+      - tests/test_ledger.py
+      - .github/workflows/ledger.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sepa-screening
+  cancel-in-progress: false
+
+jobs:
+  ledger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Verify ledger rules
+        run: python -m unittest tests.test_ledger -v
+      - name: Update ledger, outcomes and statistics
+        run: python -m ledger.main
+      - name: Save ledger
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          for p in research/ledger docs/research/ledger.json; do
+            if [ -e "$p" ]; then git add -f "$p"; fi
+          done
+          git diff --cached --quiet && exit 0
+          git commit -m "전략 성과 원장 갱신 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+          for i in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && break
+            sleep $((i * 5))
+          done

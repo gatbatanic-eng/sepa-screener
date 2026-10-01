@@ -275,7 +275,7 @@ def run_market(market: str, args, today: dt.date) -> None:
             "rows": [{"symbol": r["symbol"], "price": (r.get("prices") or {}).get("price"), "rank": ranks.get(r["symbol"]),
                       "composite": results[r["symbol"]]["composite"], "excluded": results[r["symbol"]]["gates"]["excluded"],
                       "meetsS1Floor": results[r["symbol"]]["meetsS1Floor"],
-                      "T1": results[r["symbol"]]["T1"]} for r in records]}
+                      "T1": results[r["symbol"]]["T1"], "exchange": r.get("exchange")} for r in records]}
     snap_dir = base / "snapshots"
     snap_dir.mkdir(parents=True, exist_ok=True)
     with gzip.open(snap_dir / f"{today.isoformat()}.json.gz", "wt", encoding="utf-8") as f:

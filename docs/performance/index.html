@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>전략 성과</title>
+<style>
+  /* 기존 대시보드(멀티팩터 등)와 같은 토큰·패널·내비 구조. 신호 색은 판정(양호·주의·경계)에만 쓴다. */
+  :root {
+    --bg: #f5f6f8; --panel: #ffffff; --border: #e3e5e9;
+    --text: #1b1e24; --text-dim: #6b7280; --accent: #2563eb;
+    --g-bg: #e6f7ec; --g-text: #157347; --g-border: #b7e4c7;
+    --y-bg: #fff2e0; --y-text: #b45309; --y-border: #fbd9a8;
+    --r-bg: #fdf2f2; --r-text: #b42318; --r-border: #f3c6c2;
+    --n-bg: #f8f9fa; --n-text: #6b7280; --n-border: #e3e5e9;
+    --up: #d92b2b; --down: #1a56db;
+    --row-hover: #f0f4ff; --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --panel: #171a21; --border: #2a2e37;
+      --text: #e7e9ee; --text-dim: #9aa2b1; --accent: #5b8def;
+      --g-bg: #113322; --g-text: #6bd08a; --g-border: #1e5c3a;
+      --y-bg: #3a2712; --y-text: #f6b96a; --y-border: #6b4a1f;
+      --r-bg: #3a1717; --r-text: #f2a4a0; --r-border: #6b2b26;
+      --n-bg: #1b1f27; --n-text: #9aa2b1; --n-border: #2a2e37;
+      --up: #f0605f; --down: #6ea8fe;
+      --row-hover: #1d2230; --shadow: 0 1px 3px rgba(0,0,0,0.4);
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", sans-serif;
+    font-size: 14px; line-height: 1.5;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 60px; }
+  header { margin-bottom: 16px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .subtitle { color: var(--text-dim); font-size: 13px; max-width: 72ch; }
+  .nav { display: flex; gap: 10px; margin: 10px 0 4px; flex-wrap: wrap; }
+  .nav a { font-size: 12px; color: var(--text-dim); text-decoration: none; border: 1px solid var(--border);
+           border-radius: 999px; padding: 4px 12px; background: var(--panel); }
+  .nav a:hover { color: var(--accent); border-color: var(--accent); }
+  .nav a.here { color: #fff; background: var(--accent); border-color: var(--accent); }
+  .tabs { display: flex; gap: 8px; margin: 16px 0; flex-wrap: wrap; align-items: center; }
+  .tab-btn { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--panel); color: var(--text); cursor: pointer; font-size: 13px; font-weight: 600; }
+  .tab-btn[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .tab-btn:focus-visible, .chk input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .asof { color: var(--text-dim); font-size: 12px; margin-left: auto; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; box-shadow: var(--shadow); }
+  .card .label { color: var(--text-dim); font-size: 12px; margin-bottom: 6px; }
+  .card .value { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .card .sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow); padding: 16px; margin-bottom: 18px; min-width: 0; }
+  .panel h2 { font-size: 14px; margin: 0 0 4px; font-weight: 700; }
+  .panel .desc { color: var(--text-dim); font-size: 12px; margin: 0 0 12px; max-width: 80ch; }
+  .pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 999px; border: 1px solid; }
+  .pill.g { background: var(--g-bg); color: var(--g-text); border-color: var(--g-border); }
+  .pill.y { background: var(--y-bg); color: var(--y-text); border-color: var(--y-border); }
+  .pill.r { background: var(--r-bg); color: var(--r-text); border-color: var(--r-border); }
+  .pill.n { background: var(--n-bg); color: var(--n-text); border-color: var(--n-border); }
+  .heat { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 10px; }
+  .heat .cell { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+  .heat .cell.hit { border-color: var(--r-border); background: var(--r-bg); }
+  .heat .k { font-size: 12px; color: var(--text-dim); }
+  .heat .v { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .heat .t { font-size: 11px; color: var(--text-dim); }
+  .movers { font-size: 12px; color: var(--text-dim); margin-top: 10px; }
+  .table-scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { padding: 7px 8px; border-bottom: 1px solid var(--border); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  th { color: var(--text-dim); font-weight: 600; font-size: 12px; position: sticky; top: 0; background: var(--panel); vertical-align: bottom; cursor: help; }
+  th .ko { font-weight: 400; font-size: 11px; }
+  th.l, td.l { text-align: left; }
+  td.why { white-space: normal; min-width: 240px; max-width: 420px; text-align: left; color: var(--text-dim); font-size: 12px; }
+  tbody tr:hover { background: var(--row-hover); }
+  .name { font-weight: 600; color: var(--text); text-decoration: none; border-bottom: 1px dotted var(--text-dim); }
+  a.name:hover { color: var(--accent); border-bottom-color: var(--accent); }
+  a.name:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .sym { color: var(--text-dim); font-size: 11px; margin-left: 4px; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 0 6px; border-radius: 4px; margin-left: 4px; border: 1px solid; }
+  .tag.p2 { color: var(--y-text); border-color: var(--y-border); background: var(--y-bg); }
+  .tag.flag { color: var(--r-text); border-color: var(--r-border); background: var(--r-bg); }
+  .tag.gate { color: var(--n-text); border-color: var(--n-border); background: var(--n-bg); }
+  .t1-ON { color: var(--g-text); font-weight: 700; }
+  .t1-NEAR { color: var(--y-text); font-weight: 600; }
+  .t1-OFF, .t1-NA { color: var(--text-dim); }
+  .pos { color: var(--up); } .neg { color: var(--down); }
+  .muted { color: var(--text-dim); }
+  .filters { display: flex; gap: 14px; flex-wrap: wrap; margin: 0 0 10px; font-size: 12px; color: var(--text-dim); }
+  .chk { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+  .empty { color: var(--text-dim); padding: 16px 4px; }
+  .err { color: var(--r-text); }
+  footer { color: var(--text-dim); font-size: 12px; margin-top: 24px; max-width: 80ch; }
+  footer a { color: var(--accent); }
+  .group-name { font-weight: 700; } .group-desc { color: var(--text-dim); font-size: 11px; display: block; font-weight: 400; }
+  .ci { color: var(--text-dim); font-size: 11px; display: block; }
+  .banner { border: 1px solid var(--y-border); background: var(--y-bg); color: var(--y-text); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 13px; }
+  .hz { display: inline-flex; gap: 6px; margin-left: 8px; }
+  .hz .tab-btn { padding: 5px 12px; }
+  ul.rules { margin: 6px 0 0 18px; padding: 0; color: var(--text-dim); font-size: 12px; max-width: 90ch; } ul.rules li { margin: 3px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>전략 성과</h1>
+    <div class="subtitle">각 탭 전략이 낸 신호를 기록 시점 그대로 쌓고, 신호 후 5·20·60·120거래일 수익률을 지수와 대조군에 견줘 통계로 보여줍니다. 투자 추천이 아니라 전략이 효과가 있었는지 검증하는 자료입니다.</div>
+    <div class="nav">
+      <a href="../">SEPA 추세템플릿</a>
+      <a href="../range_vrebound/">RANGE-MR · V-REBOUND</a>
+      <a href="../screener/">멀티팩터</a>
+      <a href="../technical/">기술적 신호</a>
+      <a href="../momentum/">모멘텀 전략</a>
+      <a href="../recovery/">계좌복구 공격매매</a>
+      <a href="../fpd/">FPD 연구</a>
+      <a href="../funnel/">대박주 깔때기</a>
+      <a class="here" href="./">전략 성과</a>
+    </div>
+  </header>
+  <div class="tabs" id="strategyTabs" role="group" aria-label="전략"></div>
+  <div class="tabs" id="marketTabs" role="group" aria-label="시장"><span class="hz" id="hzTabs" role="group" aria-label="기간"></span><span class="asof" id="asof"></span></div>
+  <div id="banner"></div>
+  <div class="panel">
+    <h2>그룹별 사후 성과 <span class="muted" id="hzLabel"></span></h2>
+    <p class="desc" id="stratDesc"></p>
+    <div class="table-scroll"><table>
+      <thead><tr>
+        <th class="l" title="신호 그룹">그룹 <span class="ko">(신호 종류)</span></th>
+        <th title="완료된 표본 수(종목당 최초 신호). 괄호는 신호일 수와, 보유 기간이 겹치지 않는 독립 구간 수">표본 <span class="ko">(신호일·독립 구간)</span></th>
+        <th title="신호 후 수익률에서 같은 기간 지수 수익률을 뺀 값의 평균. 괄호는 신호일 단위 부트스트랩 95% 신뢰구간">지수 대비 <span class="ko">(평균 초과수익)</span></th>
+        <th title="지수를 이긴 표본 비율">승률 <span class="ko">(지수 상회)</span></th>
+        <th title="같은 날 같은 유니버스에서 신호와 무관하게 뽑은 표본 평균을 뺀 값. 괄호는 95% 신뢰구간">대조군 대비 <span class="ko">(신호 효과)</span></th>
+        <th title="신호 후 평균 수익률">평균 수익률</th>
+        <th title="신호 후 보유 기간 중 평균 최대 하락">최대 하락 <span class="ko">(평균)</span></th>
+        <th title="아직 기간이 안 된 표본 / 가격을 못 구한 표본">대기·불가</th>
+        <th class="l" title="표본 부족: 30건 미만, 독립 구간 부족: 겹치지 않는 구간 5개 미만">상태</th>
+        <th class="l" title="가장 이른 신호가 이 기간을 채우는 날(근사)">첫 판단 가능</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table></div>
+  </div>
+  <div class="panel">
+    <h2>읽는 법과 고정 규칙</h2>
+    <ul class="rules">
+      <li>표본은 종목당 <b>최초 신호</b>만 셉니다. 같은 종목이 매일 잡혀도 한 번으로 봅니다. 대조군은 날짜별로 따로 셉니다.</li>
+      <li><b>지수 대비</b>는 코스피·코스닥·S&amp;P500 중 해당 종목 거래소의 지수와 같은 기간을 비교한 값입니다.</li>
+      <li><b>대조군 대비</b>는 같은 날 같은 유니버스에서 무작위로 뽑은 150종목과의 차이입니다. 지수보다 엄격한 기준입니다.</li>
+      <li>95% 구간이 <b>0을 포함하면</b> 우연과 구분되지 않습니다. 표본이 30건 이상이고 보유 기간이 겹치지 않는 <b>독립 구간이 5개 이상</b>이어야 '해석 가능'으로 표시합니다. 연속된 신호일은 보유 기간이 겹쳐 사실상 한 표본에 가깝기 때문입니다(5일 기준 약 5주, 20일 기준 약 5개월, 60일 기준 약 15개월, 120일 기준 약 2.5년 필요).</li>
+      <li>기준은 2026-10-01에 고정했고 결과를 본 뒤 바꾸지 않습니다. 가격을 못 구한 표본(상폐·거래정지)도 '불가'로 세어 따로 보여줍니다.</li>
+      <li>수정주가 일봉 종가 기준이며 수수료·세금·슬리피지는 반영하지 않았습니다.</li>
+    </ul>
+  </div>
+  <footer>데이터: <code>research/ledger/</code> (신호 원장, 수정 금지) · <code>docs/research/ledger.json</code> (집계). 규칙 전문은 저장소의 <code>LEDGER.md</code>.</footer>
+</div>
+<script>
+const STRATS = {
+  sepa: {name: "SEPA 추세템플릿", desc: "기존 추적기의 신호 기록(신호 후 5·20·60일). 대조군이 없어 지수 대비만 봅니다. 120일은 추적기가 아직 계산하지 않습니다.",
+    groups: {TREND: "추세 템플릿 통과", READY: "진입 준비", GO: "진입 신호", EXP_READY: "확장판 준비", EXP_GO: "확장판 진입"}},
+  funnel: {name: "대박주 깔때기", desc: "깔때기를 실행할 때마다 남긴 스냅샷(주 1회 + 수동 실행)에서 뽑은 신호입니다. 관문을 통과한 종목 중 상위 50위와 타이밍 ON 종목을 대조군과 비교합니다.",
+    groups: {TOP50: "관문 통과 상위 50위", T1_ON: "타이밍(T1) ON", CONTROL: "대조군(무작위 150)"}},
+  multifactor: {name: "멀티팩터", desc: "멀티팩터 실행 결과를 신호별로 남긴 기록입니다. BUY·WATCH·SELL이 대조군과 실제로 다른지 봅니다.",
+    groups: {BUY: "BUY (매수 후보)", WATCH: "WATCH (관찰)", NEUTRAL: "NEUTRAL (중립)", SELL: "SELL (비중 축소)", CONTROL: "대조군(무작위 150)"}}
+};
+const MARKETS = {kr: "한국", us: "미국"};
+const HORIZONS = ["5", "20", "60", "120"];
+const STATUS = {none: ["n", "완료 표본 없음"], thin: ["y", "표본 부족"], concentrated: ["y", "독립 구간 부족"], ok: ["g", "해석 가능"]};
+const state = {strat: "sepa", market: "kr", hz: "5"};
+let DATA = null;
+const $ = (id) => document.getElementById(id);
+const pct = (v, d = 2) => v == null ? "–" : (v > 0 ? "+" : "") + v.toFixed(d) + "%";
+const cls = (v) => v == null ? "muted" : v > 0 ? "pos" : v < 0 ? "neg" : "";
+function ci(c) { return c ? '<span class="ci">[' + pct(c[0], 1) + ", " + pct(c[1], 1) + "]" + (c[0] > 0 || c[1] < 0 ? "" : " 0 포함") + "</span>" : ""; }
+function btn(parent, label, active, onclick) {
+  const b = document.createElement("button");
+  b.className = "tab-btn"; b.type = "button"; b.textContent = label; b.setAttribute("aria-pressed", active ? "true" : "false");
+  b.onclick = onclick; parent.appendChild(b);
+}
+function td(html, c) { const e = document.createElement("td"); if (c) e.className = c; e.innerHTML = html; return e; }
+function render() {
+  const s = $("strategyTabs"), m = $("marketTabs"), h = $("hzTabs");
+  s.textContent = ""; h.textContent = "";
+  [...m.querySelectorAll("button")].forEach((b) => b.remove());
+  Object.entries(STRATS).forEach(([k, v]) => btn(s, v.name, state.strat === k, () => { state.strat = k; render(); }));
+  Object.entries(MARKETS).forEach(([k, v]) => { const b = document.createElement("button"); b.className = "tab-btn"; b.type = "button"; b.textContent = v;
+    b.setAttribute("aria-pressed", state.market === k ? "true" : "false"); b.onclick = () => { state.market = k; render(); }; m.insertBefore(b, h); });
+  HORIZONS.forEach((k) => btn(h, k + "거래일", state.hz === k, () => { state.hz = k; render(); }));
+  $("stratDesc").textContent = STRATS[state.strat].desc;
+  $("hzLabel").textContent = "· 신호 후 " + state.hz + "거래일";
+  $("asof").textContent = DATA ? "집계 " + DATA.generatedAt.slice(0, 16).replace("T", " ") + " UTC" : "";
+  const body = $("rows"); body.textContent = "";
+  const groups = DATA && DATA.strategies[state.strat] && DATA.strategies[state.strat][state.market];
+  if (!groups) { body.innerHTML = '<tr><td class="empty l" colspan="10">이 전략·시장의 신호 기록이 아직 없습니다.</td></tr>'; banner(false); return; }
+  const order = Object.keys(STRATS[state.strat].groups);
+  let anyOk = false;
+  Object.keys(groups).sort((a, b) => (order.indexOf(a) + 99) % 99 - (order.indexOf(b) + 99) % 99).forEach((g) => {
+    const r = groups[g][state.hz]; if (!r) return;
+    const [pc, label] = STATUS[r.status] || STATUS.none;
+    if (r.status === "ok") anyOk = true;
+    const tr = document.createElement("tr");
+    tr.appendChild(td('<span class="group-name">' + g + '</span><span class="group-desc">' + (STRATS[state.strat].groups[g] || "") + "</span>", "l"));
+    tr.appendChild(td(r.n + ' <span class="muted">(' + r.distinctDates + "일·독립 " + r.independentWindows + ")</span>"));
+    tr.appendChild(td(r.n ? '<span class="' + cls(r.meanExcessPct) + '">' + pct(r.meanExcessPct) + "</span>" + ci(r.excessCI95) : "–"));
+    tr.appendChild(td(r.winRate == null ? "–" : (r.winRate * 100).toFixed(0) + "%"));
+    tr.appendChild(td(r.vsControlPct == null ? "–" : '<span class="' + cls(r.vsControlPct) + '">' + pct(r.vsControlPct) + "</span>" + ci(r.vsControlCI95)));
+    tr.appendChild(td(r.n ? '<span class="' + cls(r.meanReturnPct) + '">' + pct(r.meanReturnPct) + "</span>" : "–"));
+    tr.appendChild(td(r.meanMaxDownPct == null ? "–" : pct(r.meanMaxDownPct)));
+    tr.appendChild(td('<span class="muted">' + r.pending + " · " + r.unavailable + "</span>"));
+    tr.appendChild(td('<span class="pill ' + pc + '">' + label + "</span>", "l"));
+    tr.appendChild(td(r.firstMature || "–", "l muted"));
+    body.appendChild(tr);
+  });
+  banner(anyOk);
+}
+function banner(anyOk) {
+  $("banner").innerHTML = anyOk ? "" : '<div class="banner">아직 결론을 낼 수 없는 단계입니다. 표본이 30건 미만이거나 독립 구간이 5개 미만이면 평균이 우연으로 움직일 수 있어, 수치는 진행 상황을 보는 용도로만 보세요.</div>';
+}
+fetch("../research/ledger.json", {cache: "no-store"}).then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then((d) => { DATA = d; render(); })
+  .catch(() => { $("rows").innerHTML = '<tr><td class="empty err l" colspan="10">성과 집계 파일을 불러오지 못했습니다. 첫 집계가 끝나면 표시됩니다.</td></tr>'; render(); });
+render();
+</script>
+</body>
+</html>
