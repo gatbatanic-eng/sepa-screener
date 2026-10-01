@@ -91,8 +91,11 @@ def _market_of(label: str) -> tuple[str, str]:
 def ingest_multifactor(csv_path: Path, recorded_at: str, signals_dir: Path | None = None) -> int:
     target = (signals_dir or config.SIGNALS_DIR) / "multifactor"
     by_market: dict[str, list[dict]] = {"kr": [], "us": []}
-    with open(csv_path, encoding="utf-8") as f:
+    read = 0
+    # 멀티팩터 CSV는 utf-8-sig(BOM)로 저장된다. utf-8로 읽으면 첫 컬럼명이 달라져 모든 행이 조용히 걸러진다.
+    with open(csv_path, encoding="utf-8-sig") as f:
         for r in csv.DictReader(f):
+            read += 1
             market, exchange = _market_of(r.get("market", ""))
             try:
                 price = float(r["price"])
@@ -103,6 +106,8 @@ def ingest_multifactor(csv_path: Path, recorded_at: str, signals_dir: Path | Non
             by_market[market].append({"symbol": r["symbol"].strip(), "name": r.get("name"), "price": price, "exchange": exchange,
                                       "score": float(r["composite_score"]) if r.get("composite_score") not in (None, "") else None,
                                       "signal": r["signal"].strip().upper()})
+    if read and not any(by_market.values()):
+        raise ValueError(f"멀티팩터 CSV {read}행을 읽었지만 유효한 신호가 없다: 컬럼명·가격 형식을 확인하세요")
     added = 0
     for market, rows in by_market.items():
         if not rows:
