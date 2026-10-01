@@ -1,0 +1,31 @@
+name: KR Listing Fallback Check
+
+# KRX(data.krx.co.kr)가 막혔을 때 쓰는 네이버 대체 종목 목록이 살아 있는지 점검한다. 커밋하지 않는다.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 1 * * 6"
+  push:
+    branches: [master]
+    paths:
+      - naver_listing.py
+      - .github/workflows/kr_listing_check.yml
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install pandas requests
+      - name: Verify copies and parsing
+        run: python -m unittest tests.test_naver_listing.NaverListingTest -v
+      - name: Naver listing is reachable and complete
+        run: python naver_listing.py

@@ -30,19 +30,27 @@ except ImportError as exc:  # pragma: no cover
     ) from exc
 
 import config as cfg
+from naver_listing import naver_kr_listing
 
 logger = logging.getLogger(__name__)
 
 _KR_REQUIRED_COLUMNS = {"Code", "Name"}
 
 
+def _kr_listing() -> pd.DataFrame:
+    """코스피+코스닥 상장 목록. KRX(data.krx.co.kr) 점검·장애로 막히면 네이버 금융 대체 목록을 쓴다."""
+    try:
+        return pd.concat([fdr.StockListing("KOSPI"), fdr.StockListing("KOSDAQ")], ignore_index=True)
+    except Exception as exc:  # noqa: BLE001
+        logger.error("KRX 종목 목록 조회 실패(%s) — 네이버 대체 목록 사용", exc)
+        return naver_kr_listing()
+
+
 def fetch_kr_universe() -> pd.DataFrame:
     """코스피+코스닥 전체 상장종목. 컬럼: Code, Name, Market.
     시가총액 랭킹은 쓰지 않는다(모듈 docstring 참고 — Marcap이 항상 NaN).
     스팩(기업인수목적회사)은 가격이 거의 안 움직여 지표가 좋아 보이므로 제외한다."""
-    kospi = fdr.StockListing("KOSPI")
-    kosdaq = fdr.StockListing("KOSDAQ")
-    combined = pd.concat([kospi, kosdaq], ignore_index=True)
+    combined = _kr_listing()
     if "Market" in combined.columns:
         combined["Market"] = combined["Market"].replace({"KOSDAQ GLOBAL": "KOSDAQ"})
     missing = _KR_REQUIRED_COLUMNS - set(combined.columns)

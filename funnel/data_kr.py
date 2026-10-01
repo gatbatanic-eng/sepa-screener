@@ -42,6 +42,9 @@ def load_universe(min_marcap: float = MIN_MARCAP):
     from sepa.universe import is_preferred_kr, is_spac_kr
 
     listing = screening.fetch_stock_listing("KRX")
+    if listing.attrs.get("source") == "naver-fallback":
+        # 대체 목록에는 상장주식 수가 없어 시총을 정확히 못 구하고, 점수·검증 기록이 달라진다. 이전 결과를 유지한다.
+        raise RuntimeError("KRX 목록이 막혀 네이버 대체 목록만 있다 — 깔때기는 정밀 기록을 위해 이번 실행을 건너뛴다")
     listing = listing[listing["Market"].isin(["KOSPI", "KOSDAQ", "KOSDAQ GLOBAL"])].copy()
     listing["Market"] = listing["Market"].replace({"KOSDAQ GLOBAL": "KOSDAQ"})
     listing = screening.enrich_kr_listing_market_data(listing)

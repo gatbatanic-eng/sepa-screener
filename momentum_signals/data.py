@@ -24,6 +24,7 @@ except ImportError as exc:  # pragma: no cover
     ) from exc
 
 import config as cfg
+from naver_listing import naver_kr_listing
 
 logger = logging.getLogger(__name__)
 
@@ -47,13 +48,20 @@ def clean_ohlcv(df: pd.DataFrame) -> pd.DataFrame:
     return df.dropna(subset=["Close"])
 
 
+def _kr_listing() -> pd.DataFrame:
+    """코스피+코스닥 상장 목록. KRX(data.krx.co.kr) 점검·장애로 막히면 네이버 금융 대체 목록을 쓴다."""
+    try:
+        return pd.concat([fdr.StockListing("KOSPI"), fdr.StockListing("KOSDAQ")], ignore_index=True)
+    except Exception as exc:  # noqa: BLE001
+        logger.error("KRX 종목 목록 조회 실패(%s) — 네이버 대체 목록 사용", exc)
+        return naver_kr_listing()
+
+
 def fetch_kr_candidate_universe() -> pd.DataFrame:
     """코스피+코스닥 전체 상장종목에서 우선주/스팩을 제외한 후보 리스트.
     컬럼: Code, Name, Market. 유동성 상위 선별은 pipeline.py가 20일 평균
     거래대금을 계산한 뒤 한다(단일일 스냅샷만으로는 20일 평균을 알 수 없다)."""
-    kospi = fdr.StockListing("KOSPI")
-    kosdaq = fdr.StockListing("KOSDAQ")
-    combined = pd.concat([kospi, kosdaq], ignore_index=True)
+    combined = _kr_listing()
     if "Market" in combined.columns:
         combined["Market"] = combined["Market"].replace({"KOSDAQ GLOBAL": "KOSDAQ"})
     combined = combined.dropna(subset=["Code", "Name"])
