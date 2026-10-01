@@ -23,6 +23,7 @@ except ImportError as exc:  # pragma: no cover
         "`pip install -r range_vrebound/requirements.txt`"
     ) from exc
 
+from src.data.naver_listing import naver_kr_listing
 from src.models.market_data import MarketIndexBar, OHLCVBar
 
 logger = logging.getLogger(__name__)
@@ -51,9 +52,12 @@ def fetch_kr_universe(top_n: int) -> pd.DataFrame:
     스크리너와 동일하게 "KOSDAQ GLOBAL"은 "KOSDAQ"으로 합친다
     ([screening.py:305](../screening.py)와 동일한 관례, 코드는 독립).
     """
-    kospi = fdr.StockListing("KOSPI")
-    kosdaq = fdr.StockListing("KOSDAQ")
-    combined = pd.concat([kospi, kosdaq], ignore_index=True)
+    try:
+        combined = pd.concat([fdr.StockListing("KOSPI"), fdr.StockListing("KOSDAQ")], ignore_index=True)
+    except Exception as exc:  # noqa: BLE001
+        # KRX(data.krx.co.kr) 점검·장애: 네이버 금융 대체 목록(코스피·코스닥, 시총 포함)을 쓴다
+        logger.error("KRX 종목 목록 조회 실패(%s) — 네이버 대체 목록 사용", exc)
+        combined = naver_kr_listing()
     if "Market" in combined.columns:
         combined["Market"] = combined["Market"].replace({"KOSDAQ GLOBAL": "KOSDAQ"})
     return select_top_n_by_market_cap(combined, top_n)

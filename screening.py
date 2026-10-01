@@ -861,6 +861,15 @@ def fetch_stock_listing(market: str) -> pd.DataFrame:
                 market, attempt, MAX_RETRIES, exc, wait,
             )
             time.sleep(wait)
+    if market == "KRX":
+        # KRX 점검·장애로 목록 자체를 못 받을 때: 네이버 금융 대체 목록(코스피·코스닥)으로 이어간다.
+        # frame.attrs["source"] == "naver-fallback"으로 표시되어 소비자가 정밀도 한계를 알 수 있다.
+        try:
+            from naver_listing import naver_kr_listing
+            logger.error("종목 목록(KRX) 조회 최종 실패(%s) — 네이버 대체 목록 사용", last_exc)
+            return naver_kr_listing()
+        except Exception as exc:  # noqa: BLE001
+            logger.error("네이버 대체 목록도 실패: %s", exc)
     raise RuntimeError(f"종목 목록({market}) 조회 최종 실패: {last_exc}")
 
 
