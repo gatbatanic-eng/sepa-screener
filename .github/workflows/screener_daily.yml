@@ -56,6 +56,11 @@ jobs:
           --us-max-tickers ${{ github.event.inputs.us_max_tickers || 120 }}
           --output output/screening_result.csv
 
+      # 결과 CSV는 실행마다 덮어써지므로 신호별 기록을 전략 성과 원장에 한 번 고정한다(실패해도 대시보드는 계속).
+      - name: 신호 원장 기록
+        continue-on-error: true
+        run: python -m ledger.collect_multifactor
+
       - name: 랭킹 리포트 생성
         run: python -m screener.report
 
@@ -80,6 +85,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add output/index_state.json output/index_history.csv docs/screener/
+          if [ -e research/ledger ]; then git add -f research/ledger; fi
           git diff --cached --quiet || git commit -m "멀티팩터 스크리너 갱신 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
           git pull --rebase origin master
           git push

@@ -3,10 +3,12 @@
 Snapshots are first-observed payloads, not historical point-in-time backtests.
 """
 import datetime as dt
+import gzip
 import hashlib
 import io
 import json
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 import re
 import time
@@ -16,6 +18,9 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 ROOT = Path(__file__).resolve().parent
+DART_WORKERS = 4        # DART 응답이 느려(종목당 1분 이상) 종목별로 동시에 조회한다
+SETTLE_DAYS = 150       # 분기 말 후 이 기간이 지나면 확정 보고서로 보고 캐시한다(정정 공시는 반영하지 않음)
+CACHE_DIR = ROOT / 'research/fundamentals/_cache/kr'
 REPORTS = {1: '11013', 2: '11012', 3: '11014', 4: '11011'}
 ACCOUNTS = {
     'revenue': (['ifrs-full_Revenue', 'ifrs_Revenue'], ['매출액', '수익(매출액)', '영업수익']),
@@ -77,6 +82,73 @@ def normalize(reports):
         result.append(rec)
     return result[-8:]
 
+def _needed_row(r):
+    """account()가 고르는 행만 남겨도 같은 결과가 나온다(아이디 또는 계정명이 ACCOUNTS에 있는 행)."""
+    name = re.sub(r'\s+', '', r.get('account_nm', ''))
+    return any(r.get('account_id') in ids or name in names for ids, names in ACCOUNTS.values())
+
+def slim(rows):
+    keep = ('rcept_no', 'sj_div', 'currency', 'account_id', 'account_nm', 'thstrm_amount', 'thstrm_add_amount')
+    return [{k: r[k] for k in keep if k in r} for r in rows if _needed_row(r)]
+
+def period_end(year, quarter):
+    return dt.date(year + quarter // 4, quarter % 4 * 3 + 1, 1) - dt.timedelta(days=1)
+
+def is_settled(year, quarter, today):
+    return (today - period_end(year, quarter)).days > SETTLE_DAYS
+
+def load_cache(code, cache_dir=None):
+    path = (cache_dir or CACHE_DIR) / (code + '.json.gz')
+    if not path.exists():
+        return {}
+    try:
+        with gzip.open(path, 'rt', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def save_cache(code, cache, cache_dir=None):
+    path = (cache_dir or CACHE_DIR) / (code + '.json.gz')
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with gzip.open(path, 'wt', encoding='utf-8') as f:
+        json.dump(cache, f, ensure_ascii=False, separators=(',', ':'))
+
+def fetch_reports(api, corp_code, code, now, cache_dir=None):
+    """종목 하나의 분기 보고서. 확정된 과거 분기는 캐시(보고서가 없던 분기 포함)를 쓰고 나머지만 조회한다."""
+    cache = load_cache(code, cache_dir)
+    today = now.date()
+    reports, changed = {}, False
+    for year in range(now.year - 3, now.year + 1):
+        for quarter, report_code in REPORTS.items():
+            # No unfinished current-year period is requested.
+            if year == now.year and quarter * 3 >= now.month:
+                continue
+            key = f'{year}Q{quarter}'
+            if key in cache and is_settled(year, quarter, today):
+                hit = cache[key]
+            else:
+                rows = api.request('fnlttSinglAcntAll.json', corp_code=corp_code, bsns_year=year, reprt_code=report_code, fs_div='CFS')
+                basis = 'CFS'
+                if not rows:
+                    rows = api.request('fnlttSinglAcntAll.json', corp_code=corp_code, bsns_year=year, reprt_code=report_code, fs_div='OFS')
+                    basis = 'OFS'
+                hit = {'rows': slim(rows), 'basis': basis if rows else None}
+                if is_settled(year, quarter, today) and cache.get(key) != hit:
+                    cache[key], changed = hit, True
+            if hit['rows']:
+                reports[(year, quarter)] = {'rows': hit['rows'], 'basis': hit['basis']}
+    if changed:
+        save_cache(code, cache, cache_dir)
+    return reports
+
+def collect_stock(api, corps, stock, now, cache_dir=None):
+    code = str(stock['code']).zfill(6)
+    if code not in corps:
+        raise RuntimeError('DART corporation mapping unavailable')
+    company = api.request('company.json', corp_code=corps[code])
+    quarters = normalize(fetch_reports(api, corps[code], code, now, cache_dir))
+    return code, company, quarters
+
 class Dart:
     def __init__(self, key):
         self.key = key
@@ -128,42 +200,35 @@ def main():
     output = ROOT / 'docs/data/fundamentals/kr'
     index = {'schemaVersion': 1, 'market': 'kr', 'checkedAt': now.isoformat(), 'symbols': {}}
     failed = 0
-    for stock in selected:
+    def finish(stock, company, quarters):
         code = str(stock['code']).zfill(6)
-        try:
-            if code not in corps:
-                raise RuntimeError('DART corporation mapping unavailable')
-            company = api.request('company.json', corp_code=corps[code])
-            reports = {}
-            for year in range(now.year - 3, now.year + 1):
-                for quarter, report_code in REPORTS.items():
-                    # No unfinished current-year period is requested.
-                    if year == now.year and quarter * 3 >= now.month:
-                        continue
-                    rows = api.request('fnlttSinglAcntAll.json', corp_code=corps[code], bsns_year=year, reprt_code=report_code, fs_div='CFS')
-                    basis = 'CFS'
-                    if not rows:
-                        rows = api.request('fnlttSinglAcntAll.json', corp_code=corps[code], bsns_year=year, reprt_code=report_code, fs_div='OFS')
-                        basis = 'OFS'
-                    if rows:
-                        reports[(year, quarter)] = {'rows': rows, 'basis': basis}
-            quarters = normalize(reports)
-            payload = {'schemaVersion': 1, 'market': 'kr', 'code': code, 'name': stock['name'], 'source': 'OpenDART', 'industryCode': company.get('induty_code'), 'industrySystem': 'KSIC',
-                       'checkedAt': now.isoformat(), 'status': 'ok' if quarters else 'unavailable', 'quarters': quarters,
-                       'historyNote': '과거 실적은 수집 시점의 공시 조회값입니다. 과거 매수 시점에 알려진 값으로 간주할 수 없습니다.'}
-            digest = hashlib.sha256(json.dumps(quarters, sort_keys=True).encode()).hexdigest()[:20]
-            snap = ROOT / 'research/fundamentals/kr' / code / (digest + '.json')
-            if not snap.exists():
-                save(snap, payload)
-            payload['firstObservedAt'] = json.loads(snap.read_text())['checkedAt']
-            save(output / (code + '.json'), payload)
-            index['symbols'][code] = {'status': payload['status'], 'latestPeriod': quarters[-1]['period'] if quarters else None}
-            print(code, payload['status'], len(quarters), 'quarters', flush=True)
-        except Exception as exc:
-            failed += 1
-            # Errors contain no request URLs, response bodies, or credentials.
-            index['symbols'][code] = {'status': 'error', 'reason': str(exc) if isinstance(exc, RuntimeError) else 'Data processing failed'}
-            print(code, 'collection failed', flush=True)
+        payload = {'schemaVersion': 1, 'market': 'kr', 'code': code, 'name': stock['name'], 'source': 'OpenDART', 'industryCode': company.get('induty_code'), 'industrySystem': 'KSIC',
+                   'checkedAt': now.isoformat(), 'status': 'ok' if quarters else 'unavailable', 'quarters': quarters,
+                   'historyNote': '과거 실적은 수집 시점의 공시 조회값입니다. 과거 매수 시점에 알려진 값으로 간주할 수 없습니다.'}
+        digest = hashlib.sha256(json.dumps(quarters, sort_keys=True).encode()).hexdigest()[:20]
+        snap = ROOT / 'research/fundamentals/kr' / code / (digest + '.json')
+        if not snap.exists():
+            save(snap, payload)
+        payload['firstObservedAt'] = json.loads(snap.read_text())['checkedAt']
+        save(output / (code + '.json'), payload)
+        index['symbols'][code] = {'status': payload['status'], 'latestPeriod': quarters[-1]['period'] if quarters else None}
+        print(code, payload['status'], len(quarters), 'quarters', flush=True)
+
+    # 조회는 동시에, 파일 저장과 색인 갱신은 이 스레드에서 차례로 한다.
+    with ThreadPoolExecutor(max_workers=DART_WORKERS) as pool:
+        futures = {pool.submit(collect_stock, api, corps, stock, now): stock for stock in selected}
+        for fut in as_completed(futures):
+            stock = futures[fut]
+            code = str(stock['code']).zfill(6)
+            try:
+                _, company, quarters = fut.result()
+                finish(stock, company, quarters)
+            except Exception as exc:
+                failed += 1
+                # Errors contain no request URLs, response bodies, or credentials.
+                index['symbols'][code] = {'status': 'error', 'reason': str(exc) if isinstance(exc, RuntimeError) else 'Data processing failed'}
+                print(code, 'collection failed', flush=True)
+    index['symbols'] = dict(sorted(index['symbols'].items()))
     save(output / 'index.json', index)
     print(f'Fundamentals: {len(selected)} selected, {failed} failed', flush=True)
     if failed:
