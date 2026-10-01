@@ -38,6 +38,32 @@ def write_json(path, obj):
 def series_prices(series):
     return {str(d)[:10]: float(v) for d, v in series.items() if positive(v)}
 
+
+def align_latest_rows(rows, sessions, market):
+    """Keep true quote dates and quarantine mismatches from live decisions.
+
+    Historical episodes/outcomes are untouched. Do not turn a missing quote or
+    a stale quote into a negative membership observation.
+    """
+    result = []
+    for original in rows:
+        row = dict(original)
+        benchmark = row.get('market') if market == 'kr' else 'US'
+        expected = sessions.get(benchmark)
+        observed = row.get('priceAsOf')
+        row['benchmarkAsOf'] = expected
+        row['dataFreshness'] = ('CURRENT' if expected and observed == expected else
+                                'MISSING' if not observed or not expected else
+                                'STALE' if observed < expected else 'AHEAD')
+        if row['dataFreshness'] != 'CURRENT':
+            row['status'] = 'UNKNOWN'
+            row['reason'] = f'시세 기준일 불일치 (종목 {observed or "없음"}, 지수 {expected or "없음"})'
+            for flag in ('aggressiveGo', 'aggressiveWatch', 'rangeGo', 'rangeWatch'):
+                if flag in row:
+                    row[flag] = None
+        result.append(row)
+    return result
+
 def export_inputs(frame, ohlcv, benchmarks, cfg, market):
     """Called in producer while original complete price frames still exist."""
     from generate_dashboard import COLUMN_MAP
@@ -255,6 +281,7 @@ def process(payload, state, root=ROOT):
         state['deferredAt'] = payload['recordedAt']
         state['deferredReason'] = '정규장 마감 전 입력 제외'
         return state
+    payload = dict(payload, rows=align_latest_rows(payload['rows'], sessions, market))
     snapshot = {k: v for k, v in payload.items() if k not in ('prices', 'benchmarks', 'recordedAt', 'runId', 'sourceCommit')}
     snapshot['sessions'] = sessions
     sid = digest(snapshot)
@@ -267,20 +294,39 @@ def process(payload, state, root=ROOT):
     days = state.setdefault('days', {})
     signals = state.setdefault('signals', [])
     members = state.setdefault('membership', {})
-    # First complete observation of a session is canonical; revisions are archived only.
+    # First valid observation per stock/session is canonical. Late quotes may
+    # fill previously stale rows without revising already observed signals.
     key = f'{series}:{day}'
-    if key not in days and day >= state.get('latestSession', ''):
-        days[key] = {'date': day, 'snapshot': sid, 'strategyId': strategy, 'strategySeriesId': series, 'rows': len(payload['rows']),
-                     'recordedAt': payload['recordedAt'], 'sessions': sessions}
+    if day >= state.get('latestSession', ''):
+        if key not in days:
+            days[key] = {'date': day, 'snapshot': sid, 'strategyId': strategy, 'strategySeriesId': series, 'rows': len(payload['rows']),
+                         'recordedAt': payload['recordedAt'], 'sessions': sessions, 'observedCodes': []}
+        daily = days[key]
+        if 'observedCodes' not in daily:
+            # Migration from the former batch-wide freeze uses the retained
+            # original snapshot, never today's revised flags.
+            prior = root / 'research' / 'snapshots' / market / f'{day}-{daily["snapshot"]}.json.gz'
+            try:
+                prior_rows = json.loads(gzip.decompress(prior.read_bytes()))['rows']
+            except (OSError, ValueError, KeyError):
+                # Without the audit snapshot, preserve the former freeze.
+                prior_rows = [dict(r, priceAsOf=sessions.get(r.get('market') if market == 'kr' else 'US'))
+                              for r in payload['rows']]
+            daily['observedCodes'] = sorted({r['code'] for r in prior_rows
+                if r.get('priceAsOf') == sessions.get(r.get('market') if market == 'kr' else 'US')
+                and any(membership(r, g) is not None for g in payload.get('groups', GROUPS))})
+        observed_codes = set(daily['observedCodes'])
         for row in payload['rows']:
             code, benchmark = row['code'], row.get('market') if market == 'kr' else 'US'
-            if benchmark not in sessions or row.get('priceAsOf') != sessions[benchmark]:
+            if code in observed_codes or benchmark not in sessions or row.get('priceAsOf') != sessions[benchmark]:
                 continue  # stale/missing quotes never create or terminate an episode
+            evaluated = False
             for group in payload.get('groups', GROUPS):
                 mk = f'{series}:{code}:{group}'
                 flag = membership(row, group)
                 if flag is None:
                     continue
+                evaluated = True
                 if flag and not members.get(mk) and positive(row.get('close')):
                     signal = {'id': digest([series, code, group, sessions[benchmark]]), 'code': code,
                               'name': row['name'], 'group': group, 'date': sessions[benchmark],
@@ -288,6 +334,13 @@ def process(payload, state, root=ROOT):
                               'snapshot': sid, 'attributes': row, 'outcomes': {}}
                     signals.append(signal)
                 members[mk] = flag
+            if evaluated:
+                observed_codes.add(code)
+                if sid != daily['snapshot']:
+                    repairs = daily.setdefault('supplementalSnapshots', [])
+                    if sid not in repairs:
+                        repairs.append(sid)
+        daily['observedCodes'] = sorted(observed_codes)
         state['latestSession'] = day
     for signal in signals:
         for horizon in payload.get('horizons', HORIZONS):

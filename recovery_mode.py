@@ -476,7 +476,17 @@ def suggested_amount(score: float, risk_pct: float, *, market_cap: float = 1.0,
 
 def load_market(market: str) -> tuple[list[dict], str | None, dict]:
     state = _load_json(RESEARCH / f"aggressive_{market}.json", {})
-    return state.get("latestRows") or [], state.get("latestSession"), state
+    from research_tracker import align_latest_rows
+    session = state.get("latestSession")
+    sessions = {}
+    for day in (state.get("days") or {}).values():
+        for benchmark, observed in (day.get("sessions") or {}).items():
+            if observed > sessions.get(benchmark, ""):
+                sessions[benchmark] = observed
+    if not sessions and session:
+        sessions = {"US": session} if market == "us" else {"KOSPI": session, "KOSDAQ": session}
+    rows = align_latest_rows(state.get("latestRows") or [], sessions, market)
+    return rows, session, state
 
 
 def entry_failures(row: dict, score: float | None = None) -> list[str]:

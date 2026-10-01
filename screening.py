@@ -357,6 +357,47 @@ def _kr_yahoo_symbols(code: str, market: Optional[str]) -> list[str]:
     return []
 
 
+def _latest_closed_us_session(now: Optional[datetime] = None) -> pd.Timestamp:
+    """Latest potentially closed US weekday; actual holidays come from source data."""
+    zone = ZoneInfo("America/New_York")
+    now = (now or datetime.now(zone)).astimezone(zone)
+    day = pd.Timestamp(now.date())
+    if (now.hour, now.minute) < (16, 10):
+        day -= pd.Timedelta(days=1)
+    while day.weekday() >= 5:
+        day -= pd.Timedelta(days=1)
+    return day
+
+
+def _closed_us_history(code: str, start: str, primary: Optional[pd.DataFrame]) -> pd.DataFrame:
+    """Refresh lagging FDR quotes without admitting a partial US daily candle."""
+    cutoff = _latest_closed_us_session()
+
+    def closed(frame):
+        if frame is None or frame.empty:
+            return pd.DataFrame()
+        dates = pd.to_datetime(frame.index).tz_localize(None).normalize()
+        return frame.loc[dates <= cutoff].dropna(subset=["Close"])
+
+    best = closed(primary)
+    best_day = _last_price_date(best) if not best.empty else None
+    if best_day is not None and best_day >= cutoff:
+        return best
+    symbol = "^GSPC" if code == US_INDEX_CODE else code
+    try:
+        fallback = closed(_download_yahoo_history(symbol, start))
+        if not fallback.empty:
+            fallback_day = _last_price_date(fallback)
+            if best_day is None or fallback_day > best_day:
+                logger.warning("[%s] 미국 시세 기준일 %s -> %s 보완", code, best_day, fallback_day)
+                best = fallback
+    except Exception as exc:  # preserve actual last close; never relabel its date
+        logger.warning("[%s] 미국 최신 종가 보완 실패: %s", code, exc)
+    if best.empty:
+        raise RuntimeError(f"{code} 마감된 미국 종가 없음")
+    return best
+
+
 def _kr_yahoo_symbol(code: str, market: Optional[str]) -> Optional[str]:
     """하위 호환용 단일 심볼 반환."""
     symbols = _kr_yahoo_symbols(code, market)
@@ -535,6 +576,8 @@ def fetch_price_history(code: str, start: str, market: Optional[str] = None) -> 
                 code, attempt, MAX_RETRIES, exc, wait,
             )
             time.sleep(wait)
+    if market == "US":
+        return _closed_us_history(code, start, primary)
     if primary is None:
         raise RuntimeError(f"{code} 조회 최종 실패: {last_exc}")
 
@@ -1407,6 +1450,19 @@ def run_screening(market_key: str, top_n: int, max_workers: int, limit: Optional
         logger.warning("데이터 조회/계산 실패 또는 확인불가 종목 %d건:", len(failed_codes))
         for line in failed_codes:
             logger.warning("  - %s", line)
+
+    # A stock and its benchmark must describe the same closed session before
+    # computing cross-sectional RS, market breadth or actionable v2 signals.
+    for r in results:
+        if r.status != "OK":
+            continue
+        prices = ohlcv_map.get(r.code)
+        benchmark = index_close.get(r.market)
+        stock_day = _last_price_date(prices) if prices is not None else None
+        benchmark_day = pd.Timestamp(benchmark.index.max()).tz_localize(None).normalize() if benchmark is not None else None
+        if stock_day != benchmark_day or stock_day is None:
+            r.status = "확인불가"
+            r.exclude_reason = f"시세 기준일 불일치 (종목 {stock_day}, 지수 {benchmark_day})"
 
     # --- 레거시 RS(대체 지표) 계산: OK 상태인 종목만 대상 ---
     logger.info("레거시 상대강도(RS, 3/6/12개월 달력일) 계산 중...")

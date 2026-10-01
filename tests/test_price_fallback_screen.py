@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime
 from unittest.mock import patch
 
 import pandas as pd
@@ -100,6 +101,52 @@ class KoreanPriceFallbackTest(unittest.TestCase):
             screening._kr_yahoo_symbols("035720", "KR"),
             ["035720.KS", "035720.KQ"],
         )
+
+
+class USPriceFallbackTest(unittest.TestCase):
+    @patch("screening._latest_closed_us_session", return_value=pd.Timestamp("2026-09-18"))
+    @patch("screening._download_yahoo_history")
+    @patch("screening.fdr.DataReader")
+    @patch("screening.time.sleep", return_value=None)
+    def test_stale_us_uses_current_closed_quote(self, _sleep, reader, yahoo, _session):
+        reader.return_value = _frame("2026-09-17")
+        yahoo.return_value = _frame("2026-09-18")
+        result = screening.fetch_price_history("AMD", "2025-01-01", market="US")
+        self.assertEqual(result.index.max(), pd.Timestamp("2026-09-18"))
+        yahoo.assert_called_once_with("AMD", "2025-01-01")
+
+    @patch("screening._latest_closed_us_session", return_value=pd.Timestamp("2026-09-18"))
+    @patch("screening._download_yahoo_history")
+    def test_partial_daily_candle_is_removed(self, yahoo, _session):
+        primary = pd.concat([_frame("2026-09-18"), _frame("2026-09-21").tail(1)])
+        result = screening._closed_us_history("AMD", "2025-01-01", primary)
+        self.assertEqual(result.index.max(), pd.Timestamp("2026-09-18"))
+        yahoo.assert_not_called()
+
+    @patch("screening._latest_closed_us_session", return_value=pd.Timestamp("2026-09-18"))
+    @patch("screening._download_yahoo_history", side_effect=RuntimeError("unavailable"))
+    def test_failed_refresh_keeps_true_old_date(self, yahoo, _session):
+        result = screening._closed_us_history("AMD", "2025-01-01", _frame("2026-09-17"))
+        self.assertEqual(result.index.max(), pd.Timestamp("2026-09-17"))
+
+    @patch("screening._latest_closed_us_session", return_value=pd.Timestamp("2026-09-18"))
+    @patch("screening._download_yahoo_history")
+    def test_missing_primary_and_index_symbol(self, yahoo, _session):
+        yahoo.return_value = _frame("2026-09-18")
+        result = screening._closed_us_history(screening.US_INDEX_CODE, "2025-01-01", None)
+        self.assertEqual(result.index.max(), pd.Timestamp("2026-09-18"))
+        yahoo.assert_called_once_with("^GSPC", "2025-01-01")
+
+    def test_us_close_cutoff_uses_dst_and_weekends(self):
+        for instant, expected in [
+            ("2026-10-01T00:00:00+00:00", "2026-09-30"),
+            ("2026-09-30T19:00:00+00:00", "2026-09-29"),
+            ("2026-10-04T12:00:00+00:00", "2026-10-02"),
+            ("2026-01-05T21:05:00+00:00", "2026-01-02"),
+            ("2026-01-05T21:10:00+00:00", "2026-01-05"),
+        ]:
+            with self.subTest(instant=instant):
+                self.assertEqual(screening._latest_closed_us_session(datetime.fromisoformat(instant)), pd.Timestamp(expected))
 
 
 if __name__ == "__main__":

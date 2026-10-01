@@ -2,10 +2,45 @@ import copy
 import tempfile
 import unittest
 from pathlib import Path
-from research_tracker import digest, outcome, process, session_closed, strategy_series_id
+from research_tracker import align_latest_rows, digest, outcome, process, session_closed, strategy_series_id
 
 DATES = ['2026-09-01','2026-09-02','2026-09-03','2026-09-04','2026-09-07','2026-09-08']
 class ResearchTests(unittest.TestCase):
+    def test_stale_quotes_cannot_be_live_signals_and_same_day_repair_is_once(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            strategy = {'config': {'version': 1}}
+            payload = {'market': 'us', 'strategyId': digest(strategy), 'strategy': strategy,
+                       'strategySeriesId': strategy_series_id(strategy),
+                       'recordedAt': '2026-09-03T00:00:00+00:00',
+                       'rows': [{'code': 'X', 'name': 'X', 'market': 'US', 'status': 'OK',
+                                 'inUniverse': True, 'aggressiveGo': True, 'close': 100,
+                                 'priceAsOf': DATES[0]}],
+                       'prices': {'X': {DATES[0]: 100}}, 'benchmarks': {'US': {DATES[1]: 100}},
+                       'groups': ['AGGR_GO'], 'horizons': [1, 5]}
+            state = {}; root = Path(tmp)
+            process(payload, state, root)
+            self.assertEqual(state['latestRows'][0]['dataFreshness'], 'STALE')
+            self.assertIsNone(state['latestRows'][0]['aggressiveGo'])
+            self.assertEqual(state['signals'], [])
+            payload['rows'][0]['priceAsOf'] = DATES[1]
+            payload['prices']['X'][DATES[1]] = 100
+            process(payload, state, root)
+            process(payload, state, root)
+            self.assertEqual(len(state['signals']), 1)
+            self.assertEqual(state['signals'][0]['date'], DATES[1])
+            self.assertEqual(state['latestRows'][0]['dataFreshness'], 'CURRENT')
+            payload['rows'][0]['aggressiveGo'] = False
+            process(payload, state, root)
+            self.assertTrue(next(iter(state['membership'].values())))
+
+    def test_missing_and_ahead_quotes_are_quarantined_without_mutation(self):
+        rows = [{'code': 'X', 'market': 'US', 'status': 'OK', 'aggressiveGo': True,
+                 'priceAsOf': d} for d in [None, DATES[2], DATES[1]]]
+        aligned = align_latest_rows(rows, {'US': DATES[1]}, 'us')
+        self.assertEqual([r['dataFreshness'] for r in aligned], ['MISSING', 'AHEAD', 'CURRENT'])
+        self.assertEqual(aligned[-1]['status'], 'OK')
+        self.assertTrue(rows[0]['aggressiveGo'])
+
     def test_no_intraday_observation(self):
         self.assertFalse(session_closed("2026-09-14", "2026-09-14T03:00:00+00:00", "kr"))
         self.assertTrue(session_closed("2026-09-14", "2026-09-14T11:00:00+00:00", "kr"))
