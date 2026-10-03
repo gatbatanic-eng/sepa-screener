@@ -310,6 +310,16 @@ def market_metrics(row: dict) -> dict:
     if size_factor is not None:
         cap = min(cap, max(0.0, min(1.0, size_factor)))
 
+    if not available:
+        reason = "NO_DATA"
+    elif regime == "RED":
+        reason = "RED"
+    elif breadth is not None and breadth < BREADTH_HARD_MIN:
+        reason = "BREADTH"
+    elif cap <= 0:
+        reason = "SIZE"
+    else:
+        reason = None
     return {
         "regime": regime,
         "breadth": breadth,
@@ -317,6 +327,7 @@ def market_metrics(row: dict) -> dict:
         "available": available,
         "exposureCap": round(cap, 2),
         "blocked": cap <= 0,
+        "blockReason": reason if cap <= 0 or reason == "NO_DATA" else None,
     }
 
 
@@ -494,6 +505,18 @@ def load_market(market: str) -> tuple[list[dict], str | None, dict]:
     return rows, session, state
 
 
+def market_block_label(market_risk: dict) -> str:
+    """시장 게이트에 막힌 이유를 한 줄로(RED / breadth 부족 / 그 외)."""
+    reason = market_risk.get("blockReason")
+    if reason is None and market_risk.get("regime") == "RED":   # 예전 스냅샷 행(blockReason 없음)
+        reason = "RED"
+    if reason == "RED":
+        return "시장국면 RED — 신규진입 금지"
+    if reason == "BREADTH":
+        return f"시장 breadth {market_risk.get('breadth', 0):.0%} < {BREADTH_HARD_MIN:.0%} — 신규진입 금지"
+    return "시장국면/breadth"
+
+
 def entry_failures(row: dict, score: float | None = None) -> list[str]:
     failures = []
     if not rankable(row):
@@ -519,7 +542,7 @@ def entry_failures(row: dict, score: float | None = None) -> list[str]:
     if market_risk.get("available") is not True:
         failures.append("시장국면/breadth 데이터 미갱신")
     elif market_risk.get("blocked"):
-        failures.append("시장국면 RED — 신규진입 금지" if market_risk.get("regime") == "RED" else "시장국면/breadth")
+        failures.append(market_block_label(market_risk))
     gap_risk = row.get("gapRisk") or gap_chase_metrics(row)
     if gap_risk.get("available") is not True:
         failures.append("갭 데이터 미갱신")
@@ -579,7 +602,10 @@ def regime_summary(rows: list[dict]) -> dict:
     for market, rs in by.items():
         regime = Counter(r["regime"] for r in rs).most_common(1)[0][0]
         pick = lambda k: next((_num(r.get(k)) for r in rs if _num(r.get(k)) is not None), None)  # noqa: E731
-        out[market] = {"regime": regime, "breadth": pick("breadth"), "sizeFactor": pick("sizeFactor"), "rows": len(rs)}
+        summary = {"regime": regime, "breadth": pick("breadth"), "sizeFactor": pick("sizeFactor"), "rows": len(rs)}
+        mm = market_metrics(summary)
+        summary["blocked"], summary["blockReason"] = mm["blocked"], mm["blockReason"]
+        out[market] = summary
     return out
 
 
@@ -736,8 +762,12 @@ def render_html(snapshot: dict) -> str:
             (e.get("suggestedAmountKRW") for e in snapshot["entries"]
              if e.get("code") == r.get("code") and e.get("marketBucket") == r.get("marketBucket")), None
         )
-        if mr.get("regime") == "RED":
+        block = mr.get("blockReason") or ("RED" if mr.get("regime") == "RED" else None)
+        if block == "RED":
             regime_cell = '<b class="redwarn" title="시장 국면 RED — 신규진입 금지(관찰만)">⚠ RED</b>'
+        elif block == "BREADTH":
+            regime_cell = (f'<b class="redwarn" title="시장 breadth {_fmt(mr.get("breadth"), 2)} &lt; {BREADTH_HARD_MIN:.0%} — '
+                           f'신규진입 금지(관찰만)">⚠ 폭 부족<br><small>{escape(str(mr.get("regime", "-")))}</small></b>')
         else:
             regime_cell = escape(str(mr.get("regime", "-")))
         rows.append(
@@ -754,16 +784,25 @@ def render_html(snapshot: dict) -> str:
             f"<td>{'-' if amount is None else f'{amount/1_000_000:.1f}백만원'}</td></tr>"
         )
 
-    reds = {m: v for m, v in (snapshot.get("marketRegimes") or {}).items() if v.get("regime") == "RED"}
+    regimes = snapshot.get("marketRegimes") or {}
     regime_line = " · ".join(
         f"{escape(m)} {escape(str(v.get('regime')))}" + (f" (breadth {v['breadth']:.0%})" if v.get("breadth") is not None else "")
-        for m, v in sorted((snapshot.get("marketRegimes") or {}).items())
+        for m, v in sorted(regimes.items())
     ) or "-"
-    if reds:
-        names = ", ".join(escape(m) for m in sorted(reds))
-        red_card = (f'<div class="card redbanner"><b>⚠ 시장 국면 경고: {names} RED</b><br>'
-                    "지수가 SMA200 아래인 약세 국면입니다. 해당 시장 종목도 강도 순위에는 표시하지만 "
-                    "<b>신규진입 판정은 항상 \"관찰\"</b>이며 진입 후보·실행 카드에서 제외됩니다.</div>")
+    warn_lines = []
+    for m, v in sorted(regimes.items()):
+        reason = v.get("blockReason") or ("RED" if v.get("regime") == "RED" else None)   # 예전 스냅샷 호환
+        if reason == "RED":
+            warn_lines.append(f"<b>{escape(m)}</b> — RED: 지수가 SMA200 아래인 약세 국면")
+        elif reason == "BREADTH":
+            warn_lines.append(f"<b>{escape(m)}</b> — breadth {v.get('breadth', 0):.0%}: 최소 {BREADTH_HARD_MIN:.0%} 미만으로 소수 종목만 오르는 좁은 장")
+        elif reason == "SIZE":
+            warn_lines.append(f"<b>{escape(m)}</b> — 권장 진입비중 0")
+    if warn_lines:
+        red_card = ('<div class="card redbanner"><b>⚠ 시장 국면 경고 — 신규진입 금지 시장</b><br>'
+                    + "<br>".join(warn_lines)
+                    + '<br>해당 시장 종목도 강도 순위에는 표시하지만 <b>신규진입 판정은 항상 "관찰"</b>이며 '
+                    "진입 후보·실행 카드에서 제외됩니다.</div>")
     else:
         red_card = ""
     executable = snapshot["entries"][:MAX_NEW_ENTRIES_PER_DAY]

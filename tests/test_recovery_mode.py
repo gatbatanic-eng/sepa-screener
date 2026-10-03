@@ -83,6 +83,28 @@ class RecoveryModeTest(unittest.TestCase):
         self.assertIn("KOSDAQ RED", html)
         self.assertIn("⚠ RED", html)
 
+    def test_low_breadth_market_is_warned_and_entry_blocked_even_when_regime_is_green(self):
+        """국면은 GREEN 인데 breadth 가 하드 최소치(30%) 미만인 시장(예: 현재 US)도 경고한다."""
+        row = self.candidate("NARROW1", market="US", regime="GREEN", breadth=0.26, sizeFactor=0.5, strengthScore=95)
+        row["marketRisk"] = market_metrics(row)
+        self.assertEqual(row["marketRisk"]["blockReason"], "BREADTH")
+        self.assertTrue(recovery.rankable(row))
+        self.assertFalse(entry_ok(row, row["strengthScore"]))
+        self.assertIn("breadth 26%", rejection_reason(row))
+        snapshot = self.snapshot([row])
+        self.assertEqual(snapshot["entries"], [])
+        self.assertEqual(snapshot["marketRegimes"]["US"]["blockReason"], "BREADTH")
+        html = recovery.render_html(snapshot)
+        self.assertIn("시장 국면 경고", html)
+        self.assertIn("breadth 26%", html)
+        self.assertIn("⚠ 폭 부족", html)
+
+    def test_block_reason_priority_and_none_when_open(self):
+        self.assertEqual(market_metrics({"regime": "RED", "breadth": 0.2, "sizeFactor": 0.2})["blockReason"], "RED")
+        self.assertEqual(market_metrics({"regime": "GREEN", "breadth": 0.2, "sizeFactor": 0.5})["blockReason"], "BREADTH")
+        self.assertIsNone(market_metrics({"regime": "GREEN", "breadth": 0.65, "sizeFactor": 1.0})["blockReason"])
+        self.assertEqual(market_metrics({"regime": "GREEN", "breadth": None, "sizeFactor": 1.0})["blockReason"], "NO_DATA")
+
     def test_no_red_banner_when_no_market_is_red(self):
         snapshot = self.snapshot([self.candidate("OK1", market="US")])
         self.assertNotIn("시장 국면 경고", recovery.render_html(snapshot))
@@ -96,7 +118,9 @@ class RecoveryModeTest(unittest.TestCase):
             {"status": "OK", "market": "US", "regime": None},
         ]
         out = recovery.regime_summary(rows)
-        self.assertEqual(out["KOSDAQ"], {"regime": "RED", "breadth": 0.87, "sizeFactor": 0.2, "rows": 2})
+        self.assertEqual(out["KOSDAQ"], {"regime": "RED", "breadth": 0.87, "sizeFactor": 0.2, "rows": 2,
+                                         "blocked": True, "blockReason": "RED"})
+        self.assertIsNone(out["KOSPI"]["blockReason"])
         self.assertEqual(out["KOSPI"]["regime"], "YELLOW")
         self.assertNotIn("US", out)
 
