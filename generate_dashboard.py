@@ -455,6 +455,9 @@ HTML_TEMPLATE = r"""<!doctype html>
   .chart-link:hover { color: var(--accent); }
   .chart-btn { border: 1px solid var(--border); background: var(--bg); border-radius: 6px; padding: 2px 6px; cursor: pointer; font-size: 12px; margin-left: 4px; }
   .chart-btn:hover { border-color: var(--accent); }
+  .filter-note { margin: 0 0 12px; padding: 9px 12px; border-radius: 8px; font-size: 12px; line-height: 1.6;
+                 background: var(--watch-bg); color: var(--watch-text); border: 1px solid var(--watch-border); }
+  .badge.near { background: var(--watch-bg); color: var(--watch-text); border: 1px solid var(--watch-border); font-size: 10px; margin-left: 4px; }
   .fund-btn { border: 1px solid var(--border); background: var(--bg); border-radius: 6px; padding: 2px 6px; cursor: pointer; font-size: 12px; margin-left: 4px; }
   .fund-btn:hover { border-color: var(--accent); }
   .persona-btn { border: 1px solid var(--border); background: var(--bg); border-radius: 6px; padding: 2px 6px; cursor: pointer; font-size: 12px; margin-left: 4px; }
@@ -523,6 +526,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <button class="filter-btn" data-filter="trend">TREND_OK</button>
       <button class="filter-btn" data-filter="setup">SETUP</button>
       <button class="filter-btn" data-filter="ready">READY</button>
+      <button class="filter-btn" data-filter="near" title="추세 통과 + 피벗 -2~0% 구간이지만 셋업(수축·거래량) 조건이 아직 미완성인 종목">근접후보</button>
       <button class="filter-btn" data-filter="go">GO</button>
       <button class="filter-btn" data-filter="go_breakout">GO_BREAKOUT</button>
       <button class="filter-btn" data-filter="go_pullback">GO_PULLBACK</button>
@@ -545,6 +549,7 @@ HTML_TEMPLATE = r"""<!doctype html>
         <option value="code">종목코드순</option>
       </select>
     </div>
+    <div class="filter-note" id="filterNote" hidden></div>
     <div class="table-scroll">
       <table id="table">
         <thead><tr id="thead-row"></tr></thead>
@@ -619,6 +624,25 @@ const ENTRY_RANK = {
   SETUP: 5, LATE: 6, EXTENDED: 7, TREND_OK: 8, FAILED: 9, TREND_FAIL: 10,
 };
 const GO_SET = new Set(["GO_BREAKOUT", "GO_PULLBACK"]);
+// SETUP_READY 하드 조건(sepa/config.py SetupConfig 와 같은 값). 근접후보 탭의 "부족한 조건" 표시용.
+const SETUP_LIMITS = { base: 20, contractions: 2, atr: 0.75, dryup: 0.70 };
+const V2_FILTERS = ["trend", "setup", "ready", "near", "go", "go_breakout", "go_pullback", "extended", "exitwarn"];
+
+// 근접후보: 추세 통과 + 피벗 -2~0%(zone READY) 인데 셋업이 완성되지 않아 READY/GO 상태가 되지 못한 종목.
+function isNearCandidate(r) {
+  return toBool(r.trendOk) && r.zone === "READY" && !toBool(r.setupReady)
+    && r.entryState !== "READY" && !GO_SET.has(r.entryState);
+}
+// 셋업 하드 조건 중 못 채운 것(값이 없으면 판정 불가로 따로 표시).
+function setupMisses(r) {
+  const out = [];
+  const bl = toNum(r.baseLength), cc = toNum(r.contractionCount), atr = toNum(r.atrContraction), dr = toNum(r.volDryup);
+  if (bl === null) out.push("베이스 길이 판정불가"); else if (bl < SETUP_LIMITS.base) out.push(`베이스 ${bl.toFixed(0)}일 (<${SETUP_LIMITS.base})`);
+  if (cc === null) out.push("수축 횟수 판정불가"); else if (cc < SETUP_LIMITS.contractions) out.push(`수축 ${cc.toFixed(0)}회 (<${SETUP_LIMITS.contractions})`);
+  if (atr === null) out.push("ATR수축 판정불가"); else if (atr > SETUP_LIMITS.atr) out.push(`ATR수축 ${atr.toFixed(2)} (>${SETUP_LIMITS.atr})`);
+  if (dr === null) out.push("Dry-up 판정불가"); else if (dr > SETUP_LIMITS.dryup) out.push(`Dry-up ${dr.toFixed(2)} (>${SETUP_LIMITS.dryup})`);
+  return out;
+}
 
 function fmtNum(n, digits) {
   if (n === null || n === undefined || n === "") return "-";
@@ -807,7 +831,9 @@ function entryStateBadge(v, r) {
     : (v === "LATE" || v === "EXTENDED") ? "es-warn"
     : (v === "FAILED" || v === "TREND_FAIL") ? "es-bad" : "es-neutral";
   const rsn = (r && r.entryReason) ? String(r.entryReason).replace(/"/g, "&quot;") : "";
-  return `<span class="es ${cls}" title="${rsn}">${v}</span>`;
+  const near = (r && isNearCandidate(r))
+    ? `<span class="badge near" title="${("피벗 -2~0% 구간이지만 셋업 미완성 — 부족: " + setupMisses(r).join(", ")).replace(/"/g, "&quot;")}">근접</span>` : "";
+  return `<span class="es ${cls}" title="${rsn}">${v}</span>${near}`;
 }
 
 function exitStateBadge(v, r) {
@@ -924,6 +950,20 @@ function statusBadge(r) {
   return `<span class="badge pass">전체통과</span>${hold}`;
 }
 
+function renderFilterNote(rows) {
+  const el = document.getElementById("filterNote");
+  if (currentFilter !== "near") { el.hidden = true; el.innerHTML = ""; return; }
+  const miss = { "베이스": 0, "수축횟수": 0, "ATR수축": 0, "Dry-up": 0 };
+  rows.forEach(r => setupMisses(r).forEach(m => {
+    const k = m.startsWith("베이스") ? "베이스" : m.startsWith("수축") ? "수축횟수" : m.startsWith("ATR") ? "ATR수축" : "Dry-up";
+    miss[k] += 1;
+  }));
+  const tally = Object.entries(miss).filter(([, n]) => n > 0).map(([k, n]) => `${k} ${n}`).join(" · ") || "없음";
+  el.innerHTML = `<b>근접후보 ${rows.length}종목</b> — 추세(Trend) 통과 + 피벗 -2~0% 구간이지만 셋업(수축·거래량) 조건이 아직 미완성이라 READY/GO 상태가 되지 못한 종목입니다. ` +
+    `<b>매수 신호가 아니며</b> 기준(READY/GO)은 그대로입니다. 부족 조건 집계: ${tally}. 종목별 부족 조건은 Entry State 옆 "근접" 배지에 마우스를 올리면 보입니다.`;
+  el.hidden = false;
+}
+
 function renderTable() {
   const q = document.getElementById("search").value.trim().toLowerCase();
   let rows = DATA[currentMarket].rows.slice();
@@ -934,6 +974,7 @@ function renderTable() {
     trend: r => toBool(r.trendOk),
     setup: r => r.entryState === "SETUP" || toBool(r.setupReady),
     ready: r => r.entryState === "READY",
+    near: isNearCandidate,
     go: r => GO_SET.has(r.entryState),
     go_breakout: r => r.entryState === "GO_BREAKOUT",
     go_pullback: r => r.entryState === "GO_PULLBACK",
@@ -942,6 +983,7 @@ function renderTable() {
     value: r => r.opAccel === true,
   };
   if (F[currentFilter]) rows = rows.filter(F[currentFilter]);
+  renderFilterNote(rows);
 
   if (q) rows = rows.filter(r =>
     (r.code || "").toLowerCase().includes(q) || (r.name || "").toLowerCase().includes(q)
@@ -996,7 +1038,7 @@ function renderTable() {
 function syncFilterButtons() {
   const v2 = hasV2();
   const value = hasValue();
-  const v2only = new Set(["trend", "setup", "ready", "go", "go_breakout", "go_pullback", "extended", "exitwarn"]);
+  const v2only = new Set(V2_FILTERS);
   document.querySelectorAll(".filter-btn").forEach(b => {
     if (v2only.has(b.dataset.filter)) b.hidden = !v2;
     if (b.dataset.filter === "value") b.hidden = !value;
@@ -1005,7 +1047,7 @@ function syncFilterButtons() {
     if (["entryState", "setupQuality", "rsScore", "rsChange20d", "pivotDist"].includes(o.value)) o.hidden = !v2;
     if (o.value === "valueScore") o.hidden = !value;
   });
-  if (!v2 && ["trend","setup","ready","go","go_breakout","go_pullback","extended","exitwarn"].includes(currentFilter)) {
+  if (!v2 && V2_FILTERS.includes(currentFilter)) {
     currentFilter = "all";
     document.querySelectorAll(".filter-btn").forEach(b => b.classList.toggle("active", b.dataset.filter === "all"));
   }
