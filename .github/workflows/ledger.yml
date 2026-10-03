@@ -9,11 +9,14 @@ on:
     branches: [master, "claude/**"]
     paths:
       - ledger/**
+      - agents/**
       - tests/test_ledger.py
+      - tests/test_agents.py
       - .github/workflows/ledger.yml
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: sepa-screening
@@ -33,15 +36,31 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Verify ledger rules
-        run: python -m unittest tests.test_ledger -v
+        run: python -m unittest tests.test_ledger tests.test_agents -v
       - name: Update ledger, outcomes and statistics
         run: python -m ledger.main
+      - name: Update agent league (virtual accounts)
+        run: python -m agents.main
+      - name: Daily / weekly / monthly reports
+        run: python -m agents.report --new-list "$RUNNER_TEMP/new_reports.txt"
+      - name: Post new reports to the report issue (push notification)
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ -s "$RUNNER_TEMP/new_reports.txt" ] || exit 0
+          n=$(gh issue list --state open --search '"에이전트 리그 보고" in:title' --json number,title --jq '[.[] | select(.title | startswith("에이전트 리그 보고"))][0].number')
+          [ -n "$n" ] || { echo "보고 이슈를 찾지 못했습니다"; exit 1; }
+          while read -r f; do
+            { cat "$f"; echo; echo "[전체 보기](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_REF_NAME}/${f#"$PWD"/})"; } > "$RUNNER_TEMP/body.md"
+            gh issue comment "$n" --body-file "$RUNNER_TEMP/body.md"
+          done < "$RUNNER_TEMP/new_reports.txt"
       - name: Save ledger
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for p in research/ledger docs/research/ledger.json; do
+          for p in research/ledger research/agents docs/research/ledger.json docs/research/agents.json docs/agents/reports; do
             if [ -e "$p" ]; then git add -f "$p"; fi
           done
           git diff --cached --quiet && exit 0

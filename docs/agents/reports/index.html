@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>에이전트 보고서</title>
+<style>
+  /* 기존 대시보드(멀티팩터 등)와 같은 토큰·패널·내비 구조. 신호 색은 판정(양호·주의·경계)에만 쓴다. */
+  :root {
+    --bg: #f5f6f8; --panel: #ffffff; --border: #e3e5e9;
+    --text: #1b1e24; --text-dim: #6b7280; --accent: #2563eb;
+    --g-bg: #e6f7ec; --g-text: #157347; --g-border: #b7e4c7;
+    --y-bg: #fff2e0; --y-text: #b45309; --y-border: #fbd9a8;
+    --r-bg: #fdf2f2; --r-text: #b42318; --r-border: #f3c6c2;
+    --n-bg: #f8f9fa; --n-text: #6b7280; --n-border: #e3e5e9;
+    --up: #d92b2b; --down: #1a56db;
+    --row-hover: #f0f4ff; --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --panel: #171a21; --border: #2a2e37;
+      --text: #e7e9ee; --text-dim: #9aa2b1; --accent: #5b8def;
+      --g-bg: #113322; --g-text: #6bd08a; --g-border: #1e5c3a;
+      --y-bg: #3a2712; --y-text: #f6b96a; --y-border: #6b4a1f;
+      --r-bg: #3a1717; --r-text: #f2a4a0; --r-border: #6b2b26;
+      --n-bg: #1b1f27; --n-text: #9aa2b1; --n-border: #2a2e37;
+      --up: #f0605f; --down: #6ea8fe;
+      --row-hover: #1d2230; --shadow: 0 1px 3px rgba(0,0,0,0.4);
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", sans-serif;
+    font-size: 14px; line-height: 1.5;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 60px; }
+  header { margin-bottom: 16px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .subtitle { color: var(--text-dim); font-size: 13px; max-width: 72ch; }
+  .nav { display: flex; gap: 10px; margin: 10px 0 4px; flex-wrap: wrap; }
+  .nav a { font-size: 12px; color: var(--text-dim); text-decoration: none; border: 1px solid var(--border);
+           border-radius: 999px; padding: 4px 12px; background: var(--panel); }
+  .nav a:hover { color: var(--accent); border-color: var(--accent); }
+  .nav a.here { color: #fff; background: var(--accent); border-color: var(--accent); }
+  .tabs { display: flex; gap: 8px; margin: 16px 0; flex-wrap: wrap; align-items: center; }
+  .tab-btn { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--panel); color: var(--text); cursor: pointer; font-size: 13px; font-weight: 600; }
+  .tab-btn[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .tab-btn:focus-visible, .chk input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .asof { color: var(--text-dim); font-size: 12px; margin-left: auto; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; box-shadow: var(--shadow); }
+  .card .label { color: var(--text-dim); font-size: 12px; margin-bottom: 6px; }
+  .card .value { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .card .sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow); padding: 16px; margin-bottom: 18px; min-width: 0; }
+  .panel h2 { font-size: 14px; margin: 0 0 4px; font-weight: 700; }
+  .panel .desc { color: var(--text-dim); font-size: 12px; margin: 0 0 12px; max-width: 80ch; }
+  .pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 999px; border: 1px solid; }
+  .pill.g { background: var(--g-bg); color: var(--g-text); border-color: var(--g-border); }
+  .pill.y { background: var(--y-bg); color: var(--y-text); border-color: var(--y-border); }
+  .pill.r { background: var(--r-bg); color: var(--r-text); border-color: var(--r-border); }
+  .pill.n { background: var(--n-bg); color: var(--n-text); border-color: var(--n-border); }
+  .heat { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 10px; }
+  .heat .cell { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+  .heat .cell.hit { border-color: var(--r-border); background: var(--r-bg); }
+  .heat .k { font-size: 12px; color: var(--text-dim); }
+  .heat .v { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .heat .t { font-size: 11px; color: var(--text-dim); }
+  .movers { font-size: 12px; color: var(--text-dim); margin-top: 10px; }
+  .table-scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { padding: 7px 8px; border-bottom: 1px solid var(--border); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  th { color: var(--text-dim); font-weight: 600; font-size: 12px; position: sticky; top: 0; background: var(--panel); vertical-align: bottom; cursor: help; }
+  th .ko { font-weight: 400; font-size: 11px; }
+  th.l, td.l { text-align: left; }
+  td.why { white-space: normal; min-width: 240px; max-width: 420px; text-align: left; color: var(--text-dim); font-size: 12px; }
+  tbody tr:hover { background: var(--row-hover); }
+  .name { font-weight: 600; color: var(--text); text-decoration: none; border-bottom: 1px dotted var(--text-dim); }
+  a.name:hover { color: var(--accent); border-bottom-color: var(--accent); }
+  a.name:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .sym { color: var(--text-dim); font-size: 11px; margin-left: 4px; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 0 6px; border-radius: 4px; margin-left: 4px; border: 1px solid; }
+  .tag.p2 { color: var(--y-text); border-color: var(--y-border); background: var(--y-bg); }
+  .tag.flag { color: var(--r-text); border-color: var(--r-border); background: var(--r-bg); }
+  .tag.gate { color: var(--n-text); border-color: var(--n-border); background: var(--n-bg); }
+  .t1-ON { color: var(--g-text); font-weight: 700; }
+  .t1-NEAR { color: var(--y-text); font-weight: 600; }
+  .t1-OFF, .t1-NA { color: var(--text-dim); }
+  .pos { color: var(--up); } .neg { color: var(--down); }
+  .muted { color: var(--text-dim); }
+  .filters { display: flex; gap: 14px; flex-wrap: wrap; margin: 0 0 10px; font-size: 12px; color: var(--text-dim); }
+  .chk { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+  .empty { color: var(--text-dim); padding: 16px 4px; }
+  .err { color: var(--r-text); }
+  footer { color: var(--text-dim); font-size: 12px; margin-top: 24px; max-width: 80ch; }
+  footer a { color: var(--accent); }
+  .group-name { font-weight: 700; } .group-desc { color: var(--text-dim); font-size: 11px; display: block; font-weight: 400; }
+  .ci { color: var(--text-dim); font-size: 11px; display: block; }
+  .banner { border: 1px solid var(--y-border); background: var(--y-bg); color: var(--y-text); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 13px; }
+  .hz { display: inline-flex; gap: 6px; margin-left: 8px; }
+  .hz .tab-btn { padding: 5px 12px; }
+  ul.rules { margin: 6px 0 0 18px; padding: 0; color: var(--text-dim); font-size: 12px; max-width: 90ch; } ul.rules li { margin: 3px 0; }
+</style>
+<style>
+  .chart { width: 100%; height: 280px; display: block; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; margin-top: 8px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; }
+  .pos { color: var(--up); } .neg { color: var(--down); }
+  .muted { color: var(--text-dim); font-weight: 400; }
+  .banner { border: 1px solid var(--y-border); background: var(--y-bg); color: var(--y-text); border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px; }
+</style>
+<style>
+  .layout { display: grid; grid-template-columns: 220px 1fr; gap: 16px; align-items: start; }
+  @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } }
+  .list { display: flex; flex-direction: column; gap: 6px; max-height: 520px; overflow-y: auto; }
+  .list button { text-align: left; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); color: var(--text); cursor: pointer; font-size: 13px; }
+  .list button[aria-pressed="true"] { border-color: var(--accent); background: var(--row-hover); }
+  .list small { display: block; color: var(--text-dim); }
+  ul.b { margin: 0 0 4px; padding-left: 18px; } ul.b li { margin: 3px 0; }
+  details { border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; margin: 8px 0; }
+  summary { cursor: pointer; font-weight: 700; }
+  .role { margin: 10px 0 0; } .role h4 { margin: 0 0 2px; font-size: 13px; }
+  .tag { font-size: 11px; font-weight: 700; margin-right: 6px; }
+  .sup { color: var(--g-text); } .con { color: var(--r-text); } .chk { color: var(--text-dim); }
+  .req code { background: var(--n-bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-size: 12px; }
+  .req a.btn { display: inline-block; margin-top: 8px; padding: 8px 14px; border-radius: 8px; background: var(--accent); color: #fff; text-decoration: none; font-weight: 600; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>에이전트 보고서</h1>
+    <div class="subtitle">일간·주간·월간 보고서와, 원하는 주제·섹터·종목을 골라 역할별 에이전트가 쓰는 주제 보고서입니다. 모든 문장은 수치에서 나온 규칙 기반이며 투자 권유가 아닙니다.</div>
+    <div class="nav">
+      <a href="../../">SEPA 추세템플릿</a>
+      <a href="../../performance/">전략 성과</a>
+      <a href="../">에이전트 리그</a>
+      <a class="here" href="./">에이전트 보고서</a>
+    </div>
+  </header>
+  <div class="tabs" id="kindTabs" role="group" aria-label="종류"></div>
+  <div id="req" class="panel req" hidden>
+    <h2>주제 보고서 요청</h2>
+    <p class="desc">입력창은 GitHub Actions 실행 화면에 있습니다. <b>Run workflow</b>를 누르고 <code>query</code>에 쉼표로 구분해 적으면 몇 분 뒤 이 목록에 나타납니다. 정적 페이지라 여기서 직접 실행하지는 못합니다.</p>
+    <ul class="b">
+      <li>종목: <code>NVDA, 삼성전자, 005930</code> (코드 또는 이름 일부)</li>
+      <li>테마·밸류체인(AI): <code>전력·냉각</code>, <code>AI Compute</code>, <code>GPU</code></li>
+      <li>미국 섹터·산업: <code>Semiconductors</code>, <code>Healthcare</code></li>
+      <li>산업코드 접두(숫자): <code>26</code> (한국 KSIC·미국 SIC)</li>
+      <li>섞어서: <code>AI 반도체, 전력·냉각, NVDA</code> · 최대 종목 수 <code>max</code> 기본 12</li>
+    </ul>
+    <a class="btn" href="https://github.com/gatbatanic-eng/sepa-screener/actions/workflows/topic_report.yml" target="_blank" rel="noopener">Topic Report 실행 화면 열기</a>
+  </div>
+  <div class="layout">
+    <div class="list" id="list" role="group" aria-label="보고서 목록"></div>
+    <div id="view"></div>
+  </div>
+</div>
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const KINDS = [["daily", "일간"], ["weekly", "주간"], ["monthly", "월간"], ["topic", "주제별"]];
+let kind = "daily", periodic = [], topics = [];
+
+const table = (t) => `<div class="table-scroll"><table><thead><tr>${t.columns.map((c, i) => `<th class="${i < 2 ? "l" : ""}">${esc(c)}</th>`).join("")}</tr></thead><tbody>${t.rows.map((r) => `<tr>${r.map((c, i) => `<td class="${i < 2 ? "l" : ""}">${esc(c)}</td>`).join("")}</tr>`).join("") || `<tr><td class="l muted" colspan="${t.columns.length}">없음</td></tr>`}</tbody></table></div>`;
+const bullets = (b) => `<ul class="b">${b.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`;
+
+function showPeriodic(r) {
+  $("view").innerHTML = `<div class="panel"><h2>${esc(r.title)}</h2><p class="desc">${esc(r.disclaimer)} · 데이터 기준 ${esc(r.dataAsOf.slice(0, 16).replace("T", " "))} UTC</p></div>` +
+    r.sections.map((s) => `<div class="panel"><h2>${esc(s.heading)}</h2>${s.table ? table(s.table) : bullets(s.bullets)}</div>`).join("");
+}
+
+function showTopic(r) {
+  const role = (c) => `<div class="role"><h4>${esc(c.role)}</h4>${c.supports.map((x) => `<div><span class="tag sup">근거</span>${esc(x)}</div>`).join("")}${c.concerns.map((x) => `<div><span class="tag con">우려</span>${esc(x)}</div>`).join("")}${c.checks.map((x) => `<div><span class="tag chk">체크</span>${esc(x)}</div>`).join("")}${c.gaps.length ? `<div class="chk">데이터 없음: ${esc(c.gaps.join(" · "))}</div>` : ""}</div>`;
+  $("view").innerHTML = `<div class="panel"><h2>주제 보고서: ${esc(r.query)}</h2><p class="desc">${esc(r.disclaimer)} · 생성 ${esc(r.generatedAt.slice(0, 16).replace("T", " "))} UTC · 맞은 종목 ${r.scope.matched}개${r.scope.truncatedAt ? ` (최대 ${r.scope.truncatedAt}개에서 잘림)` : ""}</p></div>` +
+    `<div class="panel"><h2>리서처 — 범위</h2>${bullets(r.scope.targets.map((t) => `${t.market.toUpperCase()} ${t.code} ${t.name} ← ${t.matchedBy.join(", ")}`).concat(r.researcher.notes))}</div>` +
+    `<div class="panel"><h2>종합 <span class="muted">(관찰 우선순위용 요약 · 매수·매도 의견 아님)</span></h2>${table(r.summary)}</div>` +
+    `<div class="panel"><h2>포트폴리오 매니저</h2>${bullets(r.manager)}</div>` +
+    `<div class="panel"><h2>종목별 역할 보고</h2>${r.stocks.map((s) => `<details><summary>${esc(s.name)} <span class="muted">${s.market.toUpperCase()} ${esc(s.code)}${s.status !== "OK" ? " · 분석 불가" : ""}</span></summary>${s.theme ? bullets(Object.entries(s.theme).map(([k, v]) => `${k}: ${v}`)) : ""}${s.roles.map(role).join("")}<div class="role"><h4>에이전트 위원회 <span class="muted">(오늘 값에 규칙 적용)</span></h4>${esc(s.committee.join(", ") || "규칙을 통과한 에이전트 없음")}</div></details>`).join("")}</div>`;
+}
+
+async function open(id) {
+  try {
+    const url = kind === "topic" ? `../topics/${id}.json` : `data/${id}.json`;
+    const r = await (await fetch(url, {cache: "no-store"})).json();
+    kind === "topic" ? showTopic(r) : showPeriodic(r);
+  } catch (e) { $("view").innerHTML = `<div class="banner">보고서를 불러오지 못했습니다 (${esc(e.message)})</div>`; }
+}
+
+function renderList() {
+  $("req").hidden = kind !== "topic";
+  const items = kind === "topic" ? topics.map((t) => ({id: t.id, title: t.query, sub: `${t.date} · ${t.matched}종목`}))
+    : periodic.filter((r) => r.kind === kind).map((r) => ({id: `${r.kind}/${r.key}`, title: r.title, sub: r.date}));
+  $("list").innerHTML = items.map((i) => `<button data-id="${esc(i.id)}" aria-pressed="false">${esc(i.title)}<small>${esc(i.sub)}</small></button>`).join("") || `<div class="muted" style="font-size:13px">아직 없습니다. ${kind === "topic" ? "위에서 요청하세요." : "다음 정기 실행(평일 22:40 UTC)부터 쌓입니다."}</div>`;
+  $("view").innerHTML = "";
+  $("list").querySelectorAll("button").forEach((b) => b.onclick = () => { $("list").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); open(b.dataset.id); });
+  const first = $("list").querySelector("button"); if (first) first.click();
+}
+
+function tabs() {
+  $("kindTabs").innerHTML = KINDS.map(([k, l]) => `<button class="tab-btn" data-k="${k}" aria-pressed="${k === kind}">${l}</button>`).join("");
+  $("kindTabs").querySelectorAll("button").forEach((b) => b.onclick = () => { kind = b.dataset.k; tabs(); renderList(); });
+}
+
+const get = (u) => fetch(u, {cache: "no-store"}).then((r) => r.ok ? r.json() : null).catch(() => null);
+Promise.all([get("data/index.json"), get("../topics/index.json")]).then(([p, t]) => {
+  periodic = (p && p.reports) || []; topics = (t && t.topics) || []; tabs(); renderList();
+});
+</script>
+</body>
+</html>

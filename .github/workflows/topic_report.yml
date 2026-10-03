@@ -1,0 +1,52 @@
+name: Topic Report (agents)
+
+# 주제·섹터·종목을 입력하면 역할별 에이전트 보고서를 docs/agents/topics/에 만든다. (Actions 탭 → Topic Report (agents) → Run workflow)
+on:
+  workflow_dispatch:
+    inputs:
+      query:
+        description: "쉼표 구분. 종목 코드/이름, AI 밸류체인·서브섹터(예: 전력·냉각), 미국 섹터(예: Semiconductors), 산업코드 접두(숫자)"
+        required: true
+        type: string
+      max:
+        description: "최대 종목 수 (1~30)"
+        required: false
+        default: "12"
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sepa-screening
+  cancel-in-progress: false
+
+jobs:
+  topic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Build topic report
+        env:
+          QUERY: ${{ inputs.query }}
+          MAXN: ${{ inputs.max }}
+        run: python -m agents.topic --query "$QUERY" --max "${MAXN:-12}"
+      - name: Save report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f docs/agents/topics
+          git diff --cached --quiet && exit 0
+          git commit -m "주제 보고서 생성 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+          for i in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && break
+            sleep $((i * 5))
+          done
