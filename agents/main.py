@@ -7,10 +7,10 @@ import logging
 
 from ledger import prices
 
-from . import config, signals as sg, stats
+from . import config, review as rv, signals as sg, stats
 from .roster import ROSTER
 from .simulate import simulate
-from .store import write_json
+from .store import read_json, write_json
 
 log = logging.getLogger("agents")
 SERIES = {"live": config.INCEPTION, "preview": config.PREVIEW_START}
@@ -36,13 +36,36 @@ def run(today: dt.date, fetch=prices.fetch_closes, bench_fetch=prices.fetch_benc
                      "capital": config.INITIAL_CAPITAL, "maxPositions": config.MAX_POSITIONS, "holdSessions": config.HOLD_SESSIONS,
                      "stopPct": config.STOP_PCT, "costBps": config.COST_BPS, "minClosed": config.MIN_CLOSED},
            "agents": {}}
+    reviews_path = config.STATE_DIR / "reviews.json"
+    reviews = read_json(reviews_path, {"schemaVersion": 1, "agents": {}})
+    raw: dict[str, dict[str, dict]] = {}
+    for aid, a in ROSTER.items():
+        retired = (reviews["agents"].get(aid) or {})
+        end = retired["since"] if retired.get("status") == "RETIRED" else None  # 소멸한 계좌는 소멸일에 멈춘다
+        raw[aid] = {name: simulate(a["select"], all_sigs, closes, begin, end if name == "live" else None)
+                    for name, begin in SERIES.items()}
+    today_s = today.isoformat()
+    control = raw["control"]["live"]["trades"]
     for aid, a in ROSTER.items():
         entry = {"label": a["label"], "lens": a["lens"], "series": {}}
-        for name, begin in SERIES.items():
-            res = simulate(a["select"], all_sigs, closes, begin)
+        for name, res in raw[aid].items():
             entry["series"][name] = {"summary": stats.summarize(res, bench), "curve": res["curve"], "trades": res["trades"],
                                      "open": res["open"], "skipped": res["skipped"]}
+        if aid == "control":
+            entry["review"] = {"status": "BASELINE", "capitalWeight": None}
+        else:
+            live = entry["series"]["live"]["summary"]
+            state, evidence = rv.review(reviews["agents"].get(aid), live if live.get("status") != "NO_DATA" else {},
+                                        raw[aid]["live"]["trades"], control, today_s)
+            reviews["agents"][aid] = state
+            entry["review"] = {"status": state["status"], "since": state["since"], "history": state["history"],
+                               "capitalWeight": config.CAPITAL_WEIGHT[state["status"]], "evidence": evidence}
         out["agents"][aid] = entry
+    out["rules"]["review"] = {"frozenOn": config.REVIEW_FROZEN_ON, "mddProbation": config.MDD_PROBATION, "mddRetire": config.MDD_RETIRE,
+                              "minClosedReview": config.MIN_CLOSED_REVIEW, "minClosedRetire": config.MIN_CLOSED_RETIRE,
+                              "probationRecheck": config.PROBATION_RECHECK, "probationMaxExtra": config.PROBATION_MAX_EXTRA,
+                              "weights": config.CAPITAL_WEIGHT}
+    write_json(reviews_path, reviews)
     write_json(config.PUBLIC_JSON, out)
     return out
 

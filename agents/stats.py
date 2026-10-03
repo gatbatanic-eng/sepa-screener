@@ -42,3 +42,26 @@ def summarize(result: dict, bench: dict[str, pd.Series]) -> dict:
             "stopShare": round(100 * sum(t["reason"] == "STOP" for t in trades) / len(trades), 1) if trades else None,
             "avgExposurePct": round(100 * sum(c["positions"] for c in curve) / len(curve) / config.MAX_POSITIONS, 1),
             "skipped": len(result["skipped"])}
+
+
+def cluster_bootstrap_diff(a: list[dict], b: list[dict], n: int = config.BOOT_N, seed: int = config.BOOT_SEED):
+    """에이전트 a와 대조군 b의 평균 거래 수익률 차이(%p)와 95% 구간. 같은 진입일의 거래는 함께 움직이므로 진입일 단위로 재표집한다."""
+    import random
+
+    def groups(ts):
+        g: dict[str, list[float]] = {}
+        for t in ts:
+            g.setdefault(t["entryDate"], []).append(t["returnPct"])
+        return list(g.values())
+
+    ga, gb = groups(a), groups(b)
+    if not ga or not gb:
+        return None
+
+    def mean(gs):
+        flat = [x for g in gs for x in g]
+        return sum(flat) / len(flat)
+
+    rng = random.Random(seed)
+    diffs = sorted(mean([rng.choice(ga) for _ in ga]) - mean([rng.choice(gb) for _ in gb]) for _ in range(n))
+    return {"diff": round(mean(ga) - mean(gb), 3), "lo": round(diffs[int(0.025 * n)], 3), "hi": round(diffs[int(0.975 * n) - 1], 3)}

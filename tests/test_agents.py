@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from agents import config, signals as sg, stats
+from agents import config, review as rv, signals as sg, stats
 from agents.roster import ROSTER
 from agents.simulate import simulate
 
@@ -101,6 +101,52 @@ class ArchiveAndStatsTest(unittest.TestCase):
         s = stats.summarize(r, {"US": px})
         self.assertEqual(s["status"], "INSUFFICIENT_SAMPLE")
         self.assertEqual(stats.max_drawdown([100, 120, 90]), -25.0)
+
+
+def trades(n, ret, day0="2026-10-05", per_day=1):
+    days = pd.bdate_range(day0, periods=max(1, n // per_day + 1))
+    return [{"entryDate": days[i // per_day].date().isoformat(), "returnPct": ret(i)} for i in range(n)]
+
+
+def summ(closed, mdd=-3.0):
+    return {"closed": closed, "maxDrawdownPct": mdd}
+
+
+class ReviewTest(unittest.TestCase):
+    def test_small_sample_never_demotes_on_performance(self):
+        st, ev = rv.review(None, summ(10), trades(10, lambda i: -5), trades(40, lambda i: 1), "2026-11-01")
+        self.assertEqual(st["status"], "ACTIVE")
+        self.assertIsNone(ev["vsControl"])
+
+    def test_risk_rule_applies_regardless_of_sample(self):
+        st, _ = rv.review(None, summ(3, -16), [], [], "2026-11-01")
+        self.assertEqual(st["status"], "PROBATION")
+        st, _ = rv.review(st, summ(3, -26), [], [], "2026-11-02")
+        self.assertEqual(st["status"], "RETIRED")
+        self.assertEqual([h["to"] for h in st["history"]], ["PROBATION", "RETIRED"])
+
+    def test_underperforming_agent_goes_to_probation_then_retired(self):
+        ctl = trades(40, lambda i: 1 + (i % 5) * 0.2, per_day=2)
+        bad = trades(60, lambda i: -4 + (i % 5) * 0.2, per_day=2)
+        st, ev = rv.review(None, summ(30), bad[:30], ctl, "2026-11-01")
+        self.assertEqual(st["status"], "PROBATION")
+        self.assertLess(ev["vsControl"]["diff"], 0)
+        st, ev = rv.review(st, summ(60), bad, ctl, "2026-12-01")
+        self.assertEqual(st["status"], "RETIRED")  # 구간 상한이 0 미만
+
+    def test_probation_recovers_and_retired_is_terminal(self):
+        ctl = trades(40, lambda i: 0.0 + (i % 5) * 0.2, per_day=2)
+        good = trades(70, lambda i: 3 + (i % 5) * 0.2, per_day=2)
+        prev = {"status": "PROBATION", "since": "2026-11-01", "closedAtChange": 30, "history": []}
+        st, _ = rv.review(prev, summ(65), good, ctl, "2026-12-15")
+        self.assertEqual(st["status"], "ACTIVE")
+        dead = {"status": "RETIRED", "since": "2026-11-01", "closedAtChange": 30, "history": []}
+        st, _ = rv.review(dead, summ(200), good, ctl, "2027-01-01")
+        self.assertEqual(st["status"], "RETIRED")
+
+    def test_bootstrap_is_deterministic(self):
+        a, b = trades(40, lambda i: i % 7, per_day=2), trades(40, lambda i: i % 5, per_day=2)
+        self.assertEqual(stats.cluster_bootstrap_diff(a, b), stats.cluster_bootstrap_diff(a, b))
 
 
 if __name__ == "__main__":

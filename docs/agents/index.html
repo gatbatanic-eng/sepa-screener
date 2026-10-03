@@ -135,7 +135,7 @@
     <h2>에이전트별 요약</h2>
     <p class="desc" id="rulesDesc"></p>
     <div class="table-scroll"><table>
-      <thead><tr><th class="l">에이전트</th><th>수익률</th><th>기준 대비</th><th>최대 낙폭</th><th>청산</th><th>보유</th><th>승률</th><th>평균 거래</th><th>손절 비율</th><th>평균 투입</th><th class="l">상태</th></tr></thead>
+      <thead><tr><th class="l">에이전트</th><th>수익률</th><th>기준 대비</th><th>최대 낙폭</th><th>청산</th><th>보유</th><th>승률</th><th>평균 거래</th><th>손절 비율</th><th>평균 투입</th><th class="l">표본</th><th class="l">도태 심사</th></tr></thead>
       <tbody id="rows"></tbody>
     </table></div>
   </div>
@@ -162,6 +162,7 @@ const $ = (id) => document.getElementById(id);
 const pct = (v) => v == null ? "–" : `<span class="${v > 0 ? "pos" : v < 0 ? "neg" : ""}">${v > 0 ? "+" : ""}${v.toFixed(2)}%</span>`;
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
 const STATUS = {OK: ["g", "표본 충분"], INSUFFICIENT_SAMPLE: ["y", "표본 부족"], NO_DATA: ["n", "데이터 없음"]};
+const REVIEW = {ACTIVE: ["g", "정상 · 비중 100%"], PROBATION: ["y", "관찰 · 비중 50%"], RETIRED: ["r", "소멸 · 비중 0%"], BASELINE: ["n", "대조군(심사 제외)"]};
 const REASON = {STOP: "손절(-8%)", TIME: "시간 청산(40거래일)"};
 let data, series = "live";
 
@@ -185,16 +186,23 @@ function draw(ids) {
   $("legend").innerHTML = lines.map((l) => `<span><i style="background:${l.color}"></i>${esc(data.agents[l.id].label)}</span>`).join("") + `<span><i style="background:${REF}"></i>시작(100)</span>`;
 }
 
+function reviewCell(a) {
+  const rv = a.review || {status: "ACTIVE"}, d = REVIEW[rv.status] || ["n", rv.status];
+  const last = (rv.history || []).slice(-1)[0], ev = rv.evidence || {};
+  const note = last ? `${last.date} ${last.reason}` : ev.vsControl ? `대조군 대비 ${ev.vsControl.diff}%p [${ev.vsControl.lo}, ${ev.vsControl.hi}]` : rv.status === "BASELINE" ? "" : "판단 보류(표본 부족)";
+  return `<td class="l"><span class="pill ${d[0]}">${d[1]}</span><br><span class="muted">${esc(note)}</span></td>`;
+}
+
 function render() {
   const ids = Object.keys(data.agents), r = data.rules;
   $("asof").textContent = `갱신 ${data.generatedAt.slice(0, 16).replace("T", " ")} UTC`;
   $("banner").innerHTML = series === "preview"
     ? `<div class="banner"><b>사후 적용(참고용)</b> — 규칙을 정한 ${r.frozenOn} 이후에 과거 신호(${r.previewStart}~)에 적용한 값입니다. 결과를 알고 만든 규칙이라 성과를 믿는 근거로 쓰면 안 됩니다. 실전 계열은 ${r.inception}부터 쌓입니다.</div>` : "";
-  $("rulesDesc").textContent = `가상 자본 ${r.capital}, 동시 최대 ${r.maxPositions}종목, 비용 한국 ${r.costBps.kr}bp·미국 ${r.costBps.us}bp(편도). 청산 ${r.minClosed}건 미만이면 표본 부족이며 우열·도태 판단에 쓰지 않습니다. 기준 = 코스피·S&P500 평균.`;
+  $("rulesDesc").textContent = `가상 자본 ${r.capital}, 동시 최대 ${r.maxPositions}종목, 비용 한국 ${r.costBps.kr}bp·미국 ${r.costBps.us}bp(편도). 청산 ${r.minClosed}건 미만이면 표본 부족이며 우열 판단에 쓰지 않습니다. 기준 = 코스피·S&P500 평균. 도태 심사(실전 계열만): 최대 낙폭 ${r.review.mddProbation}%이면 관찰, ${r.review.mddRetire}%이면 소멸(표본 무관). 그 외에는 청산 ${r.review.minClosedReview}건부터 대조군 대비 평균 거래가 음수면 관찰, 관찰 중 ${r.review.minClosedRetire}건에서 95% 구간 상한이 0 미만이면 소멸.`;
   $("rows").innerHTML = ids.map((id) => {
     const a = data.agents[id], s = a.series[series].summary, st = STATUS[s.status] || ["n", s.status];
-    if (s.status === "NO_DATA") return `<tr><td class="l"><b>${esc(a.label)}</b><br><span class="muted">${esc(a.lens)}</span></td><td colspan="9" class="l muted">데이터 없음</td><td class="l"><span class="pill ${st[0]}">${st[1]}</span></td></tr>`;
-    return `<tr><td class="l"><b>${esc(a.label)}</b><br><span class="muted">${esc(a.lens)}</span></td><td>${pct(s.returnPct)}</td><td>${pct(s.excessPct)}</td><td>${pct(s.maxDrawdownPct)}</td><td>${s.closed}</td><td>${s.open}</td><td>${s.winRatePct == null ? "–" : s.winRatePct + "%"}</td><td>${pct(s.avgTradePct)}</td><td>${s.stopShare == null ? "–" : s.stopShare + "%"}</td><td>${s.avgExposurePct}%</td><td class="l"><span class="pill ${st[0]}">${st[1]}</span></td></tr>`;
+    if (s.status === "NO_DATA") return `<tr><td class="l"><b>${esc(a.label)}</b><br><span class="muted">${esc(a.lens)}</span></td><td colspan="9" class="l muted">데이터 없음</td><td class="l"><span class="pill ${st[0]}">${st[1]}</span></td>${reviewCell(a)}</tr>`;
+    return `<tr><td class="l"><b>${esc(a.label)}</b><br><span class="muted">${esc(a.lens)}</span></td><td>${pct(s.returnPct)}</td><td>${pct(s.excessPct)}</td><td>${pct(s.maxDrawdownPct)}</td><td>${s.closed}</td><td>${s.open}</td><td>${s.winRatePct == null ? "–" : s.winRatePct + "%"}</td><td>${pct(s.avgTradePct)}</td><td>${s.stopShare == null ? "–" : s.stopShare + "%"}</td><td>${s.avgExposurePct}%</td><td class="l"><span class="pill ${st[0]}">${st[1]}</span></td>${reviewCell(a)}</tr>`;
   }).join("");
   const rows = [], tr = [];
   for (const id of ids) {
