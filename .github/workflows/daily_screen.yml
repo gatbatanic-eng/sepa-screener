@@ -93,6 +93,11 @@ jobs:
         continue-on-error: true
         run: python research_tracker.py --market ${{ steps.market.outputs.market }}
 
+      - name: 시장 스냅샷 선갱신(페르소나가 이번 실행의 종목 목록을 쓰도록)
+        # generate_dashboard.py 가 latest_{kr,us}.json 을 이번 실행 결과로 갱신한다. 이 단계가 없으면 아래
+        # 페르소나 단계가 직전 실행의 스냅샷을 읽어 하루씩 밀리고, 직전이 데이터 이상일 때 버튼이 사라진다.
+        run: python generate_dashboard.py
+
       - name: 페르소나 입력 수집(Yahoo 밸류에이션 + 성과 기록 점검)
         id: personas
         continue-on-error: true

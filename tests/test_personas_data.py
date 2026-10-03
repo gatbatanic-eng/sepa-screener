@@ -176,7 +176,7 @@ class _FakeClient:
 
 
 def _leader_row(code="AAA", market="US"):
-    return {"code": code, "name": "Leader Co", "market": market, "trendOk": True, "close": 100.0,
+    return {"code": code, "name": "Leader Co", "market": market, "status": "OK", "trendOk": True, "close": 100.0,
             "sma50": 90.0, "sma150": 80.0, "sma200": 70.0, "highProximity": 0.9, "highTier": "LEADER",
             "rsScore": 90.0, "regime": "GREEN", "breadth": 0.6, "exitState": "HOLD", "entryState": "TREND_OK",
             "zone": "READY", "atr20": 2.0, "initRisk": 6.0}
@@ -299,3 +299,19 @@ class GenerateTests(unittest.TestCase):
             (root / "docs" / "data" / "latest_us.json").write_text(json.dumps([_leader_row()]), encoding="utf-8")
             gen.generate_market("us", root, client=None, today=dt.date(2026, 9, 21), write=False)
             self.assertFalse((root / "docs" / "data" / "personas").exists())
+
+    def test_mostly_unconfirmed_snapshot_keeps_previous_files(self):
+        """시세 기준일 불일치로 대부분 확인불가인 날 — 이전 페르소나 파일을 지우지 않는다."""
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            pdir = root / "docs" / "data" / "personas" / "us"
+            pdir.mkdir(parents=True)
+            (pdir / "AAA.json").write_text("{}", encoding="utf-8")
+            (pdir / "index.json").write_text('{"symbols":{"AAA":{}}}', encoding="utf-8")
+            bad = [{"code": f"S{i}", "market": "US", "status": "확인불가", "trendOk": False} for i in range(10)]
+            (root / "docs" / "data" / "latest_us.json").write_text(json.dumps(bad), encoding="utf-8")
+            r = gen.generate_market("us", root, client=None, today=dt.date(2026, 10, 4), llm_disabled=True)
+            self.assertTrue(any("데이터 이상" in w for w in r["warnings"]))
+            self.assertEqual(r["stocks"], 0)
+            self.assertTrue((pdir / "AAA.json").exists())
+            self.assertIn("AAA", (pdir / "index.json").read_text(encoding="utf-8"))

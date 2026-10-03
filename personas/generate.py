@@ -32,6 +32,7 @@ from personas.logic import FORBIDDEN_PHRASES, PERSONAS, build_evidence, normaliz
 ROOT = Path(__file__).resolve().parents[1]
 MODEL_ENV = "CLAUDE_MODEL"
 DEFAULT_MODEL = "claude-sonnet-5"
+MIN_OK_RATIO = 0.5   # 스냅샷에서 status==OK 인 행이 이 비율 미만이면 데이터 이상으로 간주
 
 SYSTEM_PROMPT = (
     "당신은 아래 7명의 투자 페르소나 각각의 시각에서, 이미 규칙으로 계산된 사실(evidence)만 가지고 "
@@ -165,6 +166,14 @@ def generate_market(market: str, root: Path = ROOT, *, client: Optional[Any] = N
         result["problems"].append(f"{m.upper()} latest_{m}.json 없음 — 스크리닝을 먼저 실행해야 함")
         return result
     rows = json.loads(latest_path.read_text(encoding="utf-8"))
+    ok_rows = sum(1 for r in rows if r.get("status") == "OK")
+    if rows and ok_rows < MIN_OK_RATIO * len(rows):
+        # 시세 기준일 불일치 등으로 대부분이 '확인불가'였던 날: 추세통과 0개를 진짜 결과로 보고 기존 파일을
+        # 지우면 💭 버튼이 통째로 사라진다. 이 스냅샷으로는 아무것도 쓰지 않고 이전 결과를 유지한다.
+        result["warnings"].append(
+            f"{m.upper()} 스냅샷의 정상(OK) 종목이 {ok_rows}/{len(rows)}개뿐 — 데이터 이상으로 보고 "
+            "페르소나 파일을 갱신하지 않고 이전 결과를 유지")
+        return result
     trend_rows = [r for r in rows if r.get("trendOk") in (True, "True", "TRUE")]
     if limit:
         trend_rows = trend_rows[:limit]
