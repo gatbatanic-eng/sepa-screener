@@ -45,10 +45,10 @@ class RecoveryModeTest(unittest.TestCase):
 
     def test_all_entry_gates_have_rejection_reasons(self):
         mutations = [
-            {key: False} for key in ("inUniverse", "marketOk", "trendOkAggressive", "nearHigh",
+            {key: False} for key in ("inUniverse", "trendOkAggressive", "nearHigh",
                 "rsOk", "liquidityOk", "aggressiveGo", "breakout", "volumeOk", "clvOk", "rsiOk", "notExtended")
         ] + [
-            {"status": "ERROR"}, {"strengthScore": 77.9}, {"strengthScore": None},
+            {"regime": "RED"}, {"status": "ERROR"}, {"strengthScore": 77.9}, {"strengthScore": None},
             {"initialRiskPct": None}, {"initialRiskPct": 6}, {"breadth": None},
             {"breadth": .2}, {"gapPct": None}, {"gapPct": 7},
             {"eventRisk": {"status": "BLOCK"}}, {"fundamental": {"risk": "BLOCK"}},
@@ -62,6 +62,43 @@ class RecoveryModeTest(unittest.TestCase):
         row = self.candidate(strengthScore=78)
         self.assertTrue(entry_ok(row, 78))
         self.assertEqual(rejection_reason(row), "진입 조건 통과")
+
+    def test_red_market_rows_are_ranked_with_warning_but_never_entered(self):
+        """RED 시장(예: KOSDAQ)도 순위에는 표시하고 경고하되, 신규진입은 항상 막는다."""
+        red = self.candidate("RED1", marketBucket="KR", market="KOSDAQ", regime="RED", breadth=0.87,
+                             sizeFactor=0.2, marketOk=False, strengthScore=95)
+        red["marketRisk"] = market_metrics(red)           # 실제 파이프라인에서는 enrich_row 가 채운다
+        self.assertTrue(recovery.rankable(red))          # marketOk=False 여도 랭킹 자격은 유지
+        self.assertFalse(entry_ok(red, red["strengthScore"]))
+        self.assertIn("RED", rejection_reason(red))
+        snapshot = self.snapshot([red, self.candidate("OK1", market="US")])
+        self.assertEqual({r["code"] for r in snapshot["strongest"]}, {"RED1", "OK1"})
+        by = {r["code"]: r for r in snapshot["strongest"]}
+        self.assertFalse(by["RED1"]["entryPass"])
+        self.assertIn("RED", by["RED1"]["entryReason"])
+        self.assertEqual([e["code"] for e in snapshot["entries"]], ["OK1"])
+        self.assertEqual(snapshot["marketRegimes"]["KOSDAQ"]["regime"], "RED")
+        html = recovery.render_html(snapshot)
+        self.assertIn("시장 국면 경고", html)
+        self.assertIn("KOSDAQ RED", html)
+        self.assertIn("⚠ RED", html)
+
+    def test_no_red_banner_when_no_market_is_red(self):
+        snapshot = self.snapshot([self.candidate("OK1", market="US")])
+        self.assertNotIn("시장 국면 경고", recovery.render_html(snapshot))
+
+    def test_regime_summary_groups_by_market(self):
+        rows = [
+            {"status": "OK", "market": "KOSDAQ", "regime": "RED", "breadth": 0.87, "sizeFactor": 0.2},
+            {"status": "OK", "market": "KOSDAQ", "regime": "RED", "breadth": 0.87, "sizeFactor": 0.2},
+            {"status": "OK", "market": "KOSPI", "regime": "YELLOW", "breadth": 0.57, "sizeFactor": 0.6},
+            {"status": "확인불가", "market": "KOSPI", "regime": "RED"},
+            {"status": "OK", "market": "US", "regime": None},
+        ]
+        out = recovery.regime_summary(rows)
+        self.assertEqual(out["KOSDAQ"], {"regime": "RED", "breadth": 0.87, "sizeFactor": 0.2, "rows": 2})
+        self.assertEqual(out["KOSPI"]["regime"], "YELLOW")
+        self.assertNotIn("US", out)
 
     def test_candidate_limit_and_sector_rejections_never_claim_pass(self):
         rows = [self.candidate(str(i), sectorKey=str(i)) for i in range(5)]

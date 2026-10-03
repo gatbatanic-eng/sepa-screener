@@ -18,6 +18,7 @@ from __future__ import annotations
 import json
 import math
 import statistics
+from collections import Counter
 from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR
 from html import escape
 from datetime import date, datetime, timezone
@@ -112,10 +113,14 @@ strength_score = technical_strength_score
 
 
 def rankable(row: dict) -> bool:
+    """랭킹(강한 종목 표시) 자격. 시장 국면(RED)은 여기서 거르지 않는다.
+
+    RED 시장의 종목도 후보로 보여주되, 신규진입 판정은 ``entry_failures`` 의 시장국면 게이트가
+    계속 막는다(``market_metrics`` 의 RED → exposureCap 0). 즉 '숨기지 않고 경고하며 관찰로만' 표시한다.
+    """
     return bool(
         row.get("status") == "OK"
         and row.get("inUniverse") is True
-        and row.get("marketOk") is True
         and row.get("trendOkAggressive") is True
         and row.get("nearHigh") is True
         and row.get("rsOk") is True
@@ -514,7 +519,7 @@ def entry_failures(row: dict, score: float | None = None) -> list[str]:
     if market_risk.get("available") is not True:
         failures.append("시장국면/breadth 데이터 미갱신")
     elif market_risk.get("blocked"):
-        failures.append("시장국면/breadth")
+        failures.append("시장국면 RED — 신규진입 금지" if market_risk.get("regime") == "RED" else "시장국면/breadth")
     gap_risk = row.get("gapRisk") or gap_chase_metrics(row)
     if gap_risk.get("available") is not True:
         failures.append("갭 데이터 미갱신")
@@ -564,15 +569,30 @@ def execution_plan(row: dict) -> dict | None:
     }
 
 
+def regime_summary(rows: list[dict]) -> dict:
+    """시장(KOSPI/KOSDAQ/US)별 국면 요약. 랭킹에 종목이 하나도 없어도 경고를 보여주기 위함."""
+    by: dict[str, list[dict]] = {}
+    for r in rows:
+        if r.get("status") == "OK" and r.get("regime"):
+            by.setdefault(str(r.get("market") or "-"), []).append(r)
+    out = {}
+    for market, rs in by.items():
+        regime = Counter(r["regime"] for r in rs).most_common(1)[0][0]
+        pick = lambda k: next((_num(r.get(k)) for r in rs if _num(r.get(k)) is not None), None)  # noqa: E731
+        out[market] = {"regime": regime, "breadth": pick("breadth"), "sizeFactor": pick("sizeFactor"), "rows": len(rs)}
+    return out
+
+
 def build_snapshot() -> dict:
     valuation = load_valuation_us()
     estimates = estimate_history()
-    sessions, states, all_rows = {}, [], []
+    sessions, states, all_rows, regimes = {}, [], [], {}
 
     for market in ("kr", "us"):
         rows, session, state = load_market(market)
         sessions[market] = session
         states.append(state)
+        regimes.update(regime_summary(rows))
         for row in rows:
             if rankable(row):
                 all_rows.append(enrich_row(row, market, valuation, estimates))
@@ -649,6 +669,7 @@ def build_snapshot() -> dict:
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "sessionKey": session_key,
         "sessions": sessions,
+        "marketRegimes": regimes,
         "trackRecord": track,
         "rules": {
             "topStrong": TOP_STRONG,
@@ -715,12 +736,16 @@ def render_html(snapshot: dict) -> str:
             (e.get("suggestedAmountKRW") for e in snapshot["entries"]
              if e.get("code") == r.get("code") and e.get("marketBucket") == r.get("marketBucket")), None
         )
+        if mr.get("regime") == "RED":
+            regime_cell = '<b class="redwarn" title="시장 국면 RED — 신규진입 금지(관찰만)">⚠ RED</b>'
+        else:
+            regime_cell = escape(str(mr.get("regime", "-")))
         rows.append(
             f"<tr><td>{i}</td><td>{r.get('marketBucket','')}</td>"
             f"<td><b>{r.get('name') or r.get('code')}</b><br><small>{r.get('code')} · {r.get('sector') or r.get('industry') or '-'}</small></td>"
             f"<td>{_fmt(r.get('strengthScore'))}<br><small>기술 {_fmt(r.get('technicalScore'))}</small></td>"
             f"<td><b>{'진입' if r.get('entryPass') else '관찰'}</b><br><small>{r.get('entryReason') or ''}</small></td>"
-            f"<td>{mr.get('regime','-')}<br><small>B {_fmt(mr.get('breadth'),2)}</small></td>"
+            f"<td>{regime_cell}<br><small>B {_fmt(mr.get('breadth'),2)}</small></td>"
             f"<td>{_fmt(r.get('gapPct'),2)}%</td><td>{_fmt(r.get('volumeRatio'),2)}x</td>"
             f"<td>{_fmt(fm.get('score'))}<br><small>매출 {_fmt(fm.get('revenueYoY'))}%</small></td>"
             f"<td>{est.get('trend','-')}<br><small>{_fmt(est.get('deltaPct'))}%</small></td>"
@@ -729,6 +754,18 @@ def render_html(snapshot: dict) -> str:
             f"<td>{'-' if amount is None else f'{amount/1_000_000:.1f}백만원'}</td></tr>"
         )
 
+    reds = {m: v for m, v in (snapshot.get("marketRegimes") or {}).items() if v.get("regime") == "RED"}
+    regime_line = " · ".join(
+        f"{escape(m)} {escape(str(v.get('regime')))}" + (f" (breadth {v['breadth']:.0%})" if v.get("breadth") is not None else "")
+        for m, v in sorted((snapshot.get("marketRegimes") or {}).items())
+    ) or "-"
+    if reds:
+        names = ", ".join(escape(m) for m in sorted(reds))
+        red_card = (f'<div class="card redbanner"><b>⚠ 시장 국면 경고: {names} RED</b><br>'
+                    "지수가 SMA200 아래인 약세 국면입니다. 해당 시장 종목도 강도 순위에는 표시하지만 "
+                    "<b>신규진입 판정은 항상 \"관찰\"</b>이며 진입 후보·실행 카드에서 제외됩니다.</div>")
+    else:
+        red_card = ""
     executable = snapshot["entries"][:MAX_NEW_ENTRIES_PER_DAY]
     execution_cards = []
     for priority, e in enumerate(executable, 1):
@@ -774,11 +811,13 @@ th:nth-child(3),td:nth-child(3),th:nth-child(5),td:nth-child(5){{text-align:left
 .execution-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:16px}}
 .execution{{border:1px solid #dfe4ec;border-radius:12px;padding:16px}} .execution h2{{font-size:18px;margin:0}}
 .execution dl{{display:grid;grid-template-columns:1fr 1.4fr;gap:12px;font-size:14px}}
+.redbanner{{background:#fdecea;border-color:#f3b8b2;color:#8a1c12;font-size:14px;line-height:1.6}} .redwarn{{color:#b42318}}
 .execution dt{{color:#555}} .execution dd{{margin:0;text-align:right;font-weight:600}}
 @media(max-width:700px){{.wrap{{padding:10px}} table{{font-size:12px}} th,td{{padding:8px 4px}}}}
 </style></head><body><div class="wrap">
 <div class="nav"><a href="../">SEPA 추세템플릿</a><a href="../range_vrebound/">RANGE-MR · V-REBOUND</a><a href="../screener/">멀티팩터</a><a href="../technical/">기술적 신호</a><a href="../momentum/">모멘텀 전략</a><a class="here" href="./">계좌복구 공격매매</a><a href="../fpd/">FPD 연구</a><a href="../funnel/">대박주 깔때기</a><a href="../performance/">전략 성과</a></div>
-<div class="card"><h1>계좌복구 공격매매 모드 v2</h1><div class="sub">KR {snapshot['sessions'].get('kr') or '-'} · US {snapshot['sessions'].get('us') or '-'}</div></div>
+<div class="card"><h1>계좌복구 공격매매 모드 v2</h1><div class="sub">KR {snapshot['sessions'].get('kr') or '-'} · US {snapshot['sessions'].get('us') or '-'}<br>시장 국면: {regime_line}</div></div>
+{red_card}
 <div class="card"><a href="personas/">여섯 관점으로 종목 검토하기 →</a><p class="note">자동 5개 · 보유 점검 3개 · 직접 선택 2개. 근거·우려·판단 변경 조건을 확인하세요.</p></div>
 <div class="card"><div class="hero">오늘 실행 우선순위: {entry_text}</div>
 <div class="execution-grid">{''.join(execution_cards)}</div>
@@ -791,7 +830,7 @@ th:nth-child(3),td:nth-child(3),th:nth-child(5),td:nth-child(5){{text-align:left
 <div class="card scroll"><table><thead><tr><th>#</th><th>시장</th><th>종목</th><th>강도</th><th>판정</th><th>시장</th><th>갭</th><th>거래량</th><th>실적</th><th>EPS추정</th><th>실적일</th><th>위험</th><th>손절</th><th>금액</th></tr></thead>
 <tbody>{''.join(rows)}</tbody></table></div>
 <div class="card note"><b>하드 게이트</b><br>
-① 강도 {MIN_ENTRY_SCORE:.0f}+ ② 초기리스크 ≤ {STRICT_RISK_PCT:.1f}% ③ 시장국면/breadth/권장비중 데이터가 모두 있어야 하며 RED 또는 breadth&lt;{BREADTH_HARD_MIN:.0%} 금지
+① 강도 {MIN_ENTRY_SCORE:.0f}+ ② 초기리스크 ≤ {STRICT_RISK_PCT:.1f}% ③ 시장국면/breadth/권장비중 데이터가 모두 있어야 하며 RED 또는 breadth&lt;{BREADTH_HARD_MIN:.0%} 금지(RED 시장 종목도 순위에는 표시되지만 진입 판정은 항상 '관찰')
 ④ 갭 데이터가 있어야 하며 갭 {GAP_HARD_MAX_PCT:.0f}%+ 및 피벗에서 벌어진 급등 추격 금지 ⑤ 확인 가능한 실적발표 {EVENT_BLOCK_DAYS}일 이내 금지
 ⑥ 실적 급악화 차단 ⑦ forward EPS 기록 {ESTIMATE_MIN_SAMPLES}회 이상 뒤 {ESTIMATE_BLOCK_PCT:.0f}% 이하 하향 차단
 ⑧ 동일 섹터 하루 신규 1개. forward EPS는 Yahoo 애널리스트 추정 기반 보조 프록시입니다.</div>
