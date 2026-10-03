@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from agents import config, portfolio as pf, review as rv, signals as sg, stats
+from agents import config, portfolio as pf, report as rp, review as rv, signals as sg, stats, topic as tp
 from agents.roster import ROSTER
 from agents.simulate import simulate
 
@@ -195,6 +195,56 @@ class PortfolioTest(unittest.TestCase):
         res = pf.build({"a": agent(0.0, held=[("us", "X")])}, 8000)
         self.assertEqual(res["lines"], [])
         self.assertTrue(res["warnings"])
+
+
+class ReportTest(unittest.TestCase):
+    def test_period_keys(self):
+        import datetime as dt
+        fri = rp.period_keys(dt.date(2026, 10, 9))      # 금요일, 월말 아님
+        self.assertEqual((fri["weekly"], fri["monthly"]), ("2026-W41", None))
+        self.assertIsNone(rp.period_keys(dt.date(2026, 10, 8))["weekly"])
+        self.assertEqual(rp.period_keys(dt.date(2026, 10, 30))["monthly"], "2026-10")   # 금요일이자 월말
+        self.assertEqual(rp.period_keys(dt.date(2026, 9, 30))["monthly"], "2026-09")    # 수요일 월말
+        self.assertIsNone(rp.period_keys(dt.date(2026, 10, 1))["monthly"])
+        self.assertEqual(rp.period_keys(dt.date(2026, 10, 30))["weekly"], "2026-W44")
+
+    def test_save_is_write_once_and_indexed(self):
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            rep = {"kind": "daily", "key": "2026-10-06", "date": "2026-10-06", "title": "일간 보고서 2026-10-06", "dataAsOf": "x",
+                   "disclaimer": "d", "sections": [{"heading": "h", "bullets": ["a"]}, {"heading": "t", "table": {"columns": ["c"], "rows": [[1]]}}]}
+            self.assertTrue(rp.save(rep, d))
+            rep2 = dict(rep, sections=[])
+            self.assertFalse(rp.save(rep2, d))
+            self.assertEqual(json.loads((d / "daily" / "2026-10-06.json").read_text())["sections"][0]["heading"], "h")
+            self.assertEqual(len(json.loads((d / "index.json").read_text())["reports"]), 1)
+            self.assertIn("| c |", (d / "daily" / "2026-10-06.md").read_text())
+
+
+class TopicTest(unittest.TestCase):
+    def setUp(self):
+        self.uni = {"root": Path("/nonexistent"),
+                    "rows": {("us", "NVDA"): {"name": "Nvidia"}, ("us", "VRT"): {"name": "Vertiv"}, ("kr", "005930"): {"name": "삼성전자"}},
+                    "meta": {"VRT": {"AI_ValueChain": "전력·냉각", "AI_Subsector": "Cooling"}},
+                    "valuation": {"NVDA": {"sector": "Technology", "industry": "Semiconductors"}}}
+
+    def test_resolve_by_code_name_theme_and_sector(self):
+        names = lambda q: {(t["market"], t["code"]) for t in tp.resolve(q, self.uni)}
+        self.assertEqual(names("nvda"), {("us", "NVDA")})
+        self.assertEqual(names("삼성"), {("kr", "005930")})
+        self.assertEqual(names("전력"), {("us", "VRT")})
+        self.assertEqual(names("semiconductors"), {("us", "NVDA")})
+        self.assertEqual(names("NVDA, 삼성전자"), {("us", "NVDA"), ("kr", "005930")})
+        self.assertEqual(names("없는주제"), set())
+        e = tp.resolve("전력", self.uni)[0]
+        self.assertTrue(e["matchedBy"][0].startswith("테마"))
+
+    def test_limit_applies(self):
+        self.assertEqual(len(tp.resolve("NVDA, VRT, 삼성전자", self.uni, limit=2)), 2)
+
+    def test_committee_uses_agent_rules(self):
+        good = {"rsRank": 95, "highProximity": 0.98, "highTier": "SUPER_LEADER", "zone": "WATCH", "initRisk": 20}
+        self.assertEqual(tp._committee(good, "us", "X"), ["추세 리더"])
 
 
 if __name__ == "__main__":

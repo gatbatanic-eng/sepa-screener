@@ -40,12 +40,14 @@ jobs:
         run: python -m ledger.main
       - name: Update agent league (virtual accounts)
         run: python -m agents.main
+      - name: Daily / weekly / monthly reports
+        run: python -m agents.report
       - name: Save ledger
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for p in research/ledger research/agents docs/research/ledger.json docs/research/agents.json; do
+          for p in research/ledger research/agents docs/research/ledger.json docs/research/agents.json docs/agents/reports; do
             if [ -e "$p" ]; then git add -f "$p"; fi
           done
           git diff --cached --quiet && exit 0
