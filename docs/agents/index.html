@@ -127,6 +127,15 @@
   <div class="tabs" id="seriesTabs" role="group" aria-label="계열"><span class="asof" id="asof"></span></div>
   <div id="banner"></div>
   <div class="panel">
+    <h2>권고 포트폴리오 <span class="muted">(참고용 · 자동주문 없음)</span></h2>
+    <p class="desc" id="pfDesc"></p>
+    <div class="cards" id="pfCards"></div>
+    <div class="table-scroll"><table>
+      <thead><tr><th class="l">종목</th><th class="l">상태</th><th>권고 금액</th><th>비중</th><th>현재가</th><th>손절가(종가 기준)</th><th class="l">담은 에이전트</th><th class="l">리스크 심사</th></tr></thead>
+      <tbody id="pfRows"></tbody>
+    </table></div>
+  </div>
+  <div class="panel">
     <h2>계좌 곡선 <span class="muted">(시작 = 100, 같은 기간 코스피·S&amp;P500 평균 포함)</span></h2>
     <svg class="chart" id="chart" role="img" aria-label="에이전트별 계좌 곡선"></svg>
     <div class="legend" id="legend"></div>
@@ -193,6 +202,20 @@ function reviewCell(a) {
   return `<td class="l"><span class="pill ${d[0]}">${d[1]}</span><br><span class="muted">${esc(note)}</span></td>`;
 }
 
+function renderPortfolio() {
+  const pf = data.portfolio, r = data.rules.portfolio;
+  if (!pf) { $("pfRows").innerHTML = ""; return; }
+  const ex = pf.exposure, VERDICT = {APPROVED: ["g", "승인"], TRIMMED: ["y", "축소"], REJECTED: ["r", "제외"]};
+  $("pfDesc").textContent = `실전 계열의 보유·진입 대기 종목을 소멸하지 않은 에이전트의 권고 비중(정상 100%·관찰 50%)으로 합산한 뒤 한도를 적용합니다. 한도: 한 종목 ${r.maxSingle * 100}%, 한 시장 ${r.maxMarket * 100}%, 최대 ${r.maxNames}종목. 섹터·유동성 한도는 아직 걸지 못합니다. 진입 대기 종목의 진입가는 다음 거래일 종가로 정해집니다.`;
+  $("pfCards").innerHTML = [["투입", `${ex.grossPct}%`], ["현금", `${ex.cashPct}%`], ["한국", `${ex.kr}%`], ["미국", `${ex.us}%`], ["종목 수", `${ex.names}`]]
+    .map(([k, v]) => `<div class="card"><div class="label">${k}</div><div class="value">${v}</div></div>`).join("") +
+    (pf.warnings || []).map((w) => `<div class="banner" style="grid-column:1/-1">${esc(w)}</div>`).join("");
+  $("pfRows").innerHTML = pf.lines.map((l) => {
+    const v = VERDICT[l.verdict];
+    return `<tr><td class="l">${esc(l.name || l.code)} <span class="muted">${esc(l.market.toUpperCase())} ${esc(l.code)}</span></td><td class="l">${l.state === "HELD" ? "보유" : "진입 대기 (" + esc(l.signalDate || "") + ")"}</td><td>${l.target.toLocaleString()}</td><td>${(l.weight * 100).toFixed(1)}%</td><td>${l.lastPrice == null ? "–" : l.lastPrice.toFixed(2)}</td><td>${l.stopPrice == null ? "–" : l.stopPrice.toFixed(2)}</td><td class="l">${l.agents.map((a) => esc(data.agents[a].label)).join(", ")}</td><td class="l"><span class="pill ${v[0]}">${v[1]}</span> <span class="muted">${esc(l.reasons.join(" · "))}</span></td></tr>`;
+  }).join("") || `<tr><td colspan="8" class="l muted">권고 종목이 없습니다 (실전 계열 신호가 아직 없음)</td></tr>`;
+}
+
 function render() {
   const ids = Object.keys(data.agents), r = data.rules;
   $("asof").textContent = `갱신 ${data.generatedAt.slice(0, 16).replace("T", " ")} UTC`;
@@ -215,6 +238,7 @@ function render() {
   tr.sort((p, q) => q.exitDate.localeCompare(p.exitDate));
   $("trades").innerHTML = tr.slice(0, 40).map((t) => `<tr><td class="l">${esc(t.a)}</td><td class="l">${esc(t.name || t.code)} <span class="muted">${esc(t.code)}</span></td><td>${t.entryDate}</td><td>${t.exitDate}</td><td>${pct(t.returnPct)}</td><td class="l">${REASON[t.reason] || t.reason}</td></tr>`).join("") || `<tr><td colspan="6" class="l muted">아직 청산된 거래가 없습니다</td></tr>`;
   draw(ids);
+  renderPortfolio();
 }
 
 function tabs() {

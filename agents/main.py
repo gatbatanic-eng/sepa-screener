@@ -7,7 +7,7 @@ import logging
 
 from ledger import prices
 
-from . import config, review as rv, signals as sg, stats
+from . import config, portfolio as pf, review as rv, signals as sg, stats
 from .roster import ROSTER
 from .simulate import simulate
 from .store import read_json, write_json
@@ -66,6 +66,12 @@ def run(today: dt.date, fetch=prices.fetch_closes, bench_fetch=prices.fetch_benc
                               "probationRecheck": config.PROBATION_RECHECK, "probationMaxExtra": config.PROBATION_MAX_EXTRA,
                               "weights": config.CAPITAL_WEIGHT}
     write_json(reviews_path, reviews)
+    out["portfolio"] = pf.build(out["agents"])
+    out["rules"]["portfolio"] = {"frozenOn": config.PORTFOLIO_FROZEN_ON, "maxSingle": config.MAX_SINGLE_WEIGHT,
+                                 "maxMarket": config.MAX_MARKET_WEIGHT, "maxNames": config.MAX_NAMES}
+    snap = config.STATE_DIR / "portfolio" / f"{today_s}.json"  # 날마다 한 번만 고정(이후 사후 평가용)
+    if not snap.exists():
+        write_json(snap, {"schemaVersion": 1, "date": today_s, **out["portfolio"]})
     write_json(config.PUBLIC_JSON, out)
     return out
 

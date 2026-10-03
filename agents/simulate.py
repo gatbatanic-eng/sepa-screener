@@ -36,7 +36,7 @@ def simulate(select, signals: list[dict], closes: dict[tuple[str, str], pd.Serie
             continue
         ed = _entry_date(series, sig["date"])
         if ed is None:
-            skipped.append({"id": sig["id"], "code": sig["code"], "name": sig.get("name"), "signalDate": sig["date"], "reason": "NO_ENTRY_BAR_YET"})
+            skipped.append({"id": sig["id"], "code": sig["code"], "name": sig.get("name"), "signalDate": sig["date"], "reason": "NO_ENTRY_BAR_YET", "score": score})
             continue
         by_entry.setdefault(ed, []).append((score, sig))
 

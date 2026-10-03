@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from agents import config, review as rv, signals as sg, stats
+from agents import config, portfolio as pf, review as rv, signals as sg, stats
 from agents.roster import ROSTER
 from agents.simulate import simulate
 
@@ -147,6 +147,54 @@ class ReviewTest(unittest.TestCase):
     def test_bootstrap_is_deterministic(self):
         a, b = trades(40, lambda i: i % 7, per_day=2), trades(40, lambda i: i % 5, per_day=2)
         self.assertEqual(stats.cluster_bootstrap_diff(a, b), stats.cluster_bootstrap_diff(a, b))
+
+
+def agent(weight, held=(), pending=()):
+    return {"review": {"capitalWeight": weight},
+            "series": {"live": {"open": [{"market": m, "code": c, "name": c, "entryDate": "2026-10-06", "entryPrice": 100.0, "lastPrice": 101.0}
+                                         for m, c in held],
+                                "skipped": [{"id": f"sepa:{m}:{c}", "code": c, "name": c, "signalDate": "2026-10-09",
+                                             "reason": "NO_ENTRY_BAR_YET", "score": s} for m, c, s in pending]}}}
+
+
+class PortfolioTest(unittest.TestCase):
+    def test_budget_follows_weights_and_skips_retired_and_control(self):
+        agents = {"a": agent(1.0), "b": agent(0.5), "c": agent(0.0), "control": {"review": {"capitalWeight": None}, "series": {"live": {"open": [], "skipped": []}}}}
+        _, budgets = pf.allocate(agents, 9000)
+        self.assertEqual(budgets, {"a": 6000, "b": 3000})
+
+    def test_consensus_adds_up_and_caps_single_name(self):
+        agents = {k: agent(1.0, held=[("us", "NVDA")]) for k in "abc"}
+        rows, _ = pf.allocate(agents, 8000)
+        self.assertAlmostEqual(rows[0]["amount"], 8000 / 6, places=2)  # 세 에이전트가 같은 종목 → 자본의 1/6
+        out, _ = pf.risk_review(rows, 8000)
+        self.assertEqual(out[0]["verdict"], "TRIMMED")
+        self.assertEqual(out[0]["target"], round(8000 * config.MAX_SINGLE_WEIGHT, 2))
+
+    def test_pending_limited_to_free_slots_best_score_first(self):
+        pend = [("us", f"P{i}", float(i)) for i in range(10)]
+        rows, _ = pf.allocate({"a": agent(1.0, held=[("us", f"H{i}") for i in range(4)], pending=pend)}, 6000)
+        pcodes = {r["code"] for r in rows if r["state"] == "PENDING"}
+        self.assertEqual(pcodes, {"P9", "P8"})  # 6칸 중 4칸 보유 → 2칸만, 점수 높은 순
+
+    def test_name_cap_drops_smallest_lines(self):
+        agents = {"a": agent(1.0, held=[("kr", f"K{i}") for i in range(6)]),
+                  "b": agent(1.0, held=[("kr", f"L{i}") for i in range(6)]),
+                  "c": agent(1.0, held=[("kr", f"M{i}") for i in range(6)])}
+        out, summary = pf.risk_review(pf.allocate(agents, 8000)[0], 8000)
+        self.assertEqual(summary["names"], config.MAX_NAMES)
+        self.assertEqual(sum(r["verdict"] == "REJECTED" for r in out), 18 - config.MAX_NAMES)
+
+    def test_market_cap_scales_down_one_market(self):
+        out, summary = pf.risk_review(pf.allocate({"a": agent(1.0, held=[("kr", f"K{i}") for i in range(6)])}, 8000)[0], 8000)
+        self.assertAlmostEqual(summary["kr"], 100 * config.MAX_MARKET_WEIGHT, delta=0.2)  # 한 종목 상한 후에도 90% → 70%로
+        self.assertEqual(summary["us"], 0)
+        self.assertTrue(all(r["verdict"] == "TRIMMED" for r in out))
+
+    def test_all_retired_gives_empty_portfolio_with_warning(self):
+        res = pf.build({"a": agent(0.0, held=[("us", "X")])}, 8000)
+        self.assertEqual(res["lines"], [])
+        self.assertTrue(res["warnings"])
 
 
 if __name__ == "__main__":

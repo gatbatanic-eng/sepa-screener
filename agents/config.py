@@ -31,3 +31,9 @@ PROBATION_MAX_EXTRA = 60          # 관찰 후 추가 60건이 쌓였는데도 �
 CAPITAL_WEIGHT = {"ACTIVE": 1.0, "PROBATION": 0.5, "RETIRED": 0.0}  # 4단계(자본 배분)가 읽는 권고 비중
 BOOT_N = 2000
 BOOT_SEED = 20261003
+
+# --- 포트폴리오 매니저·리스크 심사 (4단계, 2026-10-03 고정). 권고일 뿐 주문하지 않는다. ---
+PORTFOLIO_FROZEN_ON = "2026-10-03"
+MAX_SINGLE_WEIGHT = 0.15          # 한 종목 상한: 자본의 15% (여러 에이전트가 같은 종목을 들면 합산해서 본다)
+MAX_MARKET_WEIGHT = 0.70          # 한 시장(한국/미국) 상한: 자본의 70%
+MAX_NAMES = 12                    # 권고 종목 수 상한
