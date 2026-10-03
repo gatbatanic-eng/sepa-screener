@@ -221,6 +221,26 @@ class ReportTest(unittest.TestCase):
             self.assertIn("| c |", (d / "daily" / "2026-10-06.md").read_text())
 
 
+class ReportNotifyListTest(unittest.TestCase):
+    def test_new_list_has_only_newly_written_reports(self):
+        import datetime as dt
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            real_build, real_dir = rp.build, rp.REPORT_DIR
+            rp.REPORT_DIR = d / "data"
+            rp.build = lambda kind, today, **kw: {"kind": kind, "key": today.isoformat(), "date": today.isoformat(), "title": "t", "dataAsOf": "x",
+                                                  "disclaimer": "d", "sections": [{"heading": "h", "bullets": ["a"]}]}
+            try:
+                lst = d / "new.txt"
+                rp.run(dt.date(2026, 10, 6), None, lst)
+                self.assertEqual(len(lst.read_text().splitlines()), 1)
+                self.assertTrue(lst.read_text().strip().endswith("daily/2026-10-06.md"))
+                rp.run(dt.date(2026, 10, 6), None, lst)   # 같은 날 재실행 → 새 보고서 없음 → 알림 대상 없음
+                self.assertEqual(lst.read_text(), "")
+            finally:
+                rp.build, rp.REPORT_DIR = real_build, real_dir
+
+
 class TopicTest(unittest.TestCase):
     def setUp(self):
         self.uni = {"root": Path("/nonexistent"),
