@@ -9,7 +9,9 @@ on:
     branches: [master, "claude/**"]
     paths:
       - ledger/**
+      - agents/**
       - tests/test_ledger.py
+      - tests/test_agents.py
       - .github/workflows/ledger.yml
 
 permissions:
@@ -33,15 +35,17 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Verify ledger rules
-        run: python -m unittest tests.test_ledger -v
+        run: python -m unittest tests.test_ledger tests.test_agents -v
       - name: Update ledger, outcomes and statistics
         run: python -m ledger.main
+      - name: Update agent league (virtual accounts)
+        run: python -m agents.main
       - name: Save ledger
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for p in research/ledger docs/research/ledger.json; do
+          for p in research/ledger research/agents docs/research/ledger.json docs/research/agents.json; do
             if [ -e "$p" ]; then git add -f "$p"; fi
           done
           git diff --cached --quiet && exit 0
