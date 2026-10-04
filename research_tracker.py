@@ -58,7 +58,7 @@ def align_latest_rows(rows, sessions, market):
         if row['dataFreshness'] != 'CURRENT':
             row['status'] = 'UNKNOWN'
             row['reason'] = f'시세 기준일 불일치 (종목 {observed or "없음"}, 지수 {expected or "없음"})'
-            for flag in ('aggressiveGo', 'aggressiveWatch', 'rangeGo', 'rangeWatch'):
+            for flag in ('aggressiveGo', 'aggressiveWatch', 'rangeGo', 'rangeWatch', 'reboundWatch'):
                 if flag in row:
                     row[flag] = None
         result.append(row)
@@ -96,6 +96,12 @@ def export_inputs(frame, ohlcv, benchmarks, cfg, market):
     except Exception as exc:
         import logging
         logging.getLogger(__name__).exception("공격형 모멘텀 지표 내보내기 실패: %s", exc)
+    from rebound_screen import export_rebound
+    try:
+        export_rebound(payload, ohlcv)
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).exception("소형 고변동 반등 관찰 지표 내보내기 실패: %s", exc)
 
 def outcome(signal, prices, benchmark, horizon):
     dates = sorted(d for d in benchmark if d > signal['date'])
@@ -155,6 +161,9 @@ def membership(row, group):
         return row.get('rangeWatch' if group == 'RANGE_WATCH' else 'rangeGo')
     if group.startswith('AGGR_'):
         return row.get('aggressiveWatch' if group == 'AGGR_WATCH' else 'aggressiveGo')
+    if group == 'REB_WATCH':
+        value = row.get('reboundWatch')
+        return value if isinstance(value, bool) else None
     if group == 'GO':
         entry = row.get('entryState')
         return entry in ('GO_BREAKOUT', 'GO_PULLBACK') if entry else None
@@ -396,10 +405,17 @@ def main():
             write_json(existing_path, saved)
             write_json(ROOT / 'docs' / 'research' / f'{existing_market}.json', public_view(saved))
     markets = ['kr', 'us'] if args.market == 'ALL' else [args.market.lower()]
-    for dataset in [m for market in markets for m in (market, 'range_' + market, 'aggressive_' + market)]:
+    # 반등 관찰 그룹은 한국 전용이며 보조 기록이다: 입력이 없으면 경고만 하고 기존 기록은 건드리지 않는다.
+    datasets = [m for market in markets for m in (market, 'range_' + market, 'aggressive_' + market)]
+    if 'kr' in markets:
+        datasets.append('rebound_kr')
+    for dataset in datasets:
         market = dataset.rsplit('_', 1)[-1]
         path = ROOT / 'output' / f'research_input_{dataset}.json'
         if not path.exists():
+            if dataset.startswith('rebound_'):
+                print(f'{dataset}: 이번 실행의 입력 없음 — 건너뜀')
+                continue
             raise FileNotFoundError(f'이번 실행의 연구 입력 없음: {market}')
         payload = json.loads(path.read_text())
         target = ROOT / 'research' / f'{dataset}.json'

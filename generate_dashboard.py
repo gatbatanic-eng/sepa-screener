@@ -257,6 +257,33 @@ def load_fundamentals_index(prefix: str) -> dict:
     return json.loads(path.read_text(encoding="utf-8")).get("symbols", {})
 
 
+def load_rebound(prefix: str) -> dict:
+    """research_tracker 가 쓴 docs/research/rebound_kr.json 에서 현재 REB_WATCH(소형 고변동 반등 관찰) 멤버를 읽는다.
+    한국 전용. 파일이 없거나 깨졌으면 빈 dict(=탭 숨김). 성과 요약은 연구 기록 그대로의 단순 집계다."""
+    if prefix != "kr":
+        return {}
+    path = DOCS_DIR / "research" / "rebound_kr.json"
+    if not path.exists():
+        return {}
+    try:
+        state = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    keys = ("marcapEok", "vol60", "dd52Pct", "offLow25Pct", "volumeRatio", "rsi14")
+    members = {}
+    for r in state.get("latestRows") or []:
+        if r.get("reboundWatch") is True and r.get("status") == "OK":
+            members[str(r.get("code")).zfill(6)] = {k: r.get(k) for k in keys}
+    signals = [x for x in state.get("signals", []) if x.get("group") == "REB_WATCH"]
+    track = {"episodes": len(signals)}
+    for h in ("5", "20", "60"):
+        done = [x["outcomes"][h] for x in signals if (x.get("outcomes") or {}).get(h, {}).get("status") == "complete"]
+        track[f"n{h}"] = len(done)
+        if done:
+            track[f"excess{h}"] = round(sum(o["excessPct"] for o in done) / len(done), 2)
+    return {"asOf": state.get("latestSession"), "members": members, "track": track}
+
+
 def load_personas_index(prefix: str) -> dict:
     """personas/generate.py 가 커밋해 둔 docs/data/personas/{prefix}/index.json.
     code -> {name, generatedAt, usedLLM}. 버튼 노출 여부만 알면 되므로 종목별 본문은
@@ -299,9 +326,11 @@ def build() -> None:
                 r.update(compute_value_metrics(prefix, r["code"], r))
 
         personas_index = load_personas_index(prefix)
+        rebound = load_rebound(prefix)
 
         payload[prefix] = {"label": label, "rows": rows, "history": history, "asOf": as_of,
-                            "charts": charts, "fundamentals": fundamentals, "personas": personas_index}
+                            "charts": charts, "fundamentals": fundamentals, "personas": personas_index,
+                            "rebound": rebound}
 
     if not payload:
         print("생성할 데이터가 없습니다 (output/latest_*_full.csv를 먼저 만들어야 함: screening.py를 먼저 실행하세요)")
@@ -526,6 +555,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <button class="filter-btn" data-filter="trend">TREND_OK</button>
       <button class="filter-btn" data-filter="setup">SETUP</button>
       <button class="filter-btn" data-filter="ready">READY</button>
+      <button class="filter-btn" data-filter="rebound" title="시가총액 3,000억 미만 · 60일 변동성 100% 이상 · 52주 고점 대비 -50% 이하 (한국 전용 연구용 관찰 그룹, 매수 신호 아님)" hidden>반등관찰</button>
       <button class="filter-btn" data-filter="near" title="추세 통과 + 피벗 -2~0% 구간이지만 셋업(수축·거래량) 조건이 아직 미완성인 종목">근접후보</button>
       <button class="filter-btn" data-filter="go">GO</button>
       <button class="filter-btn" data-filter="go_breakout">GO_BREAKOUT</button>
@@ -569,6 +599,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     ※ "8/8 판정"·"충족(8)"·"셋업점수(레거시)"·"타이밍신호"는 기존 화면과 비교하기 위해 유지합니다("충족(8)"의 8번째 조건도 RS Score ≥ 80). 스테이지(와인스타인 4단계)·베이스 단계·펀더멘털·촉매는 여전히 자동 판정하지 않습니다. 모든 임계값은 <code>sepa/config.py</code> 에서 조정됩니다.<br>
     ※ "↗" 는 외부 차트 사이트 링크, "📈" 미니차트는 8/8 전체통과 + v2 진입 후보(GO/READY)에 제공됩니다. 종가/SMA/거래량/RSI(14)·매물대·변곡점 전부 참고용입니다.<br>
     ※ "📊" 재무정보는 <b>8/8 전체통과 종목</b>에 한해 한국은 OpenDART, 미국은 SEC EDGAR 공시 원문을 그대로 보여줍니다(가공·추정치 없음). 수집 시점의 공시값이며, 과거 매수 시점에 알려졌던 값이 아닐 수 있고 정정공시가 있으면 갱신됩니다 — 투자 판단은 원문 공시를 직접 확인하세요.<br>
+    ※ <b>반등관찰</b>(한국 전용)은 시가총액 3,000억 미만 · 60일 변동성 100% 이상 · 52주 고점 대비 -50% 이하인 종목입니다. 2026-08 이후 +50% 이상 반등한 종목들의 공통 프로파일이지만 하락 위험도 함께 키우는 요인이라 <b>매수 신호가 아니고</b>, 기준(<code>rebound_screen.py</code>)을 고정한 채 이후 5·20·60거래일 성과를 <code>research/rebound_kr.json</code>에 기록해 검증하는 연구용 관찰 그룹입니다.<br>
     ※ "💭 매수 고민"은 <b>현재 v2 추세통과(TREND_OK 이상) 종목</b>에 한해, 추세추종·기술적·퀀트·가치·성장주·리스크관리·반론가 7개 관점에서 이 화면의 다른 수치(재무, PER, 시장 성과 기록 등)를 규칙으로 먼저 계산한 뒤 문장으로 정리한 것입니다. AI(Claude)가 그 계산된 사실만 가지고 문장을 다듬을 수 있으며("AI 코멘트" 표시), 실패 시 계산된 근거·우려·체크포인트를 그대로 보여줍니다("규칙 텍스트" 표시). <b>어느 쪽도 매수·매도 신호나 목표가를 제시하지 않으며, 판단과 책임은 본인에게 있습니다.</b><br>
     ※ <b>밸류점수</b>(0~100, 랭킹용)는 최근 분기 영업이익(없으면 순이익·매출) YoY + 직전 2분기 대비 가속 여부 + (한국만) trailing PER(시총/최근4분기 순이익합) 낮음 + 52주고점 대비 여유(아직 안 오름)를 <code>generate_dashboard.py</code>에서 가중평균한 것입니다. <b>애널리스트 컨센서스(추정치)가 아니라 DART/SEC에 이미 공시된 과거 실적</b>이며, PER은 일회성 손익이 낀 분기가 있으면 왜곡될 수 있고 미국은 EPS·시가총액 결측이 많아 PER 서브지표 자체를 뺍니다. 매수 신호가 아니라 "실적은 개선되는데 아직 안 오른 후보" 1차 스크리닝용 참고 지표입니다.
   </footer>
@@ -626,6 +657,16 @@ const ENTRY_RANK = {
 const GO_SET = new Set(["GO_BREAKOUT", "GO_PULLBACK"]);
 // SETUP_READY 하드 조건(sepa/config.py SetupConfig 와 같은 값). 근접후보 탭의 "부족한 조건" 표시용.
 const SETUP_LIMITS = { base: 20, contractions: 2, atr: 0.75, dryup: 0.70 };
+function code6(r) { return String(r.code).padStart(6, "0"); }
+function reboundInfo() { return DATA[currentMarket].rebound || null; }
+function hasRebound() { const R = reboundInfo(); return !!(R && R.members); }
+function isReboundWatch(r) { const R = reboundInfo(); return !!(R && R.members && R.members[code6(r)]); }
+function reboundTip(r) {
+  const m = ((reboundInfo() || {}).members || {})[code6(r)];
+  if (!m) return "";
+  const f = (v, d, u) => (v === null || v === undefined || !isFinite(v)) ? "-" : Number(v).toFixed(d) + u;
+  return `소형 고변동 반등 관찰 — 시총 ${f(m.marcapEok, 0, "억")} · 변동성 ${f(m.vol60, 0, "%")} · 52주 고점 대비 ${f(m.dd52Pct, 0, "%")} · 25일 저점 대비 ${f(m.offLow25Pct, 0, "%")} · 거래량 ${f(m.volumeRatio, 1, "배")}`;
+}
 const V2_FILTERS = ["trend", "setup", "ready", "near", "go", "go_breakout", "go_pullback", "extended", "exitwarn"];
 
 // 근접후보: 추세 통과 + 피벗 -2~0%(zone READY) 인데 셋업이 완성되지 않아 READY/GO 상태가 되지 못한 종목.
@@ -779,7 +820,8 @@ function getCols() {
   const cols = [
     { key: "rank", label: "#", left: true },
     { key: "code", label: "코드", left: true },
-    { key: "name", label: "종목명", left: true },
+    { key: "name", label: "종목명", left: true,
+      fmt: (v, r) => escHtml(v) + (isReboundWatch(r) ? ` <span class="badge near" title="${escHtml(reboundTip(r))}">반등관찰</span>` : "") },
     { key: "chart", label: "차트", left: true, fmt: (v, r) => chartCell(r) },
     { key: "close", label: "종가", fmt: v => fmtNum(v) },
     { key: "changePct", label: "등락률", fmt: v => changeBadge(v) },
@@ -950,8 +992,21 @@ function statusBadge(r) {
   return `<span class="badge pass">전체통과</span>${hold}`;
 }
 
+function renderReboundNote(rows) {
+  const el = document.getElementById("filterNote");
+  const R = reboundInfo() || {};
+  const t = R.track || {};
+  const part = (h) => t["n" + h] ? `${h}일 ${t["n" + h]}건·지수 대비 평균 ${t["excess" + h] > 0 ? "+" : ""}${t["excess" + h]}%p` : `${h}일 대기`;
+  el.innerHTML = `<b>반등관찰 ${rows.length}종목</b> (기준일 ${R.asOf || "-"}) — 시가총액 3,000억 미만 · 60일 변동성 100% 이상 · 52주 고점 대비 -50% 이하. ` +
+    `2026-08 반등 분석에서 +50% 이상 반등한 종목들의 공통 프로파일이지만, <b>같은 요인이 하락 위험도 키우고 과거 에피소드에서는 설명력이 일관되지 않았습니다(AUC 0.44~0.71).</b> ` +
+    `<b>매수 신호가 아니며</b> 판정 기준은 고정해 두고 이후 5·20·60거래일 성과를 연구 기록(<a href="research/rebound_kr.json">research/rebound_kr.json</a>)에 쌓아 검증합니다. ` +
+    `기록: 신호 ${t.episodes ?? 0}건 · ${part(5)} · ${part(20)} · ${part(60)} (완료 표본이 적을 땐 의미 없음). 종목명 옆 "반등관찰" 배지에 마우스를 올리면 지표가 보입니다.`;
+  el.hidden = false;
+}
+
 function renderFilterNote(rows) {
   const el = document.getElementById("filterNote");
+  if (currentFilter === "rebound") { renderReboundNote(rows); return; }
   if (currentFilter !== "near") { el.hidden = true; el.innerHTML = ""; return; }
   const miss = { "베이스": 0, "수축횟수": 0, "ATR수축": 0, "Dry-up": 0 };
   rows.forEach(r => setupMisses(r).forEach(m => {
@@ -975,6 +1030,7 @@ function renderTable() {
     setup: r => r.entryState === "SETUP" || toBool(r.setupReady),
     ready: r => r.entryState === "READY",
     near: isNearCandidate,
+    rebound: isReboundWatch,
     go: r => GO_SET.has(r.entryState),
     go_breakout: r => r.entryState === "GO_BREAKOUT",
     go_pullback: r => r.entryState === "GO_PULLBACK",
@@ -1042,12 +1098,17 @@ function syncFilterButtons() {
   document.querySelectorAll(".filter-btn").forEach(b => {
     if (v2only.has(b.dataset.filter)) b.hidden = !v2;
     if (b.dataset.filter === "value") b.hidden = !value;
+    if (b.dataset.filter === "rebound") b.hidden = !hasRebound();
   });
   document.querySelectorAll("#sortSelect option").forEach(o => {
     if (["entryState", "setupQuality", "rsScore", "rsChange20d", "pivotDist"].includes(o.value)) o.hidden = !v2;
     if (o.value === "valueScore") o.hidden = !value;
   });
   if (!v2 && V2_FILTERS.includes(currentFilter)) {
+    currentFilter = "all";
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.toggle("active", b.dataset.filter === "all"));
+  }
+  if (!hasRebound() && currentFilter === "rebound") {
     currentFilter = "all";
     document.querySelectorAll(".filter-btn").forEach(b => b.classList.toggle("active", b.dataset.filter === "all"));
   }
