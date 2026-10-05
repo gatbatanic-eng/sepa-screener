@@ -95,18 +95,26 @@ def naver_kr_listing(get=None) -> pd.DataFrame:
         import requests
         get = requests.get
     seen: dict[str, dict] = {}
+    pages: dict[str, int] = {}
+    last_keys: list[str] = []
     for market in ("KOSPI", "KOSDAQ"):
         for page in range(1, MAX_PAGES + 1):
             response = get(_URL.format(market=market), params={"page": page, "pageSize": PAGE_SIZE},
                            headers=_HEADERS, timeout=15)
             response.raise_for_status()
-            rows = parse_page(response.json(), market)
+            payload = response.json()
+            raw = find_rows(payload)           # 파싱에서 걸러진 행이 있어도 페이지가 찼는지는 원본 행 수로 판단한다
+            rows = parse_page(payload, market)
             new = [r for r in rows if r["Code"] not in seen]
             seen.update({r["Code"]: r for r in new})
-            if not new or len(rows) < PAGE_SIZE:
+            pages[market] = page
+            if raw:
+                last_keys = sorted(raw[0])[:12]
+            if not new or len(raw) < PAGE_SIZE:
                 break
     if len(seen) < MIN_LISTED:
-        raise RuntimeError(f"네이버 한국 종목 목록이 {len(seen)}종목뿐입니다(최소 {MIN_LISTED}) — 응답 형식 변경 가능성")
+        raise RuntimeError(f"네이버 한국 종목 목록이 {len(seen)}종목뿐입니다(최소 {MIN_LISTED}) — 응답 형식 변경 가능성 "
+                           f"(읽은 페이지 {pages}, 행 키 {last_keys})")
     frame = pd.DataFrame(list(seen.values()))
     frame.attrs["source"] = SOURCE
     logger.warning("네이버 대체 목록 %d종목 사용 (코스피 %d, 코스닥 %d)", len(frame),

@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -53,13 +54,25 @@ def run(args) -> pd.DataFrame:
     markets = ["kr", "us"] if args.market == "all" else [args.market]
 
     parts = []
+    failed: list[str] = []
     for m in markets:
         try:
             df = _load_market(m, args, verbose)
             if not df.empty:
                 parts.append(df)
         except Exception as e:  # noqa: BLE001
+            failed.append(m)
             print(f"[{m}] 수집 실패: {type(e).__name__}: {e}", file=sys.stderr)
+            print(f"::warning::멀티팩터 {'한국' if m == 'kr' else '미국'} 제외 — 수집 실패({type(e).__name__})",
+                  file=sys.stderr)
+
+    for m in markets:  # 이전 실행의 제외 표시가 남지 않게 매번 갱신
+        if m not in failed and Path(args.output).with_suffix(".excluded.json").exists():
+            Path(args.output).with_suffix(".excluded.json").unlink()
+    if failed:
+        marker = Path(args.output).with_suffix(".excluded.json")
+        marker.parent.mkdir(parents=True, exist_ok=True)
+        marker.write_text(json.dumps({"excluded_markets": failed}, ensure_ascii=False), encoding="utf-8")
 
     if not parts:
         print("수집된 종목이 없습니다.", file=sys.stderr)
@@ -86,6 +99,8 @@ def run(args) -> pd.DataFrame:
     result.to_csv(out_path, index=False, encoding="utf-8-sig")
     print(f"\n결과 저장: {out_path}  ({len(result)}종목)")
 
+    if failed:
+        print("※ 제외된 시장: " + ", ".join("한국" if m == "kr" else "미국" for m in failed) + " (수집 실패)")
     _print_summary(result, top=args.top)
     return result
 
