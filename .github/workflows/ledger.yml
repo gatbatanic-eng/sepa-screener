@@ -10,8 +10,10 @@ on:
     paths:
       - ledger/**
       - agents/**
+      - advisory/**
       - tests/test_ledger.py
       - tests/test_agents.py
+      - tests/test_advisory.py
       - .github/workflows/ledger.yml
 
 permissions:
@@ -36,7 +38,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Verify ledger rules
-        run: python -m unittest tests.test_ledger tests.test_agents -v
+        run: python -m unittest tests.test_ledger tests.test_agents tests.test_advisory -v
       - name: Update ledger, outcomes and statistics
         run: python -m ledger.main
       - name: Update agent league (virtual accounts)
@@ -45,25 +47,34 @@ jobs:
       - name: Daily / weekly / monthly reports
         if: github.event_name != 'push'
         run: python -m agents.report --new-list "$RUNNER_TEMP/new_reports.txt"
+      - name: Investment advisory memo (daily / weekly / monthly)
+        # push(코드 변경)는 latest.json만 갱신하고 보관·알림은 하지 않는다. 예약·수동 실행만 하루 한 번 기록한다.
+        run: python -m advisory.main ${{ github.event_name == 'push' && '--preview' || format('--new-list {0}/new_memos.txt', runner.temp) }}
       - name: Post new reports to the report issue (push notification)
         if: github.event_name != 'push'
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          [ -s "$RUNNER_TEMP/new_reports.txt" ] || exit 0
-          n=$(gh issue list --state open --search '"에이전트 리그 보고" in:title' --json number,title --jq '[.[] | select(.title | startswith("에이전트 리그 보고"))][0].number')
-          [ -n "$n" ] || { echo "보고 이슈를 찾지 못했습니다"; exit 1; }
-          while read -r f; do
-            { cat "$f"; echo; echo "[전체 보기](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_REF_NAME}/${f#"$PWD"/})"; } > "$RUNNER_TEMP/body.md"
-            gh issue comment "$n" --body-file "$RUNNER_TEMP/body.md"
-          done < "$RUNNER_TEMP/new_reports.txt"
+          post() {  # $1=새 보고서 목록 파일, $2=이슈 제목 접두
+            [ -s "$1" ] || return 0
+            n=$(gh issue list --state open --search "\"$2\" in:title" --json number,title --jq "[.[] | select(.title | startswith(\"$2\"))][0].number")
+            [ -n "$n" ] || { echo "이슈를 찾지 못했습니다: $2"; return 1; }
+            while read -r f; do
+              { cat "$f"; echo; echo "[전체 보기](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_REF_NAME}/${f#"$PWD"/})"; } > "$RUNNER_TEMP/body.md"
+              gh issue comment "$n" --body-file "$RUNNER_TEMP/body.md"
+            done < "$1"
+          }
+          rc=0
+          post "$RUNNER_TEMP/new_reports.txt" "에이전트 리그 보고" || rc=1
+          post "$RUNNER_TEMP/new_memos.txt" "투자 자문 메모" || rc=1
+          exit $rc
       - name: Save ledger
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for p in research/ledger research/agents docs/research/ledger.json docs/research/agents.json docs/agents/reports; do
+          for p in research/ledger research/agents docs/research/ledger.json docs/research/agents.json docs/agents/reports docs/advisory; do
             if [ -e "$p" ]; then git add -f "$p"; fi
           done
           git diff --cached --quiet && exit 0
