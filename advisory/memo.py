@@ -92,7 +92,7 @@ def to_markdown(m: dict) -> str:
         for p in pk["picks"]:
             pl = p.get("plan") or {}
             summ = "; ".join((p["verify"]["fail"] + p["verify"]["warn"])[:2]) or "경고 없음"
-            o.append("| " + " | ".join(str(x) for x in [f"{p['market']} {p['name']}", f"{p['grade']}({p['verdict']})", p["composite"],
+            o.append("| " + " | ".join(str(x) for x in [f"{p['market']} {p['name']}", f"{p['grade']}({p['verdict']}, 경고 {p['warnCount']})", p["composite"],
                      "/".join(str(v) for v in p["lens"].values()), pl.get("entryPriceMax", "–"), pl.get("referenceStop", "–"),
                      f"{pl['plannedLossPct']:.1f}%" if pl.get("plannedLossPct") else "–", f"{p['weight']:.1%} (≈{p['amount']:,.0f})" if p.get("weight") else "0 (관찰)" if p["grade"] == "C" else "–", summ]) + " |")
         if pk.get("track"):

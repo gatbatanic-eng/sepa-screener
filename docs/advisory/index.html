@@ -179,7 +179,7 @@ function picksPanel(m) {
   const rows = pk.picks.map((p) => {
     const pl = p.plan || {}, w = p.weight;
     const brief = [...p.verify.fail, ...p.verify.warn].slice(0, 2).map(esc).join("<br>") || "경고 없음";
-    return `<tr><td class="l"><b>${esc(p.name)}</b> <span class="muted">${esc(p.market)} ${esc(p.code)}</span></td><td><span class="grade ${p.grade}">${p.grade} ${esc(p.verdict)}</span></td>
+    return `<tr><td class="l"><b>${esc(p.name)}</b> <span class="muted">${esc(p.market)} ${esc(p.code)}</span></td><td><span class="grade ${p.grade}">${p.grade} ${esc(p.verdict)}</span><br><span class="muted" style="font-size:11px">경고 ${p.warnCount}개${p.warnCount >= 5 ? " ⚠ 다수" : ""}</span></td>
       <td>${p.composite}<br><span class="muted" style="font-size:11px">${Object.entries(p.lens).map(([k, v]) => `${esc(k)} ${v}`).join(" · ")}</span></td>
       <td>${won(pl.entryPriceMax)}</td><td>${won(pl.referenceStop)} <span class="muted">(${pl.plannedLossPct ? "-" + pl.plannedLossPct.toFixed(1) + "%" : "–"})</span><br><span class="muted" style="font-size:11px">${esc(pl.stopBasis || "복구 모드 기준")}</span></td><td>${w ? (w * 100).toFixed(1) + "%" : p.grade === "C" ? "0 (관찰)" : "–"}<br><span class="muted" style="font-size:11px">${p.amount ? "≈ " + won(p.amount) : ""}</span></td>
       <td class="wrap">${brief}</td></tr>`;
