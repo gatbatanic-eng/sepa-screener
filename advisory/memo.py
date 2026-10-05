@@ -4,7 +4,7 @@ from __future__ import annotations
 import datetime as dt
 from pathlib import Path
 
-from . import cio, config, data, desks
+from . import cio, config, data, desks, recommend
 from .store import read_json, write_json
 
 DISCLAIMER = "규칙 기반 참고 자료이며 투자 권유가 아닙니다. 최종 판단과 책임은 본인에게 있습니다."
@@ -23,6 +23,14 @@ def _prior(kind: str, today: dt.date, out_dir: Path) -> dict | None:
         return None
     m = max(cands, key=lambda m: m["date"])
     return read_json(out_dir / m["kind"] / f"{m['key']}.json")
+
+
+def _track_summary(out_dir: Path) -> dict | None:
+    s = read_json(out_dir / "picks_stats.json")
+    if not s:
+        return None
+    return {"recordedDays": s["recordedDays"], "minN": s["minN"],
+            "groups": {g: {h: {k: v[k] for k in ("n", "meanReturn", "meanExcess", "winRate", "status")} for h, v in hs.items()} for g, hs in s["groups"].items()}}
 
 
 def _history(kind: str, today: dt.date, out_dir: Path) -> dict | None:
@@ -48,6 +56,8 @@ def build(kind: str, today: dt.date, root: Path | None = None, out_dir: Path | N
     d_sector, sector = desks.sector_desk(inp)
     d_stock, stock = desks.stock_desk(inp, decision["stance"], today)
     d_risk, risk = desks.risk_desk(decision["stance"], inp, markets, macro)
+    rec = recommend.run(inp["root"], decision["stance"], macro.get("regime"))
+    rec["track"] = _track_summary(out_dir)
     prev = _prior(kind, today, out_dir)
     stance = {**decision, "summary": cio.summary(decision, d_macro, d_market, d_risk),
               "changes": cio.changes(prev, {**decision})}
@@ -56,7 +66,7 @@ def build(kind: str, today: dt.date, root: Path | None = None, out_dir: Path | N
     from agents.report import period_keys
     key = period_keys(today)[kind] or today.isoformat()
     memo = {"schemaVersion": 1, "kind": kind, "key": key, "date": today.isoformat(), "title": f"{TITLES[kind]} {key}",
-            "generatedAt": now.isoformat(), "stance": stance, "desks": sections, "macro": {k: macro.get(k) for k in ("regime", "score", "generated_at", "levels")},
+            "generatedAt": now.isoformat(), "stance": stance, "picks": rec, "desks": sections, "macro": {k: macro.get(k) for k in ("regime", "score", "generated_at", "levels")},
             "markets": {m: {k: v for k, v in s.items() if k != "zones"} for m, s in markets.items()},
             "dataAsOf": {"macro": macro.get("generated_at"), "league": (inp.get("league") or {}).get("generatedAt")},
             "disclaimer": DISCLAIMER}
@@ -74,6 +84,21 @@ def to_markdown(m: dict) -> str:
     o += ["", "**지난 메모 대비**"] + [f"- {x}" for x in s["changes"]]
     if s["flips"]:
         o += ["", "**입장이 바뀌는 조건**"] + [f"- {x}" for x in s["flips"]]
+    if m.get("picks"):
+        pk = m["picks"]
+        o += ["", f"## 공격 진입 추천 — {pk['headline']}", "> 추천 팀(돌파·리더·안전 렌즈)이 고르고, 별개 검증 팀(데이터·리스크·추세·실적·국면·반론)이 감사합니다. 등급 A 통과 · B 조건부 · C 관찰 전용(비중 0)."]
+        c = ["종목", "등급", "종합", "돌파/리더/안전", "진입가", "손절", "계획 손실", "권고 비중", "검증 요약"]
+        o += ["", "| " + " | ".join(c) + " |", "|" + "---|" * len(c)]
+        for p in pk["picks"]:
+            pl = p.get("plan") or {}
+            summ = "; ".join((p["verify"]["fail"] + p["verify"]["warn"])[:2]) or "경고 없음"
+            o.append("| " + " | ".join(str(x) for x in [f"{p['market']} {p['name']}", f"{p['grade']}({p['verdict']})", p["composite"],
+                     "/".join(str(v) for v in p["lens"].values()), pl.get("entryPriceMax", "–"), pl.get("referenceStop", "–"),
+                     f"{pl['plannedLossPct']:.1f}%" if pl.get("plannedLossPct") else "–", f"{p['weight']:.1%} (≈{p['amount']:,.0f})" if p.get("weight") else "0 (관찰)" if p["grade"] == "C" else "–", summ]) + " |")
+        if pk.get("track"):
+            o += ["", f"사후 검증: 기록 {pk['track']['recordedDays']}일 — 표본 {pk['track']['minN']}건 전에는 성과를 근거로 쓰지 않습니다."]
+        else:
+            o += ["", "사후 검증: 아직 기록 없음(추천을 기록한 날부터 5·20·40거래일 뒤 성과가 쌓입니다)."]
     for d in m["desks"]:
         o += ["", f"## {d['name']} — {d['headline']}"] + [f"- {b}" for b in d["bullets"]]
         if d.get("table"):

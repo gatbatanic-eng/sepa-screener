@@ -3,8 +3,9 @@ name: Strategy Performance Ledger
 on:
   workflow_dispatch:
   schedule:
-    # 평일 22:40 UTC (미국 장 마감 뒤). 신호 파일은 하루가 끝난 스냅샷만 고정한다.
-    - cron: "40 22 * * 1-5"
+    # 화~토 07:10 UTC. 미국 스크리닝(05:00 UTC)과 계좌복구 갱신이 끝난 뒤에 돌아야 미국 데이터가 하루 늦지 않는다.
+    # 월~금 장 마감분을 다음 날 아침에 처리한다(기준일은 agents.config.session_date()가 월~금으로 되돌린다).
+    - cron: "10 7 * * 2-6"
   push:
     branches: [master, "claude/**"]
     paths:
@@ -14,6 +15,7 @@ on:
       - tests/test_ledger.py
       - tests/test_agents.py
       - tests/test_advisory.py
+      - tests/test_picks.py
       - .github/workflows/ledger.yml
 
 permissions:
@@ -38,7 +40,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Verify ledger rules
-        run: python -m unittest tests.test_ledger tests.test_agents tests.test_advisory -v
+        run: python -m unittest tests.test_ledger tests.test_agents tests.test_advisory tests.test_picks -v
       - name: Update ledger, outcomes and statistics
         run: python -m ledger.main
       - name: Update agent league (virtual accounts)
@@ -50,6 +52,9 @@ jobs:
       - name: Investment advisory memo (daily / weekly / monthly)
         # push(코드 변경)는 latest.json만 갱신하고 보관·알림은 하지 않는다. 예약·수동 실행만 하루 한 번 기록한다.
         run: python -m advisory.main ${{ github.event_name == 'push' && '--preview' || format('--new-list {0}/new_memos.txt', runner.temp) }}
+      - name: Pick outcomes (record + 5/20/40-session results vs index and control)
+        continue-on-error: true
+        run: python -m advisory.picks_track
       - name: Post new reports to the report issue (push notification)
         if: github.event_name != 'push'
         continue-on-error: true
@@ -74,7 +79,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for p in research/ledger research/agents docs/research/ledger.json docs/research/agents.json docs/agents/reports docs/advisory; do
+          for p in research/ledger research/agents research/advisory docs/research/ledger.json docs/research/agents.json docs/agents/reports docs/advisory; do
             if [ -e "$p" ]; then git add -f "$p"; fi
           done
           git diff --cached --quiet && exit 0
