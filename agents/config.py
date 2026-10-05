@@ -40,14 +40,15 @@ MAX_MARKET_WEIGHT = 0.70          # 한 시장(한국/미국) 상한: 자본의 
 MAX_NAMES = 12                    # 권고 종목 수 상한
 
 
-SESSION_SHIFT_HOURS = 6           # 예약 실행은 GitHub 지연으로 다음 날 새벽 UTC에 시작한다. 6시간을 빼서 '의도한 거래일'로 되돌린다.
+SESSION_CUT = dt.timedelta(hours=22, minutes=40)   # 정기 실행(ledger.yml)의 예약 시각(UTC). 이 시각이 지나야 그날 보고서를 쓴다.
 
 
 def session_date(now: dt.datetime | None = None) -> dt.date:
-    """실행 시각 → 보고서·스냅샷의 기준 거래일. 22:40 UTC 예약이 2~3시간 늦어 01시 UTC에 돌아도 그 평일로 센다.
-    토·일에 돌면(수동 실행 등) 직전 금요일로 본다."""
+    """실행 시각 → 보고서·스냅샷의 기준 거래일 = 22:40 UTC 예약 시각이 이미 지난 가장 최근 평일.
+    예약이 지연돼 다음 날 01시 UTC에 시작해도 그 평일로 센다(월 22:40 예약 → 화 01:30 실행 = 월요일).
+    그날 예약 시각 전에 수동·푸시로 돌면 직전 평일로 본다(월요일 아침 실행 = 금요일). 주말은 금요일."""
     now = now or dt.datetime.now(dt.timezone.utc)
-    d = (now - dt.timedelta(hours=SESSION_SHIFT_HOURS)).date()
+    d = (now - SESSION_CUT).date()
     while d.weekday() >= 5:
         d -= dt.timedelta(days=1)
     return d
