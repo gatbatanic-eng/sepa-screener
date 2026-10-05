@@ -79,7 +79,7 @@ def run(today: dt.date, fetch=prices.fetch_closes, bench_fetch=prices.fetch_benc
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
     p = argparse.ArgumentParser()
-    p.add_argument("--today", default=dt.datetime.now(dt.timezone.utc).date().isoformat())
+    p.add_argument("--today", default=config.session_date().isoformat())
     res = run(dt.date.fromisoformat(p.parse_args().today))
     for aid, a in res["agents"].items():
         for name, s in a["series"].items():

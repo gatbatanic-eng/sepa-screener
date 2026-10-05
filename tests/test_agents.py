@@ -221,6 +221,19 @@ class ReportTest(unittest.TestCase):
             self.assertIn("| c |", (d / "daily" / "2026-10-06.md").read_text())
 
 
+class SessionDateTest(unittest.TestCase):
+    def test_delayed_schedule_maps_back_to_intended_weekday(self):
+        import datetime as dt
+        u = lambda s: dt.datetime.fromisoformat(s).replace(tzinfo=dt.timezone.utc)
+        self.assertEqual(config.session_date(u("2026-10-06T01:30")), dt.date(2026, 10, 5))   # 월 22:40 예약이 화 01:30에 시작
+        self.assertEqual(config.session_date(u("2026-10-05T22:50")), dt.date(2026, 10, 5))   # 지연 없이 월 밤에 시작
+        fri = config.session_date(u("2026-10-10T01:30"))                                      # 금 예약이 토 01:30에 시작
+        self.assertEqual(fri, dt.date(2026, 10, 9))
+        self.assertEqual(rp.period_keys(fri)["weekly"], "2026-W41")                           # 주간 보고서가 만들어진다
+        self.assertEqual(config.session_date(u("2026-10-11T12:00")), dt.date(2026, 10, 9))   # 일요일 수동 실행 → 금요일
+        self.assertEqual(config.session_date(u("2026-10-12T03:00")), dt.date(2026, 10, 9))   # 월 03:00 UTC는 아직 금요일 세션
+
+
 class ReportNotifyListTest(unittest.TestCase):
     def test_new_list_has_only_newly_written_reports(self):
         import datetime as dt

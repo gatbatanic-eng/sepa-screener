@@ -259,7 +259,7 @@ def run(today: dt.date, force: list[str] | None = None, new_list: Path | None = 
 
 def main() -> None:
     p = argparse.ArgumentParser()
-    p.add_argument("--today", default=dt.datetime.now(dt.timezone.utc).date().isoformat())
+    p.add_argument("--today", default=config.session_date().isoformat())
     p.add_argument("--force", nargs="*", choices=["daily", "weekly", "monthly"], help="주기와 상관없이 만든다(이미 있으면 건너뜀)")
     p.add_argument("--new-list", type=Path, help="새로 만든 보고서 .md 경로를 적을 파일")
     a = p.parse_args()

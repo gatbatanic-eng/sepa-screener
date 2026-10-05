@@ -1,6 +1,7 @@
 """에이전트 팀 고정 규칙. 결과를 본 뒤 바꾸지 않는다(바꾸면 AGENTS.md 변경 이력에 사유와 함께 남기고 새 계열로 센다)."""
 from __future__ import annotations
 
+import datetime as dt
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -37,3 +38,16 @@ PORTFOLIO_FROZEN_ON = "2026-10-03"
 MAX_SINGLE_WEIGHT = 0.15          # 한 종목 상한: 자본의 15% (여러 에이전트가 같은 종목을 들면 합산해서 본다)
 MAX_MARKET_WEIGHT = 0.70          # 한 시장(한국/미국) 상한: 자본의 70%
 MAX_NAMES = 12                    # 권고 종목 수 상한
+
+
+SESSION_SHIFT_HOURS = 6           # 예약 실행은 GitHub 지연으로 다음 날 새벽 UTC에 시작한다. 6시간을 빼서 '의도한 거래일'로 되돌린다.
+
+
+def session_date(now: dt.datetime | None = None) -> dt.date:
+    """실행 시각 → 보고서·스냅샷의 기준 거래일. 22:40 UTC 예약이 2~3시간 늦어 01시 UTC에 돌아도 그 평일로 센다.
+    토·일에 돌면(수동 실행 등) 직전 금요일로 본다."""
+    now = now or dt.datetime.now(dt.timezone.utc)
+    d = (now - dt.timedelta(hours=SESSION_SHIFT_HOURS)).date()
+    while d.weekday() >= 5:
+        d -= dt.timedelta(days=1)
+    return d
