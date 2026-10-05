@@ -1,6 +1,7 @@
 """에이전트 팀 고정 규칙. 결과를 본 뒤 바꾸지 않는다(바꾸면 AGENTS.md 변경 이력에 사유와 함께 남기고 새 계열로 센다)."""
 from __future__ import annotations
 
+import datetime as dt
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -37,3 +38,17 @@ PORTFOLIO_FROZEN_ON = "2026-10-03"
 MAX_SINGLE_WEIGHT = 0.15          # 한 종목 상한: 자본의 15% (여러 에이전트가 같은 종목을 들면 합산해서 본다)
 MAX_MARKET_WEIGHT = 0.70          # 한 시장(한국/미국) 상한: 자본의 70%
 MAX_NAMES = 12                    # 권고 종목 수 상한
+
+
+SESSION_CUT = dt.timedelta(hours=22, minutes=40)   # 정기 실행(ledger.yml)의 예약 시각(UTC). 이 시각이 지나야 그날 보고서를 쓴다.
+
+
+def session_date(now: dt.datetime | None = None) -> dt.date:
+    """실행 시각 → 보고서·스냅샷의 기준 거래일 = 22:40 UTC 예약 시각이 이미 지난 가장 최근 평일.
+    예약이 지연돼 다음 날 01시 UTC에 시작해도 그 평일로 센다(월 22:40 예약 → 화 01:30 실행 = 월요일).
+    그날 예약 시각 전에 수동·푸시로 돌면 직전 평일로 본다(월요일 아침 실행 = 금요일). 주말은 금요일."""
+    now = now or dt.datetime.now(dt.timezone.utc)
+    d = (now - SESSION_CUT).date()
+    while d.weekday() >= 5:
+        d -= dt.timedelta(days=1)
+    return d

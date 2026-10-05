@@ -221,6 +221,22 @@ class ReportTest(unittest.TestCase):
             self.assertIn("| c |", (d / "daily" / "2026-10-06.md").read_text())
 
 
+class SessionDateTest(unittest.TestCase):
+    def test_session_is_the_latest_weekday_whose_schedule_time_has_passed(self):
+        import datetime as dt
+        u = lambda s: dt.datetime.fromisoformat(s).replace(tzinfo=dt.timezone.utc)
+        d = dt.date
+        self.assertEqual(config.session_date(u("2026-10-06T01:30")), d(2026, 10, 5))   # 월 22:40 예약이 화 01:30에 시작 → 월요일
+        self.assertEqual(config.session_date(u("2026-10-05T22:50")), d(2026, 10, 5))   # 지연 없이 월 밤에 시작
+        self.assertEqual(config.session_date(u("2026-10-05T07:43")), d(2026, 10, 2))   # 월요일 아침 수동·푸시 실행 → 아직 금요일 세션
+        self.assertEqual(config.session_date(u("2026-10-05T22:39")), d(2026, 10, 2))   # 예약 시각 직전
+        fri = config.session_date(u("2026-10-10T01:30"))                                # 금 예약이 토 01:30에 시작
+        self.assertEqual(fri, d(2026, 10, 9))
+        self.assertEqual(rp.period_keys(fri)["weekly"], "2026-W41")                     # 주간 보고서가 만들어진다
+        self.assertEqual(config.session_date(u("2026-10-11T12:00")), d(2026, 10, 9))   # 일요일 → 금요일
+        self.assertEqual(config.session_date(u("2026-10-12T03:00")), d(2026, 10, 9))   # 월 03:00 UTC는 아직 금요일 세션
+
+
 class ReportNotifyListTest(unittest.TestCase):
     def test_new_list_has_only_newly_written_reports(self):
         import datetime as dt

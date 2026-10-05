@@ -40,10 +40,13 @@ jobs:
       - name: Update ledger, outcomes and statistics
         run: python -m ledger.main
       - name: Update agent league (virtual accounts)
-        run: python -m agents.main
+        # 코드 변경(push)으로 시작된 실행은 '하루 한 번' 기록(권고안 스냅샷·보고서·알림)을 남기지 않는다. 예약·수동 실행만 기록한다.
+        run: python -m agents.main ${{ github.event_name == 'push' && '--no-freeze' || '' }}
       - name: Daily / weekly / monthly reports
+        if: github.event_name != 'push'
         run: python -m agents.report --new-list "$RUNNER_TEMP/new_reports.txt"
       - name: Post new reports to the report issue (push notification)
+        if: github.event_name != 'push'
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
