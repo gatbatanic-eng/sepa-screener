@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>투자 자문 위원회</title>
+<style>
+  /* 기존 대시보드(멀티팩터 등)와 같은 토큰·패널·내비 구조. 신호 색은 판정(양호·주의·경계)에만 쓴다. */
+  :root {
+    --bg: #f5f6f8; --panel: #ffffff; --border: #e3e5e9;
+    --text: #1b1e24; --text-dim: #6b7280; --accent: #2563eb;
+    --g-bg: #e6f7ec; --g-text: #157347; --g-border: #b7e4c7;
+    --y-bg: #fff2e0; --y-text: #b45309; --y-border: #fbd9a8;
+    --r-bg: #fdf2f2; --r-text: #b42318; --r-border: #f3c6c2;
+    --n-bg: #f8f9fa; --n-text: #6b7280; --n-border: #e3e5e9;
+    --up: #d92b2b; --down: #1a56db;
+    --row-hover: #f0f4ff; --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --panel: #171a21; --border: #2a2e37;
+      --text: #e7e9ee; --text-dim: #9aa2b1; --accent: #5b8def;
+      --g-bg: #113322; --g-text: #6bd08a; --g-border: #1e5c3a;
+      --y-bg: #3a2712; --y-text: #f6b96a; --y-border: #6b4a1f;
+      --r-bg: #3a1717; --r-text: #f2a4a0; --r-border: #6b2b26;
+      --n-bg: #1b1f27; --n-text: #9aa2b1; --n-border: #2a2e37;
+      --up: #f0605f; --down: #6ea8fe;
+      --row-hover: #1d2230; --shadow: 0 1px 3px rgba(0,0,0,0.4);
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", sans-serif;
+    font-size: 14px; line-height: 1.5;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 60px; }
+  header { margin-bottom: 16px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .subtitle { color: var(--text-dim); font-size: 13px; max-width: 72ch; }
+  .nav { display: flex; gap: 10px; margin: 10px 0 4px; flex-wrap: wrap; }
+  .nav a { font-size: 12px; color: var(--text-dim); text-decoration: none; border: 1px solid var(--border);
+           border-radius: 999px; padding: 4px 12px; background: var(--panel); }
+  .nav a:hover { color: var(--accent); border-color: var(--accent); }
+  .nav a.here { color: #fff; background: var(--accent); border-color: var(--accent); }
+  .tabs { display: flex; gap: 8px; margin: 16px 0; flex-wrap: wrap; align-items: center; }
+  .tab-btn { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--panel); color: var(--text); cursor: pointer; font-size: 13px; font-weight: 600; }
+  .tab-btn[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .tab-btn:focus-visible, .chk input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .asof { color: var(--text-dim); font-size: 12px; margin-left: auto; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; box-shadow: var(--shadow); }
+  .card .label { color: var(--text-dim); font-size: 12px; margin-bottom: 6px; }
+  .card .value { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .card .sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow); padding: 16px; margin-bottom: 18px; min-width: 0; }
+  .panel h2 { font-size: 14px; margin: 0 0 4px; font-weight: 700; }
+  .panel .desc { color: var(--text-dim); font-size: 12px; margin: 0 0 12px; max-width: 80ch; }
+  .pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 999px; border: 1px solid; }
+  .pill.g { background: var(--g-bg); color: var(--g-text); border-color: var(--g-border); }
+  .pill.y { background: var(--y-bg); color: var(--y-text); border-color: var(--y-border); }
+  .pill.r { background: var(--r-bg); color: var(--r-text); border-color: var(--r-border); }
+  .pill.n { background: var(--n-bg); color: var(--n-text); border-color: var(--n-border); }
+  .heat { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 10px; }
+  .heat .cell { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+  .heat .cell.hit { border-color: var(--r-border); background: var(--r-bg); }
+  .heat .k { font-size: 12px; color: var(--text-dim); }
+  .heat .v { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .heat .t { font-size: 11px; color: var(--text-dim); }
+  .movers { font-size: 12px; color: var(--text-dim); margin-top: 10px; }
+  .table-scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { padding: 7px 8px; border-bottom: 1px solid var(--border); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  th { color: var(--text-dim); font-weight: 600; font-size: 12px; position: sticky; top: 0; background: var(--panel); vertical-align: bottom; cursor: help; }
+  th .ko { font-weight: 400; font-size: 11px; }
+  th.l, td.l { text-align: left; }
+  td.why { white-space: normal; min-width: 240px; max-width: 420px; text-align: left; color: var(--text-dim); font-size: 12px; }
+  tbody tr:hover { background: var(--row-hover); }
+  .name { font-weight: 600; color: var(--text); text-decoration: none; border-bottom: 1px dotted var(--text-dim); }
+  a.name:hover { color: var(--accent); border-bottom-color: var(--accent); }
+  a.name:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .sym { color: var(--text-dim); font-size: 11px; margin-left: 4px; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 0 6px; border-radius: 4px; margin-left: 4px; border: 1px solid; }
+  .tag.p2 { color: var(--y-text); border-color: var(--y-border); background: var(--y-bg); }
+  .tag.flag { color: var(--r-text); border-color: var(--r-border); background: var(--r-bg); }
+  .tag.gate { color: var(--n-text); border-color: var(--n-border); background: var(--n-bg); }
+  .t1-ON { color: var(--g-text); font-weight: 700; }
+  .t1-NEAR { color: var(--y-text); font-weight: 600; }
+  .t1-OFF, .t1-NA { color: var(--text-dim); }
+  .pos { color: var(--up); } .neg { color: var(--down); }
+  .muted { color: var(--text-dim); }
+  .filters { display: flex; gap: 14px; flex-wrap: wrap; margin: 0 0 10px; font-size: 12px; color: var(--text-dim); }
+  .chk { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+  .empty { color: var(--text-dim); padding: 16px 4px; }
+  .err { color: var(--r-text); }
+  footer { color: var(--text-dim); font-size: 12px; margin-top: 24px; max-width: 80ch; }
+  footer a { color: var(--accent); }
+  .group-name { font-weight: 700; } .group-desc { color: var(--text-dim); font-size: 11px; display: block; font-weight: 400; }
+  .ci { color: var(--text-dim); font-size: 11px; display: block; }
+  .banner { border: 1px solid var(--y-border); background: var(--y-bg); color: var(--y-text); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 13px; }
+  .hz { display: inline-flex; gap: 6px; margin-left: 8px; }
+  .hz .tab-btn { padding: 5px 12px; }
+  ul.rules { margin: 6px 0 0 18px; padding: 0; color: var(--text-dim); font-size: 12px; max-width: 90ch; } ul.rules li { margin: 3px 0; }
+</style>
+<style>
+  .chart { width: 100%; height: 280px; display: block; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; margin-top: 8px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; }
+  .pos { color: var(--up); } .neg { color: var(--down); }
+  .muted { color: var(--text-dim); font-weight: 400; }
+  .banner { border: 1px solid var(--y-border); background: var(--y-bg); color: var(--y-text); border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px; }
+</style>
+<style>
+  .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } }
+  .list { display: flex; flex-direction: column; gap: 6px; max-height: 560px; overflow-y: auto; }
+  .list button { text-align: left; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); color: var(--text); cursor: pointer; font-size: 13px; }
+  .list button[aria-pressed="true"] { border-color: var(--accent); background: var(--row-hover); }
+  .list small { display: block; color: var(--text-dim); }
+  ul.b { margin: 0 0 6px; padding-left: 18px; } ul.b li { margin: 3px 0; }
+  .stance { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 8px; }
+  .stance .big { font-size: 28px; font-weight: 800; padding: 4px 18px; border-radius: 10px; border: 1px solid; }
+  .stance .big.offense { background: var(--g-bg); color: var(--g-text); border-color: var(--g-border); }
+  .stance .big.neutral { background: var(--y-bg); color: var(--y-text); border-color: var(--y-border); }
+  .stance .big.defense { background: var(--r-bg); color: var(--r-text); border-color: var(--r-border); }
+  .stance .score { font-size: 13px; color: var(--text-dim); }
+  .bar { position: relative; height: 10px; border-radius: 5px; background: linear-gradient(90deg, var(--r-border), var(--y-border) 50%, var(--g-border)); margin: 10px 4px 22px; }
+  .bar i { position: absolute; top: -4px; width: 4px; height: 18px; background: var(--text); border-radius: 2px; }
+  .bar span { position: absolute; top: 16px; font-size: 11px; color: var(--text-dim); transform: translateX(-50%); }
+  td.wrap { white-space: normal; min-width: 220px; max-width: 420px; text-align: left; color: var(--text-dim); font-size: 12px; }
+  .pts.p { color: var(--g-text); font-weight: 700; } .pts.m { color: var(--r-text); font-weight: 700; }
+  .muted { color: var(--text-dim); font-weight: 400; }
+  .grade { display: inline-block; font-weight: 800; padding: 1px 9px; border-radius: 999px; border: 1px solid; font-size: 12px; }
+  .grade.A { background: var(--g-bg); color: var(--g-text); border-color: var(--g-border); }
+  .grade.B { background: var(--y-bg); color: var(--y-text); border-color: var(--y-border); }
+  .grade.C { background: var(--r-bg); color: var(--r-text); border-color: var(--r-border); }
+  details.v { border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; margin: 6px 0; font-size: 13px; }
+  details.v summary { cursor: pointer; font-weight: 600; }
+  .lvl-OK { color: var(--g-text); } .lvl-WARN { color: var(--y-text); } .lvl-FAIL { color: var(--r-text); font-weight: 700; }
+  .gap { border: 1px solid var(--y-border); background: var(--y-bg); color: var(--y-text); border-radius: 8px; padding: 6px 12px; font-size: 12px; margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>투자 자문 위원회</h1>
+    <div class="subtitle">매크로·시장·섹터·종목·리스크 데스크가 각자 보고 의장이 입장(공격·중립·방어)을 정합니다. 모든 문장은 수치에서 나온 규칙 기반이고, 입장이 무엇이 바뀌면 달라지는지까지 보여줍니다. 투자 권유가 아닙니다.</div>
+    <div class="nav">
+      <a href="../">SEPA 추세템플릿</a>
+      <a href="../performance/">전략 성과</a>
+      <a href="../agents/">에이전트 리그</a>
+      <a href="../agents/reports/">에이전트 보고서</a>
+      <a class="here" href="./">투자 자문 위원회</a>
+    </div>
+  </header>
+  <div class="tabs" id="kindTabs" role="group" aria-label="종류"><span class="asof" id="asof"></span></div>
+  <div class="layout">
+    <div class="list" id="list" role="group" aria-label="메모 목록"></div>
+    <div id="view"></div>
+  </div>
+</div>
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const KINDS = [["latest", "최신"], ["daily", "일간"], ["weekly", "주간"], ["monthly", "월간"]];
+let kind = "latest", index = [], latest = null, trackStats = null;
+
+const table = (t) => `<div class="table-scroll"><table><thead><tr>${t.columns.map((c, i) => `<th class="${i === 0 ? "l" : ""}">${esc(c)}</th>`).join("")}</tr></thead><tbody>${t.rows.map((r) => `<tr>${r.map((c, i) => `<td class="${i === 0 ? "l" : String(c).length > 28 ? "wrap" : ""}">${esc(c)}</td>`).join("")}</tr>`).join("") || `<tr><td class="l muted" colspan="${t.columns.length}">없음</td></tr>`}</tbody></table></div>`;
+const bullets = (b) => b.length ? `<ul class="b">${b.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : "";
+
+const won = (x) => x == null ? "–" : x.toLocaleString(undefined, {maximumFractionDigits: 2});
+const pctf = (x) => x == null ? "–" : `${x > 0 ? "+" : ""}${x.toFixed(2)}%`;
+const ICON = {OK: "✓", WARN: "⚠", FAIL: "✕"};
+
+function picksPanel(m) {
+  const pk = m.picks; if (!pk) return "";
+  const rows = pk.picks.map((p) => {
+    const pl = p.plan || {}, w = p.weight;
+    const brief = [...p.verify.fail, ...p.verify.warn].slice(0, 2).map(esc).join("<br>") || "경고 없음";
+    return `<tr><td class="l"><b>${esc(p.name)}</b> <span class="muted">${esc(p.market)} ${esc(p.code)}</span></td><td><span class="grade ${p.grade}">${p.grade} ${esc(p.verdict)}</span><br><span class="muted" style="font-size:11px">경고 ${p.warnCount}개${p.warnCount >= 5 ? " ⚠ 다수" : ""}</span></td>
+      <td>${p.composite}<br><span class="muted" style="font-size:11px">${Object.entries(p.lens).map(([k, v]) => `${esc(k)} ${v}`).join(" · ")}</span></td>
+      <td>${won(pl.entryPriceMax)}</td><td>${won(pl.referenceStop)} <span class="muted">(${pl.plannedLossPct ? "-" + pl.plannedLossPct.toFixed(1) + "%" : "–"})</span><br><span class="muted" style="font-size:11px">${esc(pl.stopBasis || "복구 모드 기준")}</span></td><td>${w ? (w * 100).toFixed(1) + "%" : p.grade === "C" ? "0 (관찰)" : "–"}<br><span class="muted" style="font-size:11px">${p.amount ? "≈ " + won(p.amount) : ""}</span></td>
+      <td class="wrap">${brief}</td></tr>`;
+  }).join("");
+  const det = pk.picks.map((p) => `<details class="v"><summary>${esc(p.name)} — 검증 팀 감사 상세 (${p.grade} ${esc(p.verdict)})</summary><ul class="b">${p.verify.notes.map((n) => `<li class="lvl-${n.level}">${ICON[n.level]} [${esc(n.auditor)}] ${esc(n.text)}</li>`).join("")}</ul></details>`).join("");
+  return `<div class="panel"><h2>공격 진입 추천 <span class="muted">— ${esc(pk.headline)}</span></h2>
+    <p class="desc">추천 팀(돌파·리더·안전 3개 렌즈)이 후보 ${pk.poolSize}개 중 고르고, 별개의 검증 팀(데이터·리스크·추세·실적·국면·반론 6명)이 감사합니다. 검증을 통과하지 못한 종목은 등급 C(관찰 전용, 비중 0)로만 보입니다. 비중은 손절 시 손실 1%를 목표로 계산한 참고값이며 입장·등급에 따라 줄어듭니다.</p>
+    <div class="table-scroll"><table><thead><tr><th class="l">종목</th><th>등급</th><th>종합(렌즈)</th><th>진입가</th><th>손절 (계획 손실)</th><th>권고 비중</th><th class="l">검증 요약</th></tr></thead><tbody>${rows || `<tr><td class="l muted" colspan="7">후보 없음</td></tr>`}</tbody></table></div>
+    ${det}${trackPanel()}</div>`;
+}
+
+function trackPanel() {
+  const s = trackStats;
+  if (!s || !s.recordedDays) return `<p class="muted" style="font-size:12px;margin-top:10px">사후 검증: 아직 기록이 없습니다. 추천을 기록한 날부터 다음 거래일 종가 진입 기준 5·20·40거래일 성과가 쌓입니다.</p>`;
+  const labels = s.labels, cell = (g, h) => { const x = s.groups[g][h]; return x.n ? `${pctf(x.meanReturn)}<br><span class="muted" style="font-size:11px">지수 대비 ${pctf(x.meanExcess)} · ${x.n}건${x.status === "OK" ? "" : " · 표본 부족"}</span>` : `<span class="muted">${x.recorded}건 대기</span>`; };
+  return `<h2 style="margin-top:14px">사후 검증 <span class="muted">— 기록 ${s.recordedDays}일 (${esc(s.firstDay)}~${esc(s.lastDay)}), 표본 ${s.minN}건 전에는 근거로 쓰지 않음</span></h2>
+    <div class="table-scroll"><table><thead><tr><th class="l">그룹</th>${s.horizons.map((h) => `<th>${h}거래일</th>`).join("")}</tr></thead><tbody>${Object.keys(labels).map((g) => `<tr><td class="l">${esc(labels[g])}</td>${s.horizons.map((h) => `<td>${cell(g, h)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+    <p class="muted" style="font-size:12px">검증 통과(A)가 조건부(B)·관찰(C)보다, 추천이 대조군(같은 날 무작위 2종목)보다 일관되게 나은지가 핵심입니다. (그룹·종목)당 최초 추천만 셉니다.</p>`;
+}
+
+function show(m) {
+  const s = m.stance, th = s.thresholds, lo = -8, hi = 8, pos = (v) => ((Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo)) * 100;
+  const parts = `<div class="table-scroll"><table><thead><tr><th class="l">구성</th><th>값</th><th>점수</th></tr></thead><tbody>${s.parts.map((p) => `<tr><td class="l">${esc(p.name)}</td><td>${esc(p.value)}</td><td class="pts ${p.points > 0 ? "p" : p.points < 0 ? "m" : ""}">${p.points > 0 ? "+" : ""}${p.points}</td></tr>`).join("") || `<tr><td class="l muted" colspan="3">판단 가능한 구성 없음</td></tr>`}</tbody></table></div>`;
+  const cio = `<div class="panel"><h2>의장 종합 <span class="muted">${esc(m.title)} · 생성 ${esc(m.generatedAt.slice(0, 16).replace("T", " "))} UTC${m.dataAsOf.macro ? " · 매크로 " + esc(m.dataAsOf.macro) : ""}</span></h2>
+    <div class="stance"><span class="big ${s.stance}">${esc(s.label)}</span><span class="score">합계 ${s.score > 0 ? "+" : ""}${s.score} (공격 ≥ +${th.offense}, 방어 ≤ ${th.defense})</span></div>
+    <div class="bar" aria-hidden="true"><i style="left:calc(${pos(s.score)}% - 2px)"></i><span style="left:${pos(th.defense)}%">방어 ${th.defense}</span><span style="left:${pos(th.offense)}%">공격 +${th.offense}</span></div>
+    ${bullets(s.summary)}${parts}
+    <h2 style="margin-top:12px">지난 메모 대비</h2>${bullets(s.changes)}
+    ${s.flips.length ? `<h2 style="margin-top:12px">입장이 바뀌는 조건</h2>${bullets(s.flips)}` : ""}</div>`;
+  const desks = m.desks.map((d) => `<div class="panel"><h2>${esc(d.name)} <span class="muted">— ${esc(d.headline)}</span></h2>${bullets(d.bullets)}${d.table ? table(d.table) : ""}${d.gaps.map((g) => `<div class="gap">⚠ ${esc(g)}</div>`).join("")}</div>`).join("");
+  const hist = m.history ? `<div class="panel"><h2>${esc(m.history.heading)}</h2>${table(m.history.table)}</div>` : "";
+  $("view").innerHTML = cio + picksPanel(m) + desks + hist + `<p class="muted" style="font-size:12px">${esc(m.disclaimer)}</p>`;
+  $("asof").textContent = `기준일 ${m.date}`;
+}
+
+async function open(url) {
+  try { show(await (await fetch(url, {cache: "no-store"})).json()); }
+  catch (e) { $("view").innerHTML = `<div class="banner">메모를 불러오지 못했습니다 (${esc(e.message)})</div>`; }
+}
+
+function renderList() {
+  const items = kind === "latest" ? (latest ? [{url: "data/latest.json", title: "최신 메모", sub: `${latest.title}`}] : [])
+    : index.filter((m) => m.kind === kind).map((m) => ({url: `data/${m.kind}/${m.key}.json`, title: m.title, sub: `${m.date} · 입장 ${m.stance}`}));
+  $("list").innerHTML = items.map((i) => `<button data-u="${esc(i.url)}" aria-pressed="false">${esc(i.title)}<small>${esc(i.sub)}</small></button>`).join("")
+    || `<div class="muted" style="font-size:13px">아직 없습니다. ${kind === "latest" ? "다음 실행부터 생깁니다." : "다음 정기 실행(평일 22:40 UTC 예약)부터 쌓입니다."}</div>`;
+  $("view").innerHTML = "";
+  $("list").querySelectorAll("button").forEach((b) => b.onclick = () => { $("list").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); open(b.dataset.u); });
+  const first = $("list").querySelector("button"); if (first) first.click();
+}
+
+function tabs() {
+  const el = $("kindTabs"), asof = $("asof");
+  el.querySelectorAll("button").forEach((b) => b.remove());
+  KINDS.forEach(([k, l]) => { const b = document.createElement("button"); b.className = "tab-btn"; b.textContent = l; b.setAttribute("aria-pressed", String(k === kind)); b.onclick = () => { kind = k; tabs(); renderList(); }; el.insertBefore(b, asof); });
+}
+
+const get = (u) => fetch(u, {cache: "no-store"}).then((r) => r.ok ? r.json() : null).catch(() => null);
+Promise.all([get("data/index.json"), get("data/latest.json"), get("data/picks_stats.json")]).then(([i, l, s]) => { index = (i && i.memos) || []; latest = l; trackStats = s; tabs(); renderList(); });
+</script>
+</body>
+</html>

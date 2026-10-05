@@ -63,18 +63,38 @@ def _count(rows, pred) -> int:
     return sum(1 for r in rows if pred(r))
 
 
+def _segments(rows_by_m: dict) -> dict[str, list[dict]]:
+    """스크리너는 한국을 코스피·코스닥으로 나눠 국면·breadth를 따로 계산한다(둘이 다를 수 있다). 미국은 하나."""
+    seg: dict[str, list[dict]] = {"KOSPI": [], "KOSDAQ": [], "US": []}
+    for m, rows in rows_by_m.items():
+        for r in rows:
+            key = "US" if m == "us" else "KOSPI" if str(r.get("market")).upper().startswith("KOSPI") else "KOSDAQ"
+            seg[key].append(r)
+    return seg
+
+
+def _median(vals):
+    vals = sorted(v for v in vals if isinstance(v, (int, float)) and v == v)
+    return vals[len(vals) // 2] if vals else None
+
+
 def _section_market(rows_by_m: dict) -> dict:
     lines = []
-    for m, rows in rows_by_m.items():
+    for name, rows in _segments(rows_by_m).items():
+        if not rows:
+            continue
         ok = [r for r in rows if r.get("status") == "OK"]
         bad = len(rows) - len(ok)
         reg = {}
         for r in ok:
-            reg[r.get("regime")] = reg.get(r.get("regime"), 0) + 1
+            if r.get("regime"):
+                reg[r["regime"]] = reg.get(r["regime"], 0) + 1
         top = max(reg, key=reg.get) if reg else None
         passed = [r for r in ok if r.get("passAll")]
-        line = (f"{m.upper()}: 분석 {len(ok)}종목 · 추세 통과 {len(passed)} · 진입 WATCH {_count(ok, lambda r: r.get('entryVerdict') == 'WATCH')} · "
-                f"통과 종목 중 청산 경고 {_count(passed, lambda r: r.get('exitState') in EXIT_WARN)} · 시장 국면(다수) {top or '–'}")
+        br, sf = _median([r.get("breadth") for r in ok]), _median([r.get("sizeFactor") for r in ok])
+        line = (f"{name}: 분석 {len(ok)}종목 · 국면 {top or '–'} · breadth {f'{br:.0%}' if br is not None else '–'} · 권장 진입비중 {sf if sf is not None else '–'} · "
+                f"추세 통과 {len(passed)} · 진입 WATCH {_count(ok, lambda r: r.get('entryVerdict') == 'WATCH')} · "
+                f"통과 종목 중 청산 경고 {_count(passed, lambda r: r.get('exitState') in EXIT_WARN)}")
         if bad:
             reasons = {}
             for r in rows:
@@ -83,7 +103,7 @@ def _section_market(rows_by_m: dict) -> dict:
                     reasons[k] = reasons.get(k, 0) + 1
             line += f" · ⚠ 분석 불가 {bad}종목 ({max(reasons, key=reasons.get)} 등)"
         lines.append(line)
-    return {"id": "market", "heading": "시장 상태 (스크리너)", "bullets": lines}
+    return {"id": "market", "heading": "시장 상태 (스크리너, 코스피·코스닥·미국 구간별)", "bullets": lines}
 
 
 def _section_agents(agents: dict, series: str, since: str, today: str, heading: str, window: bool) -> dict:
