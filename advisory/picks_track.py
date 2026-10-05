@@ -19,8 +19,8 @@ from .store import read_json, write_json
 PICKS_DIR = config.ROOT / "research" / "advisory" / "picks"
 OUTCOMES = config.ROOT / "research" / "advisory" / "picks_outcomes.json"
 STATS = config.OUT_DIR / "picks_stats.json"
-GROUPS = ("PICK", "A", "B", "C", "CONTROL")
-GROUP_LABEL = {"PICK": "추천 전체", "A": "검증 통과(A)", "B": "조건부(B)", "C": "관찰 전용(C)", "CONTROL": "대조군(무작위)"}
+GROUPS = ("PICK", "A", "B", "C", "KR", "US", "CONTROL")
+GROUP_LABEL = {"PICK": "추천 전체", "A": "검증 통과(A)", "B": "조건부(B)", "C": "관찰 전용(C)", "KR": "한국 추천", "US": "미국 추천", "CONTROL": "대조군(무작위)"}
 
 
 def _exchange(market: str, row_market: str | None) -> str:
@@ -110,7 +110,7 @@ def summarize(entries: list[dict], outcomes: dict) -> dict:
     seen: set = set()
     by_group: dict[str, list[dict]] = {g: [] for g in GROUPS}
     for e in sorted(entries, key=lambda e: e["session"]):
-        keys = ["CONTROL"] if e["group"] == "CONTROL" else ["PICK"] + ([e["grade"]] if e.get("grade") in ("A", "B", "C") else [])
+        keys = ["CONTROL"] if e["group"] == "CONTROL" else ["PICK", "KR" if e["market"] == "kr" else "US"] + ([e["grade"]] if e.get("grade") in ("A", "B", "C") else [])
         for g in keys:
             ident = (g, e["market"], e["code"])
             if ident in seen:        # (그룹·종목)당 최초 추천 1개만 센다 — 연속 추천은 보유 기간이 겹친다

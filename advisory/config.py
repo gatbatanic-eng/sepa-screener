@@ -27,12 +27,21 @@ PICK_RISK_BUDGET_PCT = 1.0          # 손절 시 자본 대비 손실 목표(%) 
 PICK_MAX_WEIGHT = 0.15              # 한 종목 상한(에이전트 리그와 동일)
 STANCE_SIZE = {"offense": 1.0, "neutral": 0.75, "defense": 0.5}   # 입장별 비중 배율
 GRADE_SIZE = {"A": 1.0, "B": 0.5, "C": 0.0}                       # 검증 등급별 비중 배율(C=관찰 전용, 비중 0)
-PICK_FALLBACK_STOP_PCT = 8.0        # 계산된 손절가가 없을 때 종가 대비 손절폭(에이전트 리그와 동일)
+PICK_FALLBACK_STOP_PCT = 8.0        # 계산된 손절가가 없을 때 종가 대비 최소 손절폭(에이전트 리그와 동일)
+PICK_ATR_STOP_MULT = 1.5            # 변동성이 크면 손절폭을 max(8%, 1.5×ATR%)로 넓히고 그만큼 비중을 줄인다
+PICK_WARN_PENALTY = 2.0             # 최종 순위 점수 = 종합 점수 − 2 × 검증 경고 개수(경고가 많은 종목이 같은 B라고 같게 보이지 않게)
 PICK_CAPITAL = 8000                 # 표시용 자본(에이전트 리그와 같은 단위)
 
 # 검증 팀 기준(추천 팀과 별개로 정한다)
 VERIFY_PRICE_TOL = 0.01             # 추천 데이터와 스크리너 본 결과의 종가 차이 허용(1%)
-VERIFY_SEPA_RISK_WARN, VERIFY_SEPA_RISK_FAIL = 8.0, 12.0   # SEPA 구조적 손절폭(%)
+# 시장별 검증 기준(2026-10-06). SEPA 구조적 손절폭은 미국 기준으로 만든 임계값이라, 한국 급등주는 스윙 저점이 30~40% 아래에 있는 일이 흔해
+# 그대로 쓰면 구조적으로 전부 기각된다. 한국은 구조적 손절폭의 경고선을 넓히는 대신 변동성(ATR)·과열·시가총액을 따로 본다.
+VERIFY_RULES = {
+    "us": {"sepa_warn": 8.0, "sepa_fail": 12.0, "mcap_warn": None, "mcap_fail": None},
+    "kr": {"sepa_warn": 25.0, "sepa_fail": 50.0, "mcap_warn": 1e11, "mcap_fail": 3e10},   # 시가총액(원): 1,000억 미만 경고, 300억 미만 기각
+}
+VERIFY_ATR_WARN, VERIFY_ATR_FAIL = 6.0, 10.0       # 종목 차트에서 검증 팀이 직접 계산한 ATR14(%) — 하루 평균 변동폭
+VERIFY_EXT_WARN, VERIFY_EXT_FAIL = 40.0, 80.0      # 종가의 50일선 대비 괴리(%) — 과열
 VERIFY_GAP_WARN = 4.0               # 당일 갭(%) 경고
 VERIFY_SEVERE_CONCERNS = 2          # 심각도 3 우려가 이 개수 이상이면 경고
 

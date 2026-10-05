@@ -103,6 +103,63 @@ class VerifyTest(unittest.TestCase):
         self.assertIsNone(re.search(r"^\s*(from|import)\s+.*\bpicks\b", src("verify.py"), re.M))
 
 
+class MarketRulesTest(unittest.TestCase):
+    """한국은 구조적 손절폭 기준을 넓히는 대신 변동성·과열·시가총액을 따로 본다. 미국 기준은 그대로다."""
+
+    def audit(self, market, scr=None, rec=None, chart=None):
+        with tempfile.TemporaryDirectory() as t:
+            t = Path(t)
+            (t / "docs" / "data").mkdir(parents=True)
+            code = "AAA" if market == "us" else "111111"
+            rows = {m: [] for m in ("kr", "us")}
+            rows[market] = [dict(screener_row(code), market="KOSDAQ" if market == "kr" else "US", **(scr or {}))]
+            for m, r in rows.items():
+                (t / "docs" / "data" / f"latest_{m}.json").write_text(json.dumps(r), encoding="utf-8")
+            if chart is not None:
+                d = t / "docs" / "data" / "stock_charts" / market
+                d.mkdir(parents=True)
+                (d / f"{code}.json").write_text(json.dumps(chart), encoding="utf-8")
+            rec = dict(row(code), **(rec or {}))
+            return verify.audit({"market": market, "code": code, "name": code, "price": rec["close"], "row": rec}, verify.Screener(t),
+                                {"macroRegime": "neutral", "expectedSession": {}})
+
+    @staticmethod
+    def chart(daily_range_pct=2.0, above_sma50_pct=5.0, n=60):
+        c = [100.0] * n
+        return {"close": c, "high": [x * (1 + daily_range_pct / 200) for x in c], "low": [x * (1 - daily_range_pct / 200) for x in c],
+                "sma50": [100.0 / (1 + above_sma50_pct / 100)] * n, "priceAsOf": "2026-10-02"}
+
+    def test_structural_stop_threshold_differs_by_market(self):
+        self.assertEqual(self.audit("us", scr={"initRisk": 35.0})["verdict"], "기각")          # 미국: 12% 초과 기각
+        kr = self.audit("kr", scr={"initRisk": 35.0})
+        self.assertEqual(kr["verdict"], "조건부")                                              # 한국: 25% 초과는 경고
+        self.assertTrue(any("KR 기준" in w for w in kr["warn"]))
+        self.assertEqual(self.audit("kr", scr={"initRisk": 55.0})["verdict"], "기각")          # 한국도 50% 초과는 기각
+        self.assertEqual(self.audit("kr", scr={"initRisk": 20.0})["verdict"], "통과")
+
+    def test_volatility_and_extension_are_measured_by_the_verifiers_own_calculation(self):
+        calm = self.audit("kr", chart=self.chart(2.0, 10.0))
+        self.assertEqual(calm["verdict"], "통과")
+        self.assertEqual(self.audit("kr", chart=self.chart(7.0, 10.0))["verdict"], "조건부")    # ATR 7% > 6%
+        self.assertEqual(self.audit("kr", chart=self.chart(12.0, 10.0))["verdict"], "기각")     # ATR 12% > 10%
+        self.assertEqual(self.audit("kr", chart=self.chart(2.0, 55.0))["verdict"], "조건부")    # 50일선 위 55% > 40%
+        self.assertEqual(self.audit("kr", chart=self.chart(2.0, 90.0))["verdict"], "기각")      # 90% > 80%
+        self.assertEqual(self.audit("us", chart=self.chart(7.0, 10.0))["verdict"], "조건부")    # 미국에도 같은 변동성·과열 기준
+
+    def test_korean_small_caps_only(self):
+        self.assertEqual(self.audit("kr", scr={"marcap": 2e11})["verdict"], "통과")
+        self.assertEqual(self.audit("kr", scr={"marcap": 5e10})["verdict"], "조건부")           # 500억: 1,000억 미만 경고
+        self.assertEqual(self.audit("kr", scr={"marcap": 2e10})["verdict"], "기각")             # 200억: 300억 미만 기각
+        self.assertEqual(self.audit("us", scr={"marcap": 2e10})["verdict"], "통과")             # 미국은 시가총액을 보지 않는다
+
+    def test_plan_widens_the_stop_when_volatility_is_high(self):
+        calm = picks.plan(row(close=100.0, referenceStop=105.0, breakoutLevel=110.0, atr14=2.0))
+        wild = picks.plan(row(close=100.0, referenceStop=105.0, breakoutLevel=110.0, atr14=7.0))
+        self.assertAlmostEqual(calm["plannedLossPct"], 8.0)
+        self.assertAlmostEqual(wild["plannedLossPct"], 10.5)                                    # 1.5 × 7%
+        self.assertLess(picks.weight(wild["plannedLossPct"], "neutral", "B"), picks.weight(calm["plannedLossPct"], "neutral", "B"))
+
+
 class RecommendTest(unittest.TestCase):
     def run_reco(self, pool, screener, stance="neutral", macro="neutral"):
         with tempfile.TemporaryDirectory() as t:
@@ -134,6 +191,27 @@ class RecommendTest(unittest.TestCase):
         pool = [row("A1", sector="X"), row("A2", sector="X", rsScore=88), row("A3", sector="Y", rsScore=70), row("A4", sector="Z", rsScore=60)]
         r = self.run_reco(pool, {c: screener_row(c) for c in ("A1", "A2", "A3", "A4")})
         self.assertEqual(sum(1 for p in r["picks"] if p["sector"] == "X"), 1)
+
+    def test_more_warnings_rank_lower_even_with_a_higher_composite(self):
+        pool = [row("HI", rsScore=99, estimate={"trend": "DOWN", "deltaPct": -9}, marketRisk={"blocked": True, "breadth": 0.2}), row("LO", rsScore=80)]
+        r = self.run_reco(pool, {c: screener_row(c, passAll=False) for c in ("HI", "LO")})
+        by = {p["code"]: p for p in r["picks"]}
+        self.assertGreater(by["HI"]["composite"], by["LO"]["composite"])
+        self.assertGreater(by["HI"]["warnCount"], by["LO"]["warnCount"])
+        self.assertEqual(r["picks"][0]["code"], "LO")                                           # 경고가 적은 쪽이 앞선다
+
+    def test_korean_candidate_is_included_when_the_list_would_be_all_us(self):
+        def kr(code, **kw):
+            return row(code, market="KOSDAQ", **kw)
+        pool = [row("U1", rsScore=99), row("U2", rsScore=95, sector="B"), row("U3", rsScore=90, sector="C"), kr("111111", rsScore=60, sector="D", volumeRatio=1.2)]
+        with tempfile.TemporaryDirectory() as t:
+            t = Path(t)
+            make_root(t, {c: screener_row(c) for c in ("U1", "U2", "U3")}, pool)
+            (t / "docs" / "data" / "latest_kr.json").write_text(json.dumps([dict(screener_row("111111"), market="KOSDAQ")]), encoding="utf-8")
+            r = recommend.run(t, "neutral", "neutral")
+        self.assertEqual(len(r["picks"]), 3)
+        self.assertIn("111111", [p["code"] for p in r["picks"]])                                # 점수가 낮아도 한국 대표 1개
+        self.assertEqual(sum(1 for p in r["picks"] if p["market"] == "KOSDAQ"), 1)
 
     def test_empty_pool_is_reported_not_faked(self):
         r = self.run_reco([], {})

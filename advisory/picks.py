@@ -111,7 +111,12 @@ def plan(r: dict) -> dict | None:
         return None
     why = "기준 손절가"
     if not (stop and 0 < stop < close):   # 돌파 전 종목은 기준 손절가가 현재가보다 위에 있을 수 있다
-        stop, why = close * (1 - config.PICK_FALLBACK_STOP_PCT / 100), f"종가 -{config.PICK_FALLBACK_STOP_PCT:.0f}% 규칙"
+        atr, pct = _n(r.get("atr14")), config.PICK_FALLBACK_STOP_PCT
+        atr_pct = atr / close * 100 if atr else None
+        why = f"종가 -{pct:.0f}% 규칙"
+        if atr_pct and atr_pct * config.PICK_ATR_STOP_MULT > pct:   # 변동성 대비 손절이 너무 가까우면 넓힌다(비중은 그만큼 줄어든다)
+            pct, why = atr_pct * config.PICK_ATR_STOP_MULT, f"변동성 반영 -{atr_pct * config.PICK_ATR_STOP_MULT:.1f}% (1.5×ATR {atr_pct:.1f}%)"
+        stop = close * (1 - pct / 100)
     loss = (close - stop) / close * 100
     return {"entryPriceMin": round(close, 2), "entryPriceMax": round(close, 2), "referenceStop": round(stop, 2),
             "target1R": round(close + (close - stop), 2), "target2R": round(close + 2 * (close - stop), 2),

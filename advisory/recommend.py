@@ -3,7 +3,8 @@
 최종 목록 규칙
   1) 후보 풀(계좌복구 모드의 가장 강한 종목)을 추천 팀이 종합 점수순으로 정렬한다.
   2) 검증 팀이 풀 전체를 감사한다(통과 A · 조건부 B · 기각 C).
-  3) 기각이 아닌 종목을 종합 점수순으로 최대 3개 담는다. 같은 섹터는 대안이 있으면 1개만.
+  3) 기각이 아닌 종목을 (종합 점수 − 2×검증 경고 개수)순으로 최대 3개 담는다. 같은 섹터는 대안이 있으면 1개만.
+     목록이 한 시장으로만 채워지면 다른 시장의 최상위 비기각 후보 1개를 넣는다(있을 때만, 등급·경고 수 그대로 표시).
   4) 기각이 아닌 종목이 2개 미만이면 기각 종목 중 점수가 높은 것으로 2개까지 채우되 '관찰 전용'(비중 0)으로 표시한다.
      — 최소 2개를 채우는 것은 목록의 길이이지 검증을 면제하는 것이 아니다. 등급이 언제나 함께 나간다.
 """
@@ -23,7 +24,7 @@ def _pick_view(p: dict, v: dict, stance: str) -> dict:
             "composite": p["composite"], "lens": p["lens"], "price": r.get("close"), "priceAsOf": r.get("priceAsOf"),
             "strengthScore": r.get("strengthScore"), "plan": pl, "weight": w,
             "amount": None if w is None else round(w * config.PICK_CAPITAL, 1),
-            "grade": grade, "verdict": v["verdict"], "verify": {"fail": v["fail"], "warn": v["warn"], "notes": v["notes"]},
+            "grade": grade, "verdict": v["verdict"], "warnCount": len(v["warn"]), "rankScore": round(p["composite"] - config.PICK_WARN_PENALTY * len(v["warn"]), 1), "verify": {"fail": v["fail"], "warn": v["warn"], "notes": v["notes"]},
             "entryGate": r.get("entryReason")}
 
 
@@ -37,8 +38,10 @@ def run(root: Path, stance: str, macro_regime: str | None, today_session: dict |
         m = "us" if str(p["market"]).upper() == "US" else "kr"
         v = verify.audit({"market": m, "code": p["code"], "name": p["name"], "price": p["row"].get("close"), "row": p["row"]}, scr, ctx)
         audited.append((p, v))
+    bucket = lambda p: "US" if str(p["market"]).upper() == "US" else "KR"
+    score = lambda pv: pv[0]["composite"] - config.PICK_WARN_PENALTY * len(pv[1]["warn"])
+    ok = sorted([(p, v) for p, v in audited if v["verdict"] != "기각"], key=lambda pv: (-score(pv), pv[0]["code"]))
     chosen, used_sectors = [], set()
-    ok = [(p, v) for p, v in audited if v["verdict"] != "기각"]
     for p, v in ok:
         if len(chosen) >= config.PICK_MAX:
             break
@@ -46,6 +49,11 @@ def run(root: Path, stance: str, macro_regime: str | None, today_session: dict |
             continue
         chosen.append((p, v))
         used_sectors.add(p.get("sector"))
+    # 목록이 한 시장으로만 채워지면 다른 시장의 최상위 비기각 후보 1개를 넣는다(그 시장 후보가 있을 때만). 등급·경고 수는 그대로 표시된다.
+    markets = {bucket(p) for p, _ in chosen}
+    missing = [pv for pv in ok if bucket(pv[0]) not in markets]
+    if len(chosen) >= config.PICK_MIN and missing and len(markets) == 1:
+        chosen[-1] = missing[0]
     rejected = [(p, v) for p, v in audited if v["verdict"] == "기각"]
     watch_only = 0
     for p, v in rejected:

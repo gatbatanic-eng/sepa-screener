@@ -43,6 +43,19 @@ class Screener:
         return self.rows.get((market, self.norm(market, code)))
 
 
+def _chart_vol(chart) -> tuple[float | None, float | None]:
+    """종목 차트에서 ATR14(%)와 50일선 대비 괴리(%)를 검증 팀이 직접 계산한다(추천 팀의 atr14·점수를 쓰지 않는다)."""
+    try:
+        h, l, c, s50 = chart["high"], chart["low"], chart["close"], chart["sma50"]
+        if len(c) < 16 or not c[-1]:
+            return None, None
+        tr = [max(h[i] - l[i], abs(h[i] - c[i - 1]), abs(l[i] - c[i - 1])) for i in range(len(c) - 14, len(c))]
+        ext = (c[-1] / s50[-1] - 1) * 100 if s50 and s50[-1] else None
+        return sum(tr) / 14 / c[-1] * 100, ext
+    except (TypeError, KeyError, IndexError, ZeroDivisionError):
+        return None, None
+
+
 def _a(name, level, text):
     return {"auditor": name, "level": level, "text": text}
 
@@ -79,16 +92,30 @@ def audit(pick: dict, scr: Screener, ctx: dict) -> dict:
     if exp and as_of and str(as_of)[:10] < str(exp)[:10]:
         notes.append(_a("데이터", "WARN", f"시세 기준일 {as_of}이 최신 거래일 {exp}보다 이전"))
 
-    # 2) 리스크 감사관 — SEPA 구조적 손절폭, 청산 경고, 유동성
+    # 2) 리스크 감사관 — SEPA 구조적 손절폭(시장별 기준), 변동성·과열(종목 차트에서 직접 계산), 청산 경고, 유동성, 소형주
+    rules = config.VERIFY_RULES[m]
     if row:
         sepa_risk = _n(row.get("initRisk"))
         if sepa_risk is not None:
-            lvl = "FAIL" if sepa_risk > config.VERIFY_SEPA_RISK_FAIL else "WARN" if sepa_risk > config.VERIFY_SEPA_RISK_WARN else "OK"
-            notes.append(_a("리스크", lvl, f"SEPA 구조적 손절폭 {sepa_risk:.1f}% (경고 > {config.VERIFY_SEPA_RISK_WARN:.0f}%, 기각 > {config.VERIFY_SEPA_RISK_FAIL:.0f}%)"))
+            lvl = "FAIL" if sepa_risk > rules["sepa_fail"] else "WARN" if sepa_risk > rules["sepa_warn"] else "OK"
+            notes.append(_a("리스크", lvl, f"SEPA 구조적 손절폭 {sepa_risk:.1f}% ({m.upper()} 기준: 경고 > {rules['sepa_warn']:.0f}%, 기각 > {rules['sepa_fail']:.0f}%)"))
         if row.get("exitState") in EXIT_WARN:
             notes.append(_a("리스크", "FAIL", f"청산 경고 {row['exitState']}"))
         if row.get("riskFlag"):
             notes.append(_a("리스크", "WARN", f"위험 플래그 {row['riskFlag']}"))
+        mc = _n(row.get("marcap"))
+        if m == "kr" and mc is not None and rules["mcap_warn"]:
+            if mc < rules["mcap_fail"]:
+                notes.append(_a("리스크", "FAIL", f"시가총액 {mc / 1e8:,.0f}억원 — 초소형주(300억 미만)"))
+            elif mc < rules["mcap_warn"]:
+                notes.append(_a("리스크", "WARN", f"시가총액 {mc / 1e8:,.0f}억원 — 소형주(1,000억 미만)"))
+    atr, ext = _chart_vol(chart)
+    if atr is not None:
+        lvl = "FAIL" if atr > config.VERIFY_ATR_FAIL else "WARN" if atr > config.VERIFY_ATR_WARN else "OK"
+        notes.append(_a("리스크", lvl, f"일평균 변동폭(ATR14) {atr:.1f}% (경고 > {config.VERIFY_ATR_WARN:.0f}%, 기각 > {config.VERIFY_ATR_FAIL:.0f}%)"))
+    if ext is not None:
+        lvl = "FAIL" if ext > config.VERIFY_EXT_FAIL else "WARN" if ext > config.VERIFY_EXT_WARN else "OK"
+        notes.append(_a("리스크", lvl, f"종가가 50일선보다 {ext:.0f}% 위 (경고 > {config.VERIFY_EXT_WARN:.0f}%, 기각 > {config.VERIFY_EXT_FAIL:.0f}%)"))
     if rec.get("liquidityOk") is False:
         notes.append(_a("리스크", "FAIL", "유동성(20일 거래대금) 기준 미달"))
 
