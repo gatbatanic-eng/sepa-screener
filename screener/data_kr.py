@@ -12,6 +12,8 @@
 """
 from __future__ import annotations
 
+import random
+import sys
 import time
 from datetime import datetime, timedelta
 
@@ -34,6 +36,25 @@ _NAVER_HEADERS = {
 _EXCLUDE_NAME_TOKENS = ("스팩", "리츠")
 
 
+def _krx_listing(fdr, retries: int = 3) -> pd.DataFrame:
+    """KRX 목록을 재시도하고, 계속 막히면 네이버 대체 목록(코스피·코스닥)으로 이어간다."""
+    last: Exception | None = None
+    for attempt in range(1, retries + 1):
+        try:
+            listing = fdr.StockListing("KRX")
+            if listing is None or listing.empty:
+                raise ValueError("빈 목록 반환")
+            return listing
+        except Exception as exc:  # noqa: BLE001
+            last = exc
+            print(f"[KR] KRX 목록 조회 실패 ({attempt}/{retries}): {exc}", file=sys.stderr)
+            if attempt < retries:
+                time.sleep(2 ** attempt + random.uniform(0, 1))
+    from .naver_listing import naver_kr_listing
+    print(f"[KR] KRX 목록 최종 실패({last}) — 네이버 대체 목록 사용", file=sys.stderr)
+    return naver_kr_listing()
+
+
 def load(
     max_tickers: int | None = 300,
     min_marcap: float = MIN_MARCAP_KRW,
@@ -41,7 +62,7 @@ def load(
 ) -> pd.DataFrame:
     import FinanceDataReader as fdr
 
-    listing = fdr.StockListing("KRX")
+    listing = _krx_listing(fdr)
     listing = listing[listing["Market"].isin(["KOSPI", "KOSDAQ"])].copy()
     listing = listing.dropna(subset=["Marcap", "Code", "Name"])
     listing = listing[listing["Marcap"] >= min_marcap]
