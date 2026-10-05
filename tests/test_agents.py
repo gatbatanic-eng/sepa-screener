@@ -237,6 +237,19 @@ class SessionDateTest(unittest.TestCase):
         self.assertEqual(config.session_date(u("2026-10-12T03:00")), d(2026, 10, 9))   # 월 03:00 UTC는 아직 금요일 세션
 
 
+class ReportMarketSplitTest(unittest.TestCase):
+    def test_korea_is_reported_as_kospi_and_kosdaq(self):
+        def r(market, regime, breadth, passed=False):
+            return {"market": market, "status": "OK", "regime": regime, "breadth": breadth, "sizeFactor": 0.5, "passAll": passed}
+        rows = {"kr": [r("KOSDAQ", "RED", 0.87)] * 3 + [r("KOSPI", "YELLOW", 0.57, True)] * 2, "us": [r("US", "GREEN", 0.26)]}
+        lines = rp._section_market(rows)["bullets"]
+        self.assertEqual(len(lines), 3)
+        self.assertIn("KOSPI", lines[0]); self.assertIn("국면 YELLOW", lines[0]); self.assertIn("breadth 57%", lines[0]); self.assertIn("추세 통과 2", lines[0])
+        self.assertIn("KOSDAQ", lines[1]); self.assertIn("국면 RED", lines[1]); self.assertIn("breadth 87%", lines[1])
+        self.assertTrue(lines[2].startswith("US"))
+        self.assertFalse(any(l.startswith("KR") for l in lines))
+
+
 class ReportNotifyListTest(unittest.TestCase):
     def test_new_list_has_only_newly_written_reports(self):
         import datetime as dt
