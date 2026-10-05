@@ -9,7 +9,7 @@ from pathlib import Path
 from agents import config as agent_config
 from agents.report import period_keys
 
-from . import memo
+from . import memo, picks_track
 
 
 def run(today: dt.date, preview: bool = False, force: list[str] | None = None, new_list: Path | None = None) -> list[str]:
@@ -24,6 +24,8 @@ def run(today: dt.date, preview: bool = False, force: list[str] | None = None, n
             return [f"preview:{m['key']}"]
         if memo.save(m):
             made.append(f"{kind}:{m['key']}")
+            if kind == "daily":
+                picks_track.record(m["key"], m["picks"])
             paths.append(str(memo.config.OUT_DIR / kind / f"{m['key']}.md"))
         elif kind == "daily":
             memo.save(m, archive=False)  # 이미 보관된 날이면 latest만 갱신
