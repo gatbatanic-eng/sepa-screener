@@ -130,6 +130,8 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           mkdir -p research
           git add docs/ research/
+          # 이 파일은 공개 운영 상태만 포함한다. 전역 *.json 제외 규칙과 별도로 저장.
+          git add -f docs/research/collection_status.json
           git diff --cached --quiet || git commit -m "대시보드 자동 갱신 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
           # docs/index.html 은 매번 통째로 다시 만드는 생성물이라, 다른 워크플로(대시보드 렌더 등)가 같은 시간에 커밋하면
           # rebase 가 충돌한다. 그 파일만 충돌이면 내 버전을 택해 rebase 를 끝내고, 병합된 데이터로 다시 렌더한 뒤 푸시한다.
