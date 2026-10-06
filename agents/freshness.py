@@ -1,7 +1,9 @@
 """시세 최신성 확인. 정기 실행이 미국·한국 스크리닝보다 먼저 시작해도(둘 다 GitHub 예약 지연이 있다)
 '그날의 기록'(보고서·메모·추천·권고안 스냅샷, 모두 한 번만 쓰고 수정 금지)을 낡은 시세로 확정하지 않는다.
 기준일(session_date)의 장 마감 시세가 아직 없으면 기록을 미루고, 같은 날 뒤 실행(ledger.yml 재시도)이 쓴다.
-기한(다음 날 18:00 UTC)까지 끝내 안 오면 휴장일로 보고 '시세가 이 날짜까지만 있음' 표시를 달아 기록한다."""
+기한(다음 날 18:00 UTC)까지 끝내 안 오면 휴장일로 보고 '시세가 이 날짜까지만 있음' 표시를 달아 기록한다.
+한국은 휴장일을 미리 알 수 있다: NHPLUG 대표 종목 일봉의 마지막 봉 날짜(research/nhplug/kr_flow.json의 krLastBar)가
+기준일 한국 장 마감(07:00 UTC) 뒤에 확인한 값인데도 기준일보다 이전이면 그날은 휴장이다. 이때 한국은 그 마지막 봉 날짜까지만 기다린다."""
 from __future__ import annotations
 
 import datetime as dt
@@ -11,6 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DEADLINE = dt.timedelta(days=1, hours=18)   # 기준일 00:00 UTC + 1일 18시간 = 다음 날 18:00 UTC. 마지막 재시도(19:10)가 이 뒤에 돈다.
 MARKETS = ("kr", "us")
+KR_CLOSE_UTC = dt.time(7, 0)                # 한국 장 마감(06:30 UTC) + 집계 여유. 이 뒤에 확인한 '마지막 봉'만 휴장 판정에 쓴다.
 
 
 def _read(path: Path) -> dict:
@@ -31,17 +34,33 @@ def latest_sessions(root: Path | None = None) -> dict[str, str]:
     return out
 
 
-def check(today: dt.date, now: dt.datetime | None = None, sessions: dict[str, str] | None = None) -> dict:
+def kr_last_bar(root: Path | None = None) -> dict | None:
+    """{'bar': 'YYYY-MM-DD', 'checkedAt': datetime} — NHPLUG 수급 수집이 남긴 한국 마지막 봉. 없으면 None."""
+    d = _read((root or ROOT) / "research" / "nhplug" / "kr_flow.json")
+    try:
+        bar = dt.datetime.strptime(str(d.get("krLastBar")), "%Y%m%d").date().isoformat()
+        at = dt.datetime.fromisoformat(str(d.get("generatedAt")))
+        return {"bar": bar, "checkedAt": at if at.tzinfo else at.replace(tzinfo=dt.timezone.utc)}
+    except (TypeError, ValueError):
+        return None
+
+
+def check(today: dt.date, now: dt.datetime | None = None, sessions: dict[str, str] | None = None, kr_bar: dict | None = None) -> dict:
     """{'hold': 기록을 미뤄야 하나, 'forced': 기한이 지나 낡은 시세로 쓰나, 'stale': {시장: {have, need}}, 'note': 안내 문구}"""
     now = now or dt.datetime.now(dt.timezone.utc)
     sessions = sessions if sessions is not None else latest_sessions()
     need = today.isoformat()
-    stale = {m: {"have": sessions.get(m) or "", "need": need} for m in MARKETS if (sessions.get(m) or "") < need}
+    needs = {m: need for m in MARKETS}
+    kr_bar = kr_bar if kr_bar is not None else kr_last_bar()
+    closed = None
+    if kr_bar and kr_bar["bar"] < need and kr_bar["checkedAt"] >= dt.datetime.combine(today, KR_CLOSE_UTC, dt.timezone.utc):
+        needs["kr"], closed = kr_bar["bar"], kr_bar["bar"]   # 기준일 한국 휴장: 마지막 봉 날짜까지만 기다린다
+    stale = {m: {"have": sessions.get(m) or "", "need": needs[m]} for m in MARKETS if (sessions.get(m) or "") < needs[m]}
     if not stale:
-        return {"hold": False, "forced": False, "stale": {}, "note": None}
+        return {"hold": False, "forced": False, "stale": {}, "note": None, "krClosed": closed}
     deadline = dt.datetime.combine(today, dt.time(0, 0), dt.timezone.utc) + DEADLINE
     names = ", ".join(f"{'미국' if m == 'us' else '한국'} {v['have'] or '없음'}" for m, v in stale.items())
     if now >= deadline:
-        return {"hold": False, "forced": True, "stale": stale,
+        return {"hold": False, "forced": True, "stale": stale, "krClosed": closed,
                 "note": f"기준일 {need}의 시세가 끝내 오지 않아(휴장 또는 수집 지연) 가장 최근 시세로 썼다: {names}까지"}
-    return {"hold": True, "forced": False, "stale": stale, "note": f"기준일 {need}의 시세가 아직 없다: {names}까지. 기록을 미룬다"}
+    return {"hold": True, "forced": False, "stale": stale, "krClosed": closed, "note": f"기준일 {need}의 시세가 아직 없다: {names}까지. 기록을 미룬다"}

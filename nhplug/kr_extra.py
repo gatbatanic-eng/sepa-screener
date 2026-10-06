@@ -149,8 +149,14 @@ def run_flow(tok: str) -> int:
             stocks[code] = {**summarize_flow(inv, kst_today), "forRate": _f(inv[0].get("for_rate")) if inv else None}
         except Exception as e:  # noqa: BLE001
             errors += 1
+    kr_bar = None  # 한국 장이 열린 가장 최근 날짜(대표 종목 일봉의 마지막 봉). 휴장일 판정에 쓴다(agents/freshness.py)
+    try:
+        bars = rows(kr_period(tok, "005930", "1", dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d"), 1))
+        kr_bar = str(bars[0].get("bsop_date")) if bars else None
+    except Exception as e:  # noqa: BLE001
+        print("마지막 봉 조회 실패:", repr(e)[:120])
     FLOW_OUT.parent.mkdir(parents=True, exist_ok=True)
-    FLOW_OUT.write_text(json.dumps({"schemaVersion": 1, "generatedAt": dt.datetime.now(dt.timezone.utc).isoformat(), "kstToday": kst_today,
+    FLOW_OUT.write_text(json.dumps({"schemaVersion": 1, "krLastBar": kr_bar, "generatedAt": dt.datetime.now(dt.timezone.utc).isoformat(), "kstToday": kst_today,
                                     "note": "frgn=invest(외국인, 네이버와 근접·소폭 차이), inst=기관, indiv=개인. 순매수 수량 합계. 오늘(KST) 행 제외",
                                     "stocks": stocks}, ensure_ascii=False), encoding="utf-8")
     print("저장:", FLOW_OUT, "종목", len(stocks), "/", len(codes), "오류", errors)
