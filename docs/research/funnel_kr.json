@@ -1,7 +1,7 @@
 {
  "schemaVersion": 1,
  "market": "kr",
- "recordedAt": "2026-10-05T17:45:49.930877+00:00",
+ "recordedAt": "2026-10-03T05:32:01.322268+00:00",
  "note": "투자 추천이 아닌 검증·분석용 규칙 판정. 결측은 null.",
  "thresholds": {
   "minMarcap": 50000000000.0,
@@ -823,7 +823,7 @@
    "priceDate": "2026-09-28",
    "high52Ratio": 0.6696696696696697,
    "ret6m": -0.16687422166874222,
-   "ret36to6m": 0.13512358021029702,
+   "ret36to6m": 0.1351236585606257,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -1293,7 +1293,7 @@
    "priceDate": "2026-09-28",
    "high52Ratio": 0.668041237113402,
    "ret6m": -0.23040380047505937,
-   "ret36to6m": -0.4084968887375957,
+   "ret36to6m": -0.4084968481585296,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -1643,7 +1643,7 @@
    "priceDate": "2026-09-28",
    "high52Ratio": 0.5370145631067961,
    "ret6m": 0.7387033398821219,
-   "ret36to6m": 1.3593324588710973,
+   "ret36to6m": 1.3593327258645451,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -1937,7 +1937,7 @@
    "priceDate": "2026-09-28",
    "high52Ratio": 0.7805208438922079,
    "ret6m": 0.48391185509815804,
-   "ret36to6m": 1.9643950259846195,
+   "ret36to6m": 1.9643948414273393,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -2161,65 +2161,6 @@
   },
   {
    "rank": 36,
-   "symbol": "253450",
-   "name": "스튜디오드래곤",
-   "exchange": "KOSDAQ",
-   "marcap": 613193359200.0,
-   "marcapEstimated": false,
-   "price": 20400.0,
-   "priceDate": "2026-09-28",
-   "high52Ratio": 0.41379310344827586,
-   "ret6m": -0.4035087719298246,
-   "ret36to6m": -0.3104838709677419,
-   "metrics": {
-    "latestPeriod": "2026Q2",
-    "revYoY": [
-     0.26902032884655847,
-     0.1604518967898949,
-     0.11728549701934421
-    ],
-    "opTTM": 50861797498.0,
-    "opmTTM": 0.08724833347096114,
-    "opmTTMPrev": 0.01230372259898543,
-    "debtToEquity": 0.32508711541931
-   },
-   "shareGrowth": 0.0,
-   "gates": {
-    "excluded": false,
-    "hits": [],
-    "flags": []
-   },
-   "scores": {
-    "S1": 90.0,
-    "S2": 50.0,
-    "S6": 100.0,
-    "S4": 81.32
-   },
-   "reasons": {
-    "S1": [
-     "매출 YoY 27%",
-     "2분기 연속 가속",
-     "영업 흑자전환"
-    ],
-    "S2": [
-     "영업이익률 +7.5%p",
-     "영업현금/순이익 -3.02"
-    ],
-    "S6": [
-     "주식 수 +0.0%",
-     "증자·CB 공시 0건"
-    ]
-   },
-   "composite": 80.24,
-   "T1": "OFF",
-   "inflection": true,
-   "meetsS1Floor": true,
-   "cyclical": null,
-   "manual": null,
-   "P1": null
-  },
-  {
-   "rank": 37,
    "symbol": "192440",
    "name": "슈피겐코리아",
    "exchange": "KOSDAQ",
@@ -2229,7 +2170,7 @@
    "priceDate": "2026-09-28",
    "high52Ratio": 0.9104938271604939,
    "ret6m": 0.10486891385767794,
-   "ret36to6m": -0.09891227986451523,
+   "ret36to6m": -0.09891233925992615,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -2271,6 +2212,65 @@
    },
    "composite": 80.24,
    "T1": "ON",
+   "inflection": true,
+   "meetsS1Floor": true,
+   "cyclical": null,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 37,
+   "symbol": "253450",
+   "name": "스튜디오드래곤",
+   "exchange": "KOSDAQ",
+   "marcap": 613193359200.0,
+   "marcapEstimated": false,
+   "price": 20400.0,
+   "priceDate": "2026-09-28",
+   "high52Ratio": 0.41379310344827586,
+   "ret6m": -0.4035087719298246,
+   "ret36to6m": -0.3104838709677419,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.26902032884655847,
+     0.1604518967898949,
+     0.11728549701934421
+    ],
+    "opTTM": 50861797498.0,
+    "opmTTM": 0.08724833347096114,
+    "opmTTMPrev": 0.01230372259898543,
+    "debtToEquity": 0.32508711541931
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 90.0,
+    "S2": 50.0,
+    "S6": 100.0,
+    "S4": 81.26
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 27%",
+     "2분기 연속 가속",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +7.5%p",
+     "영업현금/순이익 -3.02"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 80.23,
+   "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
    "cyclical": null,
@@ -3625,7 +3625,7 @@
    "priceDate": "2026-09-28",
    "high52Ratio": 0.7147498375568551,
    "ret6m": 0.4341590612777053,
-   "ret36to6m": 2.0307490164829547,
+   "ret36to6m": 2.0307487825806034,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -3697,7 +3697,7 @@
    "priceDate": "2026-09-28",
    "high52Ratio": 0.9222560975609756,
    "ret6m": 0.32821075740944017,
-   "ret36to6m": 0.924481337525092,
+   "ret36to6m": 0.9244811787183158,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -5030,7 +5030,7 @@
   "snapshots": {
    "2026-09-29": {
     "frozen": {},
-    "ageDays": 6,
+    "ageDays": 4,
     "current": {
      "top": {
       "avgReturnPct": 4.89,
@@ -5046,11 +5046,11 @@
      },
      "benchmarkReturnPct": 1.93
     },
-    "measuredAt": "2026-10-05"
+    "measuredAt": "2026-10-03"
    },
    "2026-09-30": {
     "frozen": {},
-    "ageDays": 5,
+    "ageDays": 3,
     "current": {
      "top": {
       "avgReturnPct": 4.43,
@@ -5066,11 +5066,11 @@
      },
      "benchmarkReturnPct": 2.42
     },
-    "measuredAt": "2026-10-05"
+    "measuredAt": "2026-10-03"
    },
    "2026-10-02": {
     "frozen": {},
-    "ageDays": 3,
+    "ageDays": 1,
     "current": {
      "top": {
       "avgReturnPct": 0.75,
@@ -5086,27 +5086,7 @@
      },
      "benchmarkReturnPct": 0.46
     },
-    "measuredAt": "2026-10-05"
-   },
-   "2026-10-03": {
-    "frozen": {},
-    "ageDays": 2,
-    "current": {
-     "top": {
-      "avgReturnPct": 0.0,
-      "n": 50
-     },
-     "passed": {
-      "avgReturnPct": 0.0,
-      "n": 1552
-     },
-     "excluded": {
-      "avgReturnPct": 0.0,
-      "n": 282
-     },
-     "benchmarkReturnPct": 0.0
-    },
-    "measuredAt": "2026-10-05"
+    "measuredAt": "2026-10-03"
    }
   }
  }
