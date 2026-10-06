@@ -208,7 +208,7 @@ function renderPortfolio() {
   const pf = data.portfolio, r = data.rules.portfolio;
   if (!pf) { $("pfRows").innerHTML = ""; return; }
   const ex = pf.exposure, VERDICT = {APPROVED: ["g", "승인"], TRIMMED: ["y", "축소"], REJECTED: ["r", "제외"]};
-  $("pfDesc").textContent = `실전 계열의 보유·진입 대기 종목을 소멸하지 않은 에이전트의 권고 비중(정상 100%·관찰 50%)으로 합산한 뒤 한도를 적용합니다. 한도: 한 종목 ${r.maxSingle * 100}%, 한 시장 ${r.maxMarket * 100}%, 최대 ${r.maxNames}종목. 섹터·유동성 한도는 아직 걸지 못합니다. 진입 대기 종목의 진입가는 다음 거래일 종가로 정해집니다.`;
+  $("pfDesc").textContent = `실전 계열의 보유·진입 대기 종목을 소멸하지 않은 에이전트의 권고 비중(정상 100%·관찰 50%)으로 합산한 뒤 한도를 적용합니다. 한도: 한 종목 ${r.maxSingle * 100}%, 한 시장 ${r.maxMarket * 100}%, ${r.maxSector ? `한 업종 ${r.maxSector * 100}%(한국만), ` : ""}최대 ${r.maxNames}종목. ${r.maxSector ? "미국 섹터" : "섹터"}·유동성 한도는 아직 걸지 못합니다. 진입 대기 종목의 진입가는 다음 거래일 종가로 정해집니다.`;
   $("pfCards").innerHTML = [["투입", `${ex.grossPct}%`], ["현금", `${ex.cashPct}%`], ["한국", `${ex.kr}%`], ["미국", `${ex.us}%`], ["종목 수", `${ex.names}`]]
     .map(([k, v]) => `<div class="card"><div class="label">${k}</div><div class="value">${v}</div></div>`).join("") +
     (pf.warnings || []).map((w) => `<div class="banner" style="grid-column:1/-1">${esc(w)}</div>`).join("");
