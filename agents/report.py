@@ -11,7 +11,7 @@ import datetime as dt
 import json
 from pathlib import Path
 
-from . import config
+from . import config, freshness
 from .store import read_json, write_json
 
 REPORT_DIR = config.ROOT / "docs" / "agents" / "reports" / "data"
@@ -234,6 +234,8 @@ def build(kind: str, today: dt.date, root: Path | None = None, state_dir: Path |
 
 def to_markdown(rep: dict) -> str:
     out = [f"# {rep['title']}", f"> {rep['disclaimer']}", f"> 데이터 기준: {rep['dataAsOf']}", ""]
+    if rep.get("staleNote"):
+        out.insert(3, f"> ⚠ {rep['staleNote']}")
     for s in rep["sections"]:
         out.append(f"## {s['heading']}")
         if "bullets" in s:
@@ -262,13 +264,17 @@ def save(rep: dict, report_dir: Path | None = None) -> bool:
     return True
 
 
-def run(today: dt.date, force: list[str] | None = None, new_list: Path | None = None) -> list[str]:
+def run(today: dt.date, force: list[str] | None = None, new_list: Path | None = None, hold: bool = False, note: str | None = None) -> list[str]:
     """새로 쓴 보고서의 .md 경로를 new_list 파일에 한 줄씩 남긴다(알림 단계가 읽는다)."""
     keys = period_keys(today)
     made, paths = [], []
     for kind in ("daily", "weekly", "monthly"):
+        if hold:
+            break  # 시세가 아직 최신이 아님: 한 번만 쓰는 보고서를 미룬다(agents.freshness)
         if keys[kind] or (force and kind in force):
             rep = build(kind, today)
+            if rep and note:
+                rep["staleNote"] = note
             if rep and save(rep):
                 made.append(f"{kind}:{rep['key']}")
                 paths.append(str(REPORT_DIR / kind / f"{rep['key']}.md"))
@@ -283,7 +289,11 @@ def main() -> None:
     p.add_argument("--force", nargs="*", choices=["daily", "weekly", "monthly"], help="주기와 상관없이 만든다(이미 있으면 건너뜀)")
     p.add_argument("--new-list", type=Path, help="새로 만든 보고서 .md 경로를 적을 파일")
     a = p.parse_args()
-    print("생성:", run(dt.date.fromisoformat(a.today), a.force, a.new_list) or "없음")
+    today = dt.date.fromisoformat(a.today)
+    fr = freshness.check(today)
+    if fr["note"]:
+        print(fr["note"])
+    print("생성:", run(today, a.force, a.new_list, fr["hold"], fr["note"] if fr["forced"] else None) or "없음")
 
 
 if __name__ == "__main__":
