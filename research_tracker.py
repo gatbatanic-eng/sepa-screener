@@ -6,6 +6,8 @@ import hashlib
 import json
 import math
 import os
+import subprocess
+import re
 from dataclasses import asdict
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -15,6 +17,18 @@ ROOT = Path(__file__).resolve().parent
 HORIZONS = (5, 20, 60)
 GROUPS = ('TREND', 'READY', 'GO', 'EXP_READY', 'EXP_GO')
 STRATEGY_FAMILY = 'sepa-v2'
+
+def source_commit():
+    """The checked-out source may be newer than the queued event SHA."""
+    try:
+        sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True, timeout=5).strip()
+        if re.fullmatch(r'[a-f0-9]{40}', sha):
+            return sha
+    except (OSError, subprocess.SubprocessError):
+        pass
+    sha = os.getenv('GITHUB_SHA')
+    return sha if sha and re.fullmatch(r'[a-f0-9]{40}', sha) else None
+
 
 def packed(obj):
     return json.dumps(obj, ensure_ascii=False, sort_keys=True, separators=(',', ':'), allow_nan=False)
@@ -82,7 +96,7 @@ def export_inputs(frame, ohlcv, benchmarks, cfg, market):
                'strategy': strategy, 'strategyId': digest(strategy),
                'strategySeriesId': strategy_series_id(strategy),
                'recordedAt': datetime.now(timezone.utc).isoformat(),
-               'sourceCommit': os.getenv('GITHUB_SHA'), 'runId': os.getenv('GITHUB_RUN_ID')}
+               'sourceCommit': source_commit(), 'runId': os.getenv('GITHUB_RUN_ID')}
     write_json(ROOT / 'output' / f'research_input_{market.lower()}.json', payload)
     from range_screen import export_range
     try:
