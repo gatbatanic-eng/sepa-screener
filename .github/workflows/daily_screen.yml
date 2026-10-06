@@ -3,14 +3,18 @@ name: SEPA Trend Template Daily Screening
 on:
   push:
     branches: [master]
-    paths: ["screening.py", "ai_tracker.py", "tests/test_ai_tracker.py", "range_screen.py", "tests/test_range_screen.py", "aggressive_screen.py", "tests/test_aggressive_screen.py", "rebound_screen.py", "tests/test_rebound_screen.py", "research_tracker.py", "tests/test_research_tracker.py", ".gitignore", "personas/**", "tests/test_personas.py", "tests/test_personas_data.py", ".github/workflows/daily_screen.yml"]
+    paths: ["screening.py", "collection_health.py", "tests/test_collection_health.py", "ai_tracker.py", "tests/test_ai_tracker.py", "range_screen.py", "tests/test_range_screen.py", "aggressive_screen.py", "tests/test_aggressive_screen.py", "rebound_screen.py", "tests/test_rebound_screen.py", "research_tracker.py", "tests/test_research_tracker.py", ".gitignore", "personas/**", "tests/test_personas.py", "tests/test_personas_data.py", ".github/workflows/daily_screen.yml"]
   schedule:
     # 한국: 평일(월~금) 20:00 KST = UTC 11:00
     - cron: "0 11 * * 1-5"
+    # 지연/휴장 이후 보완. 이미 완결 거래일이 반영됐으면 무거운 수집을 건너뜀.
+    - cron: "35 11 * * 1-5"
+    - cron: "35 12 * * 1-5"
     # 미국: 시간외 거래(~8pm ET)가 끝나고 야후 일봉이 확정된 뒤 = UTC 05:00 (화~토, 전 거래일 시세)
     #   22:00 UTC 실행은 GitHub 지연으로 00~01시 UTC에 돌면서 종목 시세가 지수보다 하루 늦게 와
     #   전 종목이 '시세 기준일 불일치'로 걸러졌다(2026-10-02, 10-03).
     - cron: "0 5 * * 2-6"
+    - cron: "35 5 * * 2-6"
   workflow_dispatch:
     inputs:
       market:
@@ -48,33 +52,22 @@ jobs:
         run: |
           python -m unittest discover -s tests -p "test_*screen.py" -v
           python -m unittest discover -s tests -p test_research_tracker.py -v
+          python -m unittest discover -s tests -p test_collection_health.py -v
           python tests/test_ai_tracker.py
           python -m unittest tests.test_rebound_screen -v
           python -m unittest tests.test_personas tests.test_personas_data -v
 
-      - name: 실행 시장 결정
+      - name: 완결 거래일 확인 및 지연 시장 보완 계획
         id: market
-        run: |
-          if [ "${{ github.event_name }}" = "schedule" ]; then
-            if [ "${{ github.event.schedule }}" = "0 11 * * 1-5" ]; then
-              echo "market=KR" >> "$GITHUB_OUTPUT"
-            else
-              echo "market=US" >> "$GITHUB_OUTPUT"
-            fi
-          elif [ "${{ github.event_name }}" = "push" ]; then
-            # 데이터 수집 수정 후 특정 시장을 즉시 재검증할 수 있게 커밋 태그를 지원한다.
-            if [[ "${{ github.event.head_commit.message }}" == *"[run-kr]"* ]]; then
-              echo "market=KR" >> "$GITHUB_OUTPUT"
-            elif [[ "${{ github.event.head_commit.message }}" == *"[run-all]"* ]]; then
-              echo "market=ALL" >> "$GITHUB_OUTPUT"
-            else
-              echo "market=US" >> "$GITHUB_OUTPUT"
-            fi
-          else
-            echo "market=${{ github.event.inputs.market || 'ALL' }}" >> "$GITHUB_OUTPUT"
-          fi
+        env:
+          COLLECTION_EVENT: ${{ github.event_name }}
+          COLLECTION_SCHEDULE: ${{ github.event.schedule }}
+          COLLECTION_MARKET: ${{ github.event.inputs.market || 'ALL' }}
+          COLLECTION_PUSH_MESSAGE: ${{ github.event.head_commit.message }}
+        run: python collection_health.py plan
 
       - name: 스크리닝 실행 (${{ steps.market.outputs.market }})
+        if: steps.market.outputs.needed == 'true'
         env:
           SEPA_RESEARCH_EXPORT: "1"
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
@@ -82,7 +75,7 @@ jobs:
         run: python screening.py --market ${{ steps.market.outputs.market }}
 
       - name: 결과 CSV 아티팩트 업로드
-        if: always()
+        if: always() && steps.market.outputs.needed == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: sepa-screening-result-${{ github.run_id }}
@@ -90,21 +83,25 @@ jobs:
           retention-days: 90
 
       - name: 일별 기록과 5·20·60거래일 성과 갱신
+        if: steps.market.outputs.needed == 'true'
         id: research
         continue-on-error: true
         run: python research_tracker.py --market ${{ steps.market.outputs.market }}
 
       - name: 시장 스냅샷 선갱신(페르소나가 이번 실행의 종목 목록을 쓰도록)
+        if: steps.market.outputs.needed == 'true'
         # generate_dashboard.py 가 latest_{kr,us}.json 을 이번 실행 결과로 갱신한다. 이 단계가 없으면 아래
         # 페르소나 단계가 직전 실행의 스냅샷을 읽어 하루씩 밀리고, 직전이 데이터 이상일 때 버튼이 사라진다.
         run: python generate_dashboard.py
 
       - name: 페르소나 입력 수집(Yahoo 밸류에이션 + 성과 기록 점검)
+        if: steps.market.outputs.needed == 'true'
         id: personas
         continue-on-error: true
         run: python -m personas.collect --market "$(echo "${{ steps.market.outputs.market }}" | tr 'A-Z' 'a-z')"
 
       - name: 페르소나 코멘트 생성(매수 고민 — 규칙 기반 텍스트만)
+        if: steps.market.outputs.needed == 'true'
         id: personas_gen
         continue-on-error: true
         # Claude API(크레딧 필요)를 쓰지 않는다: 크레딧이 떨어지면 이 단계가 실패로 표시돼 SEPA 워크플로우가
@@ -113,12 +110,18 @@ jobs:
         run: python -m personas.generate --no-llm --market "$(echo "${{ steps.market.outputs.market }}" | tr 'A-Z' 'a-z')"
 
       - name: 대시보드(docs/index.html) 생성
+        if: steps.market.outputs.needed == 'true'
         run: python generate_dashboard.py
 
       - name: 종목 상세 차트 갱신
+        if: steps.market.outputs.needed == 'true'
         id: charts
         continue-on-error: true
         run: python publish_stock_charts.py --market ${{ steps.market.outputs.market }}
+
+      - name: 실제 수집 시각과 가격 기준일 기록
+        if: always() && steps.market.outcome == 'success'
+        run: python collection_health.py status
 
       - name: 대시보드 커밋 & 푸시
         run: |
