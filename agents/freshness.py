@@ -2,8 +2,8 @@
 '그날의 기록'(보고서·메모·추천·권고안 스냅샷, 모두 한 번만 쓰고 수정 금지)을 낡은 시세로 확정하지 않는다.
 기준일(session_date)의 장 마감 시세가 아직 없으면 기록을 미루고, 같은 날 뒤 실행(ledger.yml 재시도)이 쓴다.
 기한(다음 날 18:00 UTC)까지 끝내 안 오면 휴장일로 보고 '시세가 이 날짜까지만 있음' 표시를 달아 기록한다.
-한국은 휴장일을 미리 알 수 있다: NHPLUG 대표 종목 일봉의 마지막 봉 날짜(research/nhplug/kr_flow.json의 krLastBar)가
-기준일 한국 장 마감(07:00 UTC) 뒤에 확인한 값인데도 기준일보다 이전이면 그날은 휴장이다. 이때 한국은 그 마지막 봉 날짜까지만 기다린다."""
+한국은 휴장일을 미리 알 수 있다: NHPLUG 대표 종목의 최근 일봉 날짜 목록(research/nhplug/kr_flow.json의 krBars)을 기준일 한국 장 마감(07:00 UTC) 뒤에
+확인했는데 기준일이 그 목록에 없으면(목록이 기준일을 덮는 구간일 때) 그날은 휴장이다. 이때 한국은 그 이전 마지막 개장일까지만 기다린다."""
 from __future__ import annotations
 
 import datetime as dt
@@ -35,14 +35,14 @@ def latest_sessions(root: Path | None = None) -> dict[str, str]:
 
 
 def kr_last_bar(root: Path | None = None) -> dict | None:
-    """{'bar': 'YYYY-MM-DD', 'checkedAt': datetime} — NHPLUG 수급 수집이 남긴 한국 마지막 봉. 없으면 None."""
+    """{'bars': ['YYYY-MM-DD', ...], 'checkedAt': datetime} — NHPLUG 수급 수집이 남긴 한국 최근 개장일 목록. 없으면 None."""
     d = _read((root or ROOT) / "research" / "nhplug" / "kr_flow.json")
     try:
-        bar = dt.datetime.strptime(str(d.get("krLastBar")), "%Y%m%d").date().isoformat()
+        bars = sorted({dt.datetime.strptime(str(b), "%Y%m%d").date().isoformat() for b in d.get("krBars") or []})
         at = dt.datetime.fromisoformat(str(d.get("generatedAt")))
-        return {"bar": bar, "checkedAt": at if at.tzinfo else at.replace(tzinfo=dt.timezone.utc)}
     except (TypeError, ValueError):
         return None
+    return {"bars": bars, "checkedAt": at if at.tzinfo else at.replace(tzinfo=dt.timezone.utc)} if bars else None
 
 
 def check(today: dt.date, now: dt.datetime | None = None, sessions: dict[str, str] | None = None, kr_bar: dict | None = None) -> dict:
@@ -53,8 +53,10 @@ def check(today: dt.date, now: dt.datetime | None = None, sessions: dict[str, st
     needs = {m: need for m in MARKETS}
     kr_bar = kr_bar if kr_bar is not None else kr_last_bar()
     closed = None
-    if kr_bar and kr_bar["bar"] < need and kr_bar["checkedAt"] >= dt.datetime.combine(today, KR_CLOSE_UTC, dt.timezone.utc):
-        needs["kr"], closed = kr_bar["bar"], kr_bar["bar"]   # 기준일 한국 휴장: 마지막 봉 날짜까지만 기다린다
+    if kr_bar and kr_bar["bars"] and kr_bar["bars"][0] <= need and kr_bar["checkedAt"] >= dt.datetime.combine(today, KR_CLOSE_UTC, dt.timezone.utc):
+        prior = max(b for b in kr_bar["bars"] if b <= need)
+        if prior < need:   # 기준일이 개장일 목록(그 앞뒤 날짜가 있는 구간)에 없다 = 한국 휴장. 그 이전 마지막 개장일까지만 기다린다
+            needs["kr"], closed = prior, prior
     stale = {m: {"have": sessions.get(m) or "", "need": needs[m]} for m in MARKETS if (sessions.get(m) or "") < needs[m]}
     if not stale:
         return {"hold": False, "forced": False, "stale": {}, "note": None, "krClosed": closed}
