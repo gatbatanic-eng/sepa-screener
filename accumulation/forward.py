@@ -41,7 +41,8 @@ def last_final_session(store: FlowStore, kst_today: str) -> str | None:
 
 
 def record_day(store: FlowStore, data: dict[str, pd.DataFrame], uni: dict[str, str], day: str, out_dir: Path | None = None, min_stocks: int = 300) -> dict | None:
-    """day의 후보를 기록한다. 이미 있으면 None. 최근 20거래일 수급이 모두 있고 그날 가격 봉이 있는 종목만 평가한다."""
+    """day의 후보를 기록한다. 이미 있으면 None. 최근 20거래일 수급이 모두 있고 그날 가격 봉이 있는 종목만 평가한다.
+    평가 가능한 종목이 유니버스의 절반 미만이면(가격 봉이 아직 안 왔거나 수집 실패) 기록하지 않고 사유를 돌려준다 — 한 번만 쓰는 기록이 빈 값으로 굳지 않게."""
     out_dir = out_dir or FWD_DIR
     path = out_dir / f"{day[:4]}-{day[4:6]}-{day[6:]}.json"
     if path.exists():
@@ -51,19 +52,30 @@ def record_day(store: FlowStore, data: dict[str, pd.DataFrame], uni: dict[str, s
         return {"skipped": f"수급 이력 {len(sess)}일(20일 필요)"}
     ts = pd.Timestamp(day)
     picks: dict[str, list] = {g: [] for g in GROUPS}
-    eligible = 0
+    eligible, diag = 0, {"noFlow": 0, "noPrice": 0, "noBar": 0, "notOk": 0}
     for code, mk in uni.items():
         win, df = store.window(code, sess), data.get(symbol(code, mk))
-        if win is None or df is None or ts not in df.index:
+        if win is None:
+            diag["noFlow"] += 1
+            continue
+        if df is None:
+            diag["noPrice"] += 1
+            continue
+        if ts not in df.index:
+            diag["noBar"] += 1
             continue
         f = compute(df.loc[:ts]).iloc[-1]
         if not f["ok"]:
+            diag["notOk"] += 1
             continue
         eligible += 1
         c_ok, ev = flow_condition(win)
         for g in groups(c_ok, bool(f["A"]), bool(f["B"]), bool(f["D"])):
             picks[g].append({"code": code, "market": mk, "close": float(df.loc[ts, "close"]), **ev})
-    rec = {"schemaVersion": 1, "date": day, "frozenOn": FROZEN_ON, "rule": FLOW_CFG, "eligible": eligible, "groups": picks}
+    if eligible < 0.5 * len(uni):
+        return {"skipped": f"평가 가능 종목 {eligible}/{len(uni)}개 — 기록 보류", "diag": diag}
+    rec = {"schemaVersion": 1, "date": day, "frozenOn": FROZEN_ON, "recordedAt": dt.datetime.now(dt.timezone.utc).isoformat(), "rule": FLOW_CFG,
+           "eligible": eligible, "diag": diag, "groups": picks}
     out_dir.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(rec, ensure_ascii=False), encoding="utf-8")
     return rec
@@ -139,10 +151,12 @@ def main() -> None:
     store, uni = FlowStore(), universe()
     day = last_final_session(store, kst_today)
     data = fetch_ohlcv([symbol(c, m) for c, m in uni.items()], start="2025-06-01")
-    log.info("가격 확보 %d/%d종목, 기준일 %s", len(data), len(uni), day)
-    if day:
-        res = record_day(store, data, uni, day)
-        log.info("기록: %s", (res or {}).get("skipped") or ("이미 있음" if res is None else {g: len(v) for g, v in res["groups"].items()}))
+    last_bars = pd.Series([d.index[-1] for d in data.values()]).dt.strftime("%Y%m%d").value_counts().head(3).to_dict() if data else {}
+    log.info("가격 확보 %d/%d종목, 기준일 %s, 마지막 봉 분포 %s", len(data), len(uni), day, last_bars)
+    final = [d for d in store.sessions() if d < kst_today][-5:]       # 최근 5개 확정 거래일 중 아직 기록이 없는 날은 뒤늦게라도 기록한다(규칙은 그날까지의 데이터만 쓴다)
+    for d in final:
+        res = record_day(store, data, uni, d)
+        log.info("기록 %s: %s", d, (res or {}).get("skipped") or ("이미 있음" if res is None else {g: len(v) for g, v in res["groups"].items()}), )
     records = load_records()
     summary = summarize(records, data, uni)
     out = ROOT / "research" / "accumulation"
