@@ -28,7 +28,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: sepa-screening
+  group: sepa-primary-collection
+  queue: max
   cancel-in-progress: false
 
 jobs:
