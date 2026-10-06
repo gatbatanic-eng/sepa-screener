@@ -3,6 +3,12 @@ name: Accumulation Backtest
 # 매집 가능성 필터(가격·거래량 부분)의 과거 백테스트. 수동 실행 전용, 기존 파이프라인과 연결하지 않는다. 결과는 research/accumulation 에 저장.
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "backtest=가격·거래량 백테스트, flow_probe=한국 투자자별 순매수 장기 이력 소스 점검"
+        type: choice
+        options: [backtest, flow_probe]
+        default: backtest
 
 permissions:
   contents: write
@@ -27,7 +33,12 @@ jobs:
       - name: Unit tests
         run: python -m unittest tests.test_accumulation -v
       - name: Run backtest
+        if: inputs.mode != 'flow_probe'
         run: python -m accumulation.backtest
+      - name: Probe long-history investor flow sources
+        if: inputs.mode == 'flow_probe'
+        continue-on-error: true
+        run: python -m accumulation.flow_probe
       - name: Save result
         if: always()
         run: |
