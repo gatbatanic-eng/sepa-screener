@@ -20,7 +20,7 @@ def _close(snapshot: dict, ticker: str) -> float | None:
 
 
 def _benchmark(snapshot: dict) -> float | None:
-    return _positive(snapshot.get("benchmark", {}).get("close"))
+    return _positive((snapshot.get("benchmark") or {}).get("close"))
 
 
 def _session_dates(values: Iterable[str]) -> list[str]:
