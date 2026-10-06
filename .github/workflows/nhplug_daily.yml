@@ -1,0 +1,53 @@
+name: NHPLUG KR Sector / Flow
+
+# 한국 업종(주 1회 전종목)·수급(매일 후보·보유 종목)을 NHPLUG 조회 API로 모아 research/nhplug 에 저장한다. 조회 전용, 주문·계좌 호출 없음.
+# 평일 KST 15:20 이후 장 마감분이 집계된 뒤, 정기 원장 실행(07:10 UTC)보다 먼저 돈다. 지연돼도 원장은 직전 수급(최대 4일 이내)을 쓴다.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "auto=토요일·주간 갱신 필요 시 전종목, 아니면 수급만 / full / flow"
+        type: choice
+        options: [auto, full, flow]
+        default: auto
+  schedule:
+    - cron: "20 6 * * 2-6"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nhplug-daily
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Collect KR sector / flow (query-only)
+        continue-on-error: true
+        env:
+          NHPLUG_APPKEY: ${{ secrets.NHPLUG_APPKEY }}
+          NHPLUG_APPSECRET: ${{ secrets.NHPLUG_APPSECRET }}
+        run: python -m nhplug.kr_extra --mode "${{ inputs.mode || 'auto' }}"
+      - name: Save
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f research/nhplug/kr_extra.json research/nhplug/kr_flow.json
+          git diff --cached --quiet && exit 0
+          git commit -m "NHPLUG 한국 업종·수급 갱신 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+          for i in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && break
+            sleep $((i * 5))
+          done
