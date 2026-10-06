@@ -1,0 +1,47 @@
+name: NHPLUG API Probe
+
+# NH투자증권 NHPLUG 공식 명세(공개 문서)를 내려받아 research/nhplug/docs 에 저장한다. 수동 실행 전용, 키 불필요.
+# 외부 코드는 실행하지 않고 문서 파일만 curl로 받는다. 기존 파이프라인과 연결하지 않는다.
+# 목적: 수정주가·수급·업종·미국 일봉 제공 여부를 명세로 확정.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nhplug-probe
+  cancel-in-progress: false
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - name: Download public specs
+        run: |
+          base=https://www.nhplug.com
+          out=research/nhplug/docs
+          mkdir -p "$out"
+          curl -fsSL --max-time 60 "$base/llms.txt" -o "$out/llms.txt" || echo "llms.txt 실패"
+          for a in common krstock gbstock; do
+            mkdir -p "$out/$a"
+            for f in openapi.json overview.md README.md; do
+              curl -fsSL --max-time 60 "$base/openapi-docs/$a/$f" -o "$out/$a/$f" || { echo "실패: $a/$f"; rm -f "$out/$a/$f"; }
+            done
+          done
+          find "$out" -type f -exec ls -l {} \;
+      - name: Save specs into the repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f research/nhplug
+          git diff --cached --quiet && exit 0
+          git commit -m "NHPLUG 명세 수집 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+          for i in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && break
+            sleep $((i * 5))
+          done
