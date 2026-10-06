@@ -5,7 +5,9 @@ on:
   schedule:
     # 화~토 07:10 UTC. 미국 스크리닝(05:00 UTC)과 계좌복구 갱신이 끝난 뒤에 돌아야 미국 데이터가 하루 늦지 않는다.
     # 월~금 장 마감분을 다음 날 아침에 처리한다(기준일은 agents.config.session_date()가 월~금으로 되돌린다).
-    - cron: "10 7 * * 2-6"
+    # 시세가 아직 최신이 아니면 그날 기록(보고서·메모·추천·스냅샷)을 미루므로(agents/freshness.py) 같은 날 뒤에 한 번씩 더 돈다.
+    # 이미 기록한 날은 건너뛰어 중복되지 않는다. 마지막(19:10)은 기한(다음 날 18:00 UTC) 뒤라 휴장일도 이때 기록한다.
+    - cron: "10 7,11,15,19 * * 2-6"
   push:
     branches: [master, "claude/**"]
     paths:
@@ -16,6 +18,7 @@ on:
       - tests/test_agents.py
       - tests/test_advisory.py
       - tests/test_picks.py
+      - tests/test_freshness.py
       - .github/workflows/ledger.yml
 
 permissions:
@@ -40,7 +43,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Verify ledger rules
-        run: python -m unittest tests.test_ledger tests.test_agents tests.test_advisory tests.test_picks -v
+        run: python -m unittest tests.test_ledger tests.test_agents tests.test_advisory tests.test_picks tests.test_freshness -v
       - name: Update ledger, outcomes and statistics
         run: python -m ledger.main
       - name: Update agent league (virtual accounts)

@@ -79,6 +79,8 @@ def to_markdown(m: dict) -> str:
     s = m["stance"]
     o = [f"# {m['title']}", f"> {m['disclaimer']}", f"> 데이터 기준: 매크로 {m['dataAsOf']['macro']}", "",
          f"## 의장 종합 — 입장: **{s['label']}** (합계 {s['score']:+d})"]
+    if m.get("staleNote"):
+        o.insert(3, f"> ⚠ {m['staleNote']}")
     o += [f"- {x}" for x in s["summary"]]
     o += ["", "| 구성 | 값 | 점수 |", "|---|---|---|"] + [f"| {p['name']} | {p['value']} | {p['points']:+d} |" for p in s["parts"]]
     o += ["", "**지난 메모 대비**"] + [f"- {x}" for x in s["changes"]]

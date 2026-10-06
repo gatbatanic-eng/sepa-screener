@@ -6,22 +6,28 @@ import argparse
 import datetime as dt
 from pathlib import Path
 
-from agents import config as agent_config
+from agents import config as agent_config, freshness
 from agents.report import period_keys
 
 from . import memo, picks_track
 
 
-def run(today: dt.date, preview: bool = False, force: list[str] | None = None, new_list: Path | None = None) -> list[str]:
+def run(today: dt.date, preview: bool = False, force: list[str] | None = None, new_list: Path | None = None,
+        hold: bool = False, note: str | None = None) -> list[str]:
     keys = period_keys(today)
     made, paths = [], []
     for kind in ("daily", "weekly", "monthly"):
         if not (keys[kind] or (force and kind in force)):
             continue
         m = memo.build(kind, today)
+        if note:
+            m["staleNote"] = note
         if preview:
             memo.save(m, archive=False)
             return [f"preview:{m['key']}"]
+        if hold:
+            memo.save(m, archive=False)  # 시세가 아직 최신이 아님: latest만 갱신, 보관·추천 기록은 뒤 실행으로 미룬다(agents.freshness)
+            continue
         if memo.save(m):
             made.append(f"{kind}:{m['key']}")
             if kind == "daily":
@@ -41,7 +47,11 @@ def main() -> None:
     p.add_argument("--force", nargs="*", choices=["daily", "weekly", "monthly"])
     p.add_argument("--new-list", type=Path)
     a = p.parse_args()
-    print("생성:", run(dt.date.fromisoformat(a.today), a.preview, a.force, a.new_list) or "없음")
+    today = dt.date.fromisoformat(a.today)
+    fr = freshness.check(today)
+    if fr["note"]:
+        print(fr["note"])
+    print("생성:", run(today, a.preview, a.force, a.new_list, fr["hold"], fr["note"] if fr["forced"] or fr["hold"] else None) or "없음")
 
 
 if __name__ == "__main__":

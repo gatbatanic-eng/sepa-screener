@@ -7,7 +7,7 @@ import logging
 
 from ledger import prices
 
-from . import config, portfolio as pf, review as rv, signals as sg, stats
+from . import config, freshness, portfolio as pf, review as rv, signals as sg, stats
 from .roster import ROSTER
 from .simulate import simulate
 from .store import read_json, write_json
@@ -16,7 +16,8 @@ log = logging.getLogger("agents")
 SERIES = {"live": config.INCEPTION, "preview": config.PREVIEW_START}
 
 
-def run(today: dt.date, fetch=prices.fetch_closes, bench_fetch=prices.fetch_benchmarks, freeze: bool = True) -> dict:
+def run(today: dt.date, fetch=prices.fetch_closes, bench_fetch=prices.fetch_benchmarks, freeze: bool = True,
+        hold: bool = False) -> dict:
     sigs = {m: sg.archive(m) for m in ("kr", "us")}
     start = (dt.date.fromisoformat(config.PREVIEW_START) - dt.timedelta(days=10)).isoformat()
     closes: dict[tuple[str, str], object] = {}
@@ -70,7 +71,7 @@ def run(today: dt.date, fetch=prices.fetch_closes, bench_fetch=prices.fetch_benc
     out["rules"]["portfolio"] = {"frozenOn": config.PORTFOLIO_FROZEN_ON, "maxSingle": config.MAX_SINGLE_WEIGHT,
                                  "maxMarket": config.MAX_MARKET_WEIGHT, "maxNames": config.MAX_NAMES}
     snap = config.STATE_DIR / "portfolio" / f"{today_s}.json"  # 날마다 한 번만 고정(이후 사후 평가용)
-    if freeze and not snap.exists():
+    if freeze and not hold and not snap.exists():  # hold: 시세가 아직 최신이 아니면 스냅샷을 미룬다(agents.freshness)
         write_json(snap, {"schemaVersion": 1, "date": today_s, **out["portfolio"]})
     write_json(config.PUBLIC_JSON, out)
     return out
@@ -82,7 +83,11 @@ def main() -> None:
     p.add_argument("--today", default=config.session_date().isoformat())
     p.add_argument("--no-freeze", action="store_true", help="권고안 스냅샷을 쓰지 않는다(코드 변경 확인용 실행)")
     a = p.parse_args()
-    res = run(dt.date.fromisoformat(a.today), freeze=not a.no_freeze)
+    today = dt.date.fromisoformat(a.today)
+    fr = freshness.check(today)
+    if fr["note"]:
+        log.warning(fr["note"])
+    res = run(today, freeze=not a.no_freeze, hold=fr["hold"])
     for aid, a in res["agents"].items():
         for name, s in a["series"].items():
             log.info("%s/%s: %s", aid, name, s["summary"])
