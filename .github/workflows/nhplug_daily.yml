@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "auto=토요일·주간 갱신 필요 시 전종목, 아니면 수급만 / full / flow"
+        description: "auto=토요일·주간 갱신 필요 시 전종목, 아니면 수급만 / full / flow / forward=수집 없이 후보 기록·추적만"
         type: choice
-        options: [auto, full, flow]
+        options: [auto, full, flow, forward]
         default: auto
   schedule:
     - cron: "20 6 * * 2-6"
@@ -34,6 +34,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Collect KR sector / flow (query-only)
+        if: inputs.mode != 'forward'
         continue-on-error: true
         env:
           NHPLUG_APPKEY: ${{ secrets.NHPLUG_APPKEY }}

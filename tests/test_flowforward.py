@@ -88,6 +88,16 @@ class ForwardTest(unittest.TestCase):
             self.assertIsNone(fw.record_day(store, data, {"111111": "KOSPI"}, self.day, Path(t) / "fwd", min_stocks=1))
             self.assertEqual(len(fw.load_records(Path(t) / "fwd")), 1)
 
+    def test_record_is_withheld_when_prices_are_missing(self):
+        with tempfile.TemporaryDirectory() as t:
+            store = self.store(t, 80)
+            res = fw.record_day(store, {}, {"111111": "KOSPI"}, self.day, Path(t) / "fwd", min_stocks=1)      # 가격 데이터가 하나도 없다
+            self.assertIn("skipped", res)
+            self.assertEqual(res["diag"]["noPrice"], 1)
+            self.assertFalse((Path(t) / "fwd").exists())                                                       # 빈 기록이 남지 않는다
+            late = fw.record_day(store, {"111111.KS": self.df}, {"111111": "KOSPI"}, self.day, Path(t) / "fwd", min_stocks=1)
+            self.assertEqual(late["eligible"], 1)                                                              # 데이터가 오면 뒤늦게라도 기록된다
+
     def test_short_flow_history_is_skipped(self):
         with tempfile.TemporaryDirectory() as t:
             store = FlowStore(Path(t))
