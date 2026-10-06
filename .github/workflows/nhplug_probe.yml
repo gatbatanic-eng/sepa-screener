@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "docs=공개 명세 수집, quotes=조회 전용 시세 점검(키 필요)"
+        description: "docs=공개 명세 수집, quotes=조회 전용 시세 점검, kr_extra=한국 업종·수급 수집(키 필요)"
         type: choice
-        options: [docs, quotes]
+        options: [docs, quotes, kr_extra]
         default: docs
 
 permissions:
@@ -79,6 +79,37 @@ jobs:
           git add -f research/nhplug/probe
           git diff --cached --quiet && exit 0
           git commit -m "NHPLUG 시세 점검 결과 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+          for i in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && break
+            sleep $((i * 5))
+          done
+
+  kr_extra:
+    if: inputs.mode == 'kr_extra'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Collect KR sector / flow (query-only)
+        env:
+          NHPLUG_APPKEY: ${{ secrets.NHPLUG_APPKEY }}
+          NHPLUG_APPSECRET: ${{ secrets.NHPLUG_APPSECRET }}
+        run: python -m nhplug.kr_extra
+      - name: Save result
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f research/nhplug/kr_extra.json research/nhplug/probe
+          git diff --cached --quiet && exit 0
+          git commit -m "NHPLUG 한국 업종·수급 수집 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
           for i in 1 2 3; do
             git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && break
             sleep $((i * 5))
