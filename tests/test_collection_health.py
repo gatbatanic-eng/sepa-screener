@@ -1,8 +1,16 @@
 import unittest
+import subprocess
+from unittest.mock import patch
 from datetime import datetime, timezone
 from collection_health import route, latest_closed_session
 
 class CollectionHealthTests(unittest.TestCase):
+    def test_source_provenance_uses_checkout_not_delayed_event(self):
+        from research_tracker import source_commit
+        with patch('research_tracker.subprocess.check_output', return_value='a'*40+'\n'), patch.dict('os.environ', {'GITHUB_SHA':'b'*40}):
+            self.assertEqual(source_commit(), 'a'*40)
+        with patch('research_tracker.subprocess.check_output', side_effect=subprocess.CalledProcessError(1, 'git')), patch.dict('os.environ', {'GITHUB_SHA':'b'*40}):
+            self.assertIsNone(source_commit())
     def test_delayed_us_schedule_catches_kr_without_guessing_calendar(self):
         plan = route('schedule', '0 5 * * 2-6', '', '', {'KR':'2026-10-06','US':'2026-10-05'}, {'KR':'2026-10-02','US':'2026-10-05'})
         self.assertEqual(plan['markets'], ['KR'])
