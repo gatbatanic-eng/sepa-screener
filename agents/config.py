@@ -38,6 +38,8 @@ PORTFOLIO_FROZEN_ON = "2026-10-03"
 MAX_SINGLE_WEIGHT = 0.15          # 한 종목 상한: 자본의 15% (여러 에이전트가 같은 종목을 들면 합산해서 본다)
 MAX_MARKET_WEIGHT = 0.70          # 한 시장(한국/미국) 상한: 자본의 70%
 MAX_NAMES = 12                    # 권고 종목 수 상한
+SECTOR_FROZEN_ON = "2026-10-06"   # 섹터 한도는 업종 데이터(NHPLUG)를 붙인 날 고정. 한국만 적용(미국은 분류 데이터 없음)
+MAX_SECTOR_WEIGHT = 0.30          # 한 업종 상한: 자본의 30% (시장 상한 70%보다 먼저 정하지 않고, 결과를 보기 전에 정한 값)
 
 
 SESSION_CUT = dt.timedelta(hours=22, minutes=40)   # 정기 실행(ledger.yml)의 예약 시각(UTC). 이 시각이 지나야 그날 보고서를 쓴다.

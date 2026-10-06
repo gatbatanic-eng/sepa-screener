@@ -9,6 +9,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from nhplug import data as nh_data
+
 from . import config
 
 EXIT_WARN = ("WATCH_EXIT", "PROFIT_ALERT", "TREND_BREAK", "EXIT")
@@ -152,6 +154,10 @@ def audit(pick: dict, scr: Screener, ctx: dict) -> dict:
     elif gp is not None and abs(gp) > config.VERIFY_GAP_WARN:
         notes.append(_a("국면", "WARN", f"당일 갭 {gp:+.1f}%"))
 
+    # 5-2) 수급 감사관(한국) — 최근 5거래일 외국인·기관 순매수. 데이터가 없거나 오래되면 생략(감점 없음)
+    if m == "kr":
+        notes.extend(_flow(Screener.norm(m, code), scr.root))
+
     # 6) 반론 검토관 — 페르소나 증거에서 심각한 우려
     notes.extend(_contrarian(pick, row, scr.root))
 
@@ -159,6 +165,17 @@ def audit(pick: dict, scr: Screener, ctx: dict) -> dict:
     verdict = "기각" if "FAIL" in levels else "조건부" if "WARN" in levels else "통과"
     return {"verdict": verdict, "grade": {"통과": "A", "조건부": "B", "기각": "C"}[verdict], "notes": notes,
             "fail": [n["text"] for n in notes if n["level"] == "FAIL"], "warn": [n["text"] for n in notes if n["level"] == "WARN"]}
+
+
+def _flow(code: str, root: Path) -> list[dict]:
+    f = nh_data.load_flow(root).get(code)
+    if not f or f.get("frgn5") is None or f.get("inst5") is None:
+        return [_a("수급", "OK", "외국인·기관 수급 데이터 없음(수집 대상 아님 또는 오래됨) — 생략")]
+    fr, ins, d = f["frgn5"], f["inst5"], f.get("asOf")
+    txt = f"최근 5거래일(~{d}) 외국인 {fr:+,}주(근사)·기관 {ins:+,}주 순매수"
+    if fr < 0 and ins < 0:
+        return [_a("수급", "WARN", txt + " — 둘 다 순매도")]
+    return [_a("수급", "OK", txt + (" — 동반 순매수" if fr > 0 and ins > 0 else ""))]
 
 
 def _contrarian(pick, row, root: Path) -> list[dict]:

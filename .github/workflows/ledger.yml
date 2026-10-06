@@ -19,6 +19,8 @@ on:
       - tests/test_advisory.py
       - tests/test_picks.py
       - tests/test_freshness.py
+      - tests/test_nhplug.py
+      - nhplug/**
       - .github/workflows/ledger.yml
 
 permissions:
@@ -43,7 +45,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Verify ledger rules
-        run: python -m unittest tests.test_ledger tests.test_agents tests.test_advisory tests.test_picks tests.test_freshness -v
+        run: python -m unittest tests.test_ledger tests.test_agents tests.test_advisory tests.test_picks tests.test_freshness tests.test_nhplug -v
       - name: Update ledger, outcomes and statistics
         run: python -m ledger.main
       - name: Update agent league (virtual accounts)

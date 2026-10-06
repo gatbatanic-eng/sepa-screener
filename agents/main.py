@@ -6,6 +6,7 @@ import datetime as dt
 import logging
 
 from ledger import prices
+from nhplug import data as nh_data
 
 from . import config, freshness, portfolio as pf, review as rv, signals as sg, stats
 from .roster import ROSTER
@@ -67,9 +68,10 @@ def run(today: dt.date, fetch=prices.fetch_closes, bench_fetch=prices.fetch_benc
                               "probationRecheck": config.PROBATION_RECHECK, "probationMaxExtra": config.PROBATION_MAX_EXTRA,
                               "weights": config.CAPITAL_WEIGHT}
     write_json(reviews_path, reviews)
-    out["portfolio"] = pf.build(out["agents"])
+    out["portfolio"] = pf.build(out["agents"], sectors=nh_data.load_sectors())
     out["rules"]["portfolio"] = {"frozenOn": config.PORTFOLIO_FROZEN_ON, "maxSingle": config.MAX_SINGLE_WEIGHT,
-                                 "maxMarket": config.MAX_MARKET_WEIGHT, "maxNames": config.MAX_NAMES}
+                                 "maxMarket": config.MAX_MARKET_WEIGHT, "maxNames": config.MAX_NAMES,
+                                 "maxSector": config.MAX_SECTOR_WEIGHT, "sectorFrozenOn": config.SECTOR_FROZEN_ON}
     snap = config.STATE_DIR / "portfolio" / f"{today_s}.json"  # 날마다 한 번만 고정(이후 사후 평가용)
     if freeze and not hold and not snap.exists():  # hold: 시세가 아직 최신이 아니면 스냅샷을 미룬다(agents.freshness)
         write_json(snap, {"schemaVersion": 1, "date": today_s, **out["portfolio"]})

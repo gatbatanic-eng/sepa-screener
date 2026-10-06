@@ -42,6 +42,7 @@ VERIFY_RULES = {
 }
 VERIFY_ATR_WARN, VERIFY_ATR_FAIL = 6.0, 10.0       # 종목 차트에서 검증 팀이 직접 계산한 ATR14(%) — 하루 평균 변동폭
 VERIFY_EXT_WARN, VERIFY_EXT_FAIL = 40.0, 80.0      # 종가의 50일선 대비 괴리(%) — 과열
+VERIFY_FLOW_DAYS = 5                # 한국 후보: 최근 5거래일 외국인·기관 순매수(NHPLUG)
 VERIFY_GAP_WARN = 4.0               # 당일 갭(%) 경고
 VERIFY_SEVERE_CONCERNS = 2          # 심각도 3 우려가 이 개수 이상이면 경고
 

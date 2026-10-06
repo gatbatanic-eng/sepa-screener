@@ -1,6 +1,8 @@
-"""한국 종목 보조 데이터(업종·시가총액·PER/PBR·외국인/기관 수급) 수집. (python -m nhplug.kr_extra)
-조회 전용(nhplug.probe의 허용 목록을 그대로 쓴다). SEPA 규칙·에이전트 계좌에는 연결하지 않고 research/nhplug/kr_extra.json에 쌓기만 한다.
-수급 필드 뜻(frgn_ntby_qty vs invest)은 명세 설명이 모호해, 네이버 투자자 동향과 대조한 결과를 research/nhplug/probe/investor_check.json에 남긴다."""
+"""한국 종목 보조 데이터 수집(조회 전용: nhplug.probe의 허용 목록을 그대로 쓴다). (python -m nhplug.kr_extra --mode auto|full|flow)
+full: 전종목 업종·시가총액·PER/PBR → research/nhplug/kr_extra.json (주 1회, 약 10분)
+flow: 후보·보유 종목의 외국인·기관·개인 순매수 5·20거래일 합계 → research/nhplug/kr_flow.json (매일, 수 분)
+수급 필드 대조(2026-10-06, 네이버 동향과 5종목×10일): 기관(gigwan)·개인(person)은 완전 일치, 외국인은 invest가 근접(소폭 차이), frgn_ntby_qty는 다른 값.
+그래서 외국인은 invest를 방향·대략의 크기로만 쓴다."""
 from __future__ import annotations
 
 import datetime as dt
@@ -14,6 +16,7 @@ from .probe import call, kr_period, rows, token
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "research" / "nhplug" / "kr_extra.json"
+FLOW_OUT = ROOT / "research" / "nhplug" / "kr_flow.json"
 CHECK = ROOT / "research" / "nhplug" / "probe" / "investor_check.json"
 CHECK_CODES = ("005930", "000660", "247540", "035420", "005380")
 
@@ -42,10 +45,13 @@ def investor(tok: str, code: str) -> list[dict]:
     return rows(r, "Output_0")
 
 
-def summarize_flow(inv: list[dict]) -> dict:
-    """최근순 정렬 가정(첫 행이 최신). 5·20거래일 합계를 두 후보 필드 모두 남긴다."""
-    out = {"days": len(inv)}
-    for key, name in (("frgn_ntby_qty", "frgnA"), ("invest", "frgnB"), ("gigwan", "inst"), ("person", "indiv")):
+def summarize_flow(inv: list[dict], kst_today: str | None = None) -> dict:
+    """최근순 정렬 가정(첫 행이 최신). 오늘(KST) 날짜 행은 장 마감 직후 집계 전일 수 있어 뺀다.
+    frgn=invest(외국인, 근사), inst=gigwan(기관), indiv=person(개인). 5·20거래일 순매수 수량 합계."""
+    if kst_today:
+        inv = [x for x in inv if str(x.get("bsop_date1")) != kst_today]
+    out = {"days": len(inv), "asOf": str(inv[0].get("bsop_date1")) if inv else None}
+    for key, name in (("invest", "frgn"), ("gigwan", "inst"), ("person", "indiv")):
         vals = [_i(x.get(key)) for x in inv]
         for n in (5, 20):
             part = [v for v in vals[:n] if v is not None]
@@ -90,34 +96,86 @@ def check_fields(tok: str) -> dict:
     return res
 
 
-def main() -> None:
-    tok = token()
-    CHECK.parent.mkdir(parents=True, exist_ok=True)
-    CHECK.write_text(json.dumps({"ranAt": dt.datetime.now(dt.timezone.utc).isoformat(), "result": check_fields(tok)}, ensure_ascii=False, indent=1), encoding="utf-8")
-    stocks, errors, last = {}, 0, ""
-    for i, (code, mk) in enumerate(universe()):
+def candidates() -> list[str]:
+    """매일 수급을 받을 종목: SEPA 조건 6개 이상 충족 또는 READY/BREAKOUT_ZONE, 에이전트 권고 포트폴리오의 한국 종목, 계좌복구 상위 종목."""
+    codes: set[str] = set()
+    for r in json.loads((ROOT / "docs" / "data" / "latest_kr.json").read_text(encoding="utf-8")):
+        if r.get("status") == "OK" and r.get("code") and ((r.get("metCount") or 0) >= 6 or r.get("zone") in ("READY", "BREAKOUT_ZONE")):
+            codes.add(str(r["code"]).zfill(6))
+    try:
+        for ln in json.loads((ROOT / "docs" / "research" / "agents.json").read_text(encoding="utf-8"))["portfolio"]["lines"]:
+            if ln.get("market") == "kr":
+                codes.add(str(ln["code"]).zfill(6))
+    except (OSError, ValueError, KeyError):
+        pass
+    try:
+        for r in json.loads((ROOT / "docs" / "recovery" / "data" / "latest.json").read_text(encoding="utf-8")).get("strongest") or []:
+            if str(r.get("market")).lower() == "kr" and r.get("code"):
+                codes.add(str(r["code"]).zfill(6))
+    except (OSError, ValueError):
+        pass
+    return sorted(codes)
+
+
+def run_full(tok: str) -> int:
+    stocks, errors = {}, 0
+    uni = universe()
+    for i, (code, mk) in enumerate(uni):
         try:
             p = kr_period(tok, code, mk, dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d"), 1)
             o0 = ((p["data"] or {}).get("Output_0")) or {}
             if isinstance(o0, list):
                 o0 = o0[0] if o0 else {}
-            inv = investor(tok, code)
-            d = str(o0.get("bsop_date") or "")
-            last = max(last, d)
             stocks[code] = {"name": str(o0.get("iem_nm") or "").lstrip("*#"), "sector": o0.get("bstp_kor_isnm"), "sectorCode": o0.get("bstp_cls_code"),
-                            "marcapEok": _i(o0.get("hts_avls")), "per": _f(o0.get("per")), "pbr": _f(o0.get("pbr")), "asOf": d,
-                            "forRate": _f(inv[0].get("for_rate")) if inv else None, "flow": summarize_flow(inv)}
+                            "marcapEok": _i(o0.get("hts_avls")), "per": _f(o0.get("per")), "pbr": _f(o0.get("pbr")), "asOf": str(o0.get("bsop_date") or "")}
         except Exception as e:  # noqa: BLE001 - 종목 하나 실패가 전체를 막지 않게
             errors += 1
             stocks[code] = {"error": repr(e)[:120]}
         if i % 100 == 0:
-            print(f"{i}/{len(universe())} 오류 {errors}", flush=True)
+            print(f"full {i}/{len(uni)} 오류 {errors}", flush=True)
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps({"schemaVersion": 1, "generatedAt": dt.datetime.now(dt.timezone.utc).isoformat(), "asOf": last,
-                               "note": "frgnA=frgn_ntby_qty, frgnB=invest: 어느 쪽이 외국인인지 investor_check.json으로 확정 전까지 사용 금지",
-                               "stocks": stocks}, ensure_ascii=False), encoding="utf-8")
+    OUT.write_text(json.dumps({"schemaVersion": 2, "generatedAt": dt.datetime.now(dt.timezone.utc).isoformat(), "stocks": stocks}, ensure_ascii=False), encoding="utf-8")
     print("저장:", OUT, "종목", len(stocks), "오류", errors)
-    sys.exit(0 if errors < len(stocks) * 0.2 else 1)
+    return 0 if errors < len(stocks) * 0.2 else 1
+
+
+def run_flow(tok: str) -> int:
+    kst_today = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=9)).strftime("%Y%m%d")
+    codes = candidates()
+    stocks, errors = {}, 0
+    for code in codes:
+        try:
+            inv = investor(tok, code)
+            stocks[code] = {**summarize_flow(inv, kst_today), "forRate": _f(inv[0].get("for_rate")) if inv else None}
+        except Exception as e:  # noqa: BLE001
+            errors += 1
+    FLOW_OUT.parent.mkdir(parents=True, exist_ok=True)
+    FLOW_OUT.write_text(json.dumps({"schemaVersion": 1, "generatedAt": dt.datetime.now(dt.timezone.utc).isoformat(), "kstToday": kst_today,
+                                    "note": "frgn=invest(외국인, 네이버와 근접·소폭 차이), inst=기관, indiv=개인. 순매수 수량 합계. 오늘(KST) 행 제외",
+                                    "stocks": stocks}, ensure_ascii=False), encoding="utf-8")
+    print("저장:", FLOW_OUT, "종목", len(stocks), "/", len(codes), "오류", errors)
+    return 0 if errors < max(1, len(codes)) * 0.2 else 1
+
+
+def main() -> None:
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--mode", choices=["auto", "full", "flow"], default="auto")
+    mode = ap.parse_args().mode
+    if mode == "auto":  # 토요일(UTC)이거나 업종 파일이 없거나 8일 넘게 묵었으면 전종목, 아니면 수급만
+        stale = True
+        if OUT.exists():
+            try:
+                g = dt.datetime.fromisoformat(json.loads(OUT.read_text(encoding="utf-8"))["generatedAt"])
+                stale = (dt.datetime.now(dt.timezone.utc) - g).days >= 8
+            except (OSError, ValueError, KeyError):
+                stale = True
+        mode = "full" if stale or dt.datetime.now(dt.timezone.utc).weekday() == 5 else "flow"
+    print("mode:", mode)
+    tok = token()
+    rc = run_full(tok) if mode == "full" else 0
+    rc = max(rc, run_flow(tok))  # 전종목 갱신 날에도 수급은 같이 받는다
+    sys.exit(rc)
 
 
 if __name__ == "__main__":
