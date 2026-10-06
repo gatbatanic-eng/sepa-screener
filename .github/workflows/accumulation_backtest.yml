@@ -1,0 +1,42 @@
+name: Accumulation Backtest
+
+# 매집 가능성 필터(가격·거래량 부분)의 과거 백테스트. 수동 실행 전용, 기존 파이프라인과 연결하지 않는다. 결과는 research/accumulation 에 저장.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: accumulation-backtest
+  cancel-in-progress: false
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Unit tests
+        run: python -m unittest tests.test_accumulation -v
+      - name: Run backtest
+        run: python -m accumulation.backtest
+      - name: Save result
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f research/accumulation
+          git diff --cached --quiet && exit 0
+          git commit -m "매집 필터 백테스트 결과 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+          for i in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && break
+            sleep $((i * 5))
+          done
