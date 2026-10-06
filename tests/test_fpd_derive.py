@@ -100,6 +100,16 @@ class FPDDeriveTests(unittest.TestCase):
         self.assertIsNone(r30["relativeStrengthRaw"])
         self.assertAlmostEqual(r30["benchmarkReturnRaw"], 0.05)
 
+    def test_snapshot_without_benchmark_does_not_crash(self):
+        """한국 스냅샷은 benchmark가 None이다. 벤치마크 수익률·상대강도만 비고 나머지는 계산한다."""
+        current, prior = self.current(), self.prior("2026-08-26")
+        current["benchmark"] = None
+        prior["benchmark"] = None
+        r30 = derive_snapshot(current, [prior])["symbols"]["ABC"][0]["lookbacks"]["30D"]
+        self.assertIsNone(r30["benchmarkReturnRaw"])
+        self.assertIsNone(r30["relativeStrengthRaw"])
+        self.assertAlmostEqual(r30["epsRevisionRaw"], 0.1)
+
     def test_unknown_split_coverage_is_conservatively_excluded(self):
         current = self.current()
         current["events"]["splitCoverage"]["ABC"] = False

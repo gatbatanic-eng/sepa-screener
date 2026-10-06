@@ -163,8 +163,8 @@ def _feature_for_horizon(
     prior_snapshot = prior_by_date.get(prior["snapshotDate"], {})
     current_close = current_snapshot.get("universe", {}).get(ticker, {}).get("close")
     prior_close = prior_snapshot.get("universe", {}).get(ticker, {}).get("close")
-    current_benchmark = current_snapshot.get("benchmark", {}).get("close")
-    prior_benchmark = prior_snapshot.get("benchmark", {}).get("close")
+    current_benchmark = (current_snapshot.get("benchmark") or {}).get("close")
+    prior_benchmark = (prior_snapshot.get("benchmark") or {}).get("close")
     price_return = _simple_return(current_close, prior_close)
     benchmark_return = _simple_return(current_benchmark, prior_benchmark)
     base["pricePreviousClose"] = prior_close
