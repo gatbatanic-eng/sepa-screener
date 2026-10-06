@@ -47,6 +47,42 @@ class CheckTest(unittest.TestCase):
             self.assertEqual(fr.latest_sessions(root / "nowhere"), {"kr": "", "us": ""})
 
 
+class KrHolidayTest(unittest.TestCase):
+    S = {"kr": "2026-10-02", "us": "2026-10-05"}
+
+    def bar(self, bar, hh=6):
+        return {"bar": bar, "checkedAt": at(6, hh, 20)}   # 화요일 06:20 UTC에 확인
+
+    def test_korean_holiday_is_not_waited_for(self):
+        r = fr.check(D, at(6, 7, 10), self.S, self.bar("2026-10-02"))
+        self.assertFalse(r["hold"])
+        self.assertEqual(r["krClosed"], "2026-10-02")
+
+    def test_us_is_still_required_on_a_korean_holiday(self):
+        r = fr.check(D, at(6, 7, 10), {"kr": "2026-10-02", "us": "2026-10-02"}, self.bar("2026-10-02"))
+        self.assertTrue(r["hold"])
+        self.assertEqual(list(r["stale"]), ["us"])
+
+    def test_open_day_still_waits_for_korean_data(self):
+        r = fr.check(D, at(6, 7, 10), self.S, self.bar("2026-10-05"))   # 마지막 봉이 기준일 = 개장일 → 스크리닝을 기다린다
+        self.assertTrue(r["hold"])
+        self.assertIsNone(r["krClosed"])
+
+    def test_bar_checked_before_the_close_is_ignored(self):
+        early = {"bar": "2026-10-02", "checkedAt": at(5, 6, 0)}          # 기준일 장 마감 전에 확인한 값은 믿지 않는다
+        self.assertTrue(fr.check(D, at(6, 7, 10), self.S, early)["hold"])
+
+    def test_missing_calendar_changes_nothing(self):
+        self.assertIsNone(fr.kr_last_bar(Path("/nonexistent")))
+        self.assertTrue(fr.check(D, at(6, 7, 10), self.S, None)["hold"])  # 달력 정보가 없으면 예전처럼 기다린다
+
+    def test_kr_last_bar_reads_flow_file(self):
+        with tempfile.TemporaryDirectory() as t:
+            (Path(t) / "research/nhplug").mkdir(parents=True)
+            (Path(t) / "research/nhplug/kr_flow.json").write_text(json.dumps({"krLastBar": "20261002", "generatedAt": "2026-10-06T06:20:00+00:00"}))
+            self.assertEqual(fr.kr_last_bar(Path(t))["bar"], "2026-10-02")
+
+
 class HoldTest(unittest.TestCase):
     def test_hold_writes_nothing_then_later_run_writes_once(self):
         with tempfile.TemporaryDirectory() as t:
