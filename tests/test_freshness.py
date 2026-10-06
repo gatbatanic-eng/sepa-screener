@@ -49,28 +49,33 @@ class CheckTest(unittest.TestCase):
 
 class KrHolidayTest(unittest.TestCase):
     S = {"kr": "2026-10-02", "us": "2026-10-05"}
+    BARS = ["2026-09-30", "2026-10-01", "2026-10-02", "2026-10-06"]   # 10-05(월)는 휴장, 10-06(화) 봉은 이미 있다
 
-    def bar(self, bar, hh=6):
-        return {"bar": bar, "checkedAt": at(6, hh, 20)}   # 화요일 06:20 UTC에 확인
+    def bars(self, bars=None, day=6, hh=11):
+        return {"bars": bars or self.BARS, "checkedAt": at(day, hh, 30)}
 
     def test_korean_holiday_is_not_waited_for(self):
-        r = fr.check(D, at(6, 7, 10), self.S, self.bar("2026-10-02"))
+        r = fr.check(D, at(6, 15, 10), self.S, self.bars())
         self.assertFalse(r["hold"])
         self.assertEqual(r["krClosed"], "2026-10-02")
 
     def test_us_is_still_required_on_a_korean_holiday(self):
-        r = fr.check(D, at(6, 7, 10), {"kr": "2026-10-02", "us": "2026-10-02"}, self.bar("2026-10-02"))
+        r = fr.check(D, at(6, 15, 10), {"kr": "2026-10-02", "us": "2026-10-02"}, self.bars())
         self.assertTrue(r["hold"])
         self.assertEqual(list(r["stale"]), ["us"])
 
     def test_open_day_still_waits_for_korean_data(self):
-        r = fr.check(D, at(6, 7, 10), self.S, self.bar("2026-10-05"))   # 마지막 봉이 기준일 = 개장일 → 스크리닝을 기다린다
+        r = fr.check(D, at(6, 15, 10), self.S, self.bars(["2026-10-01", "2026-10-02", "2026-10-05", "2026-10-06"]))
         self.assertTrue(r["hold"])
         self.assertIsNone(r["krClosed"])
 
-    def test_bar_checked_before_the_close_is_ignored(self):
-        early = {"bar": "2026-10-02", "checkedAt": at(5, 6, 0)}          # 기준일 장 마감 전에 확인한 값은 믿지 않는다
+    def test_bars_checked_before_the_close_are_ignored(self):
+        early = {"bars": ["2026-10-01", "2026-10-02"], "checkedAt": at(5, 6, 0)}   # 기준일 장 마감 전에 확인한 값은 믿지 않는다
         self.assertTrue(fr.check(D, at(6, 7, 10), self.S, early)["hold"])
+
+    def test_list_that_does_not_cover_the_day_is_ignored(self):
+        old = {"bars": ["2026-10-06"], "checkedAt": at(6, 11, 30)}                  # 기준일 이전 구간이 없으면 휴장인지 알 수 없다
+        self.assertTrue(fr.check(D, at(6, 15, 10), self.S, old)["hold"])
 
     def test_missing_calendar_changes_nothing(self):
         self.assertIsNone(fr.kr_last_bar(Path("/nonexistent")))
@@ -79,8 +84,8 @@ class KrHolidayTest(unittest.TestCase):
     def test_kr_last_bar_reads_flow_file(self):
         with tempfile.TemporaryDirectory() as t:
             (Path(t) / "research/nhplug").mkdir(parents=True)
-            (Path(t) / "research/nhplug/kr_flow.json").write_text(json.dumps({"krLastBar": "20261002", "generatedAt": "2026-10-06T06:20:00+00:00"}))
-            self.assertEqual(fr.kr_last_bar(Path(t))["bar"], "2026-10-02")
+            (Path(t) / "research/nhplug/kr_flow.json").write_text(json.dumps({"krBars": ["20261006", "20261002"], "generatedAt": "2026-10-06T06:20:00+00:00"}))
+            self.assertEqual(fr.kr_last_bar(Path(t))["bars"], ["2026-10-02", "2026-10-06"])
 
 
 class HoldTest(unittest.TestCase):
