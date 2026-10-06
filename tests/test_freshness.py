@@ -3,6 +3,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from agents import freshness as fr, report as rp
 
@@ -15,6 +16,11 @@ def at(day, hh, mm=0):
 
 
 class CheckTest(unittest.TestCase):
+    def setUp(self):  # 저장소에 실제로 있는 한국 개장일 목록에 테스트가 좌우되지 않게 한다
+        p = mock.patch.object(fr, "kr_last_bar", return_value=None)
+        p.start()
+        self.addCleanup(p.stop)
+
     def test_fresh_data_is_not_held(self):
         r = fr.check(D, at(6, 7, 10), {"kr": "2026-10-05", "us": "2026-10-05"})
         self.assertFalse(r["hold"] or r["forced"])
@@ -79,7 +85,8 @@ class KrHolidayTest(unittest.TestCase):
 
     def test_missing_calendar_changes_nothing(self):
         self.assertIsNone(fr.kr_last_bar(Path("/nonexistent")))
-        self.assertTrue(fr.check(D, at(6, 7, 10), self.S, None)["hold"])  # 달력 정보가 없으면 예전처럼 기다린다
+        with mock.patch.object(fr, "kr_last_bar", return_value=None):
+            self.assertTrue(fr.check(D, at(6, 7, 10), self.S)["hold"])  # 달력 정보가 없으면 예전처럼 기다린다
 
     def test_kr_last_bar_reads_flow_file(self):
         with tempfile.TemporaryDirectory() as t:
