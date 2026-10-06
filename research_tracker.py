@@ -26,8 +26,7 @@ def source_commit():
             return sha
     except (OSError, subprocess.SubprocessError):
         pass
-    sha = os.getenv('GITHUB_SHA')
-    return sha if sha and re.fullmatch(r'[a-f0-9]{40}', sha) else None
+    return None  # event SHA cannot prove the actual checked-out source
 
 
 def packed(obj):
