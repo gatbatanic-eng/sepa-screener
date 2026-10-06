@@ -238,6 +238,6 @@ def risk_desk(stance: str, inp: dict, market_stats: dict, macro_info: dict) -> t
     sf = {k: s["sizeFactor"] for k, s in market_stats.items() if s.get("sizeFactor") is not None}
     if sf:
         bullets.append("스크리너 자체 권장 진입비중 계수(구간별 중앙값): " + ", ".join(f"{k} {v}" for k, v in sf.items()))
-    bullets.append("종목·시장 한도(에이전트 리그와 동일): 한 종목 15%, 한 시장 70%, 최대 12종목. 섹터·유동성 한도는 아직 미검사")
+    bullets.append("종목·시장·업종 한도(에이전트 리그와 동일): 한 종목 15%, 한 시장 70%, 한 업종 30%(한국만), 최대 12종목. 미국 섹터·유동성 한도는 아직 미검사")
     gaps = [f"{k} 분석 불가 {s['bad']}종목 — 이 구간의 판단 신뢰도가 낮음" for k, s in market_stats.items() if s["n"] and s["bad"] > s["n"] * 0.2]
     return _desk("risk", "리스크 데스크", f"권고 투입 상한 {cap}%", bullets, None, gaps), {"cap": cap}
