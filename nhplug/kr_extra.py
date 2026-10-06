@@ -1,6 +1,6 @@
 """한국 종목 보조 데이터 수집(조회 전용: nhplug.probe의 허용 목록을 그대로 쓴다). (python -m nhplug.kr_extra --mode auto|full|flow)
 full: 전종목 업종·시가총액·PER/PBR → research/nhplug/kr_extra.json (주 1회, 약 10분)
-flow: 후보·보유 종목의 외국인·기관·개인 순매수 5·20거래일 합계 → research/nhplug/kr_flow.json (매일, 수 분)
+flow: 한국 전종목의 외국인·기관·개인 순매수 → 일별 원본을 research/nhplug/flow_history/에 누적하고, 5·20거래일 합계를 research/nhplug/kr_flow.json에 쓴다 (매일, 약 12분)
 수급 필드 대조(2026-10-06, 네이버 동향과 5종목×10일): 기관(gigwan)·개인(person)은 완전 일치, 외국인은 invest가 근접(소폭 차이), frgn_ntby_qty는 다른 값.
 그래서 외국인은 invest를 방향·대략의 크기로만 쓴다."""
 from __future__ import annotations
@@ -96,27 +96,6 @@ def check_fields(tok: str) -> dict:
     return res
 
 
-def candidates() -> list[str]:
-    """매일 수급을 받을 종목: SEPA 조건 6개 이상 충족 또는 READY/BREAKOUT_ZONE, 에이전트 권고 포트폴리오의 한국 종목, 계좌복구 상위 종목."""
-    codes: set[str] = set()
-    for r in json.loads((ROOT / "docs" / "data" / "latest_kr.json").read_text(encoding="utf-8")):
-        if r.get("status") == "OK" and r.get("code") and ((r.get("metCount") or 0) >= 6 or r.get("zone") in ("READY", "BREAKOUT_ZONE")):
-            codes.add(str(r["code"]).zfill(6))
-    try:
-        for ln in json.loads((ROOT / "docs" / "research" / "agents.json").read_text(encoding="utf-8"))["portfolio"]["lines"]:
-            if ln.get("market") == "kr":
-                codes.add(str(ln["code"]).zfill(6))
-    except (OSError, ValueError, KeyError):
-        pass
-    try:
-        for r in json.loads((ROOT / "docs" / "recovery" / "data" / "latest.json").read_text(encoding="utf-8")).get("strongest") or []:
-            if str(r.get("market")).lower() == "kr" and r.get("code"):
-                codes.add(str(r["code"]).zfill(6))
-    except (OSError, ValueError):
-        pass
-    return sorted(codes)
-
-
 def run_full(tok: str) -> int:
     stocks, errors = {}, 0
     uni = universe()
@@ -140,15 +119,22 @@ def run_full(tok: str) -> int:
 
 
 def run_flow(tok: str) -> int:
+    from .flowstore import FlowStore
     kst_today = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=9)).strftime("%Y%m%d")
-    codes = candidates()
-    stocks, errors = {}, 0
-    for code in codes:
+    codes = [c for c, _ in universe()]
+    store = FlowStore()
+    stocks, errors, added = {}, 0, 0
+    for i, code in enumerate(codes):
         try:
             inv = investor(tok, code)
+            added += store.merge(code, inv, exclude_date=kst_today)
             stocks[code] = {**summarize_flow(inv, kst_today), "forRate": _f(inv[0].get("for_rate")) if inv else None}
         except Exception as e:  # noqa: BLE001
             errors += 1
+        if i % 100 == 0:
+            print(f"flow {i}/{len(codes)} 오류 {errors}", flush=True)
+    store.save()
+    print("누적 이력 새 행", added, "개장일", len(store.sessions()))
     kr_bars: list[str] = []  # 한국 장이 열린 최근 날짜들(대표 종목 일봉 20개). 휴장일 판정에 쓴다(agents/freshness.py)
     try:
         bars = rows(kr_period(tok, "005930", "1", dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d"), 20))
