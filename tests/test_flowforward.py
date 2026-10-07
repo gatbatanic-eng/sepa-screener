@@ -7,13 +7,16 @@ import numpy as np
 import pandas as pd
 
 from accumulation import forward as fw
-from accumulation.flowrule import FLOW_CFG, flow_condition, groups
+from accumulation.flowrule import FLOW_CFG, V2_CFG, flow_condition, groups, v2_condition
 from nhplug.flowstore import FlowStore
 from tests.test_accumulation import make
 
 
-def row(d, frgn=1, inst=1, indiv=-2, close=100, vol=1000):
-    return {"bsop_date1": d, "invest": frgn, "gigwan": inst, "person": indiv, "stck_prpr": close, "acml_vol": vol}
+def row(d, frgn=1, inst=1, indiv=-2, close=100, vol=1000, program=None):
+    x = {"bsop_date1": d, "invest": frgn, "gigwan": inst, "person": indiv, "stck_prpr": close, "acml_vol": vol}
+    if program is not None:
+        x["program"] = program
+    return x
 
 
 class StoreTest(unittest.TestCase):
@@ -27,6 +30,17 @@ class StoreTest(unittest.TestCase):
             again = FlowStore(Path(t))
             self.assertEqual(again.days["20261001"]["005930"], [5, 1, -2, 100, 1000])
             self.assertTrue((Path(t) / "2026-10.json").exists())
+
+    def test_program_is_stored_and_old_rows_get_only_the_program_filled(self):
+        with tempfile.TemporaryDirectory() as t:
+            s = FlowStore(Path(t))
+            s.merge("A", [row("20261001", 5)])                                  # 예전 형식(프로그램 없음)
+            self.assertEqual(len(s.days["20261001"]["A"]), 5)
+            self.assertEqual(s.merge("A", [row("20261001", 999, program=7)]), 1)
+            self.assertEqual(s.days["20261001"]["A"], [5, 1, -2, 100, 1000, 7])   # 기존 값은 그대로, 프로그램만 채움
+            self.assertEqual(s.merge("A", [row("20261001", 999, program=8)]), 0)   # 이미 채운 값은 덮어쓰지 않음
+            s.merge("B", [row("20261002", program=3)])
+            self.assertEqual(s.days["20261002"]["B"][5], 3)
 
     def test_rows_with_missing_values_are_skipped(self):
         with tempfile.TemporaryDirectory() as t:
@@ -64,6 +78,48 @@ class RuleTest(unittest.TestCase):
         self.assertEqual(groups(False, True, True, True), [])
 
 
+class V2RuleTest(unittest.TestCase):
+    def rows(self, f, i, prog=0, n=20, closes=None, vol=1000):
+        closes = closes or [100] * n
+        return [[f, i, -f - i, closes[k], vol, prog] for k in range(n)]
+
+    def test_quiet_steady_base_passes(self):
+        ok, ev = v2_condition(self.rows(60, 0), 0.75)                         # 매일 6%, 가격 그대로, 고점 대비 75%
+        self.assertTrue(ok)
+        self.assertEqual((ev["posWeeks"], ev["lead"]), (4, "FRG"))
+
+    def test_each_condition_can_fail(self):
+        self.assertFalse(v2_condition(self.rows(60, 0), 0.95)[0])             # 고점 근처(2단계) — 바닥권 아님
+        self.assertFalse(v2_condition(self.rows(60, 0), 0.50)[0])             # 너무 깊은 하락
+        up = [100 * (1 + 0.01 * k) for k in range(20)]                       # 20일 +19%
+        self.assertFalse(v2_condition(self.rows(60, 0, closes=up), 0.75)[0])
+        self.assertFalse(v2_condition(self.rows(60, 0, prog=60), 0.75)[0])    # 순매수가 전부 프로그램 매매
+        lumpy = self.rows(0, 0)
+        lumpy[3] = [1300, 0, -1300, 100, 1000, 0]                             # 하루에 몰린 순매수(블록딜)
+        ok, ev = v2_condition(lumpy, 0.75)
+        self.assertFalse(ok)
+        self.assertGreater(ev["topDayShare"], V2_CFG["max_day_share"])
+
+    def test_missing_program_is_not_judged(self):
+        rows = self.rows(60, 0)
+        rows[0] = rows[0][:5]
+        self.assertIsNone(v2_condition(rows, 0.75)[0])
+
+    def test_inst_led(self):
+        self.assertEqual(v2_condition(self.rows(10, 50), 0.75)[1]["lead"], "INST")
+
+
+class DedupeTest(unittest.TestCase):
+    def test_consecutive_appearances_count_once(self):
+        days = {f"2026100{i}": ["A"] for i in range(1, 6)}
+        days["20261001"].append("B")
+        self.assertEqual(fw.dedupe(days, cooldown=10), [("20261001", "A"), ("20261001", "B")])
+
+    def test_reappearance_after_cooldown_counts_again(self):
+        ev = {f"d{i:02d}": (["A"] if i in (0, 12) else []) for i in range(13)}
+        self.assertEqual(fw.dedupe(ev, cooldown=10), [("d00", "A"), ("d12", "A")])
+
+
 class ForwardTest(unittest.TestCase):
     def setUp(self):
         self.df = make()
@@ -98,6 +154,27 @@ class ForwardTest(unittest.TestCase):
             late = fw.record_day(store, {"111111.KS": self.df}, {"111111": "KOSPI"}, self.day, Path(t) / "fwd", min_stocks=1)
             self.assertEqual(late["eligible"], 1)                                                              # 데이터가 오면 뒤늦게라도 기록된다
 
+    def test_v2_waits_for_program_values_then_records(self):
+        with tempfile.TemporaryDirectory() as t:
+            store = self.store(t, 80)                                        # 프로그램 값 없는 예전 형식
+            data = {"111111.KS": self.df}
+            res = fw.record_day(store, data, {"111111": "KOSPI"}, self.day, Path(t) / "v2", min_stocks=1, series="v2")
+            self.assertIn("skipped", res)
+            self.assertEqual(res["diag"]["noProgram"], 1)
+            for i, d in enumerate(self.dates):
+                store.merge("111111", [row(d, 80, 0, 0, int(self.df["close"].iloc[-20 + i]), 1000, program=0)])
+            rec = fw.record_day(store, data, {"111111": "KOSPI"}, self.day, Path(t) / "v2", min_stocks=1, series="v2")
+            self.assertEqual(rec["series"], "v2")
+            self.assertEqual(rec["eligible"], 1)                             # 합성 데이터는 고점 근처라 V2(바닥권) 후보는 아니다
+            self.assertEqual(rec["groups"]["V2"], [])
+
+    def test_baselines_use_same_day_rules(self):
+        with tempfile.TemporaryDirectory() as t:
+            store = self.store(t, 80)
+            data = {"111111.KS": self.df}
+            b = fw.baselines(store, data, fw.features_for(data), {"111111": "KOSPI"}, [self.day], min_stocks=1)
+            self.assertEqual(b[self.day], {"C_ONLY": ["111111"], "D_ONLY": ["111111"]})
+
     def test_short_flow_history_is_skipped(self):
         with tempfile.TemporaryDirectory() as t:
             store = FlowStore(Path(t))
@@ -115,7 +192,7 @@ class ForwardTest(unittest.TestCase):
         up = pd.DataFrame({"close": np.linspace(100, 160, 60)}, index=idx)
         flat = pd.DataFrame({"close": np.full(60, 100.0)}, index=idx)
         rec = {"date": "20260105", "groups": {"FLOW": [{"code": "111111", "market": "KOSPI"}], "FLOW_ACC": []}}
-        out = fw.summarize([rec], {"111111.KS": up, "222222.KS": flat}, {"111111": "KOSPI", "222222": "KOSPI"})
+        out = fw.summarize(fw.events_from([rec], ("FLOW", "FLOW_ACC")), {"111111.KS": up, "222222.KS": flat}, {"111111": "KOSPI", "222222": "KOSPI"})
         s = out["groups"]["FLOW"]["5"]
         self.assertEqual(s["signals"], 1)
         self.assertFalse(s["enough"])

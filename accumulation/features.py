@@ -40,5 +40,6 @@ def compute(df: pd.DataFrame, cfg: dict = CFG) -> pd.DataFrame:
     out["E"] = (n_heavy >= 1) & (clv_heavy >= cfg["clv_min"])
     out = out.fillna(False).astype(bool)
     out["score"] = out[["A", "B", "D", "E"]].sum(axis=1)
+    out["hiRatio"] = c / hi                      # 종가 / 252일 고가 (매집 v2의 위치 조건)
     out["ok"] = sma200.notna() & hi.notna() & (c > 0) & udv.notna() & a_ratio.notna() & atr_pct.notna()   # 지표를 계산할 이력이 충분한 날만
     return out
