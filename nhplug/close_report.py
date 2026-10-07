@@ -167,18 +167,33 @@ def to_markdown(rep: dict) -> str:
     return "\n".join(o)
 
 
-def headlines_for(codes: list[str]) -> dict[str, list[str]]:
-    """네이버 모바일 종목 뉴스 제목(참고). 실패하면 빈 값 — 보고서는 헤드라인 없이도 만든다."""
+def filter_titles(titles: list[str], name: str, limit: int = 2) -> list[str]:
+    """종목명이 들어간 제목만 남긴다(공백 무시). 시황·다른 종목 기사가 섞이는 것을 막는다."""
+    key = re.sub(r"\s+", "", str(name or ""))
+    if len(key) < 2:
+        return []
+    out = []
+    for t in titles:
+        if key in re.sub(r"\s+", "", t) and t not in out:
+            out.append(t)
+        if len(out) >= limit:
+            break
+    return out
+
+
+def headlines_for(items: list[tuple[str, str]]) -> dict[str, list[str]]:
+    """네이버 모바일 종목 뉴스 제목 중 종목명이 들어간 것만(참고). items = [(코드, 종목명)]. 실패하면 빈 값."""
     out = {}
-    for c in codes:
+    for c, name in items:
         try:
-            r = requests.get(f"https://m.stock.naver.com/api/news/stock/{c}?pageSize=3&page=1", timeout=10,
+            r = requests.get(f"https://m.stock.naver.com/api/news/stock/{c}?pageSize=10&page=1", timeout=10,
                              headers={"User-Agent": "Mozilla/5.0", "Referer": "https://m.stock.naver.com/"})
-            titles = []
+            titles: list[str] = []
+
             def walk(x):
                 if isinstance(x, dict):
                     t = x.get("title") or x.get("titleFull")
-                    if isinstance(t, str) and len(titles) < 2:
+                    if isinstance(t, str):
                         titles.append(html.unescape(re.sub(r"<[^>]+>", "", t)).strip())
                     for v in x.values():
                         walk(v)
@@ -187,7 +202,7 @@ def headlines_for(codes: list[str]) -> dict[str, list[str]]:
                         walk(v)
             if r.ok:
                 walk(r.json())
-            out[c] = titles
+            out[c] = filter_titles(titles, name)
         except Exception:  # noqa: BLE001
             out[c] = []
     return out
@@ -235,7 +250,7 @@ def main() -> None:
              "공격 진입 추천": [str(p["code"]).zfill(6) for p in ((memo.get("picks") or {}).get("picks") or []) if str(p.get("market")).upper() != "US"],
              "매집 v1 FLOW": [p["code"] for p in latest.get("FLOW", [])][:10], "매집 v2": [p["code"] for p in latest.get("V2", [])][:10]}
     pre = build(today, data, names, watch)
-    rep = build(today, data, names, watch, headlines_for([x["code"] for x in pre["issues"][:5]]))
+    rep = build(today, data, names, watch, headlines_for([(x["code"], x["name"]) for x in pre["issues"][:5]]))
     rep["stopAlerts"] = stop_alerts(data, lines)
     rep["errors"] = errors
     OUT_DIR.mkdir(parents=True, exist_ok=True)

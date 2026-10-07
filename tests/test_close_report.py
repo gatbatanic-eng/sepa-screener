@@ -54,6 +54,12 @@ class CloseReportTest(unittest.TestCase):
         data = {f"A{i}": day(f"A{i}", "작은업종", 3) for i in range(cr.MIN_SECTOR - 1)}
         self.assertEqual(cr.build(TODAY, data, {}, {})["strongSectors"], [])
 
+    def test_headline_filter_keeps_titles_with_the_stock_name(self):
+        titles = ["[마감시황]코스닥 2.34% 하락", "대양금속, 신사업 기대에 급등", "대양 금속 거래량 급증", "삼전·닉스 폭락한 3분기", "대양금속, 신사업 기대에 급등"]
+        self.assertEqual(cr.filter_titles(titles, "대양금속"), ["대양금속, 신사업 기대에 급등", "대양 금속 거래량 급증"])
+        self.assertEqual(cr.filter_titles(titles, "없는종목"), [])
+        self.assertEqual(cr.filter_titles(titles, "A"), [])            # 한 글자 이름은 오탐이 많아 쓰지 않는다
+
     def test_stop_alerts_within_three_percent(self):
         data = {"111111": day("111111", "x", 0)}
         data["111111"]["close"] = 102.0
