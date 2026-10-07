@@ -1,6 +1,7 @@
 """데이터 품질 점검: 이상치 집계(2014-01-01 이후)와 A1 이력 검사. 데이터를 고치지 않고 기록만 한다."""
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 
 
@@ -93,3 +94,29 @@ def adjustment_errors(df: pd.DataFrame, splits: pd.Series | None, divergence: fl
         out.append({"date": d.date().isoformat(), "adj_ret": round(float(adj[d]), 4), "vendor_ret": round(float(ven[d]), 4),
                     "split_event": bool(near), "split_ratio": float(near[0][1]) if near else None})
     return out
+
+
+def a1_history_break(df: pd.DataFrame, event_date: str, asof: str) -> dict:
+    """서로 다른 법인 이력이 이어 붙은 종목(예: JCI는 Tyco, TMUS는 MetroPCS 이력)의 사상 최고가 판정 가능 시점.
+
+    사건 이전 최고가(수정 종가)가 사건 이후 최고가보다 크면 사건 이후 가격은 이전 이력과 같은 척도가 아닐 수 있어, 매일의 누적
+    최고가(A1 신호 기준)가 오염된다. 조건 "사건 이전 최고가 < 사건 이후 최고가"가 asof까지 충족되면 문제 없음(blocked_until=None).
+    아니면 그 조건이 처음 충족되는 날(사건 이후 종가가 사건 이전 최고가를 처음 넘는 날)까지 A1 판정 불가이고,
+    끝까지 충족되지 않으면 blocked_until="NOT_YET".
+    """
+    t = pd.Timestamp(event_date)
+    pre = df.loc[: t - pd.Timedelta(days=1), "close"]
+    post = df.loc[t:, "close"]
+    if pre.empty or post.empty:
+        return {"event_date": event_date, "blocked_until": None, "satisfied_asof": True, "note": "사건 이전 또는 이후 데이터 없음"}
+    pre_max = float(pre.max())
+    post_asof = post.loc[: pd.Timestamp(asof)]
+    post_max_asof = float(post_asof.max()) if len(post_asof) else float("nan")
+    satisfied = bool(post_max_asof > pre_max)
+    blocked_until = None
+    if not satisfied:
+        crossed = post[post > pre_max]
+        blocked_until = crossed.index[0].date().isoformat() if len(crossed) else "NOT_YET"
+    return {"event_date": event_date, "pre_event_max": round(pre_max, 4), "pre_event_max_date": pre.idxmax().date().isoformat(),
+            "post_event_max_asof": None if np.isnan(post_max_asof) else round(post_max_asof, 4), "satisfied_asof": satisfied,
+            "blocked_until": blocked_until}

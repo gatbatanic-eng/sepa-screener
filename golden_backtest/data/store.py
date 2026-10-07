@@ -60,9 +60,9 @@ def save_splits(symbol: str, splits: pd.Series) -> None:
 
 def load_splits(symbol: str) -> pd.Series:
     path = SPLITS_DIR / f"{symbol}.json"
-    if not path.exists():
-        return pd.Series(dtype=float)
-    raw = json.loads(path.read_text(encoding="utf-8"))
+    raw = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    if not raw:
+        return pd.Series(dtype=float, index=pd.DatetimeIndex([]))  # 빈 경우에도 날짜 인덱스를 유지한다(날짜 비교가 되도록)
     return pd.Series({pd.Timestamp(k): float(v) for k, v in raw.items()}, dtype=float)
 
 

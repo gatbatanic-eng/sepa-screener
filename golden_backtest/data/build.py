@@ -53,6 +53,15 @@ def _cached_name(symbol: str, dual_retry: bool) -> str | None:
     return None
 
 
+def _a1(frame: pd.DataFrame, used: str, cfg: dict, starts_at_floor: bool) -> dict:
+    cfg_a1 = cfg["a1_history_check"]
+    res = quality.a1_history_check(frame, cfg_a1["asof"], cfg_a1["first_bars"], starts_at_floor)
+    brk = (cfg.get("a1_history_breaks") or {}).get(used)
+    if brk:  # 다른 법인 이력이 이어 붙은 종목: 사건 이전 최고가를 넘을 때까지 A1 판정 불가
+        res["history_break"] = {**quality.a1_history_break(frame, brk["event"], cfg_a1["asof"]), "note": brk["note"]}
+    return res
+
+
 def _metrics(symbol: str, used: str, frame: pd.DataFrame, splits: pd.Series, meta: dict, cfg: dict) -> dict:
     cfg_q, cfg_a1, adj = cfg["quality"], cfg["a1_history_check"], cfg["adjustment"]
     since = pd.Timestamp(cfg_q["anomaly_since"])
@@ -65,7 +74,7 @@ def _metrics(symbol: str, used: str, frame: pd.DataFrame, splits: pd.Series, met
         "nan_runs": meta.get("nan_runs", []), "stripped_leading": meta.get("stripped_leading"),
         "meta_missing": not meta,
         "min_raw_close": None if frame["raw_close"].isna().all() else round(float(frame["raw_close"].min()), 4),
-        "a1": quality.a1_history_check(frame, cfg_a1["asof"], cfg_a1["first_bars"], bool(meta.get("starts_at_floor", False))),
+        "a1": _a1(frame, used, cfg, bool(meta.get("starts_at_floor", False))),
         "divergences": quality.adjustment_artifacts(frame, splits, adj["divergence"]["threshold"], adj["split_match_days"]),
         "errors": quality.adjustment_errors(frame, splits, adj["dhr_type"]["divergence"], adj["dhr_type"]["min_adj_ret"],
                                             adj["split_match_days"]),
@@ -150,11 +159,12 @@ def main() -> None:
             bench[name] = {"error": str(exc)[:200]}
 
     ok = {r["stored_as"]: r for r in results if r["ok"]}  # manifest 키는 저장명(BRK-B). 요청 티커는 requested_as
-    exclusions = uni.compute_exclusions(ok, cfg)
+    failed = {r["requested_as"]: r["error"] for r in results if not r["ok"]}
+    exclusions = uni.compute_exclusions(ok, cfg, failed)
     collected_at = dt.datetime.now(dt.timezone.utc).isoformat()
     manifest = {
         "collected_at": collected_at,
-        "spec_version": "1.3",
+        "spec_version": "1.4",
         "source": "가격·지수: FinanceDataReader / 분할 이벤트: yfinance(Yahoo)",
         "fetch_start": start, "closed_session_cutoff": cutoff.date().isoformat(),
         "universe": cfg["universe"]["name"], "survivorship_bias": True,
@@ -177,9 +187,10 @@ def main() -> None:
                        for k, r in sorted(ok.items())},
     }
     universe_p1 = {
-        "collected_at": collected_at, "spec_version": "1.3",
+        "collected_at": collected_at, "spec_version": "1.4",
         "included": sorted(set(ok) - set(exclusions)),
         "excluded": {k: exclusions[k] for k in sorted(exclusions)},
+        "notes": {k: v for k, v in sorted((cfg.get("notes") or {}).items()) if k in ok},
     }
     # CTVA형(분리상장 미보정 등 공급자·수정 수익률이 같이 크게 움직이는 봉)은 자동 탐지가 안 되므로 ±40% 봉 전체를 수동 검토 대상으로 남긴다
     review = sorted(({"symbol": k, "date": m["date"], "adj_ret": m["ret"], "vendor_close_ret": m.get("vendor_close_ret"),

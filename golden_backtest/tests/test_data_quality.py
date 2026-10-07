@@ -220,14 +220,61 @@ class TestUniverseExclusions(unittest.TestCase):
         recs = {"DHR": self.rec([{"date": "2016-07-05", "split_event": True}])}
         self.assertEqual(len(uni.compute_exclusions(recs, self.CFG)["DHR"]), 2)
 
+    def test_failed_collection_is_excluded_with_static_reason_or_error(self):
+        out = uni.compute_exclusions({"AAPL": self.rec()}, self.CFG, failed={"DHR": "x", "NEWCO": "정리 후 데이터 없음(공급자 반환 1행)"})
+        self.assertEqual(out["DHR"], ["보정 오류"])          # 정적 사유가 있으면 그것을 쓴다
+        self.assertIn("수집 실패", out["NEWCO"][0])           # 없으면 오류를 사유로
+        self.assertNotIn("AAPL", out)
+
     def test_shipped_config_excludes_expected_static_symbols_and_restores_nine(self):
         from golden_backtest import config
         cfg = config.load("universe")
         static = set(cfg["exclude"]["static"])
-        self.assertEqual(static, {"DHR", "CTVA", "SW", "FERG", "AMCR"})
+        self.assertEqual(static, {"DHR", "CTVA", "SW", "FERG", "AMCR", "WBD"})
         for sym in ("BKR", "GEN", "JCI", "KDP", "KLAC", "LDOS", "TDG", "VMRK", "VST"):
             self.assertNotIn(sym, static)
         self.assertTrue(all(cfg["exclude"]["static"][s] for s in static))  # 사유가 비어 있지 않다
+        self.assertEqual(cfg["exclude"]["static"]["WBD"], "공급자가 현재 1행만 반환, 캐시 없음")
+        self.assertIn("EQR", cfg["notes"]["VMRK"])
+        self.assertEqual(set(cfg["a1_history_breaks"]), {"JCI", "EXPE", "TMUS"})
+
+
+class TestA1HistoryBreak(unittest.TestCase):
+    """사건 이전 최고가 < 사건 이후 최고가(2014-12-31 기준)면 정상. 아니면 사건 이후 종가가 사건 이전 최고가를 처음 넘는 날까지 판정 불가."""
+
+    def _frame(self, closes, start="2013-12-02"):
+        idx = pd.bdate_range(start, periods=len(closes))
+        return pd.DataFrame({"close": pd.Series(closes, index=idx, dtype=float)})
+
+    def test_condition_met_before_asof_means_no_block(self):
+        # 사건(index 5) 이전 최고 100, 사건 이후 2014-12-31까지 최고 120 > 100 → 문제 없음 (EXPE형)
+        df = self._frame([10, 20, 100, 50, 60, 70, 90, 120, 110])
+        ev = df.index[5].date().isoformat()
+        res = quality.a1_history_break(df, ev, "2014-12-31")
+        self.assertTrue(res["satisfied_asof"])
+        self.assertIsNone(res["blocked_until"])
+        self.assertEqual(res["pre_event_max"], 100.0)
+
+    def test_condition_not_met_blocks_until_first_close_above_pre_event_max(self):
+        # 사건 이후 asof까지 최고 60 < 100. 이후 100 이하는 계속 막히고, 처음 100을 넘는 날(101)에 풀린다 (JCI·TMUS형)
+        closes = [10, 20, 100, 50, 60, 55, 60, 58, 100, 101, 130]
+        df = self._frame(closes, start="2014-12-01")      # 사건 이후 일부가 asof 뒤
+        ev = df.index[5].date().isoformat()
+        res = quality.a1_history_break(df, ev, "2014-12-10")
+        self.assertFalse(res["satisfied_asof"])
+        self.assertEqual(res["blocked_until"], df.index[9].date().isoformat())  # 종가 101: 100과 같은 날(index 8)은 넘지 못한다
+
+    def test_never_satisfied_is_not_yet(self):
+        df = self._frame([10, 20, 100, 50, 60, 55, 60, 58, 70], start="2014-12-01")
+        res = quality.a1_history_break(df, df.index[5].date().isoformat(), "2014-12-31")
+        self.assertEqual(res["blocked_until"], "NOT_YET")
+
+    def test_post_event_peak_after_asof_does_not_count_for_asof_condition(self):
+        # asof 이후의 최고가는 asof 시점 조건에 쓰지 않는다(미래 정보)
+        df = self._frame([10, 100, 50, 60, 70, 500], start="2014-12-26")
+        res = quality.a1_history_break(df, df.index[2].date().isoformat(), "2014-12-31")
+        self.assertFalse(res["satisfied_asof"])
+        self.assertEqual(res["blocked_until"], df.index[5].date().isoformat())
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-# 유니버스·수집 설정 (규격 v1.3). 성과를 보고 바꾸지 않는다.
+# 유니버스·수집 설정 (규격 v1.4). 성과를 보고 바꾸지 않는다.
 universe:
   name: sp500_current          # S&P500 현재 구성종목 전체 (생존편향 있음 — 보고서에 명시)
   source: FinanceDataReader    # StockListing("S&P500")
@@ -14,6 +14,10 @@ quality:
 a1_history_check:
   asof: "2014-12-31"           # 이 날짜까지의 데이터에서 최고가를 찾는다
   first_bars: 252              # 첫 봉이 수집 하한(fetch.start)이고 최고가가 첫 252봉 안이면 A1 판정 불가
+a1_history_breaks:             # 서로 다른 법인 이력이 이어 붙은 종목. 사건 이전 최고가(수정 종가)를 사건 이후 종가가 넘을 때까지 A1 판정 불가
+  JCI: {event: "2007-07-02", note: "Tyco 이력(2007 분사·1:4 역분할)이 이어진 것. 사건 이전 최고가 62.76(2001-01-30)"}
+  EXPE: {event: "2011-12-21", note: "분사(TripAdvisor)·역분할 전 Expedia 이력이 이어진 것"}
+  TMUS: {event: "2013-05-01", note: "MetroPCS 이력이 이어진 것(역합병·1:2 역분할)"}
 placeholder_strip:
   min_run: 5                   # 종목 시작 구간에서 O=H=L=C·거래량 0인 봉이 5개 이상 연속이면 그 구간 끝까지 자른다
 adjustment:
@@ -34,6 +38,7 @@ exclude:
     SW: "미국 상장 이전 정지 봉(O=H=L=C, 거래량 0)이 2014년 이후 1,587봉, 2024-07-05까지 산재한다"
     FERG: "미국 상장 이전 정지 봉(O=H=L=C, 거래량 0)이 2014년 이후 1,192봉, 2021-03-05까지 산재한다"
     AMCR: "미국 상장 이전 정지 봉(O=H=L=C, 거래량 0)이 2014년 이후 1,110봉, 2019-06-10까지 산재한다"
+    WBD: "공급자가 현재 1행만 반환, 캐시 없음"
   rules:
     adjustment_error_dhr_type:
       since: "2014-01-01"      # 이 날짜 이후 봉만 본다(백테스트 구간 + 워밍업)
@@ -42,3 +47,7 @@ exclude:
       since: "2015-01-01"      # 연속 결측 구간의 시작일이 이 날짜 이후
       max_run: 5               # 이 값을 넘는(6봉 이상) 연속 결측(가격 NaN·0 이하) 행
       reason: "2015년 이후 구간에 5봉 넘는 연속 결측이 있다"
+
+# 포함 종목에 붙이는 주석(universe_p1.json의 notes로 나간다)
+notes:
+  VMRK: "EQR(Equity Residential) 이력, AVB(AvalonBay)는 합병으로 소멸(생존편향). 2026-08-18부터 티커 VMRK. yfinance의 AvalonBay 표기는 무시한다"
