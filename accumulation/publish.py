@@ -23,18 +23,32 @@ def build(root: Path | None = None) -> dict:
     src = root / "research" / "accumulation"
     names = {str(r["code"]).zfill(6): r.get("name") for r in _read(root / "docs" / "data" / "latest_kr.json", []) if r.get("code")}
     sectors = {c: v.get("sector") for c, v in (_read(root / "research" / "nhplug" / "kr_extra.json", {}).get("stocks") or {}).items() if isinstance(v, dict)}
-    records = [_read(f, {}) for f in sorted((src / "forward").glob("*.json"))]
-    records = [r for r in records if r.get("date")]
+    def load(sub):
+        recs = [_read(f, {}) for f in sorted((src / sub).glob("*.json"))]
+        return [r for r in recs if r.get("date")]
+
+    records, records_v2 = load("forward"), load("forward_v2")
+    v2_by_day = {r["date"]: r for r in records_v2}
+    v1_by_day = {r["date"]: r for r in records}
     recent = []
-    for r in records[-10:][::-1]:
-        recent.append({"date": r["date"], "eligible": r.get("eligible"), "recordedAt": r.get("recordedAt"),
-                       "FLOW": len(r["groups"].get("FLOW", [])), "FLOW_ACC": len(r["groups"].get("FLOW_ACC", []))})
-    latest = None
+    for d in sorted(set(v1_by_day) | set(v2_by_day), reverse=True)[:10]:
+        r, q = v1_by_day.get(d), v2_by_day.get(d)
+        recent.append({"date": d, "eligible": r.get("eligible") if r else None, "recordedAt": (r or q).get("recordedAt"),
+                       "FLOW": len(r["groups"].get("FLOW", [])) if r else None, "FLOW_ACC": len(r["groups"].get("FLOW_ACC", [])) if r else None,
+                       "v2Eligible": q.get("eligible") if q else None, "V2": len(q["groups"].get("V2", [])) if q else None})
+
+    def rows(ps):
+        keep = ("close", "netShare", "posDays", "topDayShare", "posWeeks", "ret20", "hiRatio", "lead")
+        return [{"code": p["code"], "name": names.get(p["code"]), "market": p.get("market"), "sector": sectors.get(p["code"]), **{k: p.get(k) for k in keep if k in p}} for p in ps]
+
+    latest = {"date": None, "v2Date": None, "groups": {}}
     if records:
-        r = records[-1]
-        latest = {"date": r["date"], "groups": {g: [{"code": p["code"], "name": names.get(p["code"]), "market": p.get("market"), "sector": sectors.get(p["code"]),
-                                                      "close": p.get("close"), "netShare": p.get("netShare"), "posDays": p.get("posDays")} for p in v]
-                                                  for g, v in r["groups"].items()}}
+        latest["date"] = records[-1]["date"]
+        latest["groups"].update({g: rows(v) for g, v in records[-1]["groups"].items()})
+    if records_v2:
+        latest["v2Date"] = records_v2[-1]["date"]
+        latest["groups"]["V2"] = rows(records_v2[-1]["groups"].get("V2", []))
+    latest = latest if (records or records_v2) else None
     fwd = _read(src / "forward_summary.json", {})
     return {"schemaVersion": 1, "generatedAt": dt.datetime.now(dt.timezone.utc).isoformat(),
             "forward": {"summary": fwd, "recent": recent, "latest": latest},
