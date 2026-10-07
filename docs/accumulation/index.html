@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>매집 필터 연구</title>
+<style>
+  /* 기존 대시보드(멀티팩터 등)와 같은 토큰·패널·내비 구조. 신호 색은 판정(양호·주의·경계)에만 쓴다. */
+  :root {
+    --bg: #f5f6f8; --panel: #ffffff; --border: #e3e5e9;
+    --text: #1b1e24; --text-dim: #6b7280; --accent: #2563eb;
+    --g-bg: #e6f7ec; --g-text: #157347; --g-border: #b7e4c7;
+    --y-bg: #fff2e0; --y-text: #b45309; --y-border: #fbd9a8;
+    --r-bg: #fdf2f2; --r-text: #b42318; --r-border: #f3c6c2;
+    --n-bg: #f8f9fa; --n-text: #6b7280; --n-border: #e3e5e9;
+    --up: #d92b2b; --down: #1a56db;
+    --row-hover: #f0f4ff; --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --panel: #171a21; --border: #2a2e37;
+      --text: #e7e9ee; --text-dim: #9aa2b1; --accent: #5b8def;
+      --g-bg: #113322; --g-text: #6bd08a; --g-border: #1e5c3a;
+      --y-bg: #3a2712; --y-text: #f6b96a; --y-border: #6b4a1f;
+      --r-bg: #3a1717; --r-text: #f2a4a0; --r-border: #6b2b26;
+      --n-bg: #1b1f27; --n-text: #9aa2b1; --n-border: #2a2e37;
+      --up: #f0605f; --down: #6ea8fe;
+      --row-hover: #1d2230; --shadow: 0 1px 3px rgba(0,0,0,0.4);
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", sans-serif;
+    font-size: 14px; line-height: 1.5;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 60px; }
+  header { margin-bottom: 16px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .subtitle { color: var(--text-dim); font-size: 13px; max-width: 72ch; }
+  .nav { display: flex; gap: 10px; margin: 10px 0 4px; flex-wrap: wrap; }
+  .nav a { font-size: 12px; color: var(--text-dim); text-decoration: none; border: 1px solid var(--border);
+           border-radius: 999px; padding: 4px 12px; background: var(--panel); }
+  .nav a:hover { color: var(--accent); border-color: var(--accent); }
+  .nav a.here { color: #fff; background: var(--accent); border-color: var(--accent); }
+  .tabs { display: flex; gap: 8px; margin: 16px 0; flex-wrap: wrap; align-items: center; }
+  .tab-btn { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--panel); color: var(--text); cursor: pointer; font-size: 13px; font-weight: 600; }
+  .tab-btn[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .tab-btn:focus-visible, .chk input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .asof { color: var(--text-dim); font-size: 12px; margin-left: auto; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; box-shadow: var(--shadow); }
+  .card .label { color: var(--text-dim); font-size: 12px; margin-bottom: 6px; }
+  .card .value { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .card .sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow); padding: 16px; margin-bottom: 18px; min-width: 0; }
+  .panel h2 { font-size: 14px; margin: 0 0 4px; font-weight: 700; }
+  .panel .desc { color: var(--text-dim); font-size: 12px; margin: 0 0 12px; max-width: 80ch; }
+  .pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 999px; border: 1px solid; }
+  .pill.g { background: var(--g-bg); color: var(--g-text); border-color: var(--g-border); }
+  .pill.y { background: var(--y-bg); color: var(--y-text); border-color: var(--y-border); }
+  .pill.r { background: var(--r-bg); color: var(--r-text); border-color: var(--r-border); }
+  .pill.n { background: var(--n-bg); color: var(--n-text); border-color: var(--n-border); }
+  .heat { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 10px; }
+  .heat .cell { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+  .heat .cell.hit { border-color: var(--r-border); background: var(--r-bg); }
+  .heat .k { font-size: 12px; color: var(--text-dim); }
+  .heat .v { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .heat .t { font-size: 11px; color: var(--text-dim); }
+  .movers { font-size: 12px; color: var(--text-dim); margin-top: 10px; }
+  .table-scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { padding: 7px 8px; border-bottom: 1px solid var(--border); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  th { color: var(--text-dim); font-weight: 600; font-size: 12px; position: sticky; top: 0; background: var(--panel); vertical-align: bottom; cursor: help; }
+  th .ko { font-weight: 400; font-size: 11px; }
+  th.l, td.l { text-align: left; }
+  td.why { white-space: normal; min-width: 240px; max-width: 420px; text-align: left; color: var(--text-dim); font-size: 12px; }
+  tbody tr:hover { background: var(--row-hover); }
+  .name { font-weight: 600; color: var(--text); text-decoration: none; border-bottom: 1px dotted var(--text-dim); }
+  a.name:hover { color: var(--accent); border-bottom-color: var(--accent); }
+  a.name:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .sym { color: var(--text-dim); font-size: 11px; margin-left: 4px; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 0 6px; border-radius: 4px; margin-left: 4px; border: 1px solid; }
+  .tag.p2 { color: var(--y-text); border-color: var(--y-border); background: var(--y-bg); }
+  .tag.flag { color: var(--r-text); border-color: var(--r-border); background: var(--r-bg); }
+  .tag.gate { color: var(--n-text); border-color: var(--n-border); background: var(--n-bg); }
+  .t1-ON { color: var(--g-text); font-weight: 700; }
+  .t1-NEAR { color: var(--y-text); font-weight: 600; }
+  .t1-OFF, .t1-NA { color: var(--text-dim); }
+  .pos { color: var(--up); } .neg { color: var(--down); }
+  .muted { color: var(--text-dim); }
+  .filters { display: flex; gap: 14px; flex-wrap: wrap; margin: 0 0 10px; font-size: 12px; color: var(--text-dim); }
+  .chk { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+  .empty { color: var(--text-dim); padding: 16px 4px; }
+  .err { color: var(--r-text); }
+  footer { color: var(--text-dim); font-size: 12px; margin-top: 24px; max-width: 80ch; }
+  footer a { color: var(--accent); }
+  .group-name { font-weight: 700; } .group-desc { color: var(--text-dim); font-size: 11px; display: block; font-weight: 400; }
+  .ci { color: var(--text-dim); font-size: 11px; display: block; }
+  .banner { border: 1px solid var(--y-border); background: var(--y-bg); color: var(--y-text); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 13px; }
+  .hz { display: inline-flex; gap: 6px; margin-left: 8px; }
+  .hz .tab-btn { padding: 5px 12px; }
+  ul.rules { margin: 6px 0 0 18px; padding: 0; color: var(--text-dim); font-size: 12px; max-width: 90ch; } ul.rules li { margin: 3px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>매집 필터 연구</h1>
+    <div class="subtitle">세력 매집을 가격·거래량·수급으로 추정하는 필터를 검증합니다. 과거 백테스트(가격·거래량)와 오늘부터의 전향 추적(수급 포함, 한국)을 함께 봅니다. 연구용이며 매수 신호가 아닙니다.</div>
+    <div class="nav">
+      <a href="../">SEPA 추세템플릿</a>
+      <a href="../performance/">전략 성과</a>
+      <a href="../agents/">에이전트 리그</a>
+      <a href="../agents/reports/">에이전트 보고서</a>
+      <a href="../advisory/">투자 자문 위원회</a>
+      <a class="here" href="./">매집 필터</a>
+    </div>
+  </header>
+  <div class="banner" id="banner">불러오는 중…</div>
+  <div class="cards" id="cards"></div>
+
+  <div class="panel">
+    <h2>최신 후보 <span class="muted" id="candDate"></span></h2>
+    <p class="desc">최근 20거래일 외국인+기관 순매수 금액이 양수이고 거래대금의 5% 이상, 순매수한 날이 12일 이상(수급 조건)인 종목입니다. FLOW는 여기에 위치 조건(150·200일선 위, 50일선 +15% 이내, 52주 고점 75% 이상, 상승일/하락일 거래량 ≥ 1.2)을 더한 것이고, FLOW_ACC는 거래대금 증가와 좁은 변동폭까지 더한 것입니다. 순매수 비중 = 20일 순매수 금액 ÷ 20일 거래대금.</p>
+    <div class="tabs" id="candTabs" role="group" aria-label="후보 그룹"></div>
+    <div class="table-scroll" id="candTable"></div>
+  </div>
+
+  <div class="panel">
+    <h2>전향 추적 성과</h2>
+    <p class="desc">기록한 날의 후보를 다음 거래일 종가에 진입해 5·20·40거래일 뒤 종가에 청산한 성과를, 같은 날 평가 가능한 전 종목 평균(ALL)과 비교합니다(왕복 비용 0.5%). 신호 30건 미만은 '표본 부족'이며 우열을 판단하지 않습니다. 규칙은 결과를 보고 바꾸지 않습니다.</p>
+    <div class="table-scroll" id="fwdTable"></div>
+    <h2 style="margin-top:16px">최근 기록</h2>
+    <div class="table-scroll" id="recentTable"></div>
+  </div>
+
+  <div class="panel">
+    <h2>가격·거래량 백테스트 <span class="muted" id="btRange"></span></h2>
+    <p class="desc">수급을 뺀 가격·거래량 조건만으로 과거 신호를 평가한 결과입니다. ALL = 그날 평가 가능한 전 종목 평균, TREND = 위치 조건(D)만, ACC = A·B·D·E 모두, ACC3 = 점수 3 이상. 날짜별 평균을 한 관측치로 보고 95% 구간은 이동 블록 부트스트랩입니다. 구간이 0을 포함하면 ALL과 구분되지 않습니다.</p>
+    <div class="tabs" id="btTabs" role="group" aria-label="백테스트 선택"></div>
+    <div class="table-scroll" id="btTable"></div>
+    <ul class="rules">
+      <li>생존편향: 현재 유동성 상위 종목만 사용했습니다. 상장폐지·탈락 종목이 빠져 성과가 실제보다 좋게 나올 수 있습니다.</li>
+      <li>수급(외국인·기관)은 과거 이력이 30일뿐이라 백테스트에 없습니다. 수급 이력은 2026-10-06부터 매일 쌓고 있어 약 60거래일 뒤에 수급 포함 백테스트가 가능합니다.</li>
+      <li>조건 값(A 10일/60일 거래대금 ≥ 1.3, B 20일 범위 ≤ 5×ATR%, E 거래량 큰 날 종가가 범위 위쪽 절반 등)은 결과를 보기 전에 고정했고 바꾸지 않았습니다.</li>
+    </ul>
+  </div>
+  <footer>데이터: <a href="../research/accumulation.json">accumulation.json</a> · 규칙·한계는 저장소 AGENTS.md '매집 가능성 필터 백테스트'·'수급 매집 후보 전향 추적'을 참고하세요. 가격은 Yahoo, 한국 수급·업종은 NH투자증권 Open API(조회 전용)입니다.</footer>
+</div>
+<script>
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const pct = (v) => v == null ? "–" : (v > 0 ? "+" : "") + v.toFixed(2) + "%";
+const pp = (v) => v == null ? "–" : (v > 0 ? "+" : "") + v.toFixed(2) + "%p";
+const cls = (v) => v == null ? "" : v > 0 ? "pos" : v < 0 ? "neg" : "";
+const fmtDate = (d) => /^\d{8}$/.test(d || "") ? d.slice(0, 4) + "-" + d.slice(4, 6) + "-" + d.slice(6) : (d || "–");
+const GROUP_NAME = {FLOW: "FLOW (수급+위치)", FLOW_ACC: "FLOW_ACC (수급+위치+거래대금 증가+좁은 변동폭)", ALL: "ALL (전 종목 평균)", TREND: "TREND (위치만)", ACC: "ACC (A·B·D·E 모두)", ACC3: "ACC3 (점수 3 이상)"};
+let DATA = null, candGroup = "FLOW", btMarket = "kr", btHz = "20";
+
+function card(label, value, sub) { return `<div class="card"><div class="label">${esc(label)}</div><div class="value">${esc(value)}</div><div class="sub">${esc(sub || "")}</div></div>`; }
+function buttons(el, items, current, onPick) {
+  el.innerHTML = items.map(([k, label]) => `<button class="tab-btn" type="button" data-k="${esc(k)}" aria-pressed="${k === current}">${esc(label)}</button>`).join("");
+  el.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => onPick(b.dataset.k)));
+}
+
+function renderTop() {
+  const f = DATA.forward, s = f.summary || {}, latest = f.latest;
+  const total = Object.values(s.groups || {}).flatMap((g) => Object.values(g)).reduce((m, x) => Math.max(m, x.signals || 0), 0);
+  document.getElementById("banner").textContent = `규칙 고정 2026-10-06 · 한국 · 기록된 날 ${s.recordedDays ?? 0}일 · 평가가 끝난 신호 최대 ${total}건 — 신호 30건 미만은 '표본 부족'이라 성과를 근거로 쓰지 않습니다. 매수 신호가 아닙니다.`;
+  const n = (g) => latest ? (latest.groups[g] || []).length : 0;
+  document.getElementById("cards").innerHTML =
+    card("최근 기록일", latest ? fmtDate(latest.date) : "–", "후보를 기록한 마지막 확정 거래일") +
+    card("FLOW 후보", n("FLOW"), "수급+위치 조건") +
+    card("FLOW_ACC 후보", n("FLOW_ACC"), "+거래대금 증가·좁은 변동폭") +
+    card("기록된 날", s.recordedDays ?? 0, "누적") +
+    card("백테스트 기간", DATA.backtest ? (DATA.backtest.markets.kr.firstDate + " ~ " + DATA.backtest.markets.kr.lastDate) : "–", "가격·거래량, 한국·미국");
+}
+
+function renderCand() {
+  const latest = DATA.forward.latest;
+  document.getElementById("candDate").textContent = latest ? "· " + fmtDate(latest.date) + " 기준" : "";
+  buttons(document.getElementById("candTabs"), [["FLOW", "FLOW"], ["FLOW_ACC", "FLOW_ACC"]], candGroup, (k) => { candGroup = k; renderCand(); });
+  const rows = latest ? (latest.groups[candGroup] || []) : [];
+  const el = document.getElementById("candTable");
+  if (!rows.length) { el.innerHTML = `<div class="empty">이 그룹에 해당하는 종목이 없습니다.</div>`; return; }
+  const sorted = rows.slice().sort((a, b) => (b.netShare || 0) - (a.netShare || 0));
+  el.innerHTML = `<table><thead><tr><th class="l">종목</th><th class="l">시장·업종</th><th>종가</th><th>순매수 비중</th><th>순매수 일수(20일)</th></tr></thead><tbody>` +
+    sorted.map((r) => `<tr><td class="l"><span class="group-name">${esc(r.name || r.code)}</span><span class="sym">${esc(r.code)}</span></td><td class="l">${esc(r.sector || r.market || "")}</td><td>${r.close != null ? r.close.toLocaleString() : "–"}</td><td>${r.netShare != null ? (r.netShare * 100).toFixed(1) + "%" : "–"}</td><td>${esc(r.posDays)}</td></tr>`).join("") + `</tbody></table>`;
+}
+
+function renderForward() {
+  const s = DATA.forward.summary || {groups: {}};
+  const rows = [];
+  for (const [g, per] of Object.entries(s.groups || {})) for (const [h, x] of Object.entries(per)) rows.push([g, h, x]);
+  document.getElementById("fwdTable").innerHTML = rows.length ? `<table><thead><tr><th class="l">그룹</th><th>보유</th><th>신호</th><th>날짜</th><th>평균</th><th>승률</th><th>ALL 평균</th><th>ALL 대비</th><th>95% 구간</th><th>판정</th></tr></thead><tbody>` +
+    rows.map(([g, h, x]) => `<tr><td class="l">${esc(GROUP_NAME[g] || g)}</td><td>${h}일</td><td>${x.signals}</td><td>${x.days}</td><td class="${cls(x.meanPct)}">${pct(x.meanPct)}</td><td>${x.winRatePct != null ? x.winRatePct + "%" : "–"}</td><td>${pct(x.allMeanPct)}</td><td class="${cls(x.vsAllPp)}">${pp(x.vsAllPp)}</td><td>${x.vsAllCI95 ? "[" + x.vsAllCI95.join(", ") + "]" : "–"}</td><td>${x.enough ? "" : '<span class="pill n">표본 부족</span>'}</td></tr>`).join("") + `</tbody></table>`
+    : `<div class="empty">아직 평가된 기록이 없습니다.</div>`;
+  const rec = DATA.forward.recent || [];
+  document.getElementById("recentTable").innerHTML = rec.length ? `<table><thead><tr><th class="l">기준일</th><th>평가 종목</th><th>FLOW</th><th>FLOW_ACC</th><th class="l">기록 시각(UTC)</th></tr></thead><tbody>` +
+    rec.map((r) => `<tr><td class="l">${esc(fmtDate(r.date))}</td><td>${r.eligible ?? "–"}</td><td>${r.FLOW}</td><td>${r.FLOW_ACC}</td><td class="l muted">${esc((r.recordedAt || "").slice(0, 16).replace("T", " "))}</td></tr>`).join("") + `</tbody></table>` : `<div class="empty">기록이 없습니다.</div>`;
+}
+
+function renderBacktest() {
+  const bt = DATA.backtest;
+  const tabs = document.getElementById("btTabs");
+  if (!bt) { document.getElementById("btTable").innerHTML = `<div class="empty">백테스트 결과가 없습니다.</div>`; return; }
+  const m = bt.markets[btMarket];
+  document.getElementById("btRange").textContent = `· ${m.market.toUpperCase()} ${m.stocks}종목, ${m.firstDate} ~ ${m.lastDate}`;
+  tabs.innerHTML = "";
+  const mk = document.createElement("span"), hz = document.createElement("span"); mk.className = hz.className = "hz";
+  tabs.append(mk, hz);
+  buttons(mk, [["kr", "한국"], ["us", "미국"]], btMarket, (k) => { btMarket = k; renderBacktest(); });
+  buttons(hz, [["5", "5일"], ["20", "20일"], ["40", "40일"]], btHz, (k) => { btHz = k; renderBacktest(); });
+  const per = m.horizons[btHz];
+  const block = (key, label) => per[key] ? Object.entries(per[key]).map(([g, x]) => `<tr><td class="l">${label}</td><td class="l">${esc(GROUP_NAME[g] || g)}</td><td>${x.signals}</td><td>${x.days}</td><td class="${cls(x.meanPct)}">${pct(x.meanPct)}</td><td>${x.medianPct != null ? pct(x.medianPct) : "–"}</td><td>${x.winRatePct != null ? x.winRatePct + "%" : "–"}</td><td class="${cls(x.vsAllPp)}">${pp(x.vsAllPp)}</td><td>${x.vsAllCI95 ? "[" + x.vsAllCI95.join(", ") + "]" : "–"}</td><td class="${cls(x.vsIndexPp)}">${pp(x.vsIndexPp)}</td></tr>`).join("") : "";
+  document.getElementById("btTable").innerHTML = `<table><thead><tr><th class="l">기간</th><th class="l">그룹</th><th>신호</th><th>날짜</th><th>평균</th><th>중앙값</th><th>승률</th><th>ALL 대비</th><th>95% 구간</th><th>지수 대비</th></tr></thead><tbody>` +
+    block("all", "전체") + block("firstHalf", "전반") + block("secondHalf", "후반") + `</tbody></table>`;
+}
+
+fetch("../research/accumulation.json", {cache: "no-store"}).then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then((d) => { DATA = d; renderTop(); renderCand(); renderForward(); renderBacktest(); })
+  .catch((e) => { document.getElementById("banner").innerHTML = `<span class="err">데이터를 불러오지 못했습니다 (${esc(e.message)}).</span>`; });
+</script>
+</body>
+</html>
