@@ -1,7 +1,8 @@
 """4단계 B1 검증 산출물 생성: 거래 CSV, 참조 구현 대조, 지표, 사람 대조용 15건(차트 + 한 줄 요약).
 
 실행: python -m golden_backtest.reports.b1_check            (검증 종목 5개)
-      python -m golden_backtest.reports.b1_check --universe (P1 전 종목 참조 구현 대조만, 2013-01-01부터 잘라서)
+      python -m golden_backtest.reports.b1_check --universe (P1 전 종목 참조 구현 대조만, 전체 이력)
+      --out DIR 로 출력 디렉터리를 바꿀 수 있다. 캐시만 읽고(네트워크 없음) manifest 스냅샷과 같은 데이터만 쓴다.
 출력: golden_backtest/reports/b1_check/
 """
 from __future__ import annotations
@@ -15,14 +16,14 @@ import pandas as pd
 
 from golden_backtest.data import quality, store
 from golden_backtest.engine.costs import Costs
-from golden_backtest.engine.simulator import simulate
 from golden_backtest.evaluation import metrics
+from golden_backtest.evaluation import run as runner
 from golden_backtest.strategies.b1_turtle import B1Turtle
 from golden_backtest.tests import b1_reference as ref
 
 OUT = Path(__file__).resolve().parent / "b1_check"
 TICKERS = ("AAPL", "NVDA", "OXY", "KDP", "KO")
-SPEC_VERSION = "1.6"
+SPEC_VERSION = "1.7"
 LARGE_DIV_PCT = 0.10
 MANIFEST = Path(__file__).resolve().parents[1] / "manifest"
 
@@ -33,13 +34,6 @@ def load_events(sym: str, since: str = "2015-01-01") -> list[tuple[pd.Timestamp,
     q = json.loads((MANIFEST / "quality_report.json").read_text(encoding="utf-8"))["per_symbol"].get(sym, {})
     ev += [(pd.Timestamp(a["date"]), "특별배당·분리상장 보정") for a in q.get("adjustment_divergences", []) if a["date"] >= since]
     return sorted(ev)
-
-
-def run_symbol(sym: str, costs: Costs, df: pd.DataFrame | None = None):
-    df = store.load_ohlcv(sym) if df is None else df
-    strat = B1Turtle()
-    res = simulate(df, strat, sym, costs, SPEC_VERSION)
-    return df, strat, res
 
 
 def trade_table(sym: str, df: pd.DataFrame, strat: B1Turtle, res) -> pd.DataFrame:
@@ -223,17 +217,32 @@ def stats_rows(label: str, trades) -> list[str]:
     return out
 
 
-def main_five() -> None:
-    OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "charts").mkdir(exist_ok=True)
+def snapshot_header(extra: str = "") -> list[str]:
+    """결과 파일 머리에 붙이는 데이터 스냅샷 정보. 같은 식별자면 같은 데이터로 돌린 결과다."""
+    s = store.snapshot_info()
+    return [f"snapshot_id={s['snapshot_id']}", f"collected_at={s['collected_at']}", f"spec_version={s['spec_version']}",
+            f"strategy=B1 v{B1Turtle().version} (config/strategies/b1_turtle.yaml)", "engine_warmup_bars=252(config/engine.yaml)"] + ([extra] if extra else [])
+
+
+def write_csv(df: pd.DataFrame, path: Path, header: list[str]) -> None:
+    """머리 주석(# ...) + CSV. 읽을 때는 pandas.read_csv(path, comment='#')."""
+    body = df.to_csv(index=False, lineterminator="\n")
+    path.write_text("".join(f"# {h}\n" for h in header) + body, encoding="utf-8-sig", newline="")
+
+
+def main_five(out: Path = OUT) -> None:
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "charts").mkdir(exist_ok=True)
     costs = _COSTS
+    header = snapshot_header()
     tabs, all_trades, runs, ref_lines = [], [], {}, []
     tot_n = tot_ok = 0
     for sym in TICKERS:
-        df, strat, res = run_symbol(sym, costs)
+        store.verify_events(sym)                                  # 분할·배당 기록도 manifest 스냅샷과 같은지 확인
+        df, res = runner.run_strategy(sym, B1Turtle(), costs, SPEC_VERSION)   # 검증된 스냅샷의 전체 이력
+        strat = B1Turtle()
         runs[sym] = (df, strat, res)
-        tab = trade_table(sym, df, strat, res)
-        tabs.append(tab)
+        tabs.append(trade_table(sym, df, strat, res))
         all_trades.append(res.with_open_mtm())
         cols = {k: df[k].tolist() for k in ("open", "high", "low", "close")}
         r = ref.run_b1(list(df.index), cols["open"], cols["high"], cols["low"], cols["close"], entry_n=strat.entry_n, exit_n=strat.exit_n,
@@ -243,24 +252,26 @@ def main_five() -> None:
         ref_lines.append(f"| {sym} | {len(r)} | {len(res.with_open_mtm())} | {matched} | {len(mism)} |")
     tab = pd.concat(tabs, ignore_index=True)
     tab["review_set_73"] = mark_review_set(tab)
-    tab.drop(columns=["signal_idx", "entry_idx", "exit_idx"]).to_csv(OUT / "trades_all.csv", index=False, encoding="utf-8-sig")
+    write_csv(tab.drop(columns=["signal_idx", "entry_idx", "exit_idx"]), out / "trades_all.csv", header)
 
     # 사람 대조 15건
     h15 = pick_human_15(tab)
-    md = ["# B1 사람 대조용 15건", "", "차트: 위 = 수정 OHLC(분할·배당 보정) + 돌파 수준·체결·손절선·청산, 아래 = 비수정 종가. 파란 점선 = 돌파 수준, 초록 ▲ = 체결, 빨간 계단 = 적용 중인 손절선, 검은 X = 청산, 보라 점선 = 분할·특별배당 사건.", ""]
+    md = ["# B1 사람 대조용 15건", "", "데이터 스냅샷: " + " / ".join(header[:3]), "",
+          "차트: 위 = 수정 OHLC(분할·배당 보정) + 돌파 수준·체결·손절선·청산, 아래 = 비수정 종가. 파란 점선 = 돌파 수준, 초록 ▲ = 체결, 빨간 계단 = 적용 중인 손절선, 검은 X = 청산, 보라 점선 = 분할·특별배당 사건.", ""]
     rows_csv = []
     for n, (_, r) in enumerate(h15.iterrows(), 1):
         df, strat, _ = runs[r.ticker]
         fn = f"{n:02d}_{r.ticker}_{r.signal_date}_{r.category.replace(' ', '').replace('·', '')}.png"
         title = f"[{n}] {r.category} — " + one_line(r)
-        draw_chart(r, df, strat, OUT / "charts" / fn, title)
+        draw_chart(r, df, strat, out / "charts" / fn, title)
         md += [f"## {n}. {r.category}", f"![]({'charts/' + fn})", "", one_line(r), "", one_line_vendor(r), ""]
         rows_csv.append({"no": n, "category": r.category, "summary": one_line(r), "summary_vendor_basis": one_line_vendor(r).strip(), "chart": f"charts/{fn}"})
-    (OUT / "human_check_15.md").write_text("\n".join(md), encoding="utf-8")
-    pd.DataFrame(rows_csv).to_csv(OUT / "human_check_15.csv", index=False, encoding="utf-8-sig")
+    (out / "human_check_15.md").write_text(chr(10).join(md), encoding="utf-8")
+    write_csv(pd.DataFrame(rows_csv), out / "human_check_15.csv", header)
 
     # 지표
     lines = ["# B1 기본 지표 (5종목, 2015-01-01 이후 신호, 비용 편도 0.1%, 데이터 시작 후 252봉 안의 신호 제외)", "",
+             "**데이터 스냅샷**: " + " / ".join(header[:3]), "",
              "r_multiple은 비용 반영 후. 승률 = r > 0, PF = 이익 합 / 손실 합. '기대값'은 평균 R과 같은 값이라 뺐다.",
              "**최대 연속 손실은 거래를 청산일 순으로 정렬해 계산한다**(5종목 합산도 종목별로 이어 붙이지 않고 전체를 청산일 순으로 섞는다). 미청산 거래의 청산일은 마지막 봉 날짜다.",
              "", "| 대상 | 미청산 | 거래 수 | 승률 | 평균 R | 평균 이익 R | 평균 손실 R | 중앙값 R | 비용 후 PF | 최대 연속 손실 | |", "|---|---|---|---|---|---|---|---|---|---|---|"]
@@ -276,61 +287,67 @@ def main_five() -> None:
               f"- 사람·CSV 대조 대상(review_set_73): {int(tab.review_set_73.sum())}건",
               f"- **보유 기간에 대형 배당락(배당락 수익률 ≥ 10%)이 낀 거래: {int(tab.large_div_in_trade.sum())}건** (`large_div_in_trade` 열): "
               + (", ".join(f"{r.ticker} 신호일 {r.signal_date} — {r.large_div_detail}" for r in tab[tab.large_div_in_trade].itertuples()) or "없음")]
-    (OUT / "metrics.md").write_text("\n".join(lines), encoding="utf-8")
-    (OUT / "reference_match_5tickers.md").write_text(
-        "# 참조 구현 대조 (5종목, 전체 이력)\n\n| 종목 | 참조 거래 수 | 엔진 거래 수 | 일치 | 불일치 |\n|---|---|---|---|---|\n" + "\n".join(ref_lines)
+    (out / "metrics.md").write_text(chr(10).join(lines), encoding="utf-8")
+    (out / "reference_match_5tickers.md").write_text(
+        "# 참조 구현 대조 (5종목, 전체 이력)\n\n데이터 스냅샷: " + " / ".join(header[:3]) + "\n\n" + COMPARE_RULE + "\n\n"
+        "| 종목 | 참조 거래 수 | 엔진 거래 수 | 일치 | 불일치 |\n|---|---|---|---|---|\n" + "\n".join(ref_lines)
         + f"\n\n합계: 일치 {tot_ok} / {tot_n}\n", encoding="utf-8")
-    print("\n".join(lines))
+    print(chr(10).join(lines))
     print("참조 대조 합계", tot_ok, "/", tot_n)
     print(h15[["ticker", "category", "signal_date", "r_multiple"]].to_string())
 
 
-def main_universe() -> None:
-    """P1 전 종목: 엔진 vs 참조 구현(워밍업 게이트 252봉 적용). 2013-01-01부터 잘라 비교한다.
+COMPARE_RULE = ("공식 일치 기준(v1.7): 진입일·청산일·청산 사유가 같고, 진입 체결가가 같고(상대 1e-9), 청산 체결가가 같고(상대 "
+                f"{ref.TOL_EXIT_PRICE:g}), r 절대 차이가 {ref.TOL_R:g} 이내. 이 중 하나라도 벗어나면 불일치. "
+                "청산 체결가의 허용오차가 진입 체결가보다 큰 이유: 초기 2N 손절가는 N에 의존하고 N 초기값(시드) 차이의 잔차가 상대 1e-6대로 남는다.")
 
-    참조 구현은 터틀 원전 N 시드(처음 20일 TR 평균)로 돌린다. 불일치는 허용오차 두 가지로 센다: 엄격(상대 1e-8)과 느슨(상대 1e-4).
-    진단용으로 엔진과 같은 N 시드(첫 TR 지수평활)의 참조도 돌려, 남는 차이가 시드 영향인지 확인한다.
+
+def main_universe(out: Path = OUT) -> None:
+    """P1 전 종목: 엔진 vs 참조 구현(워밍업 게이트 252봉 적용). **전체 이력**을 검증된 스냅샷에서 읽는다(자르지 않는다).
+
+    참조 구현은 터틀 원전 N 시드(처음 20일 TR 평균). 진단용으로 엔진과 같은 N 시드의 참조도 돌려 엄격 허용오차(상대 1e-8)에서 비교한다.
     """
-    OUT.mkdir(parents=True, exist_ok=True)
+    out.mkdir(parents=True, exist_ok=True)
+    header = snapshot_header()
     included = json.loads((MANIFEST / "universe_p1.json").read_text(encoding="utf-8"))["included"]
-    total = strict = loose = struct = diag = 0
-    max_rel = 0.0
-    bad = {}
+    total = official = diag = 0
+    bad: dict[str, int] = {}
+    max_r = max_exit = max_entry = 0.0
     for k, sym in enumerate(included, 1):
-        df = store.load_ohlcv(sym).loc["2013-01-01":]
         strat = B1Turtle()
-        res = simulate(df, strat, sym, _COSTS, SPEC_VERSION)
+        df, res = runner.run_strategy(sym, strat, _COSTS, SPEC_VERSION)
         cols = {c: df[c].tolist() for c in ("open", "high", "low", "close")}
         kw = dict(entry_n=strat.entry_n, exit_n=strat.exit_n, atr_n=strat.atr_n, stop_mult=strat.stop_mult, rate=_COSTS.one_way_rate(),
                   trade_start=strat.trade_start)
         eng = res.with_open_mtm()
-        r1 = ref.run_b1(list(df.index), cols["open"], cols["high"], cols["low"], cols["close"], **kw)     # 워밍업 252는 기본값
+        r1 = ref.run_b1(list(df.index), cols["open"], cols["high"], cols["low"], cols["close"], **kw)
         r2 = ref.run_b1(list(df.index), cols["open"], cols["high"], cols["low"], cols["close"], n_seed="first_tr", **kw)
         _, x1 = ref.compare(r1, eng)
-        _, x_loose = ref.compare(r1, eng, tol=1e-4)
-        _, x2 = ref.compare(r2, eng)
-        total += len(r1); strict += len(x1); loose += len(x_loose); diag += len(x2)
-        struct += sum(1 for x in x_loose if "fields" not in x or any(f in ("entry_date", "exit_date", "reason") for f in x["fields"]))
-        for x in x1:
-            if x.get("ref") is not None and hasattr(x.get("engine"), "r_multiple"):
-                max_rel = max(max_rel, abs(x["ref"]["r"] - x["engine"].r_multiple))
+        _, x2 = ref.compare(r2, eng, tol_exit_price=1e-8, tol_r=1e-8)
+        total += max(len(r1), len(eng)); official += len(x1); diag += len(x2)
+        for a, e in zip(r1, eng):
+            max_r = max(max_r, abs(a["r"] - e.r_multiple))
+            max_exit = max(max_exit, abs(a["exit_price"] - e.exit_price) / max(1.0, abs(a["exit_price"])))
+            max_entry = max(max_entry, abs(a["entry_price"] - e.entry_price) / max(1.0, abs(a["entry_price"])))
         if x1:
             bad[sym] = len(x1)
         if k % 100 == 0:
             print(k, "symbols,", total, "trades", flush=True)
-    text = [f"# 참조 구현 대조 (P1 {len(included)}종목, 2013-01-01 이후 데이터, 신호 2015-01-01 이후, 워밍업 게이트 252봉 적용)", "",
+    text = [f"# 참조 구현 대조 (P1 {len(included)}종목, 전체 이력, 신호 2015-01-01 이후, 워밍업 게이트 252봉 적용)", "",
+            "데이터 스냅샷: " + " / ".join(header[:3]), "", COMPARE_RULE, "",
             f"- 비교한 거래: {total}건",
-            f"- 참조 구현(터틀 원전 N 시드): 엄격 허용오차(상대 1e-8)에서 일치 {total - strict}건, **불일치 {strict}건**(종목 {len(bad)}개)",
-            f"- 같은 비교를 느슨한 허용오차(상대 1e-4)로: **불일치 {loose}건**, 그중 날짜·청산 사유가 다른 구조적 불일치 {struct}건",
-            f"- 엄격 허용오차 불일치의 r 최대 절대 차이: {max_rel:.2e}",
-            f"- 참조 구현(진단용, 엔진과 같은 N 시드): 엄격 허용오차에서 불일치 **{diag}건**", "",
-            "엄격 허용오차 불일치 종목(거래 수): " + ", ".join(f"{s} {n}" for s, n in sorted(bad.items()))]
-    (OUT / "reference_match_universe.md").write_text(chr(10).join(text), encoding="utf-8")
+            f"- 공식 기준 일치 {total - official}건, **불일치 {official}건**(종목 {len(bad)}개)",
+            f"- 관측된 최대 차이: 진입 체결가 상대 {max_entry:.2e}, 청산 체결가 상대 {max_exit:.2e}, r 절대 {max_r:.2e}",
+            f"- 참조 구현(진단용, 엔진과 같은 N 시드)과 엄격 허용오차(상대 1e-8)로: 불일치 **{diag}건**"]
+    if bad:
+        text += ["", "불일치 종목(거래 수): " + ", ".join(f"{s} {n}" for s, n in sorted(bad.items()))]
+    (out / "reference_match_universe.md").write_text(chr(10).join(text), encoding="utf-8")
     print(chr(10).join(text))
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--universe", action="store_true")
+    ap.add_argument("--out", default=str(OUT), help="출력 디렉터리(같은 스냅샷으로 두 번 돌려 바이트 단위 비교할 때 쓴다)")
     args = ap.parse_args()
-    main_universe() if args.universe else main_five()
+    (main_universe if args.universe else main_five)(Path(args.out))

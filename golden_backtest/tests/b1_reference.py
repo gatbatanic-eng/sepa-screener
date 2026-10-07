@@ -93,8 +93,18 @@ def run_b1(dates, o, h, l, c, *, entry_n=55, exit_n=20, atr_n=20, stop_mult=2.0,
     return trades
 
 
-def compare(ref: list[dict], engine_trades, tol: float = 1e-8):
-    """엔진 거래(Trade, 단일 트랜치)와 참조 거래를 순서대로 비교한다. 반환: (일치 건수, 불일치 목록)."""
+TOL_ENTRY_PRICE = 1e-9    # 진입 체결가(돌파 수준 또는 시가): N에 의존하지 않으므로 사실상 완전 일치
+TOL_EXIT_PRICE = 1e-6     # 청산 체결가: 초기 2N 손절가는 N에 의존해 N 시드 잔차(상대 1e-6대)가 남는다
+TOL_R = 1e-4              # r 절대 차이
+
+
+def compare(ref: list[dict], engine_trades, tol_r: float = TOL_R, tol_entry_price: float = TOL_ENTRY_PRICE,
+            tol_exit_price: float = TOL_EXIT_PRICE):
+    """엔진 거래(Trade, 단일 트랜치)와 참조 거래를 순서대로 비교한다. 반환: (일치 건수, 불일치 목록).
+
+    공식 일치 기준: 진입일·청산일·청산 사유 일치 + 진입 체결가 상대 오차 ≤ tol_entry_price + 청산 체결가 상대 오차 ≤ tol_exit_price
+    + r 절대 차이 ≤ tol_r. 하나라도 벗어나면 불일치.
+    """
     mism = []
     matched = 0
     for i in range(max(len(ref), len(engine_trades))):
@@ -107,10 +117,9 @@ def compare(ref: list[dict], engine_trades, tol: float = 1e-8):
         if a["entry_date"] != e.entry_date: diffs.append("entry_date")
         if a["exit_date"] != e.exit_date: diffs.append("exit_date")
         if a["reason"] != e.exit_reason: diffs.append("reason")
-        for k_ref, k_eng in (("entry_price", "entry_price"), ("exit_price", "exit_price"), ("r", "r_multiple")):
-            x, y = a[k_ref], getattr(e, k_eng)
-            if abs(x - y) > tol * max(1.0, abs(x)):
-                diffs.append(k_ref)
+        if abs(a["entry_price"] - e.entry_price) > tol_entry_price * max(1.0, abs(a["entry_price"])): diffs.append("entry_price")
+        if abs(a["exit_price"] - e.exit_price) > tol_exit_price * max(1.0, abs(a["exit_price"])): diffs.append("exit_price")
+        if abs(a["r"] - e.r_multiple) > tol_r: diffs.append("r")
         if diffs:
             mism.append({"index": i, "fields": diffs, "ref": a, "engine": e})
         else:

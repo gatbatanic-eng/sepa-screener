@@ -39,13 +39,13 @@ def _fetch_new(symbol: str, cfg: dict, cutoff: pd.Timestamp):
         splits = prov.fetch_splits(used)
     except Exception as exc:  # noqa: BLE001
         splits, splits_ok, splits_err = pd.Series(dtype=float), False, str(exc)[:200]
-    frame = adjust.build_adjusted(cleaned, splits, splits_ok)
     divs_ok, divs_err = True, None
     try:
         divs = prov.fetch_dividends(used)
     except Exception as exc:  # noqa: BLE001
         divs, divs_ok, divs_err = pd.Series(dtype=float, index=pd.DatetimeIndex([])), False, str(exc)[:200]
-    meta = {"unclosed_dropped": info["unclosed_dropped"], "nan_dropped": info["nan_dropped"], "nan_runs": info["nan_runs"],
+    frame, ratio_report = adjust.build_adjusted(cleaned, splits, splits_ok, dividends=divs if divs_ok else None, return_report=True)
+    meta = {"ratio_report": ratio_report, "unclosed_dropped": info["unclosed_dropped"], "nan_dropped": info["nan_dropped"], "nan_runs": info["nan_runs"],
             "stripped_leading": stripped, "starts_at_floor": starts_at_floor, "splits_ok": splits_ok, "splits_error": splits_err,
             "dividends_ok": divs_ok, "dividends_error": divs_err}
     return used, frame, splits, meta, divs
@@ -90,6 +90,12 @@ def _metrics(symbol: str, used: str, frame: pd.DataFrame, splits: pd.Series, met
                                                                  sd["raw_since"])
     ld = cfg["large_dividend"]
     rec["large_dividends"] = quality.large_dividends(frame, divs, ld["pct"], ld["since"])
+    rr = meta.get("ratio_report") or {}
+    rec["ratio_suspect_segments"] = rr.get("suspect_segments", [])
+    rec["ratio_added_jumps"] = rr.get("added_jump_boundaries", [])
+    rec["ratio_unresolved"] = rr.get("unresolved", [])
+    rec["content_hash"] = store.frame_hash(frame)
+    rec["events_hash"] = store.events_hash(splits, divs)
     rec.update(quality.anomalies_since(frame, cfg_q["anomaly_since"], cfg_q["big_move_pct"]))
     return rec
 
@@ -167,6 +173,7 @@ def main() -> None:
                 continue
             store.save_index(name, df)
             bench[name] = {"rows": len(df), "first": df.index[0].date().isoformat(), "last": df.index[-1].date().isoformat(),
+                           "content_hash": store.frame_hash(df),
                            "nan_dropped": info["nan_dropped"], "unclosed_dropped": info["unclosed_dropped"]}
         except Exception as exc:  # noqa: BLE001
             bench[name] = {"error": str(exc)[:200]}
@@ -175,9 +182,11 @@ def main() -> None:
     failed = {r["requested_as"]: r["error"] for r in results if not r["ok"]}
     exclusions = uni.compute_exclusions(ok, cfg, failed)
     collected_at = dt.datetime.now(dt.timezone.utc).isoformat()
+    snapshot_id = store.make_snapshot_id(collected_at, {k: r["content_hash"] + ":" + r["events_hash"] for k, r in ok.items()},
+                                         {k: v["content_hash"] for k, v in bench.items() if "content_hash" in v})
     manifest = {
         "collected_at": collected_at,
-        "spec_version": "1.6",
+        "spec_version": "1.7",
         "source": "가격·지수: FinanceDataReader / 분할 이벤트: yfinance(Yahoo)",
         "fetch_start": start, "closed_session_cutoff": cutoff.date().isoformat(),
         "universe": cfg["universe"]["name"], "survivorship_bias": True,
@@ -186,8 +195,10 @@ def main() -> None:
         "cache_changes": {k: {"action": r["cache_action"], "detail": r["cache_change"]}
                           for k, r in sorted(ok.items()) if r["cache_action"] in ("kept_old", "fetch_failed_used_cache")},
         "benchmarks": bench,
+        "snapshot": {"id": snapshot_id, "symbols": len(ok),
+                     "note": "백테스트는 캐시만 읽고 이 식별자를 결과에 기록한다. 재수집은 python -m golden_backtest.data.build 로만 한다"},
         "symbols": {k: {**{f: r[f] for f in ("requested_as", "rows", "first", "last", "splits", "splits_ok", "splits_error",
-                                             "unclosed_dropped", "nan_dropped_total", "stripped_leading", "a1")},
+                                             "unclosed_dropped", "nan_dropped_total", "stripped_leading", "a1", "content_hash", "events_hash")},
                         "cache_action": r["cache_action"]}
                     for k, r in sorted(ok.items())},
     }
@@ -198,11 +209,13 @@ def main() -> None:
                            "big_moves": r["big_moves"], "adjustment_divergences": r["divergences"],
                            "adjustment_errors": r["errors"], "split_discontinuities": r["split_discontinuities"],
                            "large_dividends": r["large_dividends"],
+                           "ratio_suspect_segments": r["ratio_suspect_segments"], "ratio_added_jumps": r["ratio_added_jumps"],
+                           "ratio_unresolved": r["ratio_unresolved"],
                            "min_raw_close": r["min_raw_close"]}
                        for k, r in sorted(ok.items())},
     }
     universe_p1 = {
-        "collected_at": collected_at, "spec_version": "1.6",
+        "collected_at": collected_at, "spec_version": "1.7",
         "included": sorted(set(ok) - set(exclusions)),
         "excluded": {k: exclusions[k] for k in sorted(exclusions)},
         "notes": {k: v for k, v in sorted((cfg.get("notes") or {}).items()) if k in ok},
@@ -223,6 +236,11 @@ def main() -> None:
     store.write_manifest("quality_report.json", quality_report)
     store.write_manifest("universe_p1.json", universe_p1)
     store.write_manifest("review_big_moves.json", review_doc)
+    store.load_manifest(refresh=True)
+    for k in ok:                                     # 방금 쓴 캐시가 manifest 해시와 같은지 확인(parquet 왕복 포함)
+        store.load_ohlcv_verified(k)
+        store.verify_events(k)
+    log.info("스냅샷 %s 검증 완료(%d종목)", snapshot_id, len(ok))
     log.info("완료: 성공 %d / 요청 %d, 실패 %s, 캐시 유지·대체 %s, P1 제외 %d", len(ok), len(symbols),
              list(manifest["symbols_failed"]), list(manifest["cache_changes"]), len(exclusions))
 

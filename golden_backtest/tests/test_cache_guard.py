@@ -12,7 +12,8 @@ from golden_backtest.data import cache_guard
 def _frame(n=30, scale=1.0):
     idx = pd.bdate_range("2024-01-02", periods=n)
     close = pd.Series(100 * np.exp(np.cumsum(np.full(n, 0.002))), index=idx)
-    return pd.DataFrame({"close": close * scale, "raw_close": close})
+    c = close * scale
+    return pd.DataFrame({"open": c * 0.995, "high": c * 1.02, "low": c * 0.98, "close": c, "raw_close": close})
 
 
 class TestCompareFrames(unittest.TestCase):
@@ -49,6 +50,36 @@ class TestCompareFrames(unittest.TestCase):
     def test_new_dividend_scaling_all_history_is_not_a_change(self):
         # 새 배당이 생기면 수정 종가의 과거 전 구간에 같은 배수가 곱해진다. 수익률과 비수정 종가는 그대로라 변경이 아니다
         self.assertIsNone(cache_guard.compare_frames(_frame(30, 1.0), _frame(30, 0.98)))
+
+    def test_revised_high_is_flagged_even_when_close_and_returns_are_unchanged(self):
+        # 30봉 중 봉 12의 고가만 +0.1% 소급 수정. 종가·수익률·비수정 종가는 그대로라 예전 검사는 통과했다(55일 최고가 판정이 바뀔 수 있다)
+        new = _frame(30)
+        new.iloc[12, new.columns.get_loc("high")] *= 1.001
+        res = cache_guard.compare_frames(_frame(30), new)
+        self.assertIn("봉 내부 가격 비율(시가·고가·저가/종가) 변경", res["reasons"])
+        self.assertEqual(res["first_shape_changed_date"], new.index[12].date().isoformat())
+        self.assertEqual(res["high_shape_changed_bars"], 1)
+
+    def test_revised_low_and_open_are_flagged_too(self):
+        new = _frame(30)
+        new.iloc[5, new.columns.get_loc("low")] *= 0.99
+        new.iloc[8, new.columns.get_loc("open")] *= 1.01
+        res = cache_guard.compare_frames(_frame(30), new)
+        self.assertEqual((res["low_shape_changed_bars"], res["open_shape_changed_bars"]), (1, 1))
+        self.assertEqual(res["first_shape_changed_date"], new.index[5].date().isoformat())
+
+    def test_tiny_shape_change_below_tolerance_is_ignored(self):
+        new = _frame(30)
+        new.iloc[12, new.columns.get_loc("high")] *= 1 + 5e-6    # 상대 5e-6 < 1e-5
+        self.assertIsNone(cache_guard.compare_frames(_frame(30), new))
+
+    def test_whole_bar_rescaled_by_new_dividend_ratio_keeps_shape(self):
+        # 새 배당으로 과거 봉의 O/H/L/C에 같은 배수가 곱해져도 봉 내부 비율은 그대로 → 변경 아님
+        new = _frame(30)
+        cols = [new.columns.get_loc(c) for c in ("open", "high", "low", "close")]
+        new.iloc[:15, cols] = new.iloc[:15, cols] * 0.97
+        res = cache_guard.compare_frames(_frame(30), new)
+        self.assertNotIn("봉 내부 가격 비율(시가·고가·저가/종가) 변경", (res or {}).get("reasons", []))
 
     def test_nan_raw_close_in_either_frame_is_skipped(self):
         new = _frame(30)

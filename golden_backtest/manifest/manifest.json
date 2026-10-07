@@ -1,6 +1,7 @@
 {
  "benchmarks": {
   "sp500": {
+   "content_hash": "4528fd0f67a1d89a",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped": [],
@@ -8,6 +9,7 @@
    "unclosed_dropped": 1
   },
   "vix": {
+   "content_hash": "5c2c41af94316be3",
    "first": "1990-01-02",
    "last": "2026-10-06",
    "nan_dropped": [
@@ -349,10 +351,15 @@
  },
  "cache_changes": {},
  "closed_session_cutoff": "2026-10-06",
- "collected_at": "2026-10-07T16:16:03.112536+00:00",
+ "collected_at": "2026-10-07T17:17:41.820577+00:00",
  "fetch_start": "1970-01-05",
+ "snapshot": {
+  "id": "20261007-777614576f66",
+  "note": "백테스트는 캐시만 읽고 이 식별자를 결과에 기록한다. 재수집은 python -m golden_backtest.data.build 로만 한다",
+  "symbols": 502
+ },
  "source": "가격·지수: FinanceDataReader / 분할 이벤트: yfinance(Yahoo)",
- "spec_version": "1.6",
+ "spec_version": "1.7",
  "survivorship_bias": true,
  "symbols": {
   "A": {
@@ -364,6 +371,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "2cdc78626d7f6c88",
+   "events_hash": "2c485db0c8b69342",
    "first": "1999-11-18",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -384,6 +393,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "1f6852787dd87932",
+   "events_hash": "551e4eb56bad68b6",
    "first": "1980-12-12",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -404,6 +415,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "286a16f1f8cf09e9",
+   "events_hash": "90bffb6b1c7b42a3",
    "first": "2013-01-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -421,6 +434,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "b8f73e21973b1c5e",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2020-12-10",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -441,6 +456,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "95320f16f064bfad",
+   "events_hash": "6c7a44f469b130f4",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -461,6 +478,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "ed6701699943761a",
+   "events_hash": "d5223517446d8c80",
    "first": "1995-09-14",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -481,6 +500,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "37d3ff6fb7da9225",
+   "events_hash": "3fdff52dd68ac2f7",
    "first": "2001-07-19",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -501,6 +522,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "95446e207489b489",
+   "events_hash": "52fa5b23fb283fc8",
    "first": "1986-08-13",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -521,6 +544,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "eed6e1cb4049232a",
+   "events_hash": "0fb7e15e0b4df1e6",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -541,6 +566,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "558241361b502141",
+   "events_hash": "0175d452192ab4cc",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -561,6 +588,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "a99918941929986d",
+   "events_hash": "f56a165b326f64ae",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -581,6 +610,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "8eaa41ffb01eda71",
+   "events_hash": "68025a52c97bda89",
    "first": "1985-06-28",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -601,6 +632,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "49e447fab87c1821",
+   "events_hash": "5f1f1671d5f2b774",
    "first": "1998-01-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -621,6 +654,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "f426687b2305bd23",
+   "events_hash": "dbc5c9780e58dd97",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -641,6 +676,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "9a3adaf01e2d2bdc",
+   "events_hash": "62b190c15c4ae471",
    "first": "1991-06-26",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -661,6 +698,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "c9488382437b5983",
+   "events_hash": "ada5c4af447c0b16",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -681,6 +720,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "9a49d235076a162b",
+   "events_hash": "429685bcdadbed05",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -705,6 +746,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "62b5ce6f2a4530b2",
+   "events_hash": "5956ef212c683835",
    "first": "2004-02-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -725,6 +768,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d25fc16587e8afc8",
+   "events_hash": "4751032e3118dfa2",
    "first": "1984-06-20",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -745,6 +790,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "bf8abd02db8b7f38",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "1999-10-29",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -765,6 +812,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "618fcc99a559b35c",
+   "events_hash": "8494bceac7e7e1b3",
    "first": "1994-02-22",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -785,6 +834,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "f4e64d7b3821171d",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2001-01-30",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -805,6 +856,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "2ad8a20838820b68",
+   "events_hash": "a731c3fafac44ad2",
    "first": "1993-06-03",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -825,6 +878,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "9864ca7b2ce127dc",
+   "events_hash": "d1847d117a691802",
    "first": "2013-11-18",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -845,6 +900,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "6431dc387a3046f2",
+   "events_hash": "72bdd06873e3f145",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -865,6 +922,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "3dbb42e7d95e64c9",
+   "events_hash": "173c5839386d9126",
    "first": "2012-06-07",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -889,6 +948,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "524e7ce69744ebad",
+   "events_hash": "5cb616f717760e81",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -909,6 +970,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "4eca45ed41a8d698",
+   "events_hash": "3c703f0ecd36df6f",
    "first": "1984-07-19",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -929,6 +992,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "85ad2884807fce1c",
+   "events_hash": "88fa237a98ca467e",
    "first": "1983-06-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -949,6 +1014,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "752f49bdb68f2497",
+   "events_hash": "6d13072c320d1175",
    "first": "2005-09-15",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -969,6 +1036,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "458a4bcc519c11a1",
+   "events_hash": "75695825060d82b9",
    "first": "1998-02-27",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -989,6 +1058,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "84a2e3976fc30aa7",
+   "events_hash": "b219794bb3bed5d5",
    "first": "1997-05-15",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1009,6 +1080,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "99781191f3b4b3ee",
+   "events_hash": "19096b35c694b143",
    "first": "2014-06-06",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1029,6 +1102,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "3d1f5e117e181779",
+   "events_hash": "7653c3d7059c7021",
    "first": "1980-06-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1049,6 +1124,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "bd4de24576811179",
+   "events_hash": "d362238456ea7076",
    "first": "1983-09-30",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1069,6 +1146,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "b218550c9eeefa70",
+   "events_hash": "bd7dfbfc8e01f06f",
    "first": "1979-05-15",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1089,6 +1168,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "fa5707815da30f11",
+   "events_hash": "52aaf193628156a3",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1109,6 +1190,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "ea37959e67f02721",
+   "events_hash": "23db57ba7b720f85",
    "first": "1991-11-08",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1129,6 +1212,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "b5b31bedddaf5a63",
+   "events_hash": "99da2bce562f859a",
    "first": "2011-03-30",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1146,6 +1231,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "8ff21dab58ba5617",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2021-04-15",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1166,6 +1253,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "2e3b2460f24b5d27",
+   "events_hash": "b274e564d0cf29c0",
    "first": "2011-11-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1186,6 +1275,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "498824cbe0884791",
+   "events_hash": "b53a4c0e4c706157",
    "first": "1997-05-28",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1206,6 +1297,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "bc0b0b7fb66bf487",
+   "events_hash": "1626e64dabd2cca8",
    "first": "2014-05-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1226,6 +1319,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "1d41904cda01daa3",
+   "events_hash": "ba893862a8ec9897",
    "first": "1983-12-28",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1246,6 +1341,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "f3683398f30a3a16",
+   "events_hash": "cc34e70ca38702fd",
    "first": "2009-08-06",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1266,6 +1363,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "b036fc4d97484615",
+   "events_hash": "549b48bc4e30296f",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1286,6 +1385,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "45832706f691a6bb",
+   "events_hash": "4515b428634ba9bd",
    "first": "2008-04-23",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1306,6 +1407,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "c23942fe0ee3f311",
+   "events_hash": "455af3eee51e42c6",
    "first": "2001-06-19",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1326,6 +1429,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "8ed8d50c9ef6bb98",
+   "events_hash": "cda255c8106b91f3",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1350,6 +1455,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "448cbc4a527227b6",
+   "events_hash": "d619c3f4cc45fc56",
    "first": "1991-04-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1370,6 +1477,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "23b667097914e09f",
+   "events_hash": "50f4a86cf20d612b",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1390,6 +1499,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "c45a896e3c97a162",
+   "events_hash": "03299f620c72105c",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1410,6 +1521,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "9bf69b5624fe5953",
+   "events_hash": "d996ccc2a4e6a581",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1430,6 +1543,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "b17a8cf2d674a163",
+   "events_hash": "11f2718990e1143b",
    "first": "1981-10-27",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1450,6 +1565,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "10f4926d175b2a82",
+   "events_hash": "2c5a70682f768f5c",
    "first": "1985-04-18",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1470,6 +1587,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "ecf7b0c682723c02",
+   "events_hash": "f7aef7e73a1dc37e",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1487,6 +1606,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "3bc254336ba4634c",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2018-07-25",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1507,6 +1628,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "35bdb7514a068844",
+   "events_hash": "e2f2d3d34bf16892",
    "first": "1983-09-23",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1527,6 +1650,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "e230dc749d5a282d",
+   "events_hash": "c0bafe85c9cf56d7",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1547,6 +1672,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "90a03ce768e3724e",
+   "events_hash": "c1963454d529814c",
    "first": "2001-08-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1567,6 +1694,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "1da874ca0c558140",
+   "events_hash": "5694a60bd39411e1",
    "first": "1991-09-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1587,6 +1716,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "cc05ddf4109925c3",
+   "events_hash": "73e003cd4bc85160",
    "first": "1999-03-31",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1607,6 +1738,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "b23c9054e3b09e54",
+   "events_hash": "92163abdc18a65ee",
    "first": "1987-04-06",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1627,6 +1760,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "c3e4c1dfc838e142",
+   "events_hash": "2bddd323904b692d",
    "first": "1999-10-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1647,6 +1782,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "a0afe836fb9369ea",
+   "events_hash": "a55d989548a9dd58",
    "first": "1972-06-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1667,6 +1804,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "f16b5257765b4f22",
+   "events_hash": "b63ac7762135ae7a",
    "first": "1973-05-03",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1687,6 +1826,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "017b796503ccfbfd",
+   "events_hash": "e84d31e2805ed558",
    "first": "2007-03-22",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1707,6 +1848,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d81b4cb8a862a8cf",
+   "events_hash": "cd17308b76f9ebf5",
    "first": "1996-05-09",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1727,6 +1870,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "03bd5a67cc4c5f09",
+   "events_hash": "e28ac056cd90d2f3",
    "first": "1981-02-11",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1747,6 +1892,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "9b25efe6af1c06d6",
+   "events_hash": "6d2eafa10a221261",
    "first": "1992-05-19",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1767,6 +1914,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "e7443d93b0b506cf",
+   "events_hash": "9b056c9327844fb6",
    "first": "2007-06-22",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1787,6 +1936,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "249e51c22609a5be",
+   "events_hash": "13fa38d14748b707",
    "first": "1997-06-18",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1807,6 +1958,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "a2ee94580618a9be",
+   "events_hash": "23742587cf8cbf2c",
    "first": "1977-01-03",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1827,6 +1980,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "76889d75c350c5de",
+   "events_hash": "11275e78b87e32ba",
    "first": "1983-08-04",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1844,6 +1999,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "87d18a03d325565f",
+   "events_hash": "b36f18aa250c21a0",
    "first": "2020-03-19",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1864,6 +2021,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "0f4f9b8c1c730315",
+   "events_hash": "8d91bc98b7300b89",
    "first": "1983-10-20",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1884,6 +2043,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "f949b922f898c074",
+   "events_hash": "fe7732230accdc57",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1904,6 +2065,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "8efd75976db7fec0",
+   "events_hash": "dd983d779b531260",
    "first": "1993-03-25",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1924,6 +2087,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "245de9569c787b5b",
+   "events_hash": "7b36b9add7746795",
    "first": "2010-06-15",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1944,6 +2109,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "e61bf9f96fba6465",
+   "events_hash": "18d540f6cd79f27a",
    "first": "2004-06-10",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1964,6 +2131,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "498e5eb0930ffdc5",
+   "events_hash": "45d3d2b9dd4d189d",
    "first": "1998-08-18",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -1984,6 +2153,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "5e46c1942f4df3d5",
+   "events_hash": "363033fabc3400ab",
    "first": "1987-07-24",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2004,6 +2175,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "856a7c2d9e53588e",
+   "events_hash": "303be9be98b7f24e",
    "first": "1987-06-10",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2024,6 +2197,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "40640053a2b0b14f",
+   "events_hash": "c57f62f427a4c125",
    "first": "2013-06-27",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2041,6 +2216,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "28c10cf379299fdb",
+   "events_hash": "0e8bb578f535040a",
    "first": "2022-01-19",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2061,6 +2238,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "7610ab08355bc79d",
+   "events_hash": "c3b1019b1f8397f6",
    "first": "2005-08-11",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2081,6 +2260,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "4dc49b4e74496a32",
+   "events_hash": "3053a5bdeaedaa72",
    "first": "2014-09-24",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2101,6 +2282,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "b22fe51b4c545987",
+   "events_hash": "f954f22d75e188e2",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2121,6 +2304,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "a8beb69d7bc95c7c",
+   "events_hash": "120973c899e99818",
    "first": "1997-10-16",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2141,6 +2326,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "1f2c0b5c5c121af6",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2010-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2161,6 +2348,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "fa0495f8b33a71eb",
+   "events_hash": "22965ed05fb93094",
    "first": "1982-03-31",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2181,6 +2370,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "69043de6df527c62",
+   "events_hash": "7fce70faa8183342",
    "first": "1997-02-07",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2201,6 +2392,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "4c999601f55bc80a",
+   "events_hash": "52ff40ee7e2127d3",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2221,6 +2414,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "9a899d142d1d0aaf",
+   "events_hash": "6cc832f1452a8d4c",
    "first": "1973-05-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2241,6 +2436,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "526cf4bf02d46f7b",
+   "events_hash": "d183e5971de5cdd9",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2261,6 +2458,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "1e0d016e88530a34",
+   "events_hash": "1a6929177dd49e46",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2281,6 +2480,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "228d20b896669719",
+   "events_hash": "3f1ef864347fc917",
    "first": "2002-12-06",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2301,6 +2502,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "6a18f7b5eca3354d",
+   "events_hash": "1d0df879caa62a0f",
    "first": "2006-01-26",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2321,6 +2524,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "f1cd068682378a17",
+   "events_hash": "82bccf45e417a51c",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2341,6 +2546,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "8ec588b5ab89ad5b",
+   "events_hash": "78d3e949db315cd9",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2361,6 +2568,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "2f4a35dbd3cce5ab",
+   "events_hash": "63232c125b649d13",
    "first": "2001-12-13",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2381,6 +2590,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "6b1cf61d67562a72",
+   "events_hash": "a268152d6db1e05b",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2401,6 +2612,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "153a6ad806338399",
+   "events_hash": "6dd271a7af27da3d",
    "first": "1994-11-16",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2421,6 +2634,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "a6d078e08cb6e196",
+   "events_hash": "38c2de13561a2d59",
    "first": "1987-10-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2438,6 +2653,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "5abc416225edeb34",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2021-04-14",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2458,6 +2675,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "c4625fa337c708ee",
+   "events_hash": "d124237f80539cb5",
    "first": "1983-01-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2478,6 +2697,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d025b4d9486b8f8e",
+   "events_hash": "755a0b01d4ee2b1a",
    "first": "1981-12-31",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2498,6 +2719,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "45c32383b9fd1710",
+   "events_hash": "6dc39aaa4aad3cb2",
    "first": "1995-04-04",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2518,6 +2741,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "5837a77de1a396f5",
+   "events_hash": "0e2adaaf33f6dd5b",
    "first": "1986-07-09",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2538,6 +2763,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "6d1d1eafc0c5d001",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2010-12-15",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2558,6 +2785,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "7a61867fedff631a",
+   "events_hash": "d3320f24414fa887",
    "first": "1994-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2578,6 +2807,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "b12b2ee28f7edc3c",
+   "events_hash": "8991715bb8efee47",
    "first": "1993-07-22",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2598,6 +2829,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "3b40ec93e58584ef",
+   "events_hash": "e4c73c9d6b4b2c7a",
    "first": "1989-07-13",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2618,6 +2851,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "21ddb3224bcadced",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2000-06-23",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2638,6 +2873,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "5e1020175cdc2891",
+   "events_hash": "871fab85214f632c",
    "first": "2004-06-23",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2655,6 +2892,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "3f5620d522330416",
+   "events_hash": "158d13ef8394bc44",
    "first": "2019-06-12",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2675,6 +2914,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "e5a55a1980eeb02f",
+   "events_hash": "0dc58363c1bb790d",
    "first": "1990-02-16",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2695,6 +2936,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "1330393a15ca1582",
+   "events_hash": "7ec25c40570cbd34",
    "first": "1998-07-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2715,6 +2958,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "42be88d49b10e479",
+   "events_hash": "d34ba982fcf07d19",
    "first": "1980-11-03",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2735,6 +2980,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "7e20f68b907f5c18",
+   "events_hash": "b3020c685265e9b1",
    "first": "1983-08-19",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2755,6 +3002,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "2dd2068af5f8fa1d",
+   "events_hash": "a2eb58646e682ee9",
    "first": "1998-06-19",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2772,6 +3021,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "ce4453a9853377ac",
+   "events_hash": "2fec1dbdaee31f5f",
    "first": "2019-05-24",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2789,6 +3040,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "04285c4e3e0018ab",
+   "events_hash": "49b6d08fdfb0e9d9",
    "first": "2017-04-28",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2809,6 +3062,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "ee971fb1849bc83e",
+   "events_hash": "f855b5f6d27ed277",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2829,6 +3084,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "e8dc441c8bfa95c4",
+   "events_hash": "023d4b3561aa78fc",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2849,6 +3106,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "02d98abad623ad0f",
+   "events_hash": "c684ff67ff286c35",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2869,6 +3128,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "2b186af70beb8542",
+   "events_hash": "ccf8552bc7235b00",
    "first": "2007-05-03",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2886,6 +3147,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "9d96fef81c91d137",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2020-12-09",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2906,6 +3169,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "2a0b3ea3c4d77607",
+   "events_hash": "d2c8b4f47501dad7",
    "first": "1972-06-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2923,6 +3188,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "18d1d1b5c81eb219",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2019-09-19",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2943,6 +3210,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "29c93d9768038b03",
+   "events_hash": "4a99da09a3f66c78",
    "first": "1972-06-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2963,6 +3232,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "162552048ecddaed",
+   "events_hash": "07f692aab389128c",
    "first": "1993-10-15",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -2980,6 +3251,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "997bc911c0f9257a",
+   "events_hash": "2a37d133d999d66d",
    "first": "2016-08-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3000,6 +3273,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "74f3f92cfa55196f",
+   "events_hash": "0006f4c8e998a155",
    "first": "2009-11-13",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3020,6 +3295,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "c75c58ff9ce19e8c",
+   "events_hash": "58ba57288728f354",
    "first": "1996-12-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3040,6 +3317,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d16c8e8b4422d23e",
+   "events_hash": "54981e70cf105e16",
    "first": "1992-06-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3060,6 +3339,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "b6eddf1db615fee9",
+   "events_hash": "7b2066dac93db7e1",
    "first": "1978-12-29",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3080,6 +3361,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "46178dedb9549dbc",
+   "events_hash": "e08a23ef51ed2239",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3100,6 +3383,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "87a8fe83582e509c",
+   "events_hash": "1f48e7d5c13eea11",
    "first": "2004-10-29",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3120,6 +3405,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "b8fae7d0e86af444",
+   "events_hash": "0cad09fb9fb2476c",
    "first": "1995-03-07",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3140,6 +3427,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "9a34fe394b3a91e0",
+   "events_hash": "11e3da21918e4c2c",
    "first": "1985-05-23",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3160,6 +3449,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "8796fea0553cd679",
+   "events_hash": "dd3217d9a63c2619",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3177,6 +3468,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "8288ef20d7709ce9",
+   "events_hash": "9aabf98b22199f2e",
    "first": "2019-03-20",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3197,6 +3490,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "3d4a07c98d1d7b82",
+   "events_hash": "24277403b9e011c9",
    "first": "2004-07-13",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3217,6 +3512,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "3bfef25ad5eacacf",
+   "events_hash": "8d78294af5d8f25d",
    "first": "1995-05-09",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3237,6 +3534,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "84810cf939333f68",
+   "events_hash": "4c464667766388f7",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3257,6 +3556,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "ec2bcbd4ced26154",
+   "events_hash": "692bfa0fdddf01a7",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3277,6 +3578,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "05cb2efa323ca8d7",
+   "events_hash": "f3b0108075094fb4",
    "first": "1995-10-31",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3297,6 +3600,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "c4b848758829ab44",
+   "events_hash": "4d4b2d113e06709f",
    "first": "1985-07-22",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3317,6 +3622,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d885bd2c469f4087",
+   "events_hash": "f0454a617bb0dc89",
    "first": "2005-04-14",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3337,6 +3644,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d7d8cb92ba557859",
+   "events_hash": "b26396a2f9c91352",
    "first": "1998-09-24",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3357,6 +3666,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "9cac87c71692cde9",
+   "events_hash": "bd9f17ef525db37c",
    "first": "2008-01-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3377,6 +3688,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "3ddbcd0f7d463e02",
+   "events_hash": "3aaf2110e0ab05d8",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3397,6 +3710,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "7d5d36d60e789e85",
+   "events_hash": "28bad5ff810055de",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3417,6 +3732,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "2e79d97604a3bd2e",
+   "events_hash": "b31ba68578c994a8",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3437,6 +3754,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "12ebf3a0d214fda6",
+   "events_hash": "527fcba4f25c120b",
    "first": "1995-10-03",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3457,6 +3776,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "968166727315d401",
+   "events_hash": "0294c4365c2fc9ce",
    "first": "1973-05-03",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3477,6 +3798,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "dfdb3042ba9e61b0",
+   "events_hash": "a5b78d94d6155647",
    "first": "1995-11-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3497,6 +3820,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d3f8593ef63ae899",
+   "events_hash": "94f7a65feff28a3c",
    "first": "2001-10-30",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3517,6 +3842,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "65e370acdc0894f0",
+   "events_hash": "c85a9aa067be1416",
    "first": "1995-01-10",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3537,6 +3864,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "01d782b94cca1e5a",
+   "events_hash": "1e93fdcf809171be",
    "first": "1972-06-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3557,6 +3886,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "20e842ff8e339896",
+   "events_hash": "884eddc05bd9dbef",
    "first": "1989-10-04",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3577,6 +3908,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "37db3ca27c88bc20",
+   "events_hash": "69c861b0b03f3b84",
    "first": "2000-08-11",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3597,6 +3930,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "61089baa35a78dee",
+   "events_hash": "296ee5c61ced8921",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3617,6 +3952,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "7bfe4b5f706804bf",
+   "events_hash": "d93be179a39783e5",
    "first": "1995-10-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3637,6 +3974,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "f1ddf5f27dfe953d",
+   "events_hash": "e01562620f3dd700",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3657,6 +3996,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "ea348621211291c3",
+   "events_hash": "4b8e6787e61b51f2",
    "first": "1994-06-07",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3677,6 +4018,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "2a86101e6529d7e0",
+   "events_hash": "d8781be2c73544fb",
    "first": "1972-06-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3697,6 +4040,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "f46ddfafa3ad236f",
+   "events_hash": "97d670d2bbfbb551",
    "first": "1972-06-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3717,6 +4062,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "8f3867faf2e12e6e",
+   "events_hash": "81b8e53e82a997d0",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3737,6 +4084,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "34486960a66b0a71",
+   "events_hash": "70930086181ad08b",
    "first": "2000-03-27",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3757,6 +4106,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "c57a4efb29288fe5",
+   "events_hash": "39fd818b6a064613",
    "first": "1973-05-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3774,6 +4125,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "d3d25431856d27c0",
+   "events_hash": "70dc04f95c7a2cb0",
    "first": "2021-02-10",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3794,6 +4147,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "0b25a009088a2dc8",
+   "events_hash": "bd2a9c526ce48d7f",
    "first": "1984-09-26",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3823,6 +4178,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "2b13ff26d94c2017",
+   "events_hash": "d8196567c198c0a5",
    "first": "2005-07-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3843,6 +4200,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "0429e7da31bcf31d",
+   "events_hash": "dae76b5cc6ba5583",
    "first": "2004-08-16",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3863,6 +4222,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d97174e1ddc794a4",
+   "events_hash": "486f15c7f73be4d0",
    "first": "1972-06-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3883,6 +4244,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "29d6c591eb459476",
+   "events_hash": "61c6fba74ac39554",
    "first": "2012-10-12",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3903,6 +4266,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "1696c590fde6b18b",
+   "events_hash": "78e136291bfff47d",
    "first": "1987-08-20",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3923,6 +4288,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "9dfa5d467c6c3e5c",
+   "events_hash": "ea1fd159b6b4a122",
    "first": "1995-07-10",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3943,6 +4310,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "6fd934e9e1d17843",
+   "events_hash": "857fe1c95380e7be",
    "first": "1996-06-28",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3963,6 +4332,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "6b0097c5b3688978",
+   "events_hash": "1e8f0763c9344630",
    "first": "1978-04-12",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -3980,6 +4351,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "f7bd91e54328d04b",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2026-05-27",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4000,6 +4373,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "0a743986dfb53892",
+   "events_hash": "e22bc2df1cc123df",
    "first": "1997-11-10",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4020,6 +4395,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "885ef62131e853ed",
+   "events_hash": "26a50ec752334242",
    "first": "2010-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4040,6 +4417,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "cc12af7309267783",
+   "events_hash": "8907372b9a7bec34",
    "first": "1999-06-04",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4060,6 +4439,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "31aa45ca8ef46f76",
+   "events_hash": "33a24103b1e9bba1",
    "first": "1987-07-22",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4080,6 +4461,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "a1dd6962f229564f",
+   "events_hash": "1d43d771c3503ccd",
    "first": "2001-06-20",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4100,6 +4483,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "bbf440b2f95e4371",
+   "events_hash": "6d99827a351e0a04",
    "first": "1986-09-25",
    "last": "2026-10-06",
    "nan_dropped_total": 1,
@@ -4120,6 +4505,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "a0bec3f5d3837af7",
+   "events_hash": "684680cec8143564",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4140,6 +4527,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "ee554a17d35ea67f",
+   "events_hash": "967125cf968b55c3",
    "first": "1997-06-27",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4160,6 +4549,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "49eb4bc78efd63f4",
+   "events_hash": "d57a9b0a99dfa966",
    "first": "1994-03-18",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4177,6 +4568,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "4b56f239b59fb8a3",
+   "events_hash": "171e0486253ae413",
    "first": "2019-03-13",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4194,6 +4587,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "c87c11d6ca01e2f6",
+   "events_hash": "171e0486253ae413",
    "first": "2019-03-12",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4214,6 +4609,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "94e74beb23d4ddaf",
+   "events_hash": "14114b7f92dc4fd6",
    "first": "1973-05-03",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4234,6 +4631,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "16de3fd6d51bd840",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2006-11-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4254,6 +4653,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "bbbef39e3cc38fba",
+   "events_hash": "4797822f30d84452",
    "first": "2009-11-18",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4271,6 +4672,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "2042b1f3542774ec",
+   "events_hash": "dc9a0e71b7cc306a",
    "first": "2016-07-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4291,6 +4694,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "98c0a73f88066b75",
+   "events_hash": "574139fc67c52b3f",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4308,6 +4713,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "d9bd762773303187",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2015-03-31",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4328,6 +4735,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "13ac4a4e0d23d533",
+   "events_hash": "87862f18fe0fde15",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4345,6 +4754,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "01f92c88b5535bbc",
+   "events_hash": "d00c2be1415e50d4",
    "first": "2022-12-15",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4365,6 +4776,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "6bdca301730896f8",
+   "events_hash": "324084d5729e5b16",
    "first": "1989-06-23",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4382,6 +4795,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "a5fc284df42f75f9",
+   "events_hash": "f041619c1fc66b51",
    "first": "2024-03-27",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4402,6 +4817,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d44905fa09177718",
+   "events_hash": "daacc1a2ba9ce552",
    "first": "1992-01-22",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4422,6 +4839,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "fbb308065d979b8e",
+   "events_hash": "3539703deef592d4",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4442,6 +4861,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "ce78a6d005bf55fe",
+   "events_hash": "c6af12ab6cc83a6b",
    "first": "1980-10-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4462,6 +4883,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "9998519e91297189",
+   "events_hash": "c88cd09fee55975a",
    "first": "1981-12-31",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4482,6 +4905,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "a0d9e68183638c5f",
+   "events_hash": "36a1f79666b28550",
    "first": "2010-11-18",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4502,6 +4927,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "11c23df7dd0c79b5",
+   "events_hash": "e9d8bef8bde9c215",
    "first": "2010-02-11",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4522,6 +4949,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "dccda795fdb20b9c",
+   "events_hash": "1daf098b7ec702f8",
    "first": "2004-08-19",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4542,6 +4971,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "73efaf1790a08301",
+   "events_hash": "4ce39da9902f22c8",
    "first": "2004-08-19",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4562,6 +4993,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "b1ca2cd59ab8cc8a",
+   "events_hash": "19435984dd64aca5",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4582,6 +5015,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "f72d3f49565dca69",
+   "events_hash": "334bcaf8e8a4919b",
    "first": "2001-01-16",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4602,6 +5037,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "39516b16bf483391",
+   "events_hash": "f170e0f984798a96",
    "first": "2000-12-08",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4622,6 +5059,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "82b36b7156a696ff",
+   "events_hash": "ba6ecadafa5efc01",
    "first": "1999-05-04",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4642,6 +5081,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d0d41741365c142d",
+   "events_hash": "06d72050d0fcab25",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4662,6 +5103,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "0c102be1492d853a",
+   "events_hash": "c59241eff0b6c680",
    "first": "1972-06-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4682,6 +5125,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d43e8127301a1af0",
+   "events_hash": "ae589cb255699d75",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4702,6 +5147,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "68dcbe9dd446b33c",
+   "events_hash": "50d1f2ebc4d897ec",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4722,6 +5169,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "1ce60f80d06366f2",
+   "events_hash": "bbbb4e3874d269e0",
    "first": "2011-03-10",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4742,6 +5191,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "4be00f95a695a367",
+   "events_hash": "7d48a41725fa815e",
    "first": "1981-09-22",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4762,6 +5213,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d8d6ed6b4c54cafa",
+   "events_hash": "f8fb9403b942f6f6",
    "first": "1995-12-15",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4782,6 +5235,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "bcfcf0285bb15252",
+   "events_hash": "99f9bf01ee6dce41",
    "first": "2011-03-22",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4802,6 +5257,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "1172093e66b70c5e",
+   "events_hash": "9fa9c59c6791d841",
    "first": "2013-12-12",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4822,6 +5279,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "6e28d128ea84128c",
+   "events_hash": "77f6541469459f1e",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4839,6 +5298,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "707449188541161b",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2026-06-15",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4856,6 +5317,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "2c3163aa9a3a3cf4",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2021-07-29",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4873,6 +5336,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "32d951059f0ec329",
+   "events_hash": "090238f78dc1579f",
    "first": "2015-10-19",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4893,6 +5358,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "8b4a6a844f7c004e",
+   "events_hash": "db9e40faa7b48579",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4913,6 +5380,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "01faf02d0f529626",
+   "events_hash": "4def113d622ed564",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4933,6 +5402,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "1ac7a7bfa6bdc1a4",
+   "events_hash": "473f417c875cfc87",
    "first": "1995-11-03",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4953,6 +5424,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "0006769ef12bc0ca",
+   "events_hash": "1c72588209fc4b99",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4973,6 +5446,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "0534adea4a37fb79",
+   "events_hash": "06da987396593a5d",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -4993,6 +5468,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "69c44545d3277d9f",
+   "events_hash": "9e720eb020fdbf92",
    "first": "1994-10-31",
    "last": "2026-10-06",
    "nan_dropped_total": 121,
@@ -5017,6 +5494,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "f3bc666c7518aa08",
+   "events_hash": "957f080bb77584fb",
    "first": "1981-12-31",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5034,6 +5513,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "1fc1d58ec8155e9a",
+   "events_hash": "d22ba9c481da0f5e",
    "first": "2016-11-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5054,6 +5535,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "b7e888a0fd82c00b",
+   "events_hash": "e324ef25474a7d29",
    "first": "2007-05-04",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5074,6 +5557,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "fafe8bfa273a7508",
+   "events_hash": "9a39f2aaf81b66c9",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5094,6 +5579,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "a716b91855c1a8b1",
+   "events_hash": "f09ee76d9ee2c905",
    "first": "2005-11-16",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5114,6 +5601,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "eee8f7ce11979e6e",
+   "events_hash": "876ffbcccf0b4b84",
    "first": "1991-06-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5134,6 +5623,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "bf1b63ed4da44e35",
+   "events_hash": "1dd040fc8f70101e",
    "first": "1989-06-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5154,6 +5645,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "826da9089eda69a1",
+   "events_hash": "d637b809d21bdda8",
    "first": "1974-12-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5174,6 +5667,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "99d1b076b92a6f85",
+   "events_hash": "1e5db4e878e265a8",
    "first": "2000-07-28",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5194,6 +5689,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d46678d043cbda78",
+   "events_hash": "97f4bb015af7a4d9",
    "first": "1993-11-04",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5214,6 +5711,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "bddc159b960ba9af",
+   "events_hash": "745b7f05373fddc3",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5234,6 +5733,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "59fb61938a4e0b66",
+   "events_hash": "d06efa8122de7652",
    "first": "1993-03-12",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5251,6 +5752,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "d3bdb9baf9add6bd",
+   "events_hash": "b3ad2a8a6775b261",
    "first": "2017-02-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5271,6 +5774,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d445dd3182a6134e",
+   "events_hash": "9bda4d8613e8caca",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5291,6 +5796,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "e7cac17884c96930",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2013-05-09",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5308,6 +5815,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "80d50263e96efd1a",
+   "events_hash": "264b417d59a7e494",
    "first": "2017-05-12",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5328,6 +5837,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "a7585bffaac7679e",
+   "events_hash": "d30b3ba30c7d7a7b",
    "first": "1996-02-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5348,6 +5859,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "2cc22286a8539dd2",
+   "events_hash": "842c6e2aa555e516",
    "first": "2000-06-16",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5368,6 +5881,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "ff4a40d273f9c11c",
+   "events_hash": "bea5fbbd7d482fb1",
    "first": "1993-10-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5388,6 +5903,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "2f22107836854c9f",
+   "events_hash": "cb2bcafe71c1aae1",
    "first": "1973-03-13",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5408,6 +5925,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "f7332d68bc3c820c",
+   "events_hash": "dda2922939fa14ac",
    "first": "1995-08-25",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5428,6 +5947,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "87ba5b8d29ab6962",
+   "events_hash": "a20f5781fcfcdfec",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5448,6 +5969,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "32807f9abafe77ff",
+   "events_hash": "5dc65eee35ea782d",
    "first": "1983-11-22",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5468,6 +5991,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "387a87ed209880ec",
+   "events_hash": "b5f9d9a4017102f8",
    "first": "1993-05-03",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5497,6 +6022,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "bd43c552367068cd",
+   "events_hash": "19e0c8985b2ea91d",
    "first": "1987-09-28",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5517,6 +6044,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "f198c8b33940f7f3",
+   "events_hash": "e0c319d4e9ee7321",
    "first": "1985-11-20",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5537,6 +6066,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "424245f074724815",
+   "events_hash": "cc572c55a2c5361b",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5557,6 +6088,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "09f3400c11cc0f30",
+   "events_hash": "407e66f38f2b9561",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5577,6 +6110,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "4e5fc0ebe80b03fd",
+   "events_hash": "c954189d5bdeff7b",
    "first": "2008-05-07",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5597,6 +6132,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "ad6ac25cbe5669c9",
+   "events_hash": "c992a3826717163f",
    "first": "1987-11-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5617,6 +6154,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "c5d8613748016fca",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2014-10-20",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5634,6 +6173,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "e58c1d8370017e99",
+   "events_hash": "c8da42185bfb34f0",
    "first": "2015-07-06",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5654,6 +6195,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "a5f357ea6bb7e7f5",
+   "events_hash": "0b53045004724b44",
    "first": "1991-11-22",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5674,6 +6217,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "c364a21ab56ecf03",
+   "events_hash": "ace27198cb95f93d",
    "first": "2010-07-15",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5694,6 +6239,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "6c3a23c1a1491e79",
+   "events_hash": "fc2de86b2ac92cc8",
    "first": "1980-10-08",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5714,6 +6261,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "8f0fda148d02904a",
+   "events_hash": "5fe0294cd9509bfd",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5734,6 +6283,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "10367e5b79fbaf34",
+   "events_hash": "98b38943630966dd",
    "first": "2011-02-11",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5754,6 +6305,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d749cb6170ffd701",
+   "events_hash": "86e58236ebffdf2f",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5774,6 +6327,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "301ebb140fe1280c",
+   "events_hash": "c9a3cbe4ef48d4a4",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5791,6 +6346,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "6ab86f083c94dd53",
+   "events_hash": "89c113c56abac4f3",
    "first": "2023-05-04",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5811,6 +6368,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "c80409be99cd677f",
+   "events_hash": "a9fb7f3e2e2965c1",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5831,6 +6390,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "4ebd0bf1402d1f63",
+   "events_hash": "02176e1c42f00f86",
    "first": "2006-10-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5851,6 +6412,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "4c13f585a4e87122",
+   "events_hash": "f301db66a185b6ce",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5871,6 +6434,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "f7f67f32f92f0fba",
+   "events_hash": "49967112b4ec0c57",
    "first": "1990-03-29",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5891,6 +6456,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "8d6e16dff3b971de",
+   "events_hash": "1c758e813d066d05",
    "first": "1981-12-31",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5911,6 +6478,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "6c29dcdccaa88f74",
+   "events_hash": "d9b03d76a18ae1a3",
    "first": "1999-07-29",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5931,6 +6500,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "af9e1b81faeae119",
+   "events_hash": "c0ce0d820afd0cf3",
    "first": "1992-06-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5948,6 +6519,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "62e6c72401363861",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2015-07-23",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5968,6 +6541,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "a0b46ed7170c86ee",
+   "events_hash": "d59cea40e08cc90e",
    "first": "1972-06-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -5988,6 +6563,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "0a2d79150906dd41",
+   "events_hash": "78cb81380a0781e7",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 1,
@@ -6008,6 +6585,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "2c45af3aea7adbf3",
+   "events_hash": "5337a97626b75619",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6028,6 +6607,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "41c4290e0cc11cc9",
+   "events_hash": "82916b0f6b75156e",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6048,6 +6629,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d246977edca23f95",
+   "events_hash": "7843d33586fb0bb3",
    "first": "1984-05-04",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6068,6 +6651,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "110a511cbae23264",
+   "events_hash": "7bac77a69b83303e",
    "first": "2007-07-27",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6088,6 +6673,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "e2fd8738ed0eb419",
+   "events_hash": "e9acefda01b7dfca",
    "first": "1980-01-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6108,6 +6695,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "4df980fd13a523d7",
+   "events_hash": "08645e2231bba173",
    "first": "2004-12-15",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6128,6 +6717,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "89166a9bd20ae174",
+   "events_hash": "50e203f5fb3fdab8",
    "first": "2010-04-28",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6148,6 +6739,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "90a188e39e79445a",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2005-12-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6168,6 +6761,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "f7cc4b32e9caa909",
+   "events_hash": "97b31f13cf405582",
    "first": "2006-05-25",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6188,6 +6783,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "079cf571b9425482",
+   "events_hash": "a7800d3218d733d2",
    "first": "1994-01-28",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6208,6 +6805,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "301dea2468a31506",
+   "events_hash": "c0bfd6f56cd46036",
    "first": "1998-03-23",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6228,6 +6827,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "684608bae40d67cd",
+   "events_hash": "1ee0bea6646b574c",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6248,6 +6849,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "c167b0e820a2cf25",
+   "events_hash": "1b38684d9827d47c",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6268,6 +6871,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "25526db11092fb7f",
+   "events_hash": "262f54b0f7da31c5",
    "first": "1993-03-19",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6288,6 +6893,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "014eb00e51da637c",
+   "events_hash": "25cd63233141add2",
    "first": "1994-11-10",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6308,6 +6915,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "a4f71eeb0f5b0376",
+   "events_hash": "e2db59af371575b7",
    "first": "1994-10-31",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6328,6 +6937,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "7a1a616ec7e85cbb",
+   "events_hash": "b059d117c94ad48e",
    "first": "2001-06-13",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6348,6 +6959,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "859d44e3f7e1591c",
+   "events_hash": "5a85b7bb0f19378f",
    "first": "1973-05-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6368,6 +6981,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "e7cf1326f64f898d",
+   "events_hash": "5b41bb7d59ab6e6b",
    "first": "2000-04-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6388,6 +7003,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "0421bcb9fa1cb662",
+   "events_hash": "d7e30aed7f896a7a",
    "first": "2012-05-18",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6408,6 +7025,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "dd7fd04ec46555fd",
+   "events_hash": "053eed99c479e029",
    "first": "1988-05-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6428,6 +7047,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "34048ca35c3511b3",
+   "events_hash": "5a55c3fdee7325aa",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6448,6 +7069,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "64ac106ba5621ba1",
+   "events_hash": "f653e5eee79c4933",
    "first": "1994-02-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6468,6 +7091,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "a20652dea8d93e33",
+   "events_hash": "85c0924ab74d4b95",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6488,6 +7113,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "b8cf699f1439056f",
+   "events_hash": "283027eebcc3def6",
    "first": "1985-12-09",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6508,6 +7135,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "376bb4a94a120369",
+   "events_hash": "42ed661b89d47688",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6528,6 +7157,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "7dc3cc76683a8ef1",
+   "events_hash": "27ce103af4991b36",
    "first": "1988-01-26",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6548,6 +7179,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "0120b3bc25a3ebab",
+   "events_hash": "d9ab4359a8ccf0fa",
    "first": "2011-06-24",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6568,6 +7201,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "05b1675feca5c51e",
+   "events_hash": "0bec9fa9f90a9c9a",
    "first": "2004-11-19",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6588,6 +7223,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "bd83ed08a672a3d4",
+   "events_hash": "06da2436b69e4178",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6605,6 +7242,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "f5dd8780716c515c",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2018-12-07",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6625,6 +7264,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "8826be00c1d754de",
+   "events_hash": "9b1539d28733664c",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6645,6 +7286,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "e06b3a4501c896ee",
+   "events_hash": "45bbd10b9adfc9e8",
    "first": "2000-06-30",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6665,6 +7308,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "cf01f90fc9c0397b",
+   "events_hash": "8ecb02bd2180d792",
    "first": "1993-02-23",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6685,6 +7330,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "4bbfa55eeed65c5d",
+   "events_hash": "d409237d1dd91db1",
    "first": "2007-11-15",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6705,6 +7352,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "294ada1062d9d59d",
+   "events_hash": "e01c1a055b89d3df",
    "first": "1986-03-13",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6725,6 +7374,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "74f632d707d45fda",
+   "events_hash": "fcec3ee84d6be1ca",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6745,6 +7396,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "72ed50b1f556666b",
+   "events_hash": "bf7815eac222f097",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6765,6 +7418,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "b8a7a61a02ee7444",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "1997-11-14",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6785,6 +7440,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "4b15078dc65fc480",
+   "events_hash": "d3a5ee8e0b8ff619",
    "first": "1984-06-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6805,6 +7462,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "639b2c5bb628785c",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2013-01-18",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6825,6 +7484,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "da1fd1378dfe1af5",
+   "events_hash": "8a0a9101a993088f",
    "first": "2002-07-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6845,6 +7506,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "aec82cb397c679f8",
+   "events_hash": "b482e705f1569a5a",
    "first": "1980-03-18",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6865,6 +7528,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "81b123516fc68525",
+   "events_hash": "a19fd7a6463b4c1d",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6885,6 +7550,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "bb54985843feac9c",
+   "events_hash": "635bcb5a8999c5b4",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6905,6 +7572,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "39d37fb78a16d98d",
+   "events_hash": "de1de9d928aba5fe",
    "first": "2002-05-23",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6925,6 +7594,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "6ebad6b65079da15",
+   "events_hash": "c95abaef841d4c57",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6945,6 +7616,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "7382a4ee5f05e0d6",
+   "events_hash": "429b155770578ed5",
    "first": "1980-12-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6965,6 +7638,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "7841b9fc37b13ca8",
+   "events_hash": "7fa36b925e3afbfd",
    "first": "1981-12-31",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -6985,6 +7660,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "b4c8759907d710d2",
+   "events_hash": "ecb38f6b83221aa7",
    "first": "2012-06-29",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7005,6 +7682,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "7082bf9d82160647",
+   "events_hash": "fb3deaf9be82889f",
    "first": "2003-12-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7025,6 +7704,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "2d0176a98ad2d231",
+   "events_hash": "45e49dfae7320b82",
    "first": "1982-06-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7045,6 +7726,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "16ffccde0f4b97fd",
+   "events_hash": "7e292c1201b2eeb3",
    "first": "1995-11-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7065,6 +7748,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d6e2298ec80a4f5e",
+   "events_hash": "7d75ef4d45655e8b",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7085,6 +7770,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "94a733e1db0d4493",
+   "events_hash": "2bfe7f1da3d78a71",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7105,6 +7792,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "af53e921776e3ce9",
+   "events_hash": "7741b5e3fac76b86",
    "first": "1999-01-22",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7125,6 +7814,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "e62338d0a110cccb",
+   "events_hash": "7ec97f5ab83f4171",
    "first": "1985-07-22",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7145,6 +7836,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "f61d319828c65735",
+   "events_hash": "621431762cda0b1f",
    "first": "2013-06-19",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7165,6 +7858,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "00890aa7b3b9bd5d",
+   "events_hash": "621431762cda0b1f",
    "first": "2013-06-19",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7185,6 +7880,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d71bca4becf0e1de",
+   "events_hash": "d2ef47113f256295",
    "first": "2010-08-06",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7205,6 +7902,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "7cf59c064f49a8d1",
+   "events_hash": "f92fff6614355c06",
    "first": "1994-10-18",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7225,6 +7924,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "ddba7bfcf178bb34",
+   "events_hash": "e3242a03f372e763",
    "first": "1991-10-24",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7245,6 +7946,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "4df78fbc0494bd6d",
+   "events_hash": "c692cc1ca35862a7",
    "first": "1980-10-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7265,6 +7968,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "eae21db4e1a11864",
+   "events_hash": "ed2a93ef4c366c24",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7285,6 +7990,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d363f8f76df70d4c",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2000-05-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7305,6 +8012,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "59fcc597497a5da4",
+   "events_hash": "9c7cb5c7b61a8a95",
    "first": "1986-03-12",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7325,6 +8034,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "de7394318e08aea7",
+   "events_hash": "d6cf506b929ca32e",
    "first": "1993-04-23",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7342,6 +8053,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "69eb9ebdba85ced0",
+   "events_hash": "26db33c7d0fbdad9",
    "first": "2020-03-19",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7362,6 +8075,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "c19117bd8b487254",
+   "events_hash": "3a0459e6d6793e7c",
    "first": "1981-12-31",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7379,6 +8094,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "f35527eb2cf87855",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2015-10-06",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7399,6 +8116,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "4114be702bd76768",
+   "events_hash": "564b03d62fdb28ce",
    "first": "2012-07-20",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7419,6 +8138,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "b2dfda5d958b7898",
+   "events_hash": "43e7bddad9bf9709",
    "first": "1983-08-26",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7439,6 +8160,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "e7c60e8d76338890",
+   "events_hash": "081d7382bcffdbfa",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7459,6 +8182,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "8b62740ebf02dcd0",
+   "events_hash": "228038446c9772c7",
    "first": "1972-06-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7479,6 +8204,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "61d8f3b02c307d4d",
+   "events_hash": "44c2efec41675ae5",
    "first": "1980-01-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7499,6 +8226,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "612a3c455c66b74c",
+   "events_hash": "2593af80c0cde129",
    "first": "1972-06-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7519,6 +8248,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "2413eee3df66bc02",
+   "events_hash": "7581e1e809890c50",
    "first": "1972-06-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7539,6 +8270,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "942ee5bf2f6c490b",
+   "events_hash": "abf954f3600b3001",
    "first": "2001-10-23",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7559,6 +8292,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "e2b6c143d31f2d68",
+   "events_hash": "6b27b9b55f3e194a",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7579,6 +8314,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "1750223b5e978176",
+   "events_hash": "08eae9bbce2d4ff6",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7599,6 +8336,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "1b07b5b0193317e5",
+   "events_hash": "f538ce7a3923c989",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7619,6 +8358,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "71657013d0dcd813",
+   "events_hash": "4c899e6d2ebfd14f",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7639,6 +8380,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "32c1671b1a1ee91d",
+   "events_hash": "67b1c9d83db4595e",
    "first": "2000-01-28",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7659,6 +8402,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "32b0712fb89975d1",
+   "events_hash": "12758e130021fa8a",
    "first": "1997-11-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7676,6 +8421,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "1a3caf222f574fff",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2020-09-30",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7696,6 +8443,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "23f7b70ce2905bb7",
+   "events_hash": "537744b4d176643f",
    "first": "2008-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7716,6 +8465,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "c9d33e57ba79295b",
+   "events_hash": "e8f5728c0f6b170e",
    "first": "1975-11-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7736,6 +8487,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "6a635b917d97e531",
+   "events_hash": "f605d6c482918096",
    "first": "1973-05-03",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7756,6 +8509,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "3697c8d6fb5b1957",
+   "events_hash": "3693806f8a27f95f",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7776,6 +8531,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "6cd3423ab29db8d6",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2007-05-15",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7796,6 +8553,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "375117dd9e0086da",
+   "events_hash": "93575a8eedebb92e",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7816,6 +8575,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "9ebbee94700b01a1",
+   "events_hash": "32f487bb7dd83044",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7836,6 +8597,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "e88969ef78c2b1db",
+   "events_hash": "8886a92313748826",
    "first": "2001-12-13",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7856,6 +8619,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "2b66cb4424dd21d3",
+   "events_hash": "383465e3f931c4ef",
    "first": "1980-11-18",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7873,6 +8638,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "173754fd44f26471",
+   "events_hash": "79f711b5785f4751",
    "first": "2026-07-29",
    "last": "2026-10-06",
    "nan_dropped_total": 42,
@@ -7893,6 +8660,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "ff2aa96b57e180f2",
+   "events_hash": "a7e9451cdfacf58e",
    "first": "2012-04-12",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7913,6 +8682,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "31fca3d06311fe8a",
+   "events_hash": "84c7f73bfb1741e3",
    "first": "1989-12-08",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7933,6 +8704,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "883eb0e9956c9bb7",
+   "events_hash": "3548ff6ec41387f7",
    "first": "1998-02-12",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7950,6 +8723,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "cc071c943c4b3997",
+   "events_hash": "40fc06b2a1457cb0",
    "first": "2015-07-06",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7967,6 +8742,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "49043f7766ba69b4",
+   "events_hash": "248676ae9a66809c",
    "first": "2025-10-27",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -7987,6 +8764,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "fb26b8742d14582a",
+   "events_hash": "5b74c9af0280c987",
    "first": "1991-12-13",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8007,6 +8786,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d10d4e8f91f718ab",
+   "events_hash": "c836aa706c79cef1",
    "first": "1993-04-28",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8024,6 +8805,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "6be11a93847718a6",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2024-03-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8044,6 +8827,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "444a3b2f0fec17e1",
+   "events_hash": "391b97c0ff9d2d5c",
    "first": "1993-10-29",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8064,6 +8849,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "5a6533d23e788655",
+   "events_hash": "c456f810c8d92b0a",
    "first": "1991-04-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8084,6 +8871,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "6bfdf6650000e853",
+   "events_hash": "ad8d7a9bccb7b61c",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8104,6 +8893,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "2f47f1755cdac015",
+   "events_hash": "2b19c29e3f4c302c",
    "first": "1983-07-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8124,6 +8915,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d317103a332ff813",
+   "events_hash": "31fcf5c45b534116",
    "first": "1997-06-12",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8144,6 +8937,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "39efac7474cd9361",
+   "events_hash": "0086049a475283e1",
    "first": "1995-06-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8164,6 +8959,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "3f33ba2876aff5db",
+   "events_hash": "465ddb17ad12de48",
    "first": "1981-12-31",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8184,6 +8981,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d789c56bac76d676",
+   "events_hash": "922015ac34073967",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8204,6 +9003,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "ff8f9b32d5e3d28d",
+   "events_hash": "4bec87bae7698af6",
    "first": "1992-02-13",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8224,6 +9025,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "7ce6ae608b19a924",
+   "events_hash": "58a0511dd43fe944",
    "first": "1985-08-08",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8244,6 +9047,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "8028f4f6d8bbbec9",
+   "events_hash": "5620d4bc1026df80",
    "first": "1998-07-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8264,6 +9069,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "b59ad9dfc6e97028",
+   "events_hash": "d2c031f50133fc7f",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8284,6 +9091,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "013d10ce2aec144d",
+   "events_hash": "ff4027eb7ed060af",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8304,6 +9113,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "265fc3b142c4cb12",
+   "events_hash": "9c263eadaa5f3407",
    "first": "1999-06-16",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8324,6 +9135,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "f541284e2cffb7a1",
+   "events_hash": "51774375b6140b8c",
    "first": "1992-06-26",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8344,6 +9157,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d87453559277894f",
+   "events_hash": "e25f757f7971d690",
    "first": "1987-09-22",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8364,6 +9179,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "5d36f232b4350c6d",
+   "events_hash": "df566ec68beca6c9",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8384,6 +9201,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "3c54e1aea9a3540c",
+   "events_hash": "a6b0463095908c53",
    "first": "1994-10-31",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8404,6 +9223,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "a05bfbe6c209f704",
+   "events_hash": "c6d08fb751d28b76",
    "first": "1981-12-31",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8424,6 +9245,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "1df204352352a682",
+   "events_hash": "f4ed1f52cb9eec6d",
    "first": "2007-03-29",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8444,6 +9267,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "75e784994bd8de5f",
+   "events_hash": "03d026d97117ee00",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8461,6 +9286,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "3a4f202213438260",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2025-02-13",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8481,6 +9308,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "b613ee3165edd1e8",
+   "events_hash": "6344f024e41fc459",
    "first": "1992-02-26",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8501,6 +9330,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "5898102eeb4a0ada",
+   "events_hash": "196f51730f0e89e4",
    "first": "1981-12-31",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8518,6 +9349,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "4e002c0839589155",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2024-03-26",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8538,6 +9371,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "e911f5cd972ad00a",
+   "events_hash": "dd62131f383bbf0a",
    "first": "1993-12-14",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8558,6 +9393,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "eeea36e677865829",
+   "events_hash": "fd2777d49aefccce",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8578,6 +9415,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "474719e5ecc62392",
+   "events_hash": "85c98ea335aa9d35",
    "first": "1998-06-29",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8598,6 +9437,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "700649775233bbbf",
+   "events_hash": "5cc7a403241dd2bb",
    "first": "1992-06-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8618,6 +9459,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "99162565ca46a8fd",
+   "events_hash": "13ba287b7670bdb0",
    "first": "1996-11-22",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8638,6 +9481,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "6256d465be4fcfce",
+   "events_hash": "02abb5a4c79c6ed2",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8658,6 +9503,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "51a4b911cefb3768",
+   "events_hash": "eae399bbd5cfe4db",
    "first": "2002-12-11",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8678,6 +9525,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "0d42ac8f8240944f",
+   "events_hash": "eae63d0adf5d2e3a",
    "first": "1992-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8698,6 +9547,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "8d877230275c2f71",
+   "events_hash": "6c189ccb70227fc6",
    "first": "2008-07-25",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8722,6 +9573,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "e5b02e25e5847567",
+   "events_hash": "c01082892689ffa2",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8742,6 +9595,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "f31f5cf797d5b726",
+   "events_hash": "d4e361e86c652343",
    "first": "1984-09-07",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8762,6 +9617,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "e6d029977701382d",
+   "events_hash": "2351247bf903d766",
    "first": "2014-07-31",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8782,6 +9639,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "dc6152f3365cbf30",
+   "events_hash": "3d967b3cfa6f5fc7",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8802,6 +9661,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "c9fc5d38b8048756",
+   "events_hash": "599011f127e87049",
    "first": "1973-05-08",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8822,6 +9683,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "5b160d0f095a71d5",
+   "events_hash": "1531c122dd4fed5b",
    "first": "1983-11-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8842,6 +9705,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "b18a85e544d7de40",
+   "events_hash": "449f5949f00c1ac6",
    "first": "2006-03-15",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8862,6 +9727,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "b0424051f4c05609",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "1999-11-23",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8882,6 +9749,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "9061d5b4a6ccaf01",
+   "events_hash": "1cad5b38dea2e964",
    "first": "1989-02-09",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8902,6 +9771,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "4892caa0ce072eaa",
+   "events_hash": "a2cb13768e3f8ec0",
    "first": "2007-06-14",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8922,6 +9793,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "558932e4cabf0163",
+   "events_hash": "e1cd70b34fb8ad9c",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8942,6 +9815,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "75e797172d4f107f",
+   "events_hash": "eef134c8b3272bcc",
    "first": "1980-03-18",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8962,6 +9837,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "15bd7893448e2e26",
+   "events_hash": "03fa3bb4430ec97b",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -8982,6 +9859,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "30fd0415355d516c",
+   "events_hash": "aedc692f6728f490",
    "first": "1987-06-26",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9002,6 +9881,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "cebe7e2b2c9c5de4",
+   "events_hash": "fb0366a28da51de3",
    "first": "1999-10-19",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9022,6 +9903,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "43842d134e9aef4d",
+   "events_hash": "9e9daead83089f8c",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9051,6 +9934,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "7cb0e1178cf15ea1",
+   "events_hash": "3928fcf8cbcbf7dd",
    "first": "2007-04-19",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9071,6 +9956,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "581ead9942b02e8b",
+   "events_hash": "64fc6c169801ca3d",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9091,6 +9978,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "6222dc359519b020",
+   "events_hash": "0edef81a562cf630",
    "first": "2000-10-06",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9111,6 +10000,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d6584ed4ed4f51d1",
+   "events_hash": "04dfc8ffcffd4fe4",
    "first": "2010-12-07",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9131,6 +10022,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "73c6ea8b52956188",
+   "events_hash": "0c2281915a3f825d",
    "first": "1990-07-20",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9151,6 +10044,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "c33dc6d6ba1b6b86",
+   "events_hash": "8ecb13cfc840c229",
    "first": "1986-04-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9171,6 +10066,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "2f508c04097bdd2c",
+   "events_hash": "17744d44b7da51a1",
    "first": "1975-11-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9191,6 +10088,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "c3c029406af04aee",
+   "events_hash": "bc58ed620a09dd93",
    "first": "1994-02-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9211,6 +10110,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "8a1cb0c1b104ba10",
+   "events_hash": "50d8070fd6542f44",
    "first": "2010-06-29",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9231,6 +10132,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d741ce337293810f",
+   "events_hash": "f3ece4bab9e10ce8",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9251,6 +10154,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "72a295feba457217",
+   "events_hash": "05841554bccf73da",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9271,6 +10176,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d5126ea7ee5b4038",
+   "events_hash": "eb2b17bcb248775b",
    "first": "1997-04-15",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9291,6 +10198,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "1d3352dd60061218",
+   "events_hash": "b649047c1ab822fc",
    "first": "1972-06-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9311,6 +10220,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "86f9acdcaf6d9ae8",
+   "events_hash": "caac5053ea38c427",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9331,6 +10242,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "e7f2d02fa6b62f07",
+   "events_hash": "7b0e9e3e0c6fd50d",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9351,6 +10264,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "ff7d709fe7a458ba",
+   "events_hash": "a1a99546553dfbc7",
    "first": "2006-02-06",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9368,6 +10283,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "09d726c7b463ba56",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2019-05-10",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9388,6 +10305,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "f704973a7acfc89d",
+   "events_hash": "efd13060806165e0",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9408,6 +10327,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "9451caab32b63df5",
+   "events_hash": "7752c6571147e941",
    "first": "1981-07-09",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9428,6 +10349,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "4206c48534e73d22",
+   "events_hash": "a2cdb949c2bdd63f",
    "first": "2007-10-25",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9448,6 +10371,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "18992b0d6c7ade2c",
+   "events_hash": "6f404e5819e3086a",
    "first": "1984-10-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9468,6 +10393,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "e9e9151576fc08f7",
+   "events_hash": "ac0e757927dec433",
    "first": "1980-01-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9488,6 +10415,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "41f47b74b0f9349c",
+   "events_hash": "e537e4f9c6b3d8d6",
    "first": "1999-11-10",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9508,6 +10437,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "490b7f8665160400",
+   "events_hash": "6bdd7e4e4e770b64",
    "first": "1997-12-18",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9528,6 +10459,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "93b230d7916f970e",
+   "events_hash": "51c263aa0f1bc277",
    "first": "1973-05-03",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9548,6 +10481,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "8788d17ffeb1eb15",
+   "events_hash": "42cfae7b1d136469",
    "first": "2008-03-19",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9568,6 +10503,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "b2c44d5741ec7c13",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2013-10-16",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9585,6 +10522,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "c1ccffcae6c27c20",
+   "events_hash": "5433059552f8612f",
    "first": "2018-01-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9605,6 +10544,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "7c32d3e03adcf665",
+   "events_hash": "58dbce7994e67078",
    "first": "1982-01-04",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9622,6 +10563,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "5dd5856622b6cdb9",
+   "events_hash": "f2ae7d5ffedad88a",
    "first": "2023-10-04",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9642,6 +10585,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "83c5895b34dad092",
+   "events_hash": "66a1fe4208ada598",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9662,6 +10607,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "b0337609f7e2695b",
+   "events_hash": "8d83de3e620bdae1",
    "first": "1993-08-12",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9682,6 +10629,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "4d56a1c7e7c2832c",
+   "events_hash": "5f61551e437861f5",
    "first": "2009-10-07",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9702,6 +10651,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "5149e10d20fca993",
+   "events_hash": "276053a7526c4108",
    "first": "1998-01-30",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9719,6 +10670,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "c1826f23a72b6c85",
+   "events_hash": "05f45e86a3cd3e9d",
    "first": "2018-08-02",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9739,6 +10692,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "3cce124093337053",
+   "events_hash": "7bd0e4248d5b2e48",
    "first": "1991-07-24",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9756,6 +10711,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "a62bf8576fdfcf22",
+   "events_hash": "8810d7a8a533e038",
    "first": "2016-10-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9776,6 +10733,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "8aed8c652b4ecbb9",
+   "events_hash": "049a7018f8220c15",
    "first": "1997-05-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9796,6 +10755,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "5af8c7224eceea11",
+   "events_hash": "2656ba290f9f3707",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9816,6 +10777,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "60818dbebd340b39",
+   "events_hash": "78412dc1c30fce4c",
    "first": "1983-11-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9836,6 +10799,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "69dfe7600b514b8f",
+   "events_hash": "44d5b8c246a266b8",
    "first": "1995-06-16",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9856,6 +10821,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "e257fb6ce9b9462f",
+   "events_hash": "096427c2817ba132",
    "first": "1995-11-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9876,6 +10843,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "ec5814ac44fe09d8",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2012-10-12",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9896,6 +10865,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "de597408c597307c",
+   "events_hash": "72c5373e7c52f3be",
    "first": "1978-10-31",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9916,6 +10887,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "64b1eae4f14b27ad",
+   "events_hash": "593911743a2d73b2",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9936,6 +10909,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "9cf5cffbded359f9",
+   "events_hash": "e5dd2fbecae0afca",
    "first": "1980-03-19",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9956,6 +10931,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "e48454046c7b55e0",
+   "events_hash": "d8d031fc6dd02f16",
    "first": "1972-06-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9976,6 +10953,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "2bfdf1c6830e7fc7",
+   "events_hash": "908bff32a56fd77f",
    "first": "1988-06-22",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -9996,6 +10975,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "c25cd1f8e0aef89b",
+   "events_hash": "c4c8f0abf0f041fd",
    "first": "1981-12-31",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -10016,6 +10997,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "709498f45701ce22",
+   "events_hash": "e42e12b9e457bd90",
    "first": "1972-08-25",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -10036,6 +11019,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "7ef06f35424c6de6",
+   "events_hash": "fe722a041334d9c4",
    "first": "1973-10-23",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -10056,6 +11041,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "c99f05d004d1e51b",
+   "events_hash": "555e3d2d6378c846",
    "first": "1983-07-07",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -10076,6 +11063,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "14df8d934d76f981",
+   "events_hash": "e7c589b673ed8cac",
    "first": "1980-03-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -10096,6 +11085,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "6dfc8a8a93da4ad3",
+   "events_hash": "56c9b0f76430c960",
    "first": "2001-06-12",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -10116,6 +11107,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "1069e0f85e8f9183",
+   "events_hash": "39639f90adef2cf0",
    "first": "1973-05-03",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -10136,6 +11129,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "9f3188bd491bdcdc",
+   "events_hash": "a58532cbc54f8b8a",
    "first": "2002-10-25",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -10156,6 +11151,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "e3d408b8eaebe460",
+   "events_hash": "3d3c2fa70a906be3",
    "first": "1973-02-21",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -10176,6 +11173,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "4117354ac85f8f47",
+   "events_hash": "e6fc72949c09646f",
    "first": "1970-01-05",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -10196,6 +11195,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "3ec1a6c8d93b75eb",
+   "events_hash": "b7b86048e6f4be32",
    "first": "2011-10-13",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -10213,6 +11214,8 @@
     "status": "NO_DATA_BEFORE_ASOF"
    },
    "cache_action": "updated",
+   "content_hash": "937df6bb0a7dae1b",
+   "events_hash": "6ed8ee04fa4ea613",
    "first": "2015-11-19",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -10233,6 +11236,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "6f8f91b53a0afce5",
+   "events_hash": "a9d2c55e7e037c41",
    "first": "1997-09-17",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -10253,6 +11258,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "d1239a727e6bc8a5",
+   "events_hash": "c42afb85940007f4",
    "first": "2001-07-25",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -10273,6 +11280,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "ddb75432d19b92df",
+   "events_hash": "f2bfd21eb36c67c2",
    "first": "1991-08-15",
    "last": "2026-10-06",
    "nan_dropped_total": 0,
@@ -10293,6 +11302,8 @@
     "status": "OK"
    },
    "cache_action": "updated",
+   "content_hash": "12dd9aa7d7a4cbc2",
+   "events_hash": "3860c78192b87c34",
    "first": "2013-02-01",
    "last": "2026-10-06",
    "nan_dropped_total": 0,

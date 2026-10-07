@@ -4,10 +4,12 @@
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import time
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -101,3 +103,75 @@ def write_manifest(name: str, obj: dict) -> Path:
     path = MANIFEST_DIR / name
     path.write_text(json.dumps(obj, ensure_ascii=False, indent=1, sort_keys=True), encoding="utf-8")
     return path
+
+
+class SnapshotMismatch(RuntimeError):
+    """캐시가 manifest에 기록된 스냅샷과 다르다(재수집이 일어났거나 파일이 바뀌었다)."""
+
+
+def frame_hash(df: pd.DataFrame) -> str:
+    """프레임 내용(값·인덱스·열 이름)의 해시 16자리. 같은 데이터면 파일 쓰기(parquet 왕복)·날짜 단위(s/us/ns)와 무관하게 같다.
+
+    날짜는 ns 정수, 값은 float64 바이트로 정규화해 해시한다(pandas 내부 해시는 날짜 단위에 따라 값이 달라진다).
+    """
+    h = hashlib.sha256()
+    h.update(np.ascontiguousarray(df.index.astype("datetime64[ns]").asi8).tobytes())
+    for col in df.columns:
+        h.update(str(col).encode() + b"|")
+        h.update(np.ascontiguousarray(df[col].to_numpy(dtype="float64")).tobytes())
+    return h.hexdigest()[:16]
+
+
+def make_snapshot_id(collected_at: str, symbol_hashes: dict[str, str], index_hashes: dict[str, str]) -> str:
+    """스냅샷 식별자 = 수집일(YYYYMMDD) + 모든 종목·지수 내용 해시의 해시 12자리. 데이터가 한 바이트라도 다르면 식별자가 다르다."""
+    h = hashlib.sha256()
+    for k in sorted(symbol_hashes):
+        h.update(f"{k}:{symbol_hashes[k]};".encode())
+    for k in sorted(index_hashes):
+        h.update(f"@{k}:{index_hashes[k]};".encode())
+    return f"{collected_at[:10].replace('-', '')}-{h.hexdigest()[:12]}"
+
+
+_MANIFEST_CACHE: dict = {}
+
+
+def load_manifest(refresh: bool = False) -> dict:
+    if refresh or "m" not in _MANIFEST_CACHE:
+        _MANIFEST_CACHE["m"] = json.loads((MANIFEST_DIR / "manifest.json").read_text(encoding="utf-8"))
+    return _MANIFEST_CACHE["m"]
+
+
+def snapshot_info() -> dict:
+    """백테스트 결과에 기록할 스냅샷 정보(식별자, 수집일, 규격 버전)."""
+    m = load_manifest()
+    return {"snapshot_id": m["snapshot"]["id"], "collected_at": m["collected_at"], "spec_version": m["spec_version"]}
+
+
+def load_ohlcv_verified(symbol: str) -> pd.DataFrame:
+    """백테스트용 읽기: 캐시만 읽고(네트워크 없음) manifest의 스냅샷과 같은지 확인한다. 전체 이력을 그대로 돌려준다(자르지 않는다)."""
+    df = load_ohlcv(symbol)
+    rec = load_manifest()["symbols"].get(symbol)
+    if rec is None:
+        raise SnapshotMismatch(f"{symbol}: manifest에 없는 종목(스냅샷 밖)")
+    if (len(df), df.index[0].date().isoformat(), df.index[-1].date().isoformat()) != (rec["rows"], rec["first"], rec["last"]):
+        raise SnapshotMismatch(f"{symbol}: 행 수·첫 봉·마지막 봉이 manifest와 다르다")
+    if frame_hash(df) != rec["content_hash"]:
+        raise SnapshotMismatch(f"{symbol}: 내용 해시가 manifest와 다르다 — 재수집으로 캐시가 바뀐 뒤 manifest를 커밋하지 않았을 수 있다")
+    return df
+
+
+def events_hash(splits: pd.Series | None, dividends: pd.Series | None) -> str:
+    """분할·배당 기록의 해시. 수정 비율 구간 경계와 대형 배당 플래그의 입력이라 스냅샷에 포함한다."""
+    h = hashlib.sha256()
+    for name, s in (("splits", splits), ("dividends", dividends)):
+        h.update(name.encode())
+        if s is not None:
+            for d, v in sorted(s.items()):
+                h.update(f"{pd.Timestamp(d).date().isoformat()}={float(v):.12g};".encode())
+    return h.hexdigest()[:16]
+
+
+def verify_events(symbol: str) -> None:
+    rec = load_manifest()["symbols"].get(symbol)
+    if rec is None or events_hash(load_splits(symbol), load_dividends(symbol)) != rec.get("events_hash"):
+        raise SnapshotMismatch(f"{symbol}: 분할·배당 기록이 manifest 스냅샷과 다르다")

@@ -78,6 +78,76 @@ class TestBuildAdjusted(unittest.TestCase):
         self.assertAlmostEqual(out["dollar_volume"].iloc[0], out["dollar_volume"].iloc[1])
 
 
+class TestRatioSnapping(unittest.TestCase):
+    """수정 비율을 배당락일·분할일 구간 안에서 상수(중앙값)로 고정한다. 봉별 반올림 잡음(상대 약 6e-7) 때문에 같은 실제 가격이
+    서로 다른 날 수정가에서 달라지고 동률 판정이 뒤바뀌던 문제를 없앤다."""
+
+    def _idx(self, n):
+        return pd.bdate_range("2015-07-01", periods=n)
+
+    def test_noise_within_segment_is_removed_and_equal_raw_prices_stay_equal(self):
+        # 같은 구간 안(배당 없음)의 5봉. 비율이 0.5에서 상대 6e-7씩 흔들린다. 봉 0과 봉 3의 공급자 고가가 똑같이 100
+        idx = self._idx(5)
+        ratio = [0.5, 0.5000003, 0.4999997, 0.5000002, 0.5]
+        v = pd.DataFrame({"Open": 99.0, "High": [100.0, 98.0, 97.0, 100.0, 96.0], "Low": 95.0, "Close": 98.0,
+                          "Adj Close": [98.0 * r for r in ratio], "Volume": 1.0}, index=idx)
+        old_style_high = v["High"] * (v["Adj Close"] / v["Close"])
+        self.assertNotEqual(old_style_high.iloc[0], old_style_high.iloc[3])      # 예전 방식: 동률이 깨진다
+        out = adjust.build_adjusted(v, None)
+        self.assertEqual(out["high"].iloc[0], out["high"].iloc[3])               # 새 방식: 정확히 같다
+        self.assertTrue((out["adj_ratio"] == out["adj_ratio"].iloc[0]).all())    # 구간 비율은 상수
+        self.assertAlmostEqual(out["adj_ratio"].iloc[0], 0.5, places=6)          # 중앙값 0.5000000(정렬 [0.4999997, 0.5, 0.5, 0.5000002, 0.5000003]의 가운데)
+
+    def test_median_of_segment_is_used(self):
+        # 비율 [0.5, 0.5, 0.5000004]의 중앙값은 0.5
+        v = pd.DataFrame({"Open": 1.0, "High": 1.0, "Low": 1.0, "Close": 1.0, "Adj Close": [0.5, 0.5, 0.5000004], "Volume": 1.0}, index=self._idx(3))
+        self.assertEqual(adjust.build_adjusted(v, None)["adj_ratio"].iloc[2], 0.5)
+
+    def test_dividend_ex_date_starts_a_new_segment(self):
+        # 배당락 = 봉 3. 봉 0~2는 비율 0.8(노이즈 포함), 봉 3~5는 0.9. 구간별로 따로 고정된다
+        idx = self._idx(6)
+        v = pd.DataFrame({"Open": 10.0, "High": 10.0, "Low": 10.0, "Close": 10.0, "Adj Close": [8.0, 8.000004, 7.999996, 9.0, 9.000005, 8.999995], "Volume": 1.0}, index=idx)
+        out, rep = adjust.build_adjusted(v, None, dividends=pd.Series([1.0], index=[idx[3]]), return_report=True)
+        self.assertEqual(list(out["adj_ratio"].iloc[:3]), [0.8] * 3)
+        self.assertEqual(list(out["adj_ratio"].iloc[3:]), [0.9] * 3)
+        self.assertEqual(rep["suspect_segments"], [])      # 구간 안 최대 편차 5e-7 < 1e-5
+
+    def test_split_date_also_starts_a_segment(self):
+        idx = self._idx(4)
+        v = pd.DataFrame({"Open": 10.0, "High": 10.0, "Low": 10.0, "Close": 10.0, "Adj Close": [9.0, 9.0, 8.0, 8.0], "Volume": 1.0}, index=idx)
+        out, rep = adjust.build_adjusted(v, pd.Series([2.0], index=[idx[2]]), return_report=True)
+        self.assertEqual(list(out["adj_ratio"]), [0.9, 0.9, 0.8, 0.8])
+        self.assertEqual(rep["suspect_segments"], [])
+
+    def test_non_trading_ex_date_maps_to_next_bar_and_pre_data_ex_date_is_ignored(self):
+        idx = self._idx(6)   # 7/1(수) ~ 7/8
+        sat = pd.Timestamp("2015-07-04")   # 토요일 → 다음 개장일 7/6(월) = 봉 3
+        self.assertEqual(adjust.event_boundaries(idx, pd.Series([1.0, 1.0], index=[sat, pd.Timestamp("2014-01-01")]), None), [3])
+
+    def test_missing_dividend_record_is_reported_and_jump_is_used_as_boundary(self):
+        # 배당 기록이 없는데 비율이 봉 3에서 0.5 → 0.4로 점프: 구간 편차 > 1e-5 → 누락 의심으로 보고, 점프 지점을 추가 경계로 사용
+        idx = self._idx(6)
+        v = pd.DataFrame({"Open": 10.0, "High": 10.0, "Low": 10.0, "Close": 10.0, "Adj Close": [5.0, 5.0, 5.0, 4.0, 4.0, 4.0], "Volume": 1.0}, index=idx)
+        out, rep = adjust.build_adjusted(v, None, dividends=pd.Series(dtype=float, index=pd.DatetimeIndex([])), return_report=True)
+        self.assertEqual(len(rep["suspect_segments"]), 1)
+        self.assertGreater(rep["suspect_segments"][0]["max_rel_dev"], 1e-5)
+        self.assertEqual(rep["added_jump_boundaries"], [idx[3].date().isoformat()])
+        self.assertEqual(rep["unresolved"], [])
+        self.assertEqual(list(out["adj_ratio"]), [0.5, 0.5, 0.5, 0.4, 0.4, 0.4])
+
+    def test_close_is_vendor_close_times_snapped_ratio_not_vendor_adj_close(self):
+        v = pd.DataFrame({"Open": 10.0, "High": 11.0, "Low": 9.0, "Close": 10.0, "Adj Close": [5.0, 5.000003, 5.0], "Volume": 1.0}, index=self._idx(3))
+        out = adjust.build_adjusted(v, None)
+        self.assertEqual(list(out["close"]), [5.0, 5.0, 5.0])        # 10 × 0.5. 공급자 Adj Close(5.000003)가 아니다
+        self.assertEqual(list(out["high"]), [5.5, 5.5, 5.5])
+        self.assertEqual(out["v_adj_close"].iloc[1], 5.000003)       # 원본은 감사용으로 남는다
+
+    def test_shape_inside_bar_is_untouched_by_snapping(self):
+        v = pd.DataFrame({"Open": 10.0, "High": 12.0, "Low": 8.0, "Close": 11.0, "Adj Close": [5.5, 5.500003, 5.5], "Volume": 1.0}, index=self._idx(3))
+        out = adjust.build_adjusted(v, None)
+        self.assertTrue(((out["high"] / out["close"]) == (12.0 / 11.0)).all() or np.allclose(out["high"] / out["close"], 12.0 / 11.0, rtol=1e-12))
+
+
 # --- 수집 캐시가 있을 때만 도는 불변식 테스트. 기억에 의존한 고정 가격은 쓰지 않는다. ---
 # 허용 오차 근거: 분할일 당일 종목의 실제 가격 변동분만큼 어긋난다. 전 종목 분할 1,500건 중 99.6%가 25% 안이었다.
 # 25%를 넘는 몇 건은 Yahoo가 분할로 기록한 합병·분리상장(예: JCI 2007, EXPE 2011, TMUS 2013)이라 당일 변동이 크다.

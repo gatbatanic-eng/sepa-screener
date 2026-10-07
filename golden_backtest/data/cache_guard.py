@@ -7,6 +7,7 @@
 - 날짜 집합(행 수, 사라진 날짜)
 - raw_close(비수정 종가: 실제 가격이라 불변)
 - 수정 종가의 일간 수익률(배당 보정은 과거 전 구간에 같은 배수를 곱할 뿐이라 수익률은 불변)
+- 봉 내부 가격 비율(시가·고가·저가 ÷ 종가): 한 봉의 O/H/L/C에는 같은 수정 비율이 곱해지므로 불변
 수정 종가의 절대 수준은 새 배당마다 바뀌는 것이 정상이라 비교하지 않는다.
 """
 from __future__ import annotations
@@ -16,6 +17,7 @@ import pandas as pd
 
 RAW_REL_TOL = 1e-4
 RET_ABS_TOL = 1e-4
+SHAPE_REL_TOL = 1e-5   # 봉 내부 가격 비율(시가·고가·저가 / 종가)의 상대 변화 허용치
 
 
 def compare_frames(old: pd.DataFrame, new: pd.DataFrame) -> dict | None:
@@ -46,6 +48,19 @@ def compare_frames(old: pd.DataFrame, new: pd.DataFrame) -> dict | None:
             reasons.append("수정 종가 수익률 변경")
             info.setdefault("first_changed_date", bad_ret.index[0].date().isoformat())
             info["first_changed_date"] = min(info["first_changed_date"], bad_ret.index[0].date().isoformat())
+        # 봉 내부 가격 비율(시가·고가·저가 / 종가): 수정 비율은 한 봉의 O/H/L/C에 같이 곱해지므로 이 비율은 공급자 값 그대로여야 한다.
+        # 고가·저가가 소급 수정되면 종가·수익률 검사에는 안 걸리지만 55일 최고가 같은 판정이 바뀐다
+        shape_bad = None
+        for col in ("open", "high", "low"):
+            if col in o.columns and col in n.columns:
+                rel = ((n[col] / n["close"]) / (o[col] / o["close"]) - 1.0).abs()
+                bad = rel[rel > SHAPE_REL_TOL]
+                if len(bad):
+                    shape_bad = bad.index[0] if shape_bad is None else min(shape_bad, bad.index[0])
+                    info[f"{col}_shape_changed_bars"] = int(len(bad))
+        if shape_bad is not None:
+            reasons.append("봉 내부 가격 비율(시가·고가·저가/종가) 변경")
+            info["first_shape_changed_date"] = shape_bad.date().isoformat()
     if not reasons:
         return None
     info["reasons"] = reasons
