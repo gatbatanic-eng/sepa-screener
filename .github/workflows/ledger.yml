@@ -22,6 +22,7 @@ on:
       - tests/test_nhplug.py
       - tests/test_accumulation.py
       - tests/test_flowforward.py
+      - tests/test_close_report.py
       - nhplug/**
       - .github/workflows/ledger.yml
 
@@ -47,7 +48,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Verify ledger rules
-        run: python -m unittest tests.test_ledger tests.test_agents tests.test_advisory tests.test_picks tests.test_freshness tests.test_nhplug tests.test_accumulation tests.test_flowforward -v
+        run: python -m unittest tests.test_ledger tests.test_agents tests.test_advisory tests.test_picks tests.test_freshness tests.test_nhplug tests.test_accumulation tests.test_flowforward tests.test_close_report -v
       - name: Update ledger, outcomes and statistics
         run: python -m ledger.main
       - name: Update agent league (virtual accounts)
