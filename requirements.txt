@@ -13,3 +13,6 @@ yfinance>=0.2.40        # 미국 유니버스 재무지표
 pyyaml>=6.0             # rules.yaml 파싱
 anthropic>=0.40         # 3문장 요약 (ANTHROPIC_API_KEY 없으면 미사용)
 pykrx>=1.0.45           # 코스피 외국인 순매수(KOSPI_FOREIGN) 수집용. KRX 차단 시 해당 지표만 건너뜀
+
+# 전략 백테스트 모듈 (golden_backtest/) 전용
+pyarrow>=15.0           # data_cache parquet 입출력

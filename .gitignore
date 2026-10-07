@@ -70,3 +70,7 @@ range_vrebound/data/*.db-journal
 # FPD PIT research: frozen definitions + public rebuildable views
 !research/fpd/registry/*.json
 !docs/data/fpd/*.json
+
+# golden_backtest: 수집 캐시는 커밋하지 않고, 수집 기록(manifest)만 커밋한다
+golden_backtest/data_cache/
+!golden_backtest/manifest/*.json
