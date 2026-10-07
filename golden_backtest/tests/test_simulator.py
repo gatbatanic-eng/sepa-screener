@@ -18,7 +18,7 @@ SIG = (100, 101, 99, 100)  # 신호 봉(0번)
 
 
 def run(rows, strat, costs=COSTS, group="default"):
-    return simulate(make_df(rows), strat, "TEST", costs, SPEC, group)
+    return simulate(make_df(rows), strat, "TEST", costs, SPEC, group, warmup_bars=0)  # 손계산용 짧은 데이터라 워밍업 게이트를 끈다
 
 
 def only(res, confirmed=True):
@@ -327,6 +327,53 @@ class TestOtherEdges(unittest.TestCase):
         self.assertEqual((t.stop_kind, t.risk_basis, t.weight, t.initial_stop), ("intraday", "stop", 1.0, 92))
         self.assertEqual(t.signal_date, make_df(rows).index[0])
         self.assertEqual(t.entry_date, make_df(rows).index[1])
+
+
+class TestWarmupGate(unittest.TestCase):
+    """워밍업 게이트 [임의, 공통]: 데이터 시작 후 252봉 안(봉 번호 0~251)의 신호는 엔진이 막는다. 전략 코드는 이 규칙을 모른다.
+    데이터: 300봉 횡보(시가 100, 고가 101, 저가 99, 종가 100). 신호 봉 s의 M1 주문은 봉 s+1 시가 100에 체결된다."""
+
+    ROWS = [(100, 101, 99, 100)] * 300
+
+    def sim(self, entries, warmup=None, rows=None):
+        s = ScriptedStrategy(entries, intraday_stop(90))
+        return simulate(make_df(rows or self.ROWS), s, "G", COSTS, SPEC, warmup_bars=warmup)
+
+    def test_default_comes_from_config_and_is_252(self):
+        from golden_backtest import config
+        self.assertEqual(config.load("engine")["warmup_bars"], 252)
+
+    def test_signal_on_bar_251_is_ignored_with_default_gate(self):
+        """봉 번호 251 = 데이터 시작 후 252번째 봉. 252봉 안이므로 신호를 쓰지 않는다 → 거래 없음"""
+        self.assertEqual(self.sim({251: NEXT_OPEN}).trades, [])
+
+    def test_signal_on_bar_252_is_allowed_with_default_gate(self):
+        """봉 252의 신호는 허용 → 봉 253 시가 100에 체결. 마지막 봉(299)까지 보유해 open_mtm 한 건: r = (100 − 100 − 0.10 − 0.10)/10 = −0.02"""
+        res = self.sim({252: NEXT_OPEN})
+        t = only(res, confirmed=False)
+        self.assertEqual((t.entry_date, t.entry_price), (make_df(self.ROWS).index[253], 100))
+        self.assertAlmostEqual(t.r_multiple, -0.02)
+
+    def test_gate_zero_allows_first_bar_signal(self):
+        res = self.sim({0: NEXT_OPEN}, warmup=0)
+        self.assertEqual(only(res, confirmed=False).entry_date, make_df(self.ROWS).index[1])
+
+    def test_gate_counts_from_the_start_of_the_data_passed_in(self):
+        """df를 앞에서 100봉 잘라 넘기면 잘린 df의 봉 번호로 센다(종목별 데이터 시작 기준). 잘린 df의 봉 251(= 원래 351)은 막힌다."""
+        rows = self.ROWS * 2   # 600봉
+        df = make_df(rows).iloc[100:]
+        s = ScriptedStrategy({251: NEXT_OPEN, 252: NEXT_OPEN}, intraday_stop(90))
+        res = simulate(df, s, "G", COSTS, SPEC)
+        self.assertEqual(only(res, confirmed=False).entry_date, df.index[253])  # 봉 252 신호만 통과
+
+    def test_gate_does_not_touch_management_of_an_open_position(self):
+        """봉 252에 진입한 포지션의 손절은 정상 처리된다: 봉 254 저가 85 ≤ 손절 90 → 90 체결. r = (90 − 100 − 0.10 − 0.09)/10 = −1.019"""
+        rows = list(self.ROWS)
+        rows[254] = (100, 101, 85, 88)
+        res = self.sim({252: NEXT_OPEN}, rows=rows)
+        t = only(res)
+        self.assertEqual((t.exit_price, t.exit_reason), (90, "stop"))
+        self.assertAlmostEqual(t.r_multiple, -1.019)
 
 
 if __name__ == "__main__":

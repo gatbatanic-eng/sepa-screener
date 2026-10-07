@@ -8,6 +8,7 @@
   3. 포지션이 남아 있으면 MFE/MAE를 갱신하고, 마감 후 전략 manage()를 불러 손절선 갱신·규칙 청산 의도를 받는다.
      close 종류 손절은 이 봉의 종가로 판정해 다음 봉 시가 청산을 예약한다(진입 당일 종가부터 판정).
   4. 마감 시 포지션이 없으면 전략 entry_intent()를 불러 다음 봉 진입 의도를 받는다. 보유 중에는 부르지 않는다(종목당 1포지션).
+     데이터 시작 후 warmup_bars(기본 252)봉 안의 신호는 부르지 않는다(워밍업 게이트, 모든 전략 공통).
   데이터 끝에서 남은 포지션은 마지막 종가로 평가해 exit_reason="open_mtm"으로 기록한다(청산 비용 포함).
 
 R 정의: 1R = 진입가 − 초기 손절가(비용 제외 체결가). r = weight × (청산가 − 진입가 − 진입비용 − 청산비용) / 1R.
@@ -19,6 +20,7 @@ from dataclasses import dataclass, field
 
 import pandas as pd
 
+from golden_backtest import config
 from golden_backtest.engine import fills
 from golden_backtest.engine.costs import Costs
 from golden_backtest.engine.intents import EntryIntent, ExitIntent, StopSpec
@@ -52,8 +54,15 @@ class _Pending:
     at: str  # "next_open" | "next_close"
 
 
-def simulate(df: pd.DataFrame, strategy, ticker: str, costs: Costs, spec_version: str, cost_group: str = "default") -> SimResult:
-    """df: 완전 수정 OHLC(소문자 열 open/high/low/close) + 전략이 쓰는 열, DatetimeIndex 오름차순."""
+def simulate(df: pd.DataFrame, strategy, ticker: str, costs: Costs, spec_version: str, cost_group: str = "default",
+             warmup_bars: int | None = None) -> SimResult:
+    """df: 완전 수정 OHLC(소문자 열 open/high/low/close) + 전략이 쓰는 열, DatetimeIndex 오름차순.
+
+    warmup_bars: 데이터(df) 시작 후 이 봉 수 안(봉 번호 < warmup_bars)의 신호는 쓰지 않는다 [임의, 모든 전략 공통].
+    None이면 config/engine.yaml 값(252)을 쓴다. 이미 진입한 포지션의 관리에는 영향이 없고, 신규 진입 신호만 막는다.
+    """
+    if warmup_bars is None:
+        warmup_bars = int(config.load("engine")["warmup_bars"])
     for col in REQUIRED_COLUMNS:
         if col not in df.columns:
             raise ValueError(f"df에 {col} 열이 없다")
@@ -164,7 +173,7 @@ def simulate(df: pd.DataFrame, strategy, ticker: str, costs: Costs, spec_version
             pos, pending_exits = None, []
 
         # 4. 다음 봉 진입 의도 ----------------------------------------------------------------------------
-        if pos is None and i < n - 1:
+        if pos is None and i < n - 1 and i >= warmup_bars:   # 워밍업 게이트: 전략 코드는 이 규칙을 모른다
             intent = strategy.entry_intent(prep.iloc[i])
             if intent is not None:
                 pending_entry = (intent, i)

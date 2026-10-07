@@ -16,6 +16,7 @@ OHLCV_DIR = CACHE_DIR / "ohlcv"
 INDEX_DIR = CACHE_DIR / "index"
 SPLITS_DIR = CACHE_DIR / "splits"
 META_DIR = CACHE_DIR / "meta"
+DIVIDENDS_DIR = CACHE_DIR / "dividends"
 MANIFEST_DIR = ROOT / "manifest"
 
 
@@ -63,6 +64,20 @@ def load_splits(symbol: str) -> pd.Series:
     raw = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
     if not raw:
         return pd.Series(dtype=float, index=pd.DatetimeIndex([]))  # 빈 경우에도 날짜 인덱스를 유지한다(날짜 비교가 되도록)
+    return pd.Series({pd.Timestamp(k): float(v) for k, v in raw.items()}, dtype=float)
+
+
+def save_dividends(symbol: str, dividends: pd.Series) -> None:
+    DIVIDENDS_DIR.mkdir(parents=True, exist_ok=True)
+    rows = {d.date().isoformat(): float(v) for d, v in dividends.items()}
+    (DIVIDENDS_DIR / f"{symbol}.json").write_text(json.dumps(rows), encoding="utf-8")
+
+
+def load_dividends(symbol: str) -> pd.Series:
+    path = DIVIDENDS_DIR / f"{symbol}.json"
+    raw = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    if not raw:
+        return pd.Series(dtype=float, index=pd.DatetimeIndex([]))
     return pd.Series({pd.Timestamp(k): float(v) for k, v in raw.items()}, dtype=float)
 
 

@@ -40,9 +40,15 @@ def _fetch_new(symbol: str, cfg: dict, cutoff: pd.Timestamp):
     except Exception as exc:  # noqa: BLE001
         splits, splits_ok, splits_err = pd.Series(dtype=float), False, str(exc)[:200]
     frame = adjust.build_adjusted(cleaned, splits, splits_ok)
+    divs_ok, divs_err = True, None
+    try:
+        divs = prov.fetch_dividends(used)
+    except Exception as exc:  # noqa: BLE001
+        divs, divs_ok, divs_err = pd.Series(dtype=float, index=pd.DatetimeIndex([])), False, str(exc)[:200]
     meta = {"unclosed_dropped": info["unclosed_dropped"], "nan_dropped": info["nan_dropped"], "nan_runs": info["nan_runs"],
-            "stripped_leading": stripped, "starts_at_floor": starts_at_floor, "splits_ok": splits_ok, "splits_error": splits_err}
-    return used, frame, splits, meta
+            "stripped_leading": stripped, "starts_at_floor": starts_at_floor, "splits_ok": splits_ok, "splits_error": splits_err,
+            "dividends_ok": divs_ok, "dividends_error": divs_err}
+    return used, frame, splits, meta, divs
 
 
 def _cached_name(symbol: str, dual_retry: bool) -> str | None:
@@ -62,7 +68,7 @@ def _a1(frame: pd.DataFrame, used: str, cfg: dict, starts_at_floor: bool) -> dic
     return res
 
 
-def _metrics(symbol: str, used: str, frame: pd.DataFrame, splits: pd.Series, meta: dict, cfg: dict) -> dict:
+def _metrics(symbol: str, used: str, frame: pd.DataFrame, splits: pd.Series, meta: dict, cfg: dict, divs: pd.Series) -> dict:
     cfg_q, cfg_a1, adj = cfg["quality"], cfg["a1_history_check"], cfg["adjustment"]
     since = pd.Timestamp(cfg_q["anomaly_since"])
     rec = {
@@ -79,6 +85,11 @@ def _metrics(symbol: str, used: str, frame: pd.DataFrame, splits: pd.Series, met
         "errors": quality.adjustment_errors(frame, splits, adj["dhr_type"]["divergence"], adj["dhr_type"]["min_adj_ret"],
                                             adj["split_match_days"]),
     }
+    sd = cfg["split_discontinuity"]
+    rec["split_discontinuities"] = quality.split_discontinuities(frame, splits, sd["since"], sd["vendor_ret_abs"], tuple(sd["raw_band"]),
+                                                                 sd["raw_since"])
+    ld = cfg["large_dividend"]
+    rec["large_dividends"] = quality.large_dividends(frame, divs, ld["pct"], ld["since"])
     rec.update(quality.anomalies_since(frame, cfg_q["anomaly_since"], cfg_q["big_move_pct"]))
     return rec
 
@@ -88,14 +99,14 @@ def process_symbol(symbol: str, cfg: dict, cutoff: pd.Timestamp) -> dict:
     dual = cfg["universe"]["dual_class_retry"]
     change: dict | None = None
     try:
-        used, frame, splits, meta = _fetch_new(symbol, cfg, cutoff)
+        used, frame, splits, meta, divs = _fetch_new(symbol, cfg, cutoff)
         action = "new"
         if used in store.cached_symbols():
             old = store.load_ohlcv(used)
             problem = cache_guard.compare_frames(old, frame)
             if problem:
                 log.warning("[%s] 재수집 결과가 기존 캐시와 달라 기존 캐시를 유지한다: %s", used, problem)
-                frame, splits, meta = old, store.load_splits(used), store.load_meta(used) or {}
+                frame, splits, meta, divs = old, store.load_splits(used), store.load_meta(used) or {}, store.load_dividends(used)
                 action, change = "kept_old", problem
             else:
                 action = "updated"
@@ -105,6 +116,8 @@ def process_symbol(symbol: str, cfg: dict, cutoff: pd.Timestamp) -> dict:
                 store.save_meta(used, meta)
                 if meta.get("splits_ok", True):
                     store.save_splits(used, splits)
+                if meta.get("dividends_ok", True):
+                    store.save_dividends(used, divs)
             except OSError as exc:
                 return {"requested_as": symbol, "ok": False, "error": f"저장 실패: {exc}"[:200]}
     except Exception as exc:  # noqa: BLE001
@@ -112,9 +125,9 @@ def process_symbol(symbol: str, cfg: dict, cutoff: pd.Timestamp) -> dict:
         if used is None:
             return {"requested_as": symbol, "ok": False, "error": str(exc)[:200]}
         log.warning("[%s] 수집 실패(%s) — 기존 캐시 %s를 사용한다", symbol, str(exc)[:120], used)
-        frame, splits, meta = store.load_ohlcv(used), store.load_splits(used), store.load_meta(used) or {}
+        frame, splits, meta, divs = store.load_ohlcv(used), store.load_splits(used), store.load_meta(used) or {}, store.load_dividends(used)
         action, change = "fetch_failed_used_cache", {"error": str(exc)[:200]}
-    rec = _metrics(symbol, used, frame, splits, meta, cfg)
+    rec = _metrics(symbol, used, frame, splits, meta, cfg, divs)
     rec["cache_action"], rec["cache_change"] = action, change
     return rec
 
@@ -164,7 +177,7 @@ def main() -> None:
     collected_at = dt.datetime.now(dt.timezone.utc).isoformat()
     manifest = {
         "collected_at": collected_at,
-        "spec_version": "1.4",
+        "spec_version": "1.6",
         "source": "가격·지수: FinanceDataReader / 분할 이벤트: yfinance(Yahoo)",
         "fetch_start": start, "closed_session_cutoff": cutoff.date().isoformat(),
         "universe": cfg["universe"]["name"], "survivorship_bias": True,
@@ -183,11 +196,13 @@ def main() -> None:
         "big_move_pct": cfg["quality"]["big_move_pct"], "adjustment": cfg["adjustment"],
         "per_symbol": {k: {"zero_volume": r["zero_volume"], "nan_rows": r["nan_dropped_since"], "nan_runs": r["nan_runs"],
                            "big_moves": r["big_moves"], "adjustment_divergences": r["divergences"],
-                           "adjustment_errors": r["errors"], "min_raw_close": r["min_raw_close"]}
+                           "adjustment_errors": r["errors"], "split_discontinuities": r["split_discontinuities"],
+                           "large_dividends": r["large_dividends"],
+                           "min_raw_close": r["min_raw_close"]}
                        for k, r in sorted(ok.items())},
     }
     universe_p1 = {
-        "collected_at": collected_at, "spec_version": "1.4",
+        "collected_at": collected_at, "spec_version": "1.6",
         "included": sorted(set(ok) - set(exclusions)),
         "excluded": {k: exclusions[k] for k in sorted(exclusions)},
         "notes": {k: v for k, v in sorted((cfg.get("notes") or {}).items()) if k in ok},
@@ -200,6 +215,10 @@ def main() -> None:
                      for k, r in ok.items() for m in r["big_moves"]), key=lambda e: (e["date"], e["symbol"]))
     review_doc = {"collected_at": collected_at, "since": cfg["quality"]["anomaly_since"],
                   "threshold": cfg["quality"]["big_move_pct"], "events": review}
+    split_review = {"collected_at": collected_at, "criteria": cfg["split_discontinuity"], "status": "list_only_no_fix",
+                    "events": sorted(({"symbol": k, **e, "in_p1_universe": k not in exclusions}
+                                      for k, r in ok.items() for e in r["split_discontinuities"]), key=lambda e: (e["ex_date"], e["symbol"]))}
+    store.write_manifest("review_split_discontinuities.json", split_review)
     store.write_manifest("manifest.json", manifest)
     store.write_manifest("quality_report.json", quality_report)
     store.write_manifest("universe_p1.json", universe_p1)

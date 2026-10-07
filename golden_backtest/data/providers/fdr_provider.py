@@ -83,3 +83,25 @@ def fetch_splits(symbol: str, retries: int = 3) -> pd.Series:
             last = exc
             time.sleep(1.5 * (attempt + 1))
     raise RuntimeError(f"{symbol} 분할 조회 실패: {last}")
+
+
+def fetch_dividends(symbol: str, retries: int = 3) -> pd.Series:
+    """Yahoo 배당 기록: index=ex-date(tz 없음), value=주당 금액. 금액은 분할 보정 기준(공급자 Close와 같은 기준)이다 — 예: KLAC 2014-11
+    특별배당 $16.50은 2026 10:1 분할 이후 1.65로 나온다. 배당이 없으면 빈 Series, 조회 실패는 예외."""
+    import yfinance as yf
+
+    last: Exception | None = None
+    for attempt in range(retries):
+        try:
+            s = yf.Ticker(symbol).dividends
+            if s is None or len(s) == 0:
+                return pd.Series(dtype=float, index=pd.DatetimeIndex([]))
+            idx = pd.to_datetime(s.index)
+            if getattr(idx, "tz", None) is not None:
+                idx = idx.tz_localize(None)
+            out = pd.Series(s.astype(float).values, index=idx.normalize())
+            return out[out > 0]
+        except Exception as exc:  # noqa: BLE001
+            last = exc
+            time.sleep(1.5 * (attempt + 1))
+    raise RuntimeError(f"{symbol} 배당 조회 실패: {last}")

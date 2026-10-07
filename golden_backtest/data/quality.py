@@ -100,9 +100,11 @@ def a1_history_break(df: pd.DataFrame, event_date: str, asof: str) -> dict:
     """서로 다른 법인 이력이 이어 붙은 종목(예: JCI는 Tyco, TMUS는 MetroPCS 이력)의 사상 최고가 판정 가능 시점.
 
     사건 이전 최고가(수정 종가)가 사건 이후 최고가보다 크면 사건 이후 가격은 이전 이력과 같은 척도가 아닐 수 있어, 매일의 누적
-    최고가(A1 신호 기준)가 오염된다. 조건 "사건 이전 최고가 < 사건 이후 최고가"가 asof까지 충족되면 문제 없음(blocked_until=None).
-    아니면 그 조건이 처음 충족되는 날(사건 이후 종가가 사건 이전 최고가를 처음 넘는 날)까지 A1 판정 불가이고,
-    끝까지 충족되지 않으면 blocked_until="NOT_YET".
+    최고가(A1 신호 기준)가 오염된다. 조건 "사건 이후 최고가 >= 사건 이전 최고가"가 asof까지 충족되면 문제 없음(blocked_until=None).
+    아니면 그 조건이 처음 충족되는 날(사건 이후 종가가 사건 이전 최고가 이상이 되는 첫 날)까지 A1 판정 불가이고,
+    끝까지 충족되지 않으면 blocked_until="NOT_YET". 해제 조건을 이상(>=)으로 둔 것은 A1 진입 조건(종가 >= 사상 최고가)과 맞추기 위해서다.
+
+    이 차단은 신호를 바꾸지 않는다. 신호가 없는 이유가 데이터 문제임을 표시하는 용도이고, 신호 판정 자체는 A1 전략이 한다.
     """
     t = pd.Timestamp(event_date)
     pre = df.loc[: t - pd.Timedelta(days=1), "close"]
@@ -112,11 +114,59 @@ def a1_history_break(df: pd.DataFrame, event_date: str, asof: str) -> dict:
     pre_max = float(pre.max())
     post_asof = post.loc[: pd.Timestamp(asof)]
     post_max_asof = float(post_asof.max()) if len(post_asof) else float("nan")
-    satisfied = bool(post_max_asof > pre_max)
+    satisfied = bool(post_max_asof >= pre_max)
     blocked_until = None
     if not satisfied:
-        crossed = post[post > pre_max]
+        crossed = post[post >= pre_max]
         blocked_until = crossed.index[0].date().isoformat() if len(crossed) else "NOT_YET"
     return {"event_date": event_date, "pre_event_max": round(pre_max, 4), "pre_event_max_date": pre.idxmax().date().isoformat(),
             "post_event_max_asof": None if np.isnan(post_max_asof) else round(post_max_asof, 4), "satisfied_asof": satisfied,
             "blocked_until": blocked_until}
+
+
+def split_discontinuities(df: pd.DataFrame, splits: pd.Series | None, since: str, vendor_ret_abs: float, band: tuple[float, float],
+                          raw_since: str) -> list[dict]:
+    """VTR형 후보(목록만, 수정 없음): 분할로 기록된 날 공급자 Close가 vendor_ret_abs 이상 불연속인 이벤트.
+
+    분할이 공급자 종가에 제대로 반영됐다면 그날 공급자 종가는 시장 변동 정도만 움직인다. 크게 움직였다면 분할 기록이 종가에
+    반영되지 않았을 수 있다(분할 비율이 1에 가까우면 못 잡는 휴리스틱). 비수정 종가 역산(raw_close)이 그 비율을 이미 곱한
+    구간(raw_since 이후 ~ 사건 이전)에서 band 범위 비수정 종가 봉 수를 함께 표시한다(10달러 필터 영향 점검용).
+    """
+    out = []
+    for ex, ratio in (splits if splits is not None else pd.Series(dtype=float)).items():
+        if ex < pd.Timestamp(since):
+            continue
+        pos = df.index.searchsorted(ex)
+        if pos <= 0 or pos >= len(df):
+            continue
+        v = df["v_close"].iloc[pos] / df["v_close"].iloc[pos - 1] - 1
+        if abs(v) < vendor_ret_abs:
+            continue
+        pre = df["raw_close"].loc[pd.Timestamp(raw_since): df.index[pos] - pd.Timedelta(days=1)]
+        out.append({"ex_date": ex.date().isoformat(), "bar_date": df.index[pos].date().isoformat(), "ratio": round(float(ratio), 4),
+                    "vendor_ret": round(float(v), 4),
+                    "raw_ret": round(float(df["raw_close"].iloc[pos] / df["raw_close"].iloc[pos - 1] - 1), 4),
+                    "adj_ret": round(float(df["close"].iloc[pos] / df["close"].iloc[pos - 1] - 1), 4),
+                    "pre_event_raw_close_min": round(float(pre.min()), 2) if len(pre) else None,
+                    "pre_event_raw_close_max": round(float(pre.max()), 2) if len(pre) else None,
+                    "bars_pre_event_raw_in_band": int(((pre >= band[0]) & (pre <= band[1])).sum()) if len(pre) else 0})
+    return out
+
+
+def large_dividends(df: pd.DataFrame, dividends: pd.Series | None, threshold: float, since: str) -> list[dict]:
+    """배당락 수익률(주당 배당 / 배당락 전일 공급자 종가) >= threshold인 배당. 특별배당 후보다.
+
+    배당 금액은 분할 보정 기준이라 공급자 Close(v_close, 분할 보정)와 같은 기준으로 나눈다. ex-date가 휴장일이면 다음 개장일 봉에 붙인다.
+    """
+    out = []
+    for ex, amt in (dividends if dividends is not None else pd.Series(dtype=float)).items():
+        if ex < pd.Timestamp(since):
+            continue
+        pos = df.index.searchsorted(ex)
+        if pos <= 0 or pos >= len(df):
+            continue
+        pct = float(amt) / float(df["v_close"].iloc[pos - 1])
+        if pct >= threshold:
+            out.append({"ex_date": ex.date().isoformat(), "bar_date": df.index[pos].date().isoformat(), "amount": round(float(amt), 4),
+                        "pct_of_prev_close": round(pct, 4)})
+    return out

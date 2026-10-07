@@ -240,29 +240,40 @@ class TestUniverseExclusions(unittest.TestCase):
 
 
 class TestA1HistoryBreak(unittest.TestCase):
-    """사건 이전 최고가 < 사건 이후 최고가(2014-12-31 기준)면 정상. 아니면 사건 이후 종가가 사건 이전 최고가를 처음 넘는 날까지 판정 불가."""
+    """해제 조건: 사건 이후 종가 >= 사건 이전 최고가 (A1 진입 조건 '종가 >= 사상 최고가'와 맞춘다). asof 시점 조건도 같은 부등호."""
 
     def _frame(self, closes, start="2013-12-02"):
         idx = pd.bdate_range(start, periods=len(closes))
         return pd.DataFrame({"close": pd.Series(closes, index=idx, dtype=float)})
 
     def test_condition_met_before_asof_means_no_block(self):
-        # 사건(index 5) 이전 최고 100, 사건 이후 2014-12-31까지 최고 120 > 100 → 문제 없음 (EXPE형)
+        # 사건(index 5) 이전 최고 100, 사건 이후 2014-12-31까지 최고 120 >= 100 → 문제 없음 (EXPE형)
         df = self._frame([10, 20, 100, 50, 60, 70, 90, 120, 110])
-        ev = df.index[5].date().isoformat()
-        res = quality.a1_history_break(df, ev, "2014-12-31")
+        res = quality.a1_history_break(df, df.index[5].date().isoformat(), "2014-12-31")
         self.assertTrue(res["satisfied_asof"])
         self.assertIsNone(res["blocked_until"])
         self.assertEqual(res["pre_event_max"], 100.0)
 
-    def test_condition_not_met_blocks_until_first_close_above_pre_event_max(self):
-        # 사건 이후 asof까지 최고 60 < 100. 이후 100 이하는 계속 막히고, 처음 100을 넘는 날(101)에 풀린다 (JCI·TMUS형)
+    def test_equal_to_pre_event_max_at_asof_counts_as_satisfied(self):
+        # 사건 이후 asof까지 최고가가 사건 이전 최고가와 같은 100 → 이상(>=)이므로 충족
+        df = self._frame([10, 20, 100, 50, 60, 70, 100, 90])
+        res = quality.a1_history_break(df, df.index[5].date().isoformat(), "2014-12-31")
+        self.assertTrue(res["satisfied_asof"])
+        self.assertIsNone(res["blocked_until"])
+
+    def test_condition_not_met_blocks_until_first_close_at_or_above_pre_event_max(self):
+        # 사건 이후 asof까지 최고 60 < 100. 종가 55,60,58은 계속 막히고, 종가가 처음 100이 되는 날(index 8, 같은 값)에 풀린다.
+        # (이전 기대값은 101이 되는 index 9였다. > 에서 >= 로 바꿔 100인 날 해제)
         closes = [10, 20, 100, 50, 60, 55, 60, 58, 100, 101, 130]
         df = self._frame(closes, start="2014-12-01")      # 사건 이후 일부가 asof 뒤
-        ev = df.index[5].date().isoformat()
-        res = quality.a1_history_break(df, ev, "2014-12-10")
+        res = quality.a1_history_break(df, df.index[5].date().isoformat(), "2014-12-10")
         self.assertFalse(res["satisfied_asof"])
-        self.assertEqual(res["blocked_until"], df.index[9].date().isoformat())  # 종가 101: 100과 같은 날(index 8)은 넘지 못한다
+        self.assertEqual(res["blocked_until"], df.index[8].date().isoformat())
+
+    def test_close_just_below_pre_event_max_does_not_release(self):
+        df = self._frame([10, 20, 100, 50, 60, 55, 60, 58, 99.99, 70], start="2014-12-01")
+        res = quality.a1_history_break(df, df.index[5].date().isoformat(), "2014-12-31")
+        self.assertEqual(res["blocked_until"], "NOT_YET")
 
     def test_never_satisfied_is_not_yet(self):
         df = self._frame([10, 20, 100, 50, 60, 55, 60, 58, 70], start="2014-12-01")
@@ -275,6 +286,63 @@ class TestA1HistoryBreak(unittest.TestCase):
         res = quality.a1_history_break(df, df.index[2].date().isoformat(), "2014-12-31")
         self.assertFalse(res["satisfied_asof"])
         self.assertEqual(res["blocked_until"], df.index[5].date().isoformat())
+
+
+class TestLargeDividends(unittest.TestCase):
+    """배당락 수익률 = 주당 배당 / 배당락 전일 공급자 종가(v_close). 기준 10%, 이상(>=)이면 대형 배당."""
+
+    def _df(self):
+        idx = pd.bdate_range("2018-07-02", periods=6)   # 월 7/2 ~ 화 7/10
+        return pd.DataFrame({"v_close": [100.0, 100.0, 100.0, 50.0, 50.0, 50.0]}, index=idx)
+
+    def test_threshold_is_inclusive(self):
+        df = self._df()
+        # 배당락일 = index 3(7/5). 전일(index 2) 종가 100. 10 / 100 = 10% → 포함, 9.99 / 100 → 제외
+        hit = quality.large_dividends(df, pd.Series([10.0], index=[df.index[3]]), 0.10, "2014-01-01")
+        self.assertEqual(len(hit), 1)
+        self.assertAlmostEqual(hit[0]["pct_of_prev_close"], 0.10)
+        self.assertEqual(hit[0]["amount"], 10.0)
+        self.assertEqual(quality.large_dividends(df, pd.Series([9.99], index=[df.index[3]]), 0.10, "2014-01-01"), [])
+
+    def test_uses_previous_bar_close_not_ex_day_close(self):
+        df = self._df()   # 배당락일 종가는 50이지만 분모는 전일 종가 100이다: 20 / 100 = 20% (20 / 50 = 40%가 아니다)
+        hit = quality.large_dividends(df, pd.Series([20.0], index=[df.index[3]]), 0.10, "2014-01-01")
+        self.assertAlmostEqual(hit[0]["pct_of_prev_close"], 0.20)
+
+    def test_non_trading_ex_date_maps_to_next_bar_and_old_ones_are_ignored(self):
+        df = self._df()
+        sat = pd.Timestamp("2018-07-07")   # 토요일 → 다음 개장일(월 7/9, index 5)
+        hit = quality.large_dividends(df, pd.Series([15.0], index=[sat]), 0.10, "2014-01-01")
+        self.assertEqual(hit[0]["bar_date"], df.index[5].date().isoformat())
+        self.assertEqual(quality.large_dividends(df, pd.Series([15.0], index=[df.index[3]]), 0.10, "2019-01-01"), [])
+
+    def test_empty_or_none(self):
+        self.assertEqual(quality.large_dividends(self._df(), None, 0.10, "2014-01-01"), [])
+
+
+class TestSplitDiscontinuities(unittest.TestCase):
+    def _df(self, v_close, raw_close):
+        idx = pd.bdate_range("2015-08-10", periods=len(v_close))
+        return pd.DataFrame({"v_close": v_close, "raw_close": raw_close, "close": v_close}, index=idx, dtype=float)
+
+    def test_flags_split_day_with_large_vendor_move_and_reports_band(self):
+        # 분할일(index 3): 공급자 종가 100 → 76.4(-23.6%). 사건 이전 비수정 종가 [12, 12, 14]는 8~15달러 구간 3봉
+        df = self._df([100, 100, 100, 76.4, 76], [12, 12, 14, 66, 66])
+        res = quality.split_discontinuities(df, pd.Series([0.8757], index=[df.index[3]]), "2014-01-01", 0.15, (8.0, 15.0), "2015-01-01")
+        self.assertEqual(len(res), 1)
+        self.assertAlmostEqual(res[0]["vendor_ret"], -0.236)
+        self.assertEqual(res[0]["bars_pre_event_raw_in_band"], 2 + 1)
+        self.assertEqual((res[0]["pre_event_raw_close_min"], res[0]["pre_event_raw_close_max"]), (12.0, 14.0))
+
+    def test_normal_split_with_continuous_vendor_close_is_not_flagged(self):
+        df = self._df([100, 100, 100, 101, 102], [400, 400, 400, 101, 102])  # 4:1 분할, 공급자 종가는 연속
+        self.assertEqual(quality.split_discontinuities(df, pd.Series([4.0], index=[df.index[3]]), "2014-01-01", 0.15, (8, 15), "2015-01-01"), [])
+
+    def test_threshold_is_inclusive_and_events_before_since_are_ignored(self):
+        df = self._df([100, 100, 100, 85, 85], [100, 100, 100, 85, 85])  # -15%
+        ex = pd.Series([2.0], index=[df.index[3]])
+        self.assertEqual(len(quality.split_discontinuities(df, ex, "2014-01-01", 0.15, (8, 15), "2015-01-01")), 1)
+        self.assertEqual(quality.split_discontinuities(df, ex, "2016-01-01", 0.15, (8, 15), "2015-01-01"), [])
 
 
 if __name__ == "__main__":

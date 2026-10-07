@@ -1,4 +1,4 @@
-# 유니버스·수집 설정 (규격 v1.4). 성과를 보고 바꾸지 않는다.
+# 유니버스·수집 설정 (규격 v1.6). 성과를 보고 바꾸지 않는다.
 universe:
   name: sp500_current          # S&P500 현재 구성종목 전체 (생존편향 있음 — 보고서에 명시)
   source: FinanceDataReader    # StockListing("S&P500")
@@ -18,6 +18,14 @@ a1_history_breaks:             # 서로 다른 법인 이력이 이어 붙은 �
   JCI: {event: "2007-07-02", note: "Tyco 이력(2007 분사·1:4 역분할)이 이어진 것. 사건 이전 최고가 62.76(2001-01-30)"}
   EXPE: {event: "2011-12-21", note: "분사(TripAdvisor)·역분할 전 Expedia 이력이 이어진 것"}
   TMUS: {event: "2013-05-01", note: "MetroPCS 이력이 이어진 것(역합병·1:2 역분할)"}
+split_discontinuity:            # VTR형 후보 목록(수정하지 않고 기록만): 분할 날짜에 공급자 Close가 이만큼 불연속
+  since: "2014-01-01"
+  vendor_ret_abs: 0.15
+  raw_since: "2015-01-01"       # 비수정 종가 역산 구간 점검 시작
+  raw_band: [8.0, 15.0]         # 10달러 필터 경계 점검 범위
+large_dividend:                 # 대형(특별) 배당락: 주당 배당 / 배당락 전일 공급자 종가 >= pct. 수정가(총수익) 처리 때문에 거래 결과가 달라질 수 있는 사건
+  pct: 0.10
+  since: "2014-01-01"
 placeholder_strip:
   min_run: 5                   # 종목 시작 구간에서 O=H=L=C·거래량 0인 봉이 5개 이상 연속이면 그 구간 끝까지 자른다
 adjustment:
