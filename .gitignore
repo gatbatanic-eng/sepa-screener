@@ -74,3 +74,6 @@ range_vrebound/data/*.db-journal
 # golden_backtest: 수집 캐시는 커밋하지 않고, 수집 기록(manifest)만 커밋한다
 golden_backtest/data_cache/
 !golden_backtest/manifest/*.json
+
+# golden_backtest B1 사람 대조용 차트 PNG는 커밋하지 않는다(md·csv만 커밋)
+golden_backtest/reports/b1_check/charts/
