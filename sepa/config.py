@@ -115,11 +115,16 @@ class SetupConfig:
     max_base_length: int = 120             # base_length 상한 (지나치게 긴 횡보 방지 / 계산 캡)
     atr_fast: int = 20
     atr_slow: int = 60
-    atr_contraction_max: float = 0.75     # ATR20 / ATR60 <= 0.75
+    # 2026-09 실데이터 검증(자기참조 수정 후, KR 670·US 500종목) 결과 TREND_OK
+    # 종목의 ATR수축비율 중간값이 KR 1.22·US 1.07 로 원래 임계값(0.75)과 거리가
+    # 커서, RS≥80(=최근 강하게 움직였음)과 ATR수축(=최근 조용해짐)이 구조적으로
+    # 상충하는 것으로 확인됨. 소폭 완화(0.75→0.85, 0.70→0.80) — "수축"의 의미
+    # (ATR20 < ATR60)는 유지하되 여유를 조금 둔다.
+    atr_contraction_max: float = 0.85     # ATR20 / ATR60 <= 0.85 (원래 0.75)
     vol_dryup_fast: int = 10
     vol_dryup_mid: int = 20
     vol_dryup_slow: int = 50
-    volume_dryup_max: float = 0.70        # AvgVol10 / AvgVol50 <= 0.70
+    volume_dryup_max: float = 0.80        # AvgVol10 / AvgVol50 <= 0.80 (원래 0.70)
     range10_window: int = 10
     range10_max: float = 10.0             # (10일 고가/10일 저가 - 1) * 100 <= 10%
     range10_hard_filter: bool = False     # True 면 range10 을 SETUP_READY hard 조건에 포함
