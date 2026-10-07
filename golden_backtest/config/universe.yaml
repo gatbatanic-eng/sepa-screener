@@ -1,4 +1,4 @@
-# 유니버스·수집 설정 (규격 v1.2). 성과를 보고 바꾸지 않는다.
+# 유니버스·수집 설정 (규격 v1.3). 성과를 보고 바꾸지 않는다.
 universe:
   name: sp500_current          # S&P500 현재 구성종목 전체 (생존편향 있음 — 보고서에 명시)
   source: FinanceDataReader    # StockListing("S&P500")
@@ -10,15 +10,19 @@ fetch:
     vix: VIX
 quality:
   anomaly_since: "2014-01-01"  # 이상치 집계 대상 구간
-  big_move_pct: 0.40           # 일간 등락 절대값 기준
+  big_move_pct: 0.40           # 일간 등락 절대값 기준. 이 목록은 manifest/review_big_moves.json에 수동 검토 대상으로 남긴다
 a1_history_check:
   asof: "2014-12-31"           # 이 날짜까지의 데이터에서 최고가를 찾는다
   first_bars: 252              # 첫 봉이 수집 하한(fetch.start)이고 최고가가 첫 252봉 안이면 A1 판정 불가
 placeholder_strip:
   min_run: 5                   # 종목 시작 구간에서 O=H=L=C·거래량 0인 봉이 5개 이상 연속이면 그 구간 끝까지 자른다
-adjustment_artifact:
-  threshold: 0.10              # |수정 종가 수익률 - 공급자 Close 수익률| > 10%p 인 봉을 목록화
-  split_match_days: 3          # 분할 이벤트 ex-date가 ±3 달력일 안이면 "분할 이벤트 있음"
+adjustment:
+  divergence:                  # 정보용 목록: |수정 수익률 - 공급자 Close 수익률| 이 큰 봉(특별배당·분리상장 포함). 제외 근거로 쓰지 않는다
+    threshold: 0.10
+  dhr_type:                    # DHR형 보정 오류: 수정 종가가 공급자 Close보다 크게 튀는 봉. P1 제외 근거
+    divergence: 0.10           # |수정 수익률| - |공급자 수익률| > 10%p
+    min_adj_ret: 0.15          # 그리고 |수정 수익률| > 15%
+  split_match_days: 3          # 분할 이벤트 ex-date가 ±3 달력일 안이면 "분할 이벤트 있음"으로 표시
 price_filter:
   min_raw_close: 10.0          # [원전] 비수정(분할 전 실제) 종가 > 10달러, 이 값에만 적용
 
@@ -27,10 +31,13 @@ exclude:
   static:                      # 키는 저장명(BRK-B 형식)
     DHR: "분리상장(Fortive) 보정 오류: 2016-07-05 수정 종가 +61%인데 공급자 Close는 +3.6%. 가짜 신고가 봉을 만든다"
     CTVA: "분리상장 미보정: 2026-10-01 -84%가 수정 종가에 그대로 남아 있다. 공급자가 소급 보정하면 과거 값이 바뀔 수 있다"
+    SW: "미국 상장 이전 정지 봉(O=H=L=C, 거래량 0)이 2014년 이후 1,587봉, 2024-07-05까지 산재한다"
+    FERG: "미국 상장 이전 정지 봉(O=H=L=C, 거래량 0)이 2014년 이후 1,192봉, 2021-03-05까지 산재한다"
+    AMCR: "미국 상장 이전 정지 봉(O=H=L=C, 거래량 0)이 2014년 이후 1,110봉, 2019-06-10까지 산재한다"
   rules:
-    adjustment_artifact_unexplained_by_split:
-      since: "2014-01-01"      # 이 날짜 이후 봉만 본다(백테스트 구간 + 워밍업). 전 구간으로 넓히면 제외 종목이 크게 늘어난다
-      reason: "수정/공급자 종가 수익률이 10%p 넘게 어긋나는 봉이 있는데 분할 이벤트로 설명되지 않는다"
+    adjustment_error_dhr_type:
+      since: "2014-01-01"      # 이 날짜 이후 봉만 본다(백테스트 구간 + 워밍업)
+      reason: "DHR형 보정 오류: 수정 종가가 공급자 Close보다 10%p 넘게 크게 튀고 수정 수익률이 15%를 넘는 봉이 있다"
     consecutive_missing:
       since: "2015-01-01"      # 연속 결측 구간의 시작일이 이 날짜 이후
       max_run: 5               # 이 값을 넘는(6봉 이상) 연속 결측(가격 NaN·0 이하) 행

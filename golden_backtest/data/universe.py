@@ -3,7 +3,7 @@ from __future__ import annotations
 
 
 def compute_exclusions(records: dict[str, dict], cfg: dict) -> dict[str, list[str]]:
-    """records[저장명] = {"artifacts": [...], "nan_runs": [...]}  →  {저장명: [사유, ...]} (제외 종목만)."""
+    """records[저장명] = {"errors": [...DHR형 보정 오류 봉], "nan_runs": [...]}  →  {저장명: [사유, ...]} (제외 종목만)."""
     ex = cfg["exclude"]
     out: dict[str, list[str]] = {}
 
@@ -14,9 +14,9 @@ def compute_exclusions(records: dict[str, dict], cfg: dict) -> dict[str, list[st
         if sym in records:
             add(sym, reason)
 
-    rule = ex["rules"]["adjustment_artifact_unexplained_by_split"]
+    rule = ex["rules"]["adjustment_error_dhr_type"]
     for sym, rec in records.items():
-        hits = [a for a in rec.get("artifacts", []) if a["date"] >= rule["since"] and not a["split_event"]]
+        hits = [a for a in rec.get("errors", []) if a["date"] >= rule["since"]]
         if hits:
             add(sym, f"{rule['reason']} ({', '.join(a['date'] for a in hits)})")
 

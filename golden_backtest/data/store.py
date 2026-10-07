@@ -15,6 +15,7 @@ CACHE_DIR = ROOT / "data_cache"
 OHLCV_DIR = CACHE_DIR / "ohlcv"
 INDEX_DIR = CACHE_DIR / "index"
 SPLITS_DIR = CACHE_DIR / "splits"
+META_DIR = CACHE_DIR / "meta"
 MANIFEST_DIR = ROOT / "manifest"
 
 
@@ -55,6 +56,25 @@ def save_splits(symbol: str, splits: pd.Series) -> None:
     SPLITS_DIR.mkdir(parents=True, exist_ok=True)
     rows = {d.date().isoformat(): float(v) for d, v in splits.items()}
     (SPLITS_DIR / f"{symbol}.json").write_text(json.dumps(rows), encoding="utf-8")
+
+
+def load_splits(symbol: str) -> pd.Series:
+    path = SPLITS_DIR / f"{symbol}.json"
+    if not path.exists():
+        return pd.Series(dtype=float)
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    return pd.Series({pd.Timestamp(k): float(v) for k, v in raw.items()}, dtype=float)
+
+
+def save_meta(symbol: str, meta: dict) -> None:
+    """수집 때의 정리 내역(결측 구간, 시작 구간 절단 등). 기존 캐시를 유지할 때 품질 집계를 다시 만드는 데 쓴다."""
+    META_DIR.mkdir(parents=True, exist_ok=True)
+    (META_DIR / f"{symbol}.json").write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
+
+
+def load_meta(symbol: str) -> dict | None:
+    path = META_DIR / f"{symbol}.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
 
 
 def cached_symbols() -> list[str]:

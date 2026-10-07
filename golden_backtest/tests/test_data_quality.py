@@ -132,29 +132,79 @@ class TestAdjustmentArtifacts(unittest.TestCase):
         self.assertEqual(quality.adjustment_artifacts(df, None, 0.10, 3), [])
 
 
+class TestAdjustmentErrors(unittest.TestCase):
+    """DHR형: |수정| - |공급자| > 10%p 이고 |수정| > 15%. 특별배당·분리상장을 제대로 보정한 날(수정이 매끄럽고 공급자가 떨어짐)은 안 걸린다."""
+
+    def _df(self, close, v_close):
+        idx = pd.bdate_range("2016-06-01", periods=len(close))
+        return pd.DataFrame({"close": close, "v_close": v_close}, index=idx, dtype=float)
+
+    def run_rule(self, df, splits=None):
+        return quality.adjustment_errors(df, splits, 0.10, 0.15, 3)
+
+    def test_dhr_pattern_is_flagged(self):
+        # 수정 +61.2%, 공급자 +3.6% → 차이 57.6%p, |수정| 61.2% > 15%
+        df = self._df([100, 100, 161.2], [100, 100, 103.6])
+        res = self.run_rule(df)
+        self.assertEqual([r["date"] for r in res], ["2016-06-03"])
+
+    def test_correctly_adjusted_special_dividend_is_not_flagged(self):
+        # KDP형: 공급자 -82%, 수정 +11% → |수정| - |공급자| = 11 - 82 < 0
+        df = self._df([100, 100, 111.4], [100, 100, 17.9])
+        self.assertEqual(self.run_rule(df), [])
+
+    def test_both_returns_large_and_equal_is_not_flagged(self):
+        # CTVA형(둘 다 -84%)은 이 규칙으로 못 잡는다. 수동 검토 목록(review_big_moves)의 몫이다
+        df = self._df([100, 100, 16.0], [100, 100, 16.0])
+        self.assertEqual(self.run_rule(df), [])
+
+    def test_adj_return_must_exceed_15_percent(self):
+        # 수정 +12%, 공급자 0% → 차이 12%p지만 |수정| 12% <= 15% 라 제외
+        df = self._df([100, 100, 112.0], [100, 100, 100.0])
+        self.assertEqual(self.run_rule(df), [])
+
+    def test_difference_must_exceed_10_points(self):
+        # 수정 +20%, 공급자 +12% → 차이 8%p라 제외
+        df = self._df([100, 100, 120.0], [100, 100, 112.0])
+        self.assertEqual(self.run_rule(df), [])
+
+    def test_negative_adjusted_jump_is_flagged_too(self):
+        # 수정 -30%, 공급자 -5% → |수정| - |공급자| = 25%p
+        df = self._df([100, 100, 70.0], [100, 100, 95.0])
+        self.assertEqual(len(self.run_rule(df)), 1)
+
+    def test_split_event_is_recorded_but_not_required(self):
+        df = self._df([100, 100, 161.2], [100, 100, 103.6])
+        ex = pd.Series([1.319], index=[df.index[2]])
+        res = self.run_rule(df, ex)
+        self.assertTrue(res[0]["split_event"])
+        self.assertEqual(res[0]["split_ratio"], 1.319)
+
+
 class TestUniverseExclusions(unittest.TestCase):
     CFG = {"exclude": {
-        "static": {"DHR": "보정 오류", "ZZZ": "목록에 없는 종목"},
+        "static": {"DHR": "보정 오류", "SW": "정지 봉", "ZZZ": "목록에 없는 종목"},
         "rules": {
-            "adjustment_artifact_unexplained_by_split": {"since": "2014-01-01", "reason": "분할로 설명 안 됨"},
+            "adjustment_error_dhr_type": {"since": "2014-01-01", "reason": "DHR형"},
             "consecutive_missing": {"since": "2015-01-01", "max_run": 5, "reason": "연속 결측"},
         }}}
 
     @staticmethod
-    def rec(artifacts=(), runs=()):
-        return {"artifacts": list(artifacts), "nan_runs": list(runs)}
+    def rec(errors=(), runs=()):
+        return {"errors": list(errors), "nan_runs": list(runs)}
 
     def test_static_exclusion_applies_only_to_collected_symbols(self):
-        out = uni.compute_exclusions({"DHR": self.rec(), "AAPL": self.rec()}, self.CFG)
-        self.assertEqual(list(out), ["DHR"])
+        out = uni.compute_exclusions({"DHR": self.rec(), "SW": self.rec(), "AAPL": self.rec()}, self.CFG)
+        self.assertEqual(sorted(out), ["DHR", "SW"])
 
-    def test_unexplained_artifact_since_cutoff_excludes_but_explained_or_old_does_not(self):
+    def test_dhr_type_error_since_cutoff_excludes_regardless_of_split_event(self):
         recs = {
             "A": self.rec([{"date": "2016-03-01", "split_event": False}]),   # 제외
-            "B": self.rec([{"date": "2016-03-01", "split_event": True}]),    # 분할로 설명됨
+            "B": self.rec([{"date": "2016-07-05", "split_event": True}]),    # 분할 이벤트가 있어도 제외(DHR이 이 경우)
             "C": self.rec([{"date": "2013-12-31", "split_event": False}]),   # 기준일 이전
+            "D": self.rec(),                                                   # 오류 없음 (특별배당 보정이 맞는 종목: TDG, KDP 등)
         }
-        self.assertEqual(sorted(uni.compute_exclusions(recs, self.CFG)), ["A"])
+        self.assertEqual(sorted(uni.compute_exclusions(recs, self.CFG)), ["A", "B"])
 
     def test_missing_run_must_exceed_five_bars_and_start_in_2015_or_later(self):
         recs = {
@@ -167,8 +217,17 @@ class TestUniverseExclusions(unittest.TestCase):
         self.assertIn("6봉", out["SIX"][0])
 
     def test_reasons_accumulate(self):
-        recs = {"DHR": self.rec([{"date": "2016-07-05", "split_event": False}])}
+        recs = {"DHR": self.rec([{"date": "2016-07-05", "split_event": True}])}
         self.assertEqual(len(uni.compute_exclusions(recs, self.CFG)["DHR"]), 2)
+
+    def test_shipped_config_excludes_expected_static_symbols_and_restores_nine(self):
+        from golden_backtest import config
+        cfg = config.load("universe")
+        static = set(cfg["exclude"]["static"])
+        self.assertEqual(static, {"DHR", "CTVA", "SW", "FERG", "AMCR"})
+        for sym in ("BKR", "GEN", "JCI", "KDP", "KLAC", "LDOS", "TDG", "VMRK", "VST"):
+            self.assertNotIn(sym, static)
+        self.assertTrue(all(cfg["exclude"]["static"][s] for s in static))  # 사유가 비어 있지 않다
 
 
 if __name__ == "__main__":

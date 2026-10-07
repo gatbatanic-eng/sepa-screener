@@ -34,9 +34,11 @@ Golden Code 스크리너가 고른 종목에 대해 "어떤 진입 방식이 기
 - **M2 스탑주문형**: 전날 정한 돌파가에 매수 스탑 → 당일 고가 ≥ 돌파가면 max(시가, 돌파가) 체결
 
 엔진 공통 규칙:
-- 장중 스탑 손절: 손절가 체결. 시가가 손절가 아래로 갭이면 시가 체결
-- 종가형 손절: 다음날 시가 체결
-- M2 진입 당일 저가 ≤ 손절가면 손절된 것으로 처리 (일봉으로 순서를 알 수 없으므로 보수적 가정)
+- 손절·청산 의도에는 진입 모델과 무관하게 `kind = intraday | close`를 둔다 (v1.3)
+  - intraday: 시가 ≤ 손절가면 시가, 아니면 저가 ≤ 손절가일 때 손절가 체결. 진입 당일에도 적용 (M1은 시가 진입 후, M2는 돌파가 진입 후)
+  - close: 종가 < 손절가면 다음날 시가 체결. 진입 당일 장중 저가로는 손절하지 않고 진입 당일 종가부터 판정
+- M2 진입 당일 intraday 손절은 손절가 체결로 고정. M2는 장중 진입이라 진입 전 시가는 이후 손절 체결가와 무관하다
+- 데이터 끝 미청산은 통계에서 빼지 않는다. 확정 거래 통계와 마지막 종가 평가(`exit_reason = open_mtm`) 통계를 둘 다 낸다
 - 비용: 편도 수수료 0.05% + 슬리피지 0.05% (config에서 종목군별 조정 가능)
 - 종목당 1포지션, 피라미딩 없음. 부분청산은 B3만
 
@@ -51,7 +53,7 @@ golden_backtest/
 ├── indicators/        # 순수 함수: sma, ema, atr(wilder), rsi, donchian, adr, rs_pct
 ├── regime/            # 지수 10개월선, VIX 백분위, 이벤트 플래그
 ├── strategies/        # base.py + a1_ath.py, a2_rsi2.py, b1_turtle.py, b2_sepa.py, b3_qulla.py
-├── engine/            # simulator.py, fills.py, costs.py, position.py
+├── engine/            # intents.py(의도 타입·StopSpec), simulator.py, fills.py, costs.py, position.py
 ├── records/           # trade.py (거래 기록 스키마)
 ├── evaluation/        # metrics, baseline(B&H, 랜덤), walkforward, sensitivity, overlap
 ├── live/              # signals.py, outcomes.py (R7/R30/R60/R90)
@@ -73,17 +75,24 @@ class Strategy:
     def entry_intent(self, row) -> EntryIntent | None:
         """t일 기준으로 t+1에 쓸 주문. M1: next_open / M2: buy_stop(가격)."""
 
-    def initial_stop(self, row, fill_price) -> float: ...
+    def initial_stop(self, row, fill_price) -> StopSpec: ...
 
     def manage(self, position, row) -> list[ExitIntent]:
         """손절선 갱신, 트랜치 청산, 시간 청산. 상태 기반."""
 ```
 
+의도 타입(`EntryIntent`, `ExitIntent`, `StopSpec`)은 `engine/intents.py`에 둔다. **strategies가 engine을 import하는 방향만 허용**하고 engine은 strategies를 import하지 않는다.
+`initial_stop`은 손절 종류를 함께 알려야 하므로 float 대신 `StopSpec(price, kind, ...)`을 반환한다 (3단계에서 확인 요청한 변경).
+
 인터페이스를 바꿔야 하면 먼저 이유를 설명하고 확인을 받는다.
 
 ## 6. 거래 기록 스키마
 
-`ticker, strategy, version, signal_date, entry_date, entry_price, initial_stop, exit_date, exit_price, exit_reason(stop/trailing/time/rule/partial), tranche, hold_days, costs, r_multiple, mfe_r, mae_r, regime_tag, event_flag`
+`ticker, strategy, version, signal_date, entry_date, entry_price, initial_stop, exit_date, exit_price, exit_reason(stop/trailing/time/rule/partial/open_mtm), tranche, hold_days, costs, r_multiple, mfe_r, mae_r, regime_tag, event_flag`
+추가 필드(v1.3): `strategy_version, entry_model, risk_basis, stop_kind`, 트랜치 행을 묶기 위한 `trade_id, weight`
+
+- `version`은 규격 버전, `strategy_version`은 전략 구현 버전이다
+- 트랜치마다 한 행이다. `costs`와 `r_multiple`은 `weight`를 곱한 값이라 같은 `trade_id`의 행을 합하면 거래 전체 값이다
 
 - 1R = 진입가 − 초기 손절가
 - r_multiple은 비용 반영 후 값

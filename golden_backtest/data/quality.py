@@ -24,7 +24,10 @@ def anomalies_since(df: pd.DataFrame, since: str, big_move: float) -> dict:
     vret = df["v_close"].pct_change() if "v_close" in df.columns else None
     moves = []
     for d in df.index[big]:
+        i = df.index.get_loc(d)
+        base = float(df["volume"].iloc[max(0, i - 21):i].median()) if i > 0 else 0.0
         m = {"date": d.date().isoformat(), "ret": round(float(ret[d]), 4),
+             "volume_ratio": round(float(df["volume"].iloc[i]) / base, 1) if base > 0 else None,  # 직전 21봉 중앙값 대비
              "sets_new_ath": bool(sets_ath[d]), "holds_current_ath": bool(d == ath_date)}
         if vret is not None:
             # 공급자 Close(분할만 보정) 등락과 수정 종가 등락이 10%p 넘게 다르면 배당·분리상장 보정 오류 의심
@@ -64,6 +67,25 @@ def adjustment_artifacts(df: pd.DataFrame, splits: pd.Series | None, threshold: 
     """
     adj, ven = df["close"].pct_change(), df["v_close"].pct_change()
     hits = (adj - ven).abs() > threshold
+    sp = splits if splits is not None else pd.Series(dtype=float)
+    out = []
+    for d in df.index[hits.values]:
+        near = [(x, r) for x, r in sp.items() if abs((d - x).days) <= split_match_days]
+        out.append({"date": d.date().isoformat(), "adj_ret": round(float(adj[d]), 4), "vendor_ret": round(float(ven[d]), 4),
+                    "split_event": bool(near), "split_ratio": float(near[0][1]) if near else None})
+    return out
+
+
+def adjustment_errors(df: pd.DataFrame, splits: pd.Series | None, divergence: float, min_adj_ret: float,
+                      split_match_days: int) -> list[dict]:
+    """DHR형 보정 오류: 수정 종가가 공급자 Close보다 훨씬 크게 튀는 봉.
+
+    조건: |수정 수익률| − |공급자 수익률| > divergence 이고 |수정 수익률| > min_adj_ret.
+    특별배당·분리상장을 Adj Close가 제대로 보정한 날은 수정 쪽이 매끄럽고 공급자 Close가 크게 떨어지므로(예: TDG 2014-06,
+    KDP 2018-07) 이 조건에 걸리지 않는다. 반대로 수정 쪽이 튀는 날(DHR 2016-07-05: 수정 +61%, 공급자 +3.6%)만 걸린다.
+    """
+    adj, ven = df["close"].pct_change(), df["v_close"].pct_change()
+    hits = ((adj.abs() - ven.abs()) > divergence) & (adj.abs() > min_adj_ret)
     sp = splits if splits is not None else pd.Series(dtype=float)
     out = []
     for d in df.index[hits.values]:
