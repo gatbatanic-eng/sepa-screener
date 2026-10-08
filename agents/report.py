@@ -234,6 +234,9 @@ def build(kind: str, today: dt.date, root: Path | None = None, state_dir: Path |
 
 def to_markdown(rep: dict) -> str:
     out = [f"# {rep['title']}", f"> {rep['disclaimer']}", f"> 데이터 기준: {rep['dataAsOf']}", ""]
+    if rep.get("basis"):
+        b = rep["basis"]
+        out.insert(3, f"> 시세 기준: 한국 {b['kr']} · 미국 {b['us']} 장 마감")
     if rep.get("staleNote"):
         out.insert(3, f"> ⚠ {rep['staleNote']}")
     for s in rep["sections"]:
@@ -264,7 +267,8 @@ def save(rep: dict, report_dir: Path | None = None) -> bool:
     return True
 
 
-def run(today: dt.date, force: list[str] | None = None, new_list: Path | None = None, hold: bool = False, note: str | None = None) -> list[str]:
+def run(today: dt.date, force: list[str] | None = None, new_list: Path | None = None, hold: bool = False, note: str | None = None,
+        basis: dict | None = None) -> list[str]:
     """새로 쓴 보고서의 .md 경로를 new_list 파일에 한 줄씩 남긴다(알림 단계가 읽는다)."""
     keys = period_keys(today)
     made, paths = [], []
@@ -275,6 +279,8 @@ def run(today: dt.date, force: list[str] | None = None, new_list: Path | None = 
             rep = build(kind, today)
             if rep and note:
                 rep["staleNote"] = note
+            if rep and basis:
+                rep["basis"] = basis
             if rep and save(rep):
                 made.append(f"{kind}:{rep['key']}")
                 paths.append(str(REPORT_DIR / kind / f"{rep['key']}.md"))
@@ -293,7 +299,7 @@ def main() -> None:
     fr = freshness.check(today)
     if fr["note"]:
         print(fr["note"])
-    print("생성:", run(today, a.force, a.new_list, fr["hold"], fr["note"] if fr["forced"] else None) or "없음")
+    print("생성:", run(today, a.force, a.new_list, fr["hold"], fr["note"] if fr["forced"] else None, fr.get("basis")) or "없음")
 
 
 if __name__ == "__main__":

@@ -18,7 +18,8 @@ SERIES = {"live": config.INCEPTION, "preview": config.PREVIEW_START}
 
 
 def run(today: dt.date, fetch=prices.fetch_closes, bench_fetch=prices.fetch_benchmarks, freeze: bool = True,
-        hold: bool = False) -> dict:
+        hold: bool = False, asof: dict[str, str] | None = None) -> dict:
+    """asof: 시장별로 이 날짜(장 마감일) 뒤의 시세는 쓰지 않는다(agents.freshness.basis, 미확정 미국 일봉 제외)."""
     sigs = {m: sg.archive(m) for m in ("kr", "us")}
     start = (dt.date.fromisoformat(config.PREVIEW_START) - dt.timedelta(days=10)).isoformat()
     closes: dict[tuple[str, str], object] = {}
@@ -29,9 +30,13 @@ def run(today: dt.date, fetch=prices.fetch_closes, bench_fetch=prices.fetch_benc
         hint = {s["code"]: s["exchange"] for s in rows if m == "kr" and s.get("exchange") in ("KOSPI", "KOSDAQ")}
         got, _ = fetch(m, symbols, start, hint) if m == "kr" else fetch(m, symbols, start)
         log.info("%s: 가격 확보 %d/%d종목", m, len(got), len(symbols))
-        closes.update({(m, c): s for c, s in got.items()})
+        cut = (asof or {}).get(m)
+        closes.update({(m, c): (s[s.index <= cut] if cut else s) for c, s in got.items()})
     bench_all = bench_fetch(start)
     bench = {k: v for k, v in bench_all.items() if k in ("KOSPI", "US")}
+    for k, m in (("KOSPI", "kr"), ("US", "us")):
+        if k in bench and (asof or {}).get(m):
+            bench[k] = bench[k][bench[k].index <= asof[m]]
     all_sigs = [s for rows in sigs.values() for s in rows]
     out = {"schemaVersion": 1, "generatedAt": dt.datetime.now(dt.timezone.utc).isoformat(), "today": today.isoformat(),
            "rules": {"frozenOn": config.RULES_FROZEN_ON, "inception": config.INCEPTION, "previewStart": config.PREVIEW_START,
@@ -89,7 +94,7 @@ def main() -> None:
     fr = freshness.check(today)
     if fr["note"]:
         log.warning(fr["note"])
-    res = run(today, freeze=not a.no_freeze, hold=fr["hold"])
+    res = run(today, freeze=not a.no_freeze, hold=fr["hold"], asof=fr["basis"])
     for aid, a in res["agents"].items():
         for name, s in a["series"].items():
             log.info("%s/%s: %s", aid, name, s["summary"])
