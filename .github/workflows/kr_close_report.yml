@@ -1,11 +1,15 @@
 name: KR Market Close Report
 
-# 평일 16:10 KST(07:10 UTC) 한국 장 마감 정리. NHPLUG 조회 전용. 휴장일은 보고서를 쓰지 않는다.
-# 새 보고서는 이슈 '한국 장 마감 정리'에 댓글로 올라온다(없으면 만든다). GitHub 예약은 지연될 수 있다.
+# 평일 16:13 KST(07:13 UTC)부터 한국 장 마감 정리. NHPLUG 조회 전용. 휴장일은 보고서를 쓰지 않는다.
+# 새 보고서는 이슈 '한국 장 마감 정리'에 댓글로 올라온다(없으면 만든다).
+# GitHub 예약은 몇 시간씩 밀리거나 건너뛰어질 수 있어, 덜 붐비는 분에 여러 번 예약하고 먼저 뜬 실행만 쓴다(같은 날 보고서가 있으면 바로 끝냄).
 on:
   workflow_dispatch:
   schedule:
-    - cron: "10 7 * * 1-5"
+    - cron: "13 7 * * 1-5"
+    - cron: "47 7 * * 1-5"
+    - cron: "23 8 * * 1-5"
+    - cron: "7 9 * * 1-5"
 
 permissions:
   contents: write
@@ -23,19 +27,29 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref_name }}
+      - name: Skip if today's report exists
+        id: gate
+        run: |
+          f="docs/market/kr_close/$(TZ=Asia/Seoul date +%Y-%m-%d).json"
+          if [ -f "$f" ]; then echo "이미 있음: $f"; echo "skip=true" >> "$GITHUB_OUTPUT"; fi
       - uses: actions/setup-python@v5
+        if: steps.gate.outputs.skip != 'true'
         with:
           python-version: "3.11"
       - name: Install dependencies
+        if: steps.gate.outputs.skip != 'true'
         run: pip install -r requirements.txt
       - name: Unit tests
+        if: steps.gate.outputs.skip != 'true'
         run: python -m unittest tests.test_close_report -v
       - name: Build close report (query-only)
+        if: steps.gate.outputs.skip != 'true'
         env:
           NHPLUG_APPKEY: ${{ secrets.NHPLUG_APPKEY }}
           NHPLUG_APPSECRET: ${{ secrets.NHPLUG_APPSECRET }}
         run: python -m nhplug.close_report
       - name: Save
+        if: steps.gate.outputs.skip != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
