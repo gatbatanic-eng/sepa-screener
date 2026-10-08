@@ -5,6 +5,8 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+import pandas as pd
+
 from agents import freshness as fr, report as rp
 
 D = dt.date(2026, 10, 5)  # 월요일
@@ -93,6 +95,57 @@ class KrHolidayTest(unittest.TestCase):
             (Path(t) / "research/nhplug").mkdir(parents=True)
             (Path(t) / "research/nhplug/kr_flow.json").write_text(json.dumps({"krBars": ["20261006", "20261002"], "generatedAt": "2026-10-06T06:20:00+00:00"}))
             self.assertEqual(fr.kr_last_bar(Path(t))["bars"], ["2026-10-02", "2026-10-06"])
+
+
+class MorningBasisTest(unittest.TestCase):
+    """아침 보고(기준일 10-07부터): 한국은 기준일, 미국은 직전 평일 장 마감까지만 요구하고 그 뒤 시세는 쓰지 않는다."""
+    W = dt.date(2026, 10, 7)  # 수요일
+
+    def setUp(self):
+        p = mock.patch.object(fr, "kr_last_bar", return_value=None)
+        p.start()
+        self.addCleanup(p.stop)
+
+    def test_basis(self):
+        self.assertEqual(fr.basis(self.W), {"kr": "2026-10-07", "us": "2026-10-06"})
+        self.assertEqual(fr.basis(dt.date(2026, 10, 12)), {"kr": "2026-10-12", "us": "2026-10-09"})  # 월요일 → 미국 금요일
+        self.assertEqual(fr.basis(D), {"kr": "2026-10-05", "us": "2026-10-05"})                      # 전환 전 기록은 같은 날 기준
+
+    def test_morning_run_is_not_held_for_unconfirmed_us_day(self):
+        r = fr.check(self.W, at(7, 23, 17), {"kr": "2026-10-07", "us": "2026-10-06"})
+        self.assertFalse(r["hold"] or r["forced"])
+        self.assertEqual(r["basis"]["us"], "2026-10-06")
+
+    def test_morning_run_still_waits_for_previous_us_day(self):
+        r = fr.check(self.W, at(7, 23, 17), {"kr": "2026-10-07", "us": "2026-10-05"})
+        self.assertTrue(r["hold"])
+        self.assertEqual(r["stale"]["us"]["need"], "2026-10-06")
+
+    def test_report_shows_basis(self):
+        rep = {"title": "t", "disclaimer": "d", "dataAsOf": "a", "sections": [], "basis": fr.basis(self.W)}
+        self.assertIn("시세 기준: 한국 2026-10-07 · 미국 2026-10-06 장 마감", rp.to_markdown(rep))
+
+    def test_prices_after_basis_are_dropped(self):
+        from agents import main as am
+
+        class Stop(Exception):
+            pass
+
+        seen = {}
+
+        def fake_sim(select, sigs, closes, begin, end):
+            seen.update(closes)
+            raise Stop
+
+        idx = ["2026-10-05", "2026-10-06", "2026-10-07"]
+        fetch = lambda m, syms, start, hint=None: ({c: pd.Series([1.0, 2.0, 3.0], index=idx) for c in syms}, {})
+        with mock.patch.object(am.sg, "archive", side_effect=lambda m: [{"code": "AAA" if m == "us" else "000001", "exchange": "KOSPI"}]), \
+                mock.patch.object(am, "read_json", return_value={"schemaVersion": 1, "agents": {}}), \
+                mock.patch.object(am, "simulate", fake_sim):
+            with self.assertRaises(Stop):
+                am.run(self.W, fetch=fetch, bench_fetch=lambda start: {}, asof=fr.basis(self.W))
+        self.assertEqual(list(seen[("us", "AAA")].index), ["2026-10-05", "2026-10-06"])
+        self.assertEqual(list(seen[("kr", "000001")].index), idx)
 
 
 class HoldTest(unittest.TestCase):
