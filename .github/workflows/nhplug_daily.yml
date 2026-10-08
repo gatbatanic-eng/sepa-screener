@@ -11,7 +11,11 @@ on:
         options: [auto, full, flow, forward]
         default: auto
   schedule:
-    - cron: "20 6 * * 2-6"
+    # GitHub 예약 지연·누락 대비로 여러 번 예약. 오늘(KST) 수집이 이미 끝났으면 정기 실행은 바로 끝난다.
+    - cron: "23 6 * * 2-6"
+    - cron: "47 6 * * 2-6"
+    - cron: "17 8 * * 2-6"
+    - cron: "43 9 * * 2-6"
 
 permissions:
   contents: write
@@ -28,23 +32,33 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref_name }}
+      - name: Skip scheduled run if today's flow is collected
+        id: gate
+        if: github.event_name == 'schedule'
+        run: |
+          today=$(TZ=Asia/Seoul date +%Y%m%d)
+          got=$(python3 -c "import json;print(json.load(open('research/nhplug/kr_flow.json')).get('kstToday',''))" 2>/dev/null || true)
+          if [ "$got" = "$today" ]; then echo "오늘 수집 완료($today)"; echo "skip=true" >> "$GITHUB_OUTPUT"; fi
       - uses: actions/setup-python@v5
+        if: steps.gate.outputs.skip != 'true'
         with:
           python-version: "3.11"
       - name: Install dependencies
+        if: steps.gate.outputs.skip != 'true'
         run: pip install -r requirements.txt
       - name: Collect KR sector / flow (query-only)
-        if: inputs.mode != 'forward'
+        if: steps.gate.outputs.skip != 'true' && inputs.mode != 'forward'
         continue-on-error: true
         env:
           NHPLUG_APPKEY: ${{ secrets.NHPLUG_APPKEY }}
           NHPLUG_APPSECRET: ${{ secrets.NHPLUG_APPSECRET }}
         run: python -m nhplug.kr_extra --mode "${{ inputs.mode || 'auto' }}"
       - name: Forward tracking of flow-accumulation candidates (KR)
+        if: steps.gate.outputs.skip != 'true'
         continue-on-error: true
         run: python -m accumulation.forward && python -m accumulation.publish
       - name: Save
-        if: always()
+        if: always() && steps.gate.outputs.skip != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
