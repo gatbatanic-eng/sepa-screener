@@ -1,0 +1,74 @@
+# 골든코드 조기 진입 연구 v3
+
+운영 SEPA/공격형 코드, 수집 Actions, 추적 기록을 변경하지 않는 독립 연구입니다.
+`early:3.0.0-research`와 `catalyst:3.0.0-research`는 운영 추천으로 승격되지 않습니다.
+규칙은 첫 성과 확인 전 고정했습니다. 결과를 보고 임계값을 바꾸지 않습니다.
+
+## 전략과 위험 통제
+
+선행 진입: 당일 제외 5일 고가 피벗, 5일 저가 - 0.25 ATR20 손절.
+추세 회복, 피벗 돌파, 이격3% 이하, 손절거리0.75ATR 이상/7% 이하,
+확인된 과거120일 저항까지2R 이상은 필수입니다.
+Higher Low, 가격압축, 거래량 감소, 돌파 거래량, 상대가격 개선은 5개 중2개
+이상 품질 조건입니다. 단기 하락 추세선은 아직 별도 구현하지 않았습니다.
+손절 지지 이탈 빈도는 위험 설명이며 자동 성공확률로 해석하지 않습니다.
+
+촉매 재돌파: 앞선15%/거래량2배 급등 후5~30일 조정·거래량 감소와 위 위험조건.
+해당 급등일까지 발표된 공식 촉매 증거가 없으면 보류합니다. 가격점프만으로
+임상 성공/실적 서프라이즈를 만들지 않습니다. 이번 일괄 연구에는 공식 촉매
+자료가 없으므로 실거래 후보로 승격하지 않습니다.
+
+## 체결과 검증
+
+신호 다음 봉 시가에만 진입하며 비용 후 손절7%/이격5%/목표2R 재검사.
+시가 갭청산을 먼저 처리하고 장중 손절·목표 동시접촉은 손절 우선.
+목표 또는40거래일 청산. 동일 전략/종목 보유 중 재신호는 중복하지 않습니다.
+완료되지 않은 거래와 누락은 평균손익에0으로 넣지 않습니다.
+MFE/MAE는 보유 종가·청산가격 관측치이며 정확한 장중 최대값이 아닙니다.
+계좌 모형은 현금, 직전평가액5%, 최대20종목, 소수점수량, 배당 미반영입니다.
+
+기존 전략은 원본 `sepa.pipeline`과 `aggressive_screen.evaluate`를 사용합니다.
+원본 SEPA 최종 `entryVerdict` UI/체크리스트 전체를 과거 재현한 것은 아닙니다.
+생존표본의 RS 백분위를 재계산하므로 당시 전체시장 판정과 다를 수 있습니다.
+정석 TREND 불충족일의 GO가 불가능한 우선순위를 이용해 계산을 생략합니다.
+그날의 세부 SETUP/FAILED 상태까지 계산 완료했다고 주장하지 않습니다.
+
+58종목 = 요청10 + 업종비교28 + 고정시드31010 무작위20. 현재 생존편향과
+상폐·거래정지 미포함. Yahoo 사후 분할수정 가격과 availability 미검증이므로
+실제 체결 검증 완료 자료가 아닙니다. 2022~24/2025~26은 사후 기간 분리이고
+규칙 설계 전에 결과를 못 봤다는 전향 OOS는 아닙니다.
+당일 미완성 Yahoo 봉은 관측시각 기준16:10 ET 보수적 컷오프로 제외합니다.
+
+## 재현
+
+Python3.11+, pandas/numpy/yfinance/pytest, Windows에서는 tzdata 필요.
+
+```text
+python -m entry_lab.study --collect --input entry-v3-input.json
+python -m entry_lab.study --input entry-v3-input.json --output result.json
+python -m pytest tests/test_entry_lab.py tests/test_aggressive_screen.py tests/test_sepa_v2.py -q
+```
+
+큰 입력의 가격 조회와 결과파일은 write-once입니다. `--shard 0/4`~`3/4`는
+RS 유니버스를 그대로 유지한 채 종목만 분할합니다. `entry_lab.finalize`로
+네 결과를 합치며 입력/규칙/원본hash/중복·누락을 확인합니다.
+`docs/entry_lab/index.html`은 정석/공격형/선행/촉매를 별도 표시하는 읽기전용
+연구 화면입니다. PR#80의 운영 대시보드 오버레이와 겹치는 파일은 없습니다.
+golden-code-lab Sites/Worker는 별도 코드베이스이며 이 PR이 자동 연결되지 않습니다.
+
+## 2026-10-10 후속 검증
+
+현재 검증 패치는3.0.1-research입니다. 전략 임계값은3.0.0과 같고 기존 결과를
+덮어쓰지 않습니다. 무한대/NaN 입력·구간/계좌 결측과 부분 결과 저장을 차단합니다.
+별도 event_risk는 실패 사례를 확인한 뒤 만든 연구용 일정 검토이며 탐지·주문과
+분리되어 있습니다. 당시 공식 일정의 전체 범위를 모르면 승인하지 않습니다.
+이벤트 URL/verified 형식 검사는 발행사 정체성의 독립 검증이 아닙니다.
+
+```text
+python -m entry_lab.audit --input entry-v3-input.json --baseline docs/entry_lab/report-full.json --episodes docs/entry_lab/episodes.json --output audit-new.json
+```
+
+원본 전체시장 RS·체크리스트를 연결한 저장 판정 재현과 현재 코어에 과거 설정/
+가격을 연결한 재계산을 구분합니다. 실제 저장 시간은 전달 시간의 증명이 아닙니다.
+상세 내용은 docs/entry_lab/FOLLOWUP.md, 공개 요약은 audit-summary-v301.json.
+새 룰 수익률을 확정하거나 운영 도입을 승인하는 결과가 아닙니다.
