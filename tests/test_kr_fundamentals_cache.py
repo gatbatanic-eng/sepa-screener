@@ -49,6 +49,46 @@ class SettleTest(unittest.TestCase):
         self.assertTrue(pf.is_settled(2025, 4, today))
 
 
+class CorpListTest(unittest.TestCase):
+    def zipped(self):
+        import io, zipfile
+        xml = ("<result><list><corp_code>00000001</corp_code><stock_code>005930</stock_code></list>"
+               "<list><corp_code>00000002</corp_code><stock_code> </stock_code></list></result>")
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w") as z:
+            z.writestr("CORPCODE.xml", xml)
+        return buf.getvalue()
+
+    def api(self, responses):
+        class A(pf.Dart):
+            def request(self, endpoint, **p):
+                return responses.pop(0)
+        return A("key")
+
+    def test_error_message_has_dart_status_but_no_secret(self):
+        for raw, expect in ((b'{"status":"020","message":"limit exceeded"}', "status=020"),
+                            (b"<result><status>010</status><message>unregistered key</message></result>", "status=010"),
+                            (b"<html>maintenance</html>", "non-zip response")):
+            with tempfile.TemporaryDirectory() as d, self.assertRaises(RuntimeError) as ctx:
+                self.api([raw]).corporations(Path(d))
+            self.assertIn(expect, str(ctx.exception))
+            self.assertNotIn("key", str(ctx.exception).replace("unregistered key", ""))
+
+    def test_failed_download_falls_back_to_last_good_list(self):
+        with tempfile.TemporaryDirectory() as d:
+            api = self.api([self.zipped(), b'{"status":"020","message":"x"}'])
+            self.assertEqual(api.corporations(Path(d)), {"005930": "00000001"})
+            self.assertEqual(api.corps_source, "live")
+            self.assertEqual(api.corporations(Path(d)), {"005930": "00000001"})
+            self.assertEqual(api.corps_source, "cache")
+
+    def test_stale_days(self):
+        now = dt.datetime(2026, 10, 9, 12, tzinfo=dt.timezone.utc)
+        self.assertEqual(pf.stale_days("2026-10-08T11:51:00+00:00", now), 1)
+        self.assertEqual(pf.stale_days("2026-10-06T11:00:00+00:00", now), 3)
+        self.assertIsNone(pf.stale_days(None, now))
+
+
 class CacheTest(unittest.TestCase):
     now = dt.datetime(2026, 10, 1, 3, tzinfo=dt.timezone.utc)
 
