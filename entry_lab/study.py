@@ -13,6 +13,8 @@ from pathlib import Path
 import random
 import statistics
 import subprocess
+import os
+import tempfile
 from zoneinfo import ZoneInfo
 import pandas as pd
 from aggressive_screen import evaluate as aggressive
@@ -31,8 +33,15 @@ SECTORS={"technology":"AAPL MSFT NVDA CRM ORCL INTC", "healthcare":"JNJ PFE UNH 
 
 
 def dump(path,value):
-    with path.open("x",encoding="utf-8") as h:
-        json.dump(value,h,ensure_ascii=False,allow_nan=False,separators=(",",":"),default=str)
+    path=Path(path)
+    payload=json.dumps(value,ensure_ascii=False,allow_nan=False,separators=(",",":"),default=str)
+    temporary=None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w',encoding='utf-8',dir=path.parent,prefix='.entry-lab-',delete=False) as h:
+            temporary=Path(h.name);h.write(payload);h.flush();os.fsync(h.fileno())
+        os.link(temporary,path)  # exclusive publication; existing artifacts are untouched
+    finally:
+        if temporary is not None:temporary.unlink(missing_ok=True)
 
 
 def collect(path):

@@ -55,3 +55,20 @@ RS 유니버스를 그대로 유지한 채 종목만 분할합니다. `entry_lab
 `docs/entry_lab/index.html`은 정석/공격형/선행/촉매를 별도 표시하는 읽기전용
 연구 화면입니다. PR#80의 운영 대시보드 오버레이와 겹치는 파일은 없습니다.
 golden-code-lab Sites/Worker는 별도 코드베이스이며 이 PR이 자동 연결되지 않습니다.
+
+## 2026-10-10 후속 검증
+
+현재 검증 패치는3.0.1-research입니다. 전략 임계값은3.0.0과 같고 기존 결과를
+덮어쓰지 않습니다. 무한대/NaN 입력·구간/계좌 결측과 부분 결과 저장을 차단합니다.
+별도 event_risk는 실패 사례를 확인한 뒤 만든 연구용 일정 검토이며 탐지·주문과
+분리되어 있습니다. 당시 공식 일정의 전체 범위를 모르면 승인하지 않습니다.
+이벤트 URL/verified 형식 검사는 발행사 정체성의 독립 검증이 아닙니다.
+
+```text
+python -m entry_lab.audit --input entry-v3-input.json --baseline docs/entry_lab/report-full.json --episodes docs/entry_lab/episodes.json --output audit-new.json
+```
+
+원본 전체시장 RS·체크리스트를 연결한 저장 판정 재현과 현재 코어에 과거 설정/
+가격을 연결한 재계산을 구분합니다. 실제 저장 시간은 전달 시간의 증명이 아닙니다.
+상세 내용은 docs/entry_lab/FOLLOWUP.md, 공개 요약은 audit-summary-v301.json.
+새 룰 수익률을 확정하거나 운영 도입을 승인하는 결과가 아닙니다.

@@ -1,11 +1,15 @@
 """Daily long simulation with next-session open and adverse same-bar ordering."""
 import math
+import pandas as pd
 
 
 def simulate(frame, signal, *, cost_bp=10, hold=40, max_risk=.07, max_extension=.05):
     if (isinstance(cost_bp,bool) or not isinstance(cost_bp,(int,float)) or not math.isfinite(cost_bp)
             or not 0<=cost_bp<=1000 or isinstance(hold,bool) or not isinstance(hold,int) or hold<1):
         raise ValueError("invalid cost/holding policy")
+    if any(isinstance(v,bool) or not isinstance(v,(int,float)) or not math.isfinite(v)
+           or not 0<=v<1 for v in (max_risk,max_extension)) or max_risk==0:
+        raise ValueError("invalid risk/extension policy")
     date = signal["signalDate"]
     if frame.index.has_duplicates or not frame.index.is_monotonic_increasing or date not in frame.index:
         return dict(status="SKIP",reason="missing/duplicate/unsorted signal session")
@@ -26,11 +30,22 @@ def simulate(frame, signal, *, cost_bp=10, hold=40, max_risk=.07, max_extension=
     if raw <= stop or (entry-stop)/entry > max_risk or raw/pivot-1 > max_extension:
         return dict(status="SKIP", reason="next-open invalidation/risk/chase")
     target = signal.get("target1")
+    if target is not None and (isinstance(target,bool) or not isinstance(target,(int,float))
+                               or not math.isfinite(target) or target<=0):
+        return dict(status="SKIP",reason="invalid target evidence")
     if target is not None and (target-entry)/(entry-stop) < 2:
         return dict(status="SKIP", reason="next-open resistance below 2R")
     full = frame.loc[frame.index > date]
-    horizons = {str(h):float(full.Close.iloc[h-1])*(1-fee)/entry-1 if len(full)>=h else None
-                for h in (5,20,40)}
+    horizons={}
+    for h in (5,20,40):
+        window=full.iloc[:h]
+        available=len(window)==h
+        if available:
+            available=all(all(math.isfinite(float(v)) and float(v)>0
+                              for v in (bar.Open,bar.High,bar.Low,bar.Close,bar.Volume))
+                          and bar.High>=max(bar.Open,bar.Close,bar.Low) and bar.Low<=min(bar.Open,bar.Close)
+                          for _,bar in window.iterrows())
+        horizons[str(h)]=float(window.Close.iloc[-1])*(1-fee)/entry-1 if available else None
     path, reason, exit_price, end = [], "HORIZON", None, None
     for d, bar in tail.iterrows():
         if not all(math.isfinite(float(v)) and float(v)>0 for v in (bar.Open,bar.High,bar.Low,bar.Close,bar.Volume)):
@@ -72,11 +87,25 @@ def portfolio(trades, frames, sessions, *, fraction=.05, max_positions=20):
     Entry size is prior close equity. Fractional shares are a research assumption.
     Closed plus still-open fills are marked using exact session close prices.
     """
+    if (isinstance(fraction,bool) or not isinstance(fraction,(int,float)) or not math.isfinite(fraction)
+            or not 0<fraction<=1 or isinstance(max_positions,bool) or not isinstance(max_positions,int) or max_positions<1):
+        raise ValueError("invalid portfolio policy")
+    sessions=pd.DatetimeIndex(sessions)
+    if sessions.has_duplicates or not sessions.is_monotonic_increasing:
+        raise ValueError("duplicate/unsorted portfolio sessions")
     cash=100.; prior=100.; peak=100.; mdd=0.; book={}; curve=[]; skips=[]
     orders={}
     for i,t in enumerate(trades):
         e=t["execution"]
         if e["status"] in ("CLOSED","OPEN"):
+            if (t['symbol'] not in frames or e.get('entryDate') not in sessions
+                    or isinstance(e.get('entry'),bool) or not isinstance(e.get('entry'),(int,float))
+                    or not math.isfinite(e['entry']) or e['entry']<=0):
+                raise ValueError('invalid portfolio entry evidence')
+            if e['status']=='CLOSED' and (e.get('exitDate') not in sessions
+                    or e['exitDate']<e['entryDate'] or isinstance(e.get('exit'),bool)
+                    or not isinstance(e.get('exit'),(int,float)) or not math.isfinite(e['exit']) or e['exit']<=0):
+                raise ValueError('invalid portfolio exit evidence')
             orders.setdefault(e["entryDate"],[]).append((i,t))
     for d in sessions:
         day=str(d)[:10]
@@ -95,7 +124,12 @@ def portfolio(trades, frames, sessions, *, fraction=.05, max_positions=20):
             f=frames[lot["symbol"]]
             if d not in f.index:
                 return dict(status="UNAVAILABLE",reason="missing portfolio mark",date=day)
-            value+=lot["quantity"]*float(f.loc[d,"Close"])
+            if f.index.has_duplicates or not f.index.is_monotonic_increasing:
+                raise ValueError('duplicate/unsorted portfolio prices')
+            mark=float(f.loc[d,'Close'])
+            if not math.isfinite(mark) or mark<=0:
+                return dict(status='UNAVAILABLE',reason='invalid portfolio mark',date=day)
+            value+=lot["quantity"]*mark
         if value<=0:
             return dict(status="INSOLVENT",equity=value,date=day)
         peak=max(peak,value);mdd=min(mdd,value/peak-1);prior=value

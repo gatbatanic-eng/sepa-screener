@@ -7,7 +7,7 @@ from datetime import date
 import math
 import pandas as pd
 
-VERSION = "3.0.0-research"
+VERSION = "3.0.1-research"
 RULES = dict(pivotDays=5, maxRisk=.07, minStopATR=.75, stopBufferATR=.25,
              maxExtension=.03, minRR=2, volumeExpansion=1.2, qualityMin=2,
              impulseReturn=.15, impulseVolume=2, resetMinDays=5, resetMaxDays=30)
@@ -34,8 +34,14 @@ def evaluate(frame, benchmark, *, as_of, strategy="early", event=None):
         if ((f.Low <= 0) | (f.Volume <= 0) | (f.High < f[["Open", "Close", "Low"]].max(axis=1))
                 | (f.Low > f[["Open", "Close"]].min(axis=1))).any():
             raise ValueError("invalid OHLCV")
-        b = benchmark.reindex(f.index)
-        if b.tail(21).isna().any() or (b.tail(21) <= 0).any():
+        if not isinstance(benchmark,pd.Series):
+            raise ValueError("invalid benchmark type")
+        past_benchmark=benchmark.loc[benchmark.index<=pd.Timestamp(as_of)]
+        if past_benchmark.index.has_duplicates or not past_benchmark.index.is_monotonic_increasing:
+            raise ValueError("duplicate/unsorted benchmark")
+        b = past_benchmark.reindex(f.index)
+        if (not all(math.isfinite(float(v)) for v in b.tail(21))
+                or b.tail(21).isna().any() or (b.tail(21) <= 0).any()):
             raise ValueError("missing same-date benchmark")
         out["priceAsOf"] = as_of
         p = f.iloc[:-1]
