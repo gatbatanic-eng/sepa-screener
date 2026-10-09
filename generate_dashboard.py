@@ -30,6 +30,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import pandas as pd
+from entry_opportunity import match_current_aggressive, read_json
 
 BASE_DIR = Path(__file__).resolve().parent
 OUTPUT_DIR = BASE_DIR / "output"
@@ -325,6 +326,15 @@ def build() -> None:
             if info and info.get("status") == "ok":
                 r.update(compute_value_metrics(prefix, r["code"], r))
 
+        if prefix == "us":
+            overlay = match_current_aggressive(
+                rows,
+                read_json(DOCS_DIR / "research" / "us.json"),
+                read_json(DOCS_DIR / "research" / "aggressive_us.json"),
+            )
+            for row in rows:
+                row.update(overlay.get(str(row.get("code")), {}))
+
         personas_index = load_personas_index(prefix)
         rebound = load_rebound(prefix)
 
@@ -558,6 +568,8 @@ HTML_TEMPLATE = r"""<!doctype html>
       <button class="filter-btn" data-filter="rebound" title="시가총액 3,000억 미만 · 60일 변동성 100% 이상 · 52주 고점 대비 -50% 이하 (한국 전용 연구용 관찰 그룹, 매수 신호 아님)" hidden>반등관찰</button>
       <button class="filter-btn" data-filter="near" title="추세 통과 + 피벗 -2~0% 구간이지만 셋업(수축·거래량) 조건이 아직 미완성인 종목">근접후보</button>
       <button class="filter-btn" data-filter="go">GO</button>
+      <button class="filter-btn" data-filter="agg_go" title="SEPA와 별도인 공격형 연구 신호, 기준일·종가 일치 확인" hidden>공격형 GO·실험</button>
+      <button class="filter-btn" data-filter="agg_watch" title="공격형 연구의 피벗 관찰 신호, 매수 추천 아님" hidden>공격형 WATCH</button>
       <button class="filter-btn" data-filter="go_breakout">GO_BREAKOUT</button>
       <button class="filter-btn" data-filter="go_pullback">GO_PULLBACK</button>
       <button class="filter-btn" data-filter="extended">LATE·EXTENDED</button>
@@ -592,7 +604,8 @@ HTML_TEMPLATE = r"""<!doctype html>
   <footer>
     <b>SEPA Screener v2</b> — TREND(8조건) → SETUP(변동성·매물 수축) → READY(피벗 대기) → ENTRY(확인된 돌파/눌림목) → EXIT(실패·매도 경고)<br>
     ※ <b>Entry State</b>: GO_BREAKOUT(거래량·종가위치 확인된 돌파) · GO_PULLBACK(돌파 후 눌림목 반등) · READY(피벗 -2~0%) · SETUP/WATCH · BREAKOUT_UNCONFIRMED(돌파구간이나 미확인) · LATE(+3~5%)/EXTENDED(+5%↑, 추격 금지) · TREND_OK(셋업 전) · FAILED(돌파 빠른 실패). <b>단순히 올랐다고 매수 신호가 아닙니다.</b><br>
-    ※ <b>Exit State</b>: HOLD · WATCH_EXIT(EMA10/20 이탈) · TREND_BREAK(SMA50 대량거래 이탈) · FAST_FAIL(돌파 직후 실패) · PROFIT_ALERT(클라이맥스 경고, 강제매도 아님). STOP/TIME_STOP 은 진입가·진입일(포지션)이 있어야 판정되며 스크리너 단독에선 표시되지 않습니다.<br>
+    ※ <b>공격형 GO/WATCH·실험</b>: 기존 SEPA 진입 판정과 별개의 연구 신호입니다. 당일 두 스냅샷의 날짜·가격이 검증되지 않으면 표시하지 않으며, 공격형 GO가 SEPA NO-GO를 덮어쓰지 않습니다. 실거래 자동 추천이 아닙니다.<br>
+    ※ <b>Exit State</b>:  HOLD · WATCH_EXIT(EMA10/20 이탈) · TREND_BREAK(SMA50 대량거래 이탈) · FAST_FAIL(돌파 직후 실패) · PROFIT_ALERT(클라이맥스 경고, 강제매도 아님). STOP/TIME_STOP 은 진입가·진입일(포지션)이 있어야 판정되며 스크리너 단독에선 표시되지 않습니다.<br>
     ※ <b>RS Score</b>(0~100) = 거래일 기준 초과수익 21·63·126·252일의 유니버스 내 percentile 가중합(0.10/0.40/0.30/0.20). ≥80 이면 TREND 통과, ≥90 강한 리더(★). RS Δ20d = 20거래일 전 대비 RS Score 변화. <b>"8/8 전체통과"의 8번 조건이 바로 이 RS Score ≥ 80</b>이라 전체통과 = Trend OK 입니다. 이전 레거시 <b>"RS백분위"</b>(3·6·12개월 달력일 단순평균, ≥70)는 비교용 참고 컬럼으로만 남깁니다(2026-09 통일 이전 기록은 레거시 기준 통과 수라 추이 그래프에 계단이 있습니다).<br>
     ※ <b>52W거리</b> = 종가/52주 고가 − 1. SUPER(≥90%) / LEADER(≥85%) / NORMAL(≥75%) / FAIL. <b>ATR수축</b> = ATR20/ATR60 (≤0.75 목표), <b>Dry-up</b> = 평균거래량10/50 (≤0.70 목표). VCP 는 "완전한 Minervini 재현" 이 아니라 스윙 기반 deterministic heuristic 입니다.<br>
     ※ 상단 <b>시장 국면</b>(GREEN/YELLOW/RED/RECOVERY) + breadth50 + 권장 진입비중은 신규진입 리스크 참고용이며 실제 주문 기능이 아닙니다. 상단 배지(우호적/중립/비우호적)는 기존 시장 게이팅(레거시)입니다.<br>
@@ -812,6 +825,7 @@ function hasV2() {
   return DATA[currentMarket].rows.some(r => r.entryState);
 }
 
+function hasAggressiveOverlay() { return DATA[currentMarket].rows.some(r => r.aggressiveOverlay); }
 function hasValue() {
   return DATA[currentMarket].rows.some(r => r.valueScore !== null && r.valueScore !== undefined);
 }
@@ -873,9 +887,11 @@ function entryStateBadge(v, r) {
     : (v === "LATE" || v === "EXTENDED") ? "es-warn"
     : (v === "FAILED" || v === "TREND_FAIL") ? "es-bad" : "es-neutral";
   const rsn = (r && r.entryReason) ? String(r.entryReason).replace(/"/g, "&quot;") : "";
+  const agg = r && r.aggressiveOverlay
+    ? ' <span class="badge near" title="정석 SEPA와 별개의 공격형 연구 신호. 거래일·가격 일치 검증됨. 매수 추천 아님.">공격형 '+r.aggressiveOverlay+'</span>' : "";
   const near = (r && isNearCandidate(r))
     ? `<span class="badge near" title="${("피벗 -2~0% 구간이지만 셋업 미완성 — 부족: " + setupMisses(r).join(", ")).replace(/"/g, "&quot;")}">근접</span>` : "";
-  return `<span class="es ${cls}" title="${rsn}">${v}</span>${near}`;
+  return `<span class="es ${cls}" title="${rsn}">${v}</span>${near}${agg}`;
 }
 
 function exitStateBadge(v, r) {
@@ -1007,6 +1023,11 @@ function renderReboundNote(rows) {
 function renderFilterNote(rows) {
   const el = document.getElementById("filterNote");
   if (currentFilter === "rebound") { renderReboundNote(rows); return; }
+  if (currentFilter === "agg_go" || currentFilter === "agg_watch") {
+    el.hidden = false;
+    el.innerHTML = "<b>독립 공격형 연구 신호</b> — 정석 SEPA GO/NO-GO는 유지됩니다. 두 자료의 날짜와 종가가 일치할 때만 표시합니다. <b>매수 추천이 아니며</b> 다음 거래일 체결가·손절·이벤트 위험을 별도로 확인해야 합니다.";
+    return;
+  }
   if (currentFilter !== "near") { el.hidden = true; el.innerHTML = ""; return; }
   const miss = { "베이스": 0, "수축횟수": 0, "ATR수축": 0, "Dry-up": 0 };
   rows.forEach(r => setupMisses(r).forEach(m => {
@@ -1032,6 +1053,8 @@ function renderTable() {
     near: isNearCandidate,
     rebound: isReboundWatch,
     go: r => GO_SET.has(r.entryState),
+    agg_go: r => r.aggressiveOverlay === "GO",
+    agg_watch: r => r.aggressiveOverlay === "WATCH",
     go_breakout: r => r.entryState === "GO_BREAKOUT",
     go_pullback: r => r.entryState === "GO_PULLBACK",
     extended: r => r.entryState === "LATE" || r.entryState === "EXTENDED",
@@ -1099,12 +1122,17 @@ function syncFilterButtons() {
     if (v2only.has(b.dataset.filter)) b.hidden = !v2;
     if (b.dataset.filter === "value") b.hidden = !value;
     if (b.dataset.filter === "rebound") b.hidden = !hasRebound();
+    if (b.dataset.filter === "agg_go" || b.dataset.filter === "agg_watch") b.hidden = !hasAggressiveOverlay();
   });
   document.querySelectorAll("#sortSelect option").forEach(o => {
     if (["entryState", "setupQuality", "rsScore", "rsChange20d", "pivotDist"].includes(o.value)) o.hidden = !v2;
     if (o.value === "valueScore") o.hidden = !value;
   });
   if (!v2 && V2_FILTERS.includes(currentFilter)) {
+    currentFilter = "all";
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.toggle("active", b.dataset.filter === "all"));
+  }
+  if (!hasAggressiveOverlay() && (currentFilter === "agg_go" || currentFilter === "agg_watch")) {
     currentFilter = "all";
     document.querySelectorAll(".filter-btn").forEach(b => b.classList.toggle("active", b.dataset.filter === "all"));
   }

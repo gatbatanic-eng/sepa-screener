@@ -1,0 +1,28 @@
+name: Dual-track entry overlay tests
+on:
+  pull_request:
+    paths: ["entry_opportunity.py", "tests/test_entry_opportunity.py", "generate_dashboard.py", ".github/workflows/entry_overlay_ci.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pandas numpy
+      - run: python -m unittest tests.test_entry_opportunity -v
+      - run: python -m py_compile entry_opportunity.py generate_dashboard.py
+      - name: Render actual stored dashboard snapshot (read-only CI)
+        run: |
+          python generate_dashboard.py
+          python - <<'PY'
+          from pathlib import Path
+          html = Path("docs/index.html").read_text(encoding="utf-8")
+          assert "공격형 GO·실험" in html
+          assert "공격형 WATCH" in html
+          assert "독립 공격형 연구 신호" in html
+          PY
