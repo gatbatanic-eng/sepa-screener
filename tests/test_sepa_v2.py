@@ -407,7 +407,7 @@ def test_run_screening_offline_integration():
         rows = [{"Symbol": s, "Name": s} for s in catalog if s != "US500"]
         return pd.DataFrame(rows)
 
-    def fake_history(code, start):
+    def fake_history(code, start, *, market=None):
         if code in ("US500",):
             return bench
         return _series(catalog.get(code, "mid"))
