@@ -58,6 +58,7 @@ def collect(path):
 
 def summary(trades):
     closed=[t for t in trades if t["execution"]["status"]=="CLOSED"]
+    filled=[t for t in trades if t["execution"]["status"] in ("CLOSED","OPEN")]
     xs=[t["execution"]["returnPct"] for t in closed]
     return dict(signals=len(trades),executionStatuses=dict(Counter(t["execution"]["status"] for t in trades)),
                 closed=len(xs),winRate=sum(x>0 for x in xs)/len(xs) if xs else None,
@@ -67,7 +68,7 @@ def summary(trades):
                 meanRealizedR=statistics.mean(t["execution"]["realizedR"] for t in closed) if closed else None,
                 meanPlannedRR=statistics.mean(t["rr"] for t in trades if t.get("rr") is not None) if any(t.get("rr") is not None for t in trades) else None,
                 horizons={str(h):dict(n=len(v),meanPct=statistics.mean(v)*100 if v else None)
-                          for h in (5,20,40) for v in [[t["execution"]["horizons"][str(h)] for t in closed if t["execution"]["horizons"][str(h)] is not None]]})
+                          for h in (5,20,40) for v in [[t["execution"].get("horizons",{}).get(str(h)) for t in filled if t["execution"].get("horizons",{}).get(str(h)) is not None]]})
 
 
 def run(input_path,output_path,shard=None):

@@ -2,6 +2,7 @@ import unittest
 import pandas as pd
 from entry_lab.strategies import evaluate
 from entry_lab.execution import simulate, portfolio
+from entry_lab.study import summary
 
 
 class EntryLabTests(unittest.TestCase):
@@ -86,6 +87,15 @@ class EntryLabTests(unittest.TestCase):
         with self.assertRaises(ValueError):simulate(f,s,hold=0)
         f.iloc[2]=[100,98,99,101,1000]
         self.assertEqual(simulate(f,s)["status"],"UNAVAILABLE")
+
+    def test_mature_horizon_in_open_trade_is_not_zero_or_excluded(self):
+        f=self.frame(8);e=simulate(f,self.order(f))
+        self.assertEqual(e["status"],"OPEN")
+        stats=summary([dict(execution=e)])
+        self.assertEqual(stats["closed"],0)
+        self.assertEqual(stats["horizons"]["5"]["n"],1)
+        self.assertEqual(stats["horizons"]["20"]["n"],0)
+        self.assertIsNone(stats["meanReturnPct"])
 
 
 if __name__ == "__main__":

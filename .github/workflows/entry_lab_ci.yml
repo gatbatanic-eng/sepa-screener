@@ -1,7 +1,7 @@
 name: Early entry research checks
 on:
   pull_request:
-    paths: ["entry_lab/**", "tests/test_entry_lab.py", ".github/workflows/entry_lab_ci.yml"]
+    paths: ["entry_lab/**", "tests/test_entry_lab.py", "tests/test_sepa_v2.py", ".github/workflows/entry_lab_ci.yml"]
   workflow_dispatch:
 permissions:
   contents: read
@@ -13,6 +13,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install pandas numpy pytest
+      - run: pip install -r requirements.txt pytest
       - run: python -m pytest tests/test_entry_lab.py tests/test_aggressive_screen.py tests/test_sepa_v2.py -q
       - run: python -m compileall -q entry_lab

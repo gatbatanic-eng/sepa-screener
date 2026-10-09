@@ -28,6 +28,9 @@ def simulate(frame, signal, *, cost_bp=10, hold=40, max_risk=.07, max_extension=
     target = signal.get("target1")
     if target is not None and (target-entry)/(entry-stop) < 2:
         return dict(status="SKIP", reason="next-open resistance below 2R")
+    full = frame.loc[frame.index > date]
+    horizons = {str(h):float(full.Close.iloc[h-1])*(1-fee)/entry-1 if len(full)>=h else None
+                for h in (5,20,40)}
     path, reason, exit_price, end = [], "HORIZON", None, None
     for d, bar in tail.iterrows():
         if not all(math.isfinite(float(v)) and float(v)>0 for v in (bar.Open,bar.High,bar.Low,bar.Close,bar.Volume)):
@@ -52,14 +55,10 @@ def simulate(frame, signal, *, cost_bp=10, hold=40, max_risk=.07, max_extension=
         break
     if exit_price is None:
         if len(tail) < hold:
-            return dict(status="OPEN", entry=entry, entryDate=str(tail.index[0])[:10], path=path)
+            return dict(status="OPEN", entry=entry, entryDate=str(tail.index[0])[:10], path=path,horizons=horizons)
         exit_price = float(tail.Close.iloc[-1])
     net = exit_price*(1-fee)/entry-1
     prices = [raw]+[x["price"] for x in path]
-    horizons = {}
-    full = frame.loc[frame.index > date]
-    for h in (5,20,40):
-        horizons[str(h)] = float(full.Close.iloc[h-1])*(1-fee)/entry-1 if len(full)>=h else None
     return dict(status="CLOSED", entry=entry, rawEntry=raw, entryDate=str(tail.index[0])[:10],
                 exitDate=end, exit=exit_price*(1-fee), reason=reason, returnPct=net*100,
                 realizedR=(exit_price*(1-fee)-entry)/(entry-stop), horizons=horizons,

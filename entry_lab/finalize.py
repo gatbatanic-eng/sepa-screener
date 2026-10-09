@@ -108,7 +108,9 @@ def finalize(input_path,shards,output_dir):
     for path in sorted((root/"research/snapshots/us").glob("*.json.gz")):
         snap=json.loads(gzip.decompress(path.read_bytes()))
         groups=snap.get("groups",[])
-        family="aggressive" if "AGGR_GO" in groups else "sepa" if "GO" in groups and "TREND" in groups else None
+        config=snap.get("strategy",{}).get("config",{})
+        is_sepa=("GO" in groups and "TREND" in groups) or (not groups and all(k in config for k in ("trend","setup","pivot","swing","rs","entry")))
+        family="aggressive" if "AGGR_GO" in groups else "sepa" if is_sepa else None
         if family is None:continue
         for row in snap.get("rows",[]):
             if row.get("code") not in archived:continue
@@ -123,7 +125,35 @@ def finalize(input_path,shards,output_dir):
     report["implementationHashes"]={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest()
                                     for p in sorted((root/"entry_lab").glob("*.py"))}
     output_dir.mkdir(parents=True,exist_ok=True)
-    dump(output_dir/"report.json",report)
+    dump(output_dir/"report-full.json",report)
+    # Compact public review payload; full artifacts remain local and hash-linked.
+    compact=json.loads(json.dumps(report,default=str))
+    compact["fullArtifactSHA256"]=hashlib.sha256((output_dir/"report-full.json").read_bytes()).hexdigest()
+    for v in compact["strategies"].values():
+        account=v["portfolio"]
+        account["skipCount"]=len(account.pop("skips",[]));account.pop("curve",None)
+    def trim_trade(t):
+        if t:t["execution"].pop("path",None)
+        return t
+    for c in compact["cases"].values():
+        c["earliestResearchSignals"]={k:trim_trade(t) for k,t in c["earliestResearchSignals"].items()}
+        c["researchTrades"]=[trim_trade(t) for t in c["researchTrades"]]
+        c["storedHistorical"]={k:[{x:s.get(x) for x in ("id","date","group","originalClose","strategySeriesId")} for s in rows] for k,rows in c["storedHistorical"].items()}
+        samples=c["archivedDecisions"]
+        selected=[]
+        for family in ("sepa","aggressive"):
+            candidates=[x for x in samples if x["family"]==family]
+            if candidates:
+                latest=max(candidates,key=lambda x:x["row"].get("priceAsOf") or "")
+                selected.append(latest)
+                selected.extend([x for x in candidates if x["row"].get("priceAsOf")=="2026-09-22"][:1])
+        c["archivedDecisionCount"]=len(samples);c["archivedDecisions"]=selected
+    supplement=compact["officialCatalystSupplement"]
+    for s,obs in supplement["observations"].items():
+        supplement["observations"][s]=[x for x in obs if x["verdict"]=="CANDIDATE"]+obs[-1:]
+    compact["limitations"].append("compact page shows selected archived rows; full report retains all archived decisions and equity paths")
+    compact["limitations"].append("common 252-bar warmup excludes earlier short-history/IPO early entries")
+    dump(output_dir/"report.json",compact)
     dump(output_dir/"episodes.json",dict(inputSHA256=first["inputSHA256"],signals=all_signals))
     print(json.dumps({k:v["all"] for k,v in strategies.items()},ensure_ascii=True))
 
