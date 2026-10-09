@@ -149,7 +149,50 @@ def collect_stock(api, corps, stock, now, cache_dir=None):
     quarters = normalize(fetch_reports(api, corps[code], code, now, cache_dir))
     return code, company, quarters
 
+def describe_bad_corp_response(raw):
+    """zip이 아닌 corpCode 응답에서 DART 상태 코드·메시지만 뽑는다(요청 주소·키는 담지 않는다)."""
+    text = raw[:400].decode('utf-8', 'replace') if isinstance(raw, (bytes, bytearray)) else str(raw)[:400]
+    try:
+        obj = json.loads(text)
+        return 'status=%s message=%s' % (obj.get('status'), str(obj.get('message', ''))[:80])
+    except Exception:
+        pass
+    m = re.search(r'<status>\s*([^<]+)</status>', text)
+    n = re.search(r'<message>\s*([^<]+)</message>', text)
+    if m:
+        return 'status=%s message=%s' % (m.group(1).strip(), (n.group(1).strip() if n else '')[:80])
+    return 'non-zip response (%d bytes, starts %r)' % (len(raw), text[:60].replace(chr(10), ' '))
+
+def parse_corporations(raw):
+    try:
+        with zipfile.ZipFile(io.BytesIO(raw)) as z:
+            root = ET.fromstring(z.read('CORPCODE.xml'))
+    except Exception:
+        raise RuntimeError('DART corporation list unavailable: ' + describe_bad_corp_response(raw)) from None
+    return {r.findtext('stock_code', '').strip(): r.findtext('corp_code') for r in root.findall('list') if r.findtext('stock_code', '').strip()}
+
+def corps_cache_path(cache_dir=None):
+    return (cache_dir or CACHE_DIR) / '_corps.json.gz'
+
+def load_corps_cache(cache_dir=None):
+    path = corps_cache_path(cache_dir)
+    if not path.exists():
+        return {}
+    try:
+        with gzip.open(path, 'rt', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def save_corps_cache(corps, cache_dir=None):
+    path = corps_cache_path(cache_dir)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with gzip.open(path, 'wt', encoding='utf-8') as f:
+        json.dump(corps, f, ensure_ascii=False, separators=(',', ':'))
+
 class Dart:
+    corps_source = None
+
     def __init__(self, key):
         self.key = key
 
@@ -173,14 +216,38 @@ class Dart:
             raise RuntimeError('DART status ' + str(obj.get('status', 'unknown')))
         return obj if endpoint == 'company.json' else obj.get('list', [])
 
-    def corporations(self):
-        raw = self.request('corpCode.xml')
+    def corporations(self, cache_dir=None):
+        """종목코드 -> DART 고유번호. 내려받기에 실패하면 직전 성공본(캐시)을 쓰고, 둘 다 없으면 DART가 준 상태를 적어 실패한다."""
         try:
-            with zipfile.ZipFile(io.BytesIO(raw)) as z:
-                root = ET.fromstring(z.read('CORPCODE.xml'))
-            return {r.findtext('stock_code', '').strip(): r.findtext('corp_code') for r in root.findall('list') if r.findtext('stock_code', '').strip()}
-        except Exception:
-            raise RuntimeError('DART corporation list unavailable; check API key status') from None
+            corps = parse_corporations(self.request('corpCode.xml'))
+        except RuntimeError as exc:
+            cached = load_corps_cache(cache_dir)
+            if not cached:
+                raise
+            print('DART 기업 목록을 받지 못해 직전 성공본을 씁니다:', exc, flush=True)
+            self.corps_source = 'cache'
+            return cached
+        save_corps_cache(corps, cache_dir)
+        self.corps_source = 'live'
+        return corps
+
+def load_previous_index(output):
+    try:
+        prev = json.loads((output / 'index.json').read_text(encoding='utf-8'))
+    except Exception:
+        return {}
+    if not prev.get('lastSuccessAt') and prev.get('symbols') and not any(v.get('status') == 'error' for v in prev['symbols'].values()):
+        prev['lastSuccessAt'] = prev.get('checkedAt')   # 이 필드가 생기기 전의 마지막 정상 실행
+    return prev
+
+def stale_days(last_success, now):
+    """마지막으로 전부 갱신된 뒤 지난 일수. 기록이 없으면 None."""
+    if not last_success:
+        return None
+    try:
+        return max(0, (now - dt.datetime.fromisoformat(last_success)).days)
+    except Exception:
+        return None
 
 def save(path, obj):
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -196,9 +263,17 @@ def main():
     # 있어(screening.apply_v2_trend_as_pass_all) passAll == v2 TREND_OK 다.
     selected = [r for r in stocks if r.get('status') == 'OK' and r.get('passAll') is True]
     api = Dart(key)
-    corps = api.corporations()
     output = ROOT / 'docs/data/fundamentals/kr'
-    index = {'schemaVersion': 1, 'market': 'kr', 'checkedAt': now.isoformat(), 'symbols': {}}
+    previous = load_previous_index(output)
+    index = {'schemaVersion': 1, 'market': 'kr', 'checkedAt': now.isoformat(), 'symbols': {}, 'lastSuccessAt': previous.get('lastSuccessAt')}
+    try:
+        corps = api.corporations()
+    except RuntimeError as exc:
+        # 기업 목록이 없으면 한 종목도 받을 수 없다. 직전 파일은 그대로 두고, 며칠째 갱신이 안 됐는지만 색인에 남긴다.
+        index.update(status='error', reason=str(exc), staleDays=stale_days(index['lastSuccessAt'], now), symbols=previous.get('symbols', {}))
+        save(output / 'index.json', index)
+        raise
+    index['corpListSource'] = api.corps_source
     failed = 0
     def finish(stock, company, quarters):
         code = str(stock['code']).zfill(6)
@@ -229,6 +304,10 @@ def main():
                 index['symbols'][code] = {'status': 'error', 'reason': str(exc) if isinstance(exc, RuntimeError) else 'Data processing failed'}
                 print(code, 'collection failed', flush=True)
     index['symbols'] = dict(sorted(index['symbols'].items()))
+    index['status'] = 'ok' if not failed else 'partial'
+    if not failed:
+        index['lastSuccessAt'] = now.isoformat()
+    index['staleDays'] = stale_days(index.get('lastSuccessAt'), now)
     save(output / 'index.json', index)
     print(f'Fundamentals: {len(selected)} selected, {failed} failed', flush=True)
     if failed:
