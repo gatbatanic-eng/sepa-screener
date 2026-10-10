@@ -30,6 +30,8 @@ BOARD = [
      "perf": ("sepa", ("TREND",)), "groups": {"TREND": "추세 통과", "READY": "진입 준비", "GO": "진입 신호"}},
     {"key": "funnel", "name": "대박주 깔때기", "tier": "core", "cadence": "daily", "kind": "funnel", "markets": ("kr", "us"),
      "perf": ("funnel", ("TOP50", "T1_ON")), "groups": {}},
+    {"key": "picks", "name": "오늘의 추천", "tier": "core", "cadence": "daily", "kind": "picks", "markets": ("kr", "us"),
+     "perf": ("picks", ("PICK",)), "groups": {"PICK": "추천"}},
     {"key": "multifactor", "name": "멀티팩터", "tier": "research", "cadence": "daily", "kind": "multifactor", "markets": ("kr", "us"),
      "perf": ("multifactor", ("BUY", "WATCH")), "groups": {"BUY": "매수", "WATCH": "관찰"}},
     {"key": "technical", "name": "기술적 신호", "tier": "research", "cadence": "daily", "kind": "technical", "markets": ("kr", "us"),
@@ -222,8 +224,8 @@ def read_row(spec: dict, market: str, root: Path) -> dict | None:
         return read_tracker(spec["key"], market, root)
     if kind == "funnel":
         return read_funnel(market, root)
-    if kind == "multifactor":
-        return read_ledger_file("multifactor", market, root)
+    if kind in ("multifactor", "picks"):
+        return read_ledger_file(kind, market, root)
     if kind == "technical":
         return read_technical(market, root)
     if kind == "fpd":
