@@ -1,0 +1,41 @@
+name: Winner Spot Analysis
+
+# 먹기 좋았던 자리의 공통점 탐색(전반 탐색·후반 검증). 수동 실행 전용, 연구용. 결과는 research/leader_backtest/winners.{json,md}.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: winner-analysis
+  cancel-in-progress: false
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Unit tests
+        run: python -m unittest tests.test_leader_backtest -v
+      - name: Run backtest
+        run: python -m leader_backtest.winners
+      - name: Save
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f research/leader_backtest/winners.json research/leader_backtest/winners.md
+          git diff --cached --quiet && exit 0
+          git commit -m "먹기 좋았던 자리 분석 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && break
+            sleep $((i * 5))
+          done

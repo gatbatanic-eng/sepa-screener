@@ -75,3 +75,34 @@ class SelectTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class WinnersTest(unittest.TestCase):
+    def panel(self):
+        from leader_backtest import winners
+        data = {f"S{i}": synth(seed=i, drift=0.003 if i % 2 else -0.0003, vol=0.02) for i in range(16)}
+        return winners, winners.build_panel(data, "us")
+
+    def test_labels_use_next_close_entry_and_adverse_excursion(self):
+        from leader_backtest import winners
+        c = pd.Series([100, 100, 90, 130, 140, 150.0])
+        lab = winners.labels(c, 0.0, h=3)
+        self.assertAlmostEqual(lab["ret"].iloc[0], 140 / 100 - 1)                     # 진입 c[1]=100, 청산 c[4]=140
+        self.assertAlmostEqual(lab["mdd"].iloc[0], -0.10)                                                # 중간에 90까지 내려감
+        self.assertTrue(np.isnan(lab["ret"].iloc[-1]))
+
+    def test_panel_analysis_runs_and_validation_uses_discovery_thresholds(self):
+        winners, panel = self.panel()
+        res = winners.analyze(panel, "us")
+        self.assertIn("recall", res)
+        self.assertEqual(set(res["recall"]), {"ALL", "TREND", "V1", "LEADER", "PULLBACK", "BREAKOUT"})
+        self.assertEqual(res["recall"]["ALL"]["first"]["recallPct"], 100.0)
+        self.assertTrue(res["univariate"])
+        first, second, mid = winners.split_halves(panel)
+        rule = winners.search_rule(panel, first)
+        for c in rule:                                                    # 임계값은 전반기 분포에서만 나온다
+            x = panel.loc[first, c["feature"]].dropna()
+            self.assertGreaterEqual(c["threshold"], x.min())
+            self.assertLessEqual(c["threshold"], x.max())
+        md = winners.to_markdown({"ranAt": "x", "markets": {"us": res}})
+        self.assertIn("공통점", md)
