@@ -46,6 +46,10 @@ def build_market(market: str, root: Path, fetch=fetch_entry_metrics, fetch_secto
            "macro": X.macro_summary(root), "krClose": X.kr_close_context(pool["asOf"], root) if market == "kr" else {}}
     v2 = V2.rank(rows, ctx, sectors, market)
     out["picksV2"] = v2["picks"]
+    rs = {c: r.get("rsRank") for c, r in pool["sepaRows"].items()}
+    v3 = V2.rank_v3(rows, ctx, sectors, market, rs)
+    out["picksV3"] = v3["picks"]
+    out["v3"] = {"candidates": v3["candidates"], "skipped": v3["skipped"]}
     out["context"] = {"regimes": ctx["regimes"], "macro": ctx["macro"],
                       "sectorCoverage": {"known": sum(1 for r in rows if sectors.get(r["code"])), "candidates": len(rows)},
                       "sectors": sorted(({"sector": s, **v} for s, v in ctx["sectorStats"].items()), key=lambda x: x["rank"])}
@@ -87,6 +91,9 @@ def render_md(recs: dict[str, dict]) -> str:
         v2 = [p["code"] for p in picks]
         if v1 != v2:
             lines.append(f"- 참고(v1, 섹터 미반영): {', '.join(p['name'] for p in r['picks']) or '없음'}")
+        v3 = r.get("picksV3") or []
+        if v3:
+            lines.append("- 실험 v3(손절폭 필터 없이 비중 조절): " + ", ".join(f"{p['name']}(비중 {p['weight']:.0%}, 손절폭 {p['entry']['riskPct']}%)" for p in v3))
         if r.get("shortfall") and len(picks) < C.MAX_PICKS:
             lines.append(f"- {r['shortfall']}")
         if r["rejectSummary"]:

@@ -56,22 +56,51 @@ def why_lines(p: dict, v2: dict, ctx: dict, market: str) -> list[dict]:
     return out
 
 
+def score_row(r: dict, ctx: dict, sectors: dict[str, str], market: str) -> dict:
+    sec = sectors.get(r["code"])
+    st = ctx["sectorStats"].get(sec) if sec else None
+    s_adj = st["adj"] if st else 0
+    reg = regime_of(ctx, r.get("market") or "", market)
+    m_adj = -C.REGIME_PENALTY if reg == "RED" else 0
+    return {"score": r["score"] + s_adj + m_adj, "sector": sec, "sectorAdj": s_adj, "marketAdj": m_adj}
+
+
+def _pick_row(r: dict, v2: dict, ctx: dict, market: str, **extra) -> dict:
+    return {**{k: r[k] for k in ("code", "name", "market", "price", "score", "strategies", "funnelRank", "entry")}, "v2": v2,
+            "why": why_lines(r, v2, ctx, market), **extra}
+
+
 def rank(rows: list[dict], ctx: dict, sectors: dict[str, str], market: str) -> dict:
     """rows: select.pick()의 allRows. 적합 종목만 v2 점수로 다시 줄 세워 최대 3개."""
-    scored = []
-    for r in rows:
-        if r["reject"]:
-            continue
-        sec = sectors.get(r["code"])
-        st = ctx["sectorStats"].get(sec) if sec else None
-        s_adj = st["adj"] if st else 0
-        exch = r.get("market") or ""
-        reg = regime_of(ctx, exch, market)
-        m_adj = -C.REGIME_PENALTY if reg == "RED" else 0
-        scored.append((r, {"score": r["score"] + s_adj + m_adj, "sector": sec, "sectorAdj": s_adj, "marketAdj": m_adj}))
+    scored = [(r, score_row(r, ctx, sectors, market)) for r in rows if not r["reject"]]
     scored.sort(key=lambda x: (-x[1]["score"], x[0]["funnelRank"] or 999, x[0]["entry"]["riskPct"] or 999, x[0]["code"]))
+    return {"picks": [_pick_row(r, v2, ctx, market) for r, v2 in scored[:C.MAX_PICKS]], "suitable": len(scored)}
+
+
+def rank_v3(rows: list[dict], ctx: dict, sectors: dict[str, str], market: str, rs: dict[str, float]) -> dict:
+    """v3(2026-10-10 고정, 실험): SEPA가 고른 종목 중 손절폭·NO-GO·추격 필터 없이 v2 점수 순으로 최대 3개를 내고, 손절폭이 8%를 넘으면 권고 비중을 8%/손절폭으로 줄인다.
+    근거: 주도주 진입 규칙 백테스트(research/leader_backtest)에서 손절폭 8% 이하 필터(V1)는 추세 통과(TREND)의 초과수익을 없앴다. 유동성 부족·손절폭 미확인은 제외한다."""
+    cands, skipped = [], {"유동성 부족": 0, "손절폭 미확인": 0}
+    for r in rows:
+        if "sepa" not in r["strategies"]:
+            continue
+        e = r["entry"]
+        if e["liquidityOk"] is False:
+            skipped["유동성 부족"] += 1
+        elif not e["riskPct"] or e["riskPct"] <= 0:
+            skipped["손절폭 미확인"] += 1
+        else:
+            cands.append((r, score_row(r, ctx, sectors, market)))
+    cands.sort(key=lambda x: (-x[1]["score"], -(rs.get(x[0]["code"]) or 0), x[0]["entry"]["riskPct"], x[0]["code"]))
     picks = []
-    for r, v2 in scored[:C.MAX_PICKS]:
-        picks.append({**{k: r[k] for k in ("code", "name", "market", "price", "score", "strategies", "funnelRank", "entry")}, "v2": v2,
-                      "why": why_lines(r, v2, ctx, market)})
-    return {"picks": picks, "suitable": len(scored)}
+    for r, v2 in cands[:C.MAX_PICKS]:
+        risk = r["entry"]["riskPct"]
+        w = min(1.0, C.MAX_RISK_PCT / risk)
+        extra = {"weight": round(w, 2)}
+        p = _pick_row(r, v2, ctx, market, **extra)
+        p["why"][1] = {"kind": "entry", "text": f"손절폭 {_fmt(risk, 2)}%({r['entry']['riskSource']}) → 권고 비중 {w:.0%}" + ("" if w >= 1 else f" (8% 초과분은 8%÷손절폭으로 축소)")}
+        flags = ([f"SEPA {r['entry']['verdict']}"] if r["entry"]["verdict"] == "NO-GO" else []) + r["entry"]["chase"]
+        if flags:
+            p["why"].insert(2, {"kind": "entry", "text": "참고: " + ", ".join(flags) + " — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"})
+        picks.append(p)
+    return {"picks": picks, "candidates": len(cands), "skipped": skipped}
