@@ -42,6 +42,9 @@ v1은 그대로 두고 v2를 나란히 기록한다(`picks`=v1, `picksV2`=v2). �
 - 실행: Actions `Leader Entry Backtest`(수동) → `research/leader_backtest/backtest.{json,md}`. 현재 유니버스만 써서 생존편향이 있다.
 - 읽는 법: V1이 TREND·LEADER보다 나쁘고 95% 구간이 0을 벗어나야 '8% 필터가 주도주를 놓친다'고 말할 수 있다. 구간이 0을 포함하면 우연과 구분되지 않는다. 결과로 규칙을 바꾸더라도 v1·v2는 두고 v3로 병행한다.
 
+## 먹기 좋았던 자리의 공통점 분석 (`leader_backtest/winners.py`, 2026-10-10, 탐색적)
+GOOD = 다음 날 종가 진입 후 20거래일 수익률 ≥ +15% 이고 그 사이 종가가 -8% 아래로 간 적 없는 자리(결과를 보기 전에 정의). 전반기에서만 특징·임계값·조건을 찾고 후반기에서 그대로 검증한다. 현재 규칙(V1·TREND·LEADER·PULLBACK·BREAKOUT)이 GOOD 자리를 얼마나 잡았는지(재현율)와 특징별 5분위 GOOD 비율, 전반기에서 탐욕적으로 찾은 3조건 규칙의 후반 성과를 낸다. Actions `Winner Spot Analysis`(수동) → `research/leader_backtest/winners.{json,md}`. 찾은 조건은 가설이며 규칙 변경 근거가 아니다(후반 검증을 통과해도 앞으로의 기록으로 다시 확인).
+
 ## 변경 이력
 | 날짜 | 변경 | 사유 |
 |---|---|---|
