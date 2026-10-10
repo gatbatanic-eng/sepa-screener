@@ -1,0 +1,41 @@
+name: Robustness Check
+
+# 먹을 자리 조건의 견고성 확인(GOOD 정의 4종·기간 3등분·대조 규칙). 수동 실행 전용, 연구용. 결과는 research/leader_backtest/robust.{json,md}.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: robustness-check
+  cancel-in-progress: false
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Unit tests
+        run: python -m unittest tests.test_leader_backtest -v
+      - name: Run backtest
+        run: python -m leader_backtest.robust
+      - name: Save
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f research/leader_backtest.robust.json research/leader_backtest/winners.md
+          git diff --cached --quiet && exit 0
+          git commit -m "먹을 자리 견고성 확인 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && break
+            sleep $((i * 5))
+          done

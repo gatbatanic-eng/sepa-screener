@@ -45,6 +45,9 @@ v1은 그대로 두고 v2를 나란히 기록한다(`picks`=v1, `picksV2`=v2). �
 ## 먹기 좋았던 자리의 공통점 분석 (`leader_backtest/winners.py`, 2026-10-10, 탐색적)
 GOOD = 다음 날 종가 진입 후 20거래일 수익률 ≥ +15% 이고 그 사이 종가가 -8% 아래로 간 적 없는 자리(결과를 보기 전에 정의). 전반기에서만 특징·임계값·조건을 찾고 후반기에서 그대로 검증한다. 현재 규칙(V1·TREND·LEADER·PULLBACK·BREAKOUT)이 GOOD 자리를 얼마나 잡았는지(재현율)와 특징별 5분위 GOOD 비율, 전반기에서 탐욕적으로 찾은 3조건 규칙의 후반 성과를 낸다. Actions `Winner Spot Analysis`(수동) → `research/leader_backtest/winners.{json,md}`. 찾은 조건은 가설이며 규칙 변경 근거가 아니다(후반 검증을 통과해도 앞으로의 기록으로 다시 확인).
 
+## 먹을 자리 조건의 견고성 확인 (`leader_backtest/robust.py`, 2026-10-10, 연구용)
+공통점 분석에서 전반기에 찾은 조건(변동성 큰 주도주의 20일선 눌림 등)이 우연이 아닌지 임계값을 그대로 두고 다시 시험한다: GOOD 정의 4가지(G10·G15·G20·G40), 기간 3등분(T3가 가장 깨끗한 검증 구간), 대조 규칙(변동성만·추세+변동성·추세+눌림만), 수익률의 ALL 대비 95% 구간. 판정 기준(a~e)은 `robust.py` 머리말에 결과를 보기 전에 고정했고 모두 충족해야 PASS다. Actions `Robustness Check`(수동) → `research/leader_backtest/robust.{json,md}`. PASS여도 생존편향·상승장 한계가 남아 v4는 앞으로의 기록으로 검증한다.
+
 ## 변경 이력
 | 날짜 | 변경 | 사유 |
 |---|---|---|
