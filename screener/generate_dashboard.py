@@ -280,7 +280,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <a class="here" href="./">멀티팩터</a>
       <a href="../technical/">기술적 신호</a>
       <a href="../recovery/">계좌복구 공격매매</a>
-      <a href="../fpd/">FPD 연구</a><a href="../funnel/">대박주 깔때기</a><a href="../performance/">전략 성과</a>
+      <a href="../fpd/">FPD 연구</a><a href="../funnel/">대박주 깔때기</a><a href="../performance/">전략 현황</a>
     </div>
   </header>
 

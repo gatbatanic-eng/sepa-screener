@@ -69,6 +69,11 @@ jobs:
             python run_daily_screen.py --market ${{ steps.market.outputs.market }}
           fi
 
+      - name: 신호 원장 기록
+        continue-on-error: true
+        working-directory: .
+        run: python -m ledger.collect_technical --market ${{ steps.market.outputs.market }}
+
       - name: 대시보드(../docs/technical/index.html) 생성
         run: python generate_dashboard.py
 
@@ -77,6 +82,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add ../docs/technical/
+          if [ -e ../research/ledger ]; then git add -f ../research/ledger; fi
           git diff --cached --quiet || git commit -m "기술적 신호 스크리너 갱신 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
           git pull --rebase origin master
           git push

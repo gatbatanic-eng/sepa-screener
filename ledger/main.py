@@ -5,11 +5,11 @@ import argparse
 import datetime as dt
 import logging
 
-from . import adapters, config, outcomes as oc, prices, stats
+from . import adapters, board, config, outcomes as oc, prices, stats
 from .store import read_json, write_json
 
 log = logging.getLogger("ledger")
-STRATEGIES = ("funnel", "multifactor")  # 가격으로 직접 계산하는 전략 (SEPA는 자체 추적기 결과를 쓴다)
+STRATEGIES = adapters.LEDGER_STRATEGIES  # 가격으로 직접 계산하는 전략 (SEPA·RANGE-MR·계좌복구·반등관찰은 자체 추적기 결과를 쓴다)
 
 
 def update_market(market: str, today: dt.date, bench: dict, fetch=prices.fetch_closes) -> tuple[list[dict], dict]:
@@ -56,6 +56,7 @@ def run(today: dt.date, fetch=prices.fetch_closes, bench_fetch=prices.fetch_benc
         for strategy, markets in stats.build(signals, outs).items():
             result["strategies"].setdefault(strategy, {}).update(markets)
     write_json(config.PUBLIC_JSON, result)
+    write_json(config.BOARD_JSON, board.build(result))
     return result
 
 

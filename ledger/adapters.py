@@ -13,9 +13,13 @@ from .store import read_gz, write_immutable_gz, read_json
 log = logging.getLogger("ledger")
 
 
-# --- SEPA: research/{kr,us}.json (신호 에피소드 + 5/20/60 사후 성과가 이미 계산돼 있다) ----------------------------
-def sepa_signals(market: str, research_dir: Path | None = None) -> list[dict]:
-    doc = read_json((research_dir or config.ROOT / "research") / f"{market}.json")
+# --- 자체 추적기를 가진 전략: research/*.json (신호 에피소드 + 5/20/60 사후 성과가 이미 계산돼 있다) --------------------
+# 전략 → 파일 이름 접두. SEPA는 research/{kr,us}.json, 나머지는 research/{접두}_{kr,us}.json. 반등관찰은 한국만 있다.
+TRACKERS = {"sepa": "", "range": "range_", "aggressive": "aggressive_", "rebound": "rebound_"}
+
+
+def tracker_signals(strategy: str, market: str, research_dir: Path | None = None) -> list[dict]:
+    doc = read_json((research_dir or config.ROOT / "research") / f"{TRACKERS[strategy]}{market}.json")
     if not doc:
         return []
     out = []
@@ -28,11 +32,15 @@ def sepa_signals(market: str, research_dir: Path | None = None) -> list[dict]:
                                 if status == "complete" and o.get("returnPct") is not None
                                 else {"status": "pending" if status == "pending" else "unavailable",
                                       "reason": o.get("reason") or status})
-        out.append({"id": f"sepa:{market}:{s['id']}", "strategy": "sepa", "market": market, "group": s["group"],
+        out.append({"id": f"{strategy}:{market}:{s['id']}", "strategy": strategy, "market": market, "group": s["group"],
                     "date": s["date"], "symbol": s["code"], "name": s.get("name"), "price": s.get("originalClose"),
                     "exchange": s.get("benchmark") if market == "kr" else "US", "rank": None, "score": None,
                     "outcomes": outcomes})
     return out
+
+
+def sepa_signals(market: str, research_dir: Path | None = None) -> list[dict]:
+    return tracker_signals("sepa", market, research_dir)
 
 
 # --- 깔때기: research/funnel/{market}/snapshots/*.json.gz (전 종목 순위·가격·T1 포함) ----------------------------
@@ -122,6 +130,40 @@ def ingest_multifactor(csv_path: Path, recorded_at: str, signals_dir: Path | Non
     return added
 
 
+# --- 기술적 신호: docs/technical/data/latest_{kr,us}.json (실행 때마다 덮어써지므로 신호별로 따로 남겨야 한다) ---------
+LEDGER_STRATEGIES = ("funnel", "multifactor", "technical")  # 원장이 신호 파일을 직접 만들고 가격으로 성과를 계산하는 전략
+TECH_VERDICT = {"매수검토": "REVIEW", "관찰": "WATCH", "진입보류": "HOLD"}
+
+
+def technical_groups(row: dict) -> list[str]:
+    groups = []
+    for prefix, key in (("TREND", "trendVerdict"), ("REBOUND", "reboundVerdict")):
+        code = TECH_VERDICT.get(str(row.get(key) or "").strip())
+        if code:
+            groups.append(f"{prefix}_{code}")
+    return groups
+
+
+def ingest_technical(market: str, latest_path: Path, recorded_at: str, signals_dir: Path | None = None) -> int:
+    """기술적 신호 실행 직후 호출: 이번 판정을 그 거래일 기록으로 한 번 고정한다(같은 날 다시 불러도 덮어쓰지 않는다)."""
+    doc = read_json(latest_path)
+    rows = (doc or {}).get("rows") or []
+    usable = [r for r in rows if r.get("status") == "OK" and r.get("code") and (r.get("close") or 0) > 0]
+    if not usable:
+        raise ValueError(f"기술적 신호 {market}: 사용할 수 있는 행이 없다({len(rows)}행) — 원장에 기록하지 않았습니다")
+    eff = effective_date(recorded_at, market).isoformat()
+    control = set(control_sample("technical", market, eff, [str(r["code"]) for r in usable]))
+    kept = []
+    for r in usable:
+        code = str(r["code"])
+        groups = technical_groups(r) + (["CONTROL"] if code in control else [])
+        if groups:
+            kept.append({"symbol": code, "name": r.get("name"), "price": float(r["close"]), "exchange": norm_exchange(market, r.get("market")),
+                         "score": r.get("trendScore"), "groups": groups})
+    out = {"strategy": "technical", "market": market, "fileDate": eff, "recordedAt": recorded_at, "effectiveDate": eff, "rows": kept}
+    return 1 if write_immutable_gz((signals_dir or config.SIGNALS_DIR) / "technical" / market / f"{eff}.json.gz", out) else 0
+
+
 def ledger_signals(strategy: str, market: str, signals_dir: Path | None = None) -> list[dict]:
     out: list[dict] = []
     for file in sorted(((signals_dir or config.SIGNALS_DIR) / strategy / market).glob("*.json.gz")):
@@ -130,4 +172,7 @@ def ledger_signals(strategy: str, market: str, signals_dir: Path | None = None) 
 
 
 def all_signals(market: str) -> list[dict]:
-    return sepa_signals(market) + ledger_signals("funnel", market) + ledger_signals("multifactor", market)
+    out = [s for strategy in TRACKERS for s in tracker_signals(strategy, market)]
+    for strategy in LEDGER_STRATEGIES:
+        out += ledger_signals(strategy, market)
+    return out

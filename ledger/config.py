@@ -9,6 +9,7 @@ SIGNALS_DIR = LEDGER_DIR / "signals"
 OUTCOMES_DIR = LEDGER_DIR / "outcomes"
 EXCHANGE_CACHE = LEDGER_DIR / "exchange_kr.json"
 PUBLIC_JSON = ROOT / "docs" / "research" / "ledger.json"
+BOARD_JSON = ROOT / "docs" / "research" / "board.json"
 
 RULES_FROZEN_ON = "2026-10-01"
 HORIZONS = (5, 20, 60, 120)        # 신호 후 거래일

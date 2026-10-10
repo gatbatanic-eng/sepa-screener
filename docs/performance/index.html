@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>전략 성과</title>
+<title>전략 현황판</title>
 <style>
   /* 기존 대시보드(멀티팩터 등)와 같은 토큰·패널·내비 구조. 신호 색은 판정(양호·주의·경계)에만 쓴다. */
   :root {
@@ -103,13 +103,21 @@
   .hz { display: inline-flex; gap: 6px; margin-left: 8px; }
   .hz .tab-btn { padding: 5px 12px; }
   ul.rules { margin: 6px 0 0 18px; padding: 0; color: var(--text-dim); font-size: 12px; max-width: 90ch; } ul.rules li { margin: 3px 0; }
+  .board td.l small, .board .sub { display: block; font-size: 11px; color: var(--text-dim); font-weight: 400; white-space: normal; }
+  .board td.sel { white-space: normal; text-align: left; min-width: 150px; }
+  .board td.sel span { display: inline-block; margin-right: 8px; white-space: nowrap; }
+  .board tr.core td:first-child { border-left: 3px solid var(--accent); }
+  details.more > summary { cursor: pointer; font-weight: 700; padding: 6px 0; }
+  details.more { margin-bottom: 18px; }
+  .legend { font-size: 12px; color: var(--text-dim); margin: 6px 0 0; }
+  .legend b { color: var(--text); }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>전략 성과</h1>
-    <div class="subtitle">각 탭 전략이 낸 신호를 기록 시점 그대로 쌓고, 신호 후 5·20·60·120거래일 수익률을 지수와 대조군에 견줘 통계로 보여줍니다. 투자 추천이 아니라 전략이 효과가 있었는지 검증하는 자료입니다.</div>
+    <h1>전략 현황판</h1>
+    <div class="subtitle">전략마다 오늘 잘 돌았는지, 무엇을 골랐는지, 성과가 어떤지를 한 줄로 모았습니다. 성과는 신호를 기록 시점 그대로 쌓아 5거래일 뒤 수익률을 시장과 비교한 값입니다. 투자 추천이 아니라 전략이 효과가 있었는지 검증하는 자료입니다.</div>
     <div class="nav">
       <a href="../">SEPA 추세템플릿</a>
       <a href="../range_vrebound/">RANGE-MR · V-REBOUND</a>
@@ -118,10 +126,30 @@
       <a href="../recovery/">계좌복구 공격매매</a>
       <a href="../fpd/">FPD 연구</a>
       <a href="../funnel/">대박주 깔때기</a>
-      <a class="here" href="./">전략 성과</a>
+      <a class="here" href="./">전략 현황</a>
       <a href="../agents/">에이전트 리그</a>
     </div>
   </header>
+  <div class="cards" id="boardCards"></div>
+  <div class="panel board">
+    <h2>핵심 전략</h2>
+    <p class="desc">매일 가장 엄격하게 수집·집계하는 전략입니다.</p>
+    <div class="table-scroll"><table>
+      <thead><tr><th class="l">전략</th><th class="l">상태</th><th class="l">마지막 기록</th><th class="l">오늘 선별</th><th class="l">성과 (5거래일, 시장 대비)</th><th class="l">판단</th></tr></thead>
+      <tbody id="boardCore"></tbody>
+    </table></div>
+  </div>
+  <div class="panel board">
+    <h2>연구용 전략</h2>
+    <p class="desc">계속 데이터를 쌓지만 기준을 완화해서 보는 전략입니다.</p>
+    <div class="table-scroll"><table>
+      <thead><tr><th class="l">전략</th><th class="l">상태</th><th class="l">마지막 기록</th><th class="l">오늘 선별</th><th class="l">성과 (5거래일, 시장 대비)</th><th class="l">판단</th></tr></thead>
+      <tbody id="boardResearch"></tbody>
+    </table></div>
+    <div class="legend"><b>상태</b> 정상 = 기대한 거래일까지 기록 있음 · 지연 = 한 거래일 뒤처짐 또는 판정 가능한 종목이 적음 · 중단 = 이틀 이상 멈춤. <b>성과</b> = 선별 종목이 5거래일 뒤 시장(코스피·코스닥·S&amp;P500)보다 얼마나 올랐나(%p, 평균). <b>판단</b> = 표본이 30건 미만이거나 날짜가 몰려 있으면 숫자가 좋아 보여도 "아직 판단 불가"입니다.</div>
+  </div>
+  <details class="more">
+    <summary>상세 성과 (그룹별 · 5/20/60/120거래일)</summary>
   <div class="tabs" id="strategyTabs" role="group" aria-label="전략"></div>
   <div class="tabs" id="marketTabs" role="group" aria-label="시장"><span class="hz" id="hzTabs" role="group" aria-label="기간"></span><span class="asof" id="asof"></span></div>
   <div id="banner"></div>
@@ -155,7 +183,8 @@
       <li>수정주가 일봉 종가 기준이며 수수료·세금·슬리피지는 반영하지 않았습니다.</li>
     </ul>
   </div>
-  <footer>데이터: <code>research/ledger/</code> (신호 원장, 수정 금지) · <code>docs/research/ledger.json</code> (집계). 규칙 전문은 저장소의 <code>LEDGER.md</code>.</footer>
+  </details>
+  <footer>데이터: <code>docs/research/board.json</code> (현황판) · <code>research/ledger/</code> (신호 원장, 수정 금지) · <code>docs/research/ledger.json</code> (집계). 규칙 전문은 저장소의 <code>LEDGER.md</code>.</footer>
 </div>
 <script>
 const STRATS = {
@@ -163,6 +192,14 @@ const STRATS = {
     groups: {TREND: "추세 템플릿 통과", READY: "진입 준비", GO: "진입 신호", EXP_READY: "완화 기준 준비(실험)", EXP_GO: "완화 기준 진입(실험)"}},
   funnel: {name: "대박주 깔때기", desc: "깔때기를 실행할 때마다 남긴 스냅샷(주 1회 + 수동 실행)에서 뽑은 신호입니다. 관문을 통과한 종목 중 상위 50위와 타이밍 ON 종목을 대조군과 비교합니다.",
     groups: {TOP50: "관문 통과 상위 50위", T1_ON: "타이밍(T1) ON", CONTROL: "대조군(무작위 150)"}},
+  range: {name: "RANGE-MR", desc: "박스권 하단 반등(RANGE-MR) 추적기의 신호 기록입니다. 대조군이 없어 지수 대비만 봅니다.",
+    groups: {RANGE_GO: "진입 신호", RANGE_WATCH: "관찰"}},
+  aggressive: {name: "계좌복구(공격)", desc: "계좌복구 공격매매 추적기의 신호 기록입니다. 대조군이 없어 지수 대비만 봅니다.",
+    groups: {AGGR_GO: "진입 신호", AGGR_WATCH: "관찰"}},
+  rebound: {name: "반등관찰(한국)", desc: "소형·고변동 반등 관찰군(한국) 추적기의 신호 기록입니다.",
+    groups: {REB_WATCH: "반등 관찰"}},
+  technical: {name: "기술적 신호", desc: "기술적 신호 실행 결과 중 판정이 나온 종목(매수검토·관찰·보류)을 신호별로 남긴 기록입니다. 2026-10-10부터 쌓입니다.",
+    groups: {TREND_REVIEW: "추세 매수검토", TREND_WATCH: "추세 관찰", TREND_HOLD: "추세 보류", REBOUND_REVIEW: "반등 매수검토", REBOUND_WATCH: "반등 관찰", REBOUND_HOLD: "반등 보류", CONTROL: "대조군(무작위 150)"}},
   multifactor: {name: "멀티팩터", desc: "멀티팩터 실행 결과를 신호별로 남긴 기록입니다. BUY·WATCH·SELL이 대조군과 실제로 다른지 봅니다.",
     groups: {BUY: "BUY (매수 후보)", WATCH: "WATCH (관찰)", NEUTRAL: "NEUTRAL (중립)", SELL: "SELL (비중 축소)", CONTROL: "대조군(무작위 150)"}}
 };
@@ -170,6 +207,7 @@ const MARKETS = {kr: "한국", us: "미국"};
 const HORIZONS = ["5", "20", "60", "120"];
 const STATUS = {none: ["n", "완료 표본 없음"], thin: ["y", "표본 부족"], concentrated: ["y", "독립 구간 부족"], ok: ["g", "해석 가능"]};
 const state = {strat: "sepa", market: "kr", hz: "5"};
+let BOARD = null;
 let DATA = null;
 const $ = (id) => document.getElementById(id);
 const pct = (v, d = 2) => v == null ? "–" : (v > 0 ? "+" : "") + v.toFixed(d) + "%";
@@ -219,6 +257,46 @@ function render() {
 function banner(anyOk) {
   $("banner").innerHTML = anyOk ? "" : '<div class="banner">아직 결론을 낼 수 없는 단계입니다. 표본이 30건 미만이거나 독립 구간이 5개 미만이면 평균이 우연으로 움직일 수 있어, 수치는 진행 상황을 보는 용도로만 보세요.</div>';
 }
+
+const PILL = {ok: "g", lag: "y", down: "r", wait: "n"};
+function boardRow(r) {
+  const st = STRATS[r.key] || {name: r.name, groups: {}};
+  const tr = document.createElement("tr");
+  if (r.tier === "core") tr.className = "core";
+  const notes = (r.notes || []).map((n) => '<small>' + n + '</small>').join("");
+  tr.appendChild(td('<span class="group-name">' + r.name + '</span><span class="group-desc">' + (MARKETS[r.market] || r.market) + "</span>", "l"));
+  tr.appendChild(td('<span class="pill ' + (PILL[r.status] || "n") + '">' + r.statusLabel + "</span>" + notes, "l"));
+  tr.appendChild(td((r.lastRecord || "–") + (r.expected && r.expected !== r.lastRecord && r.status !== "ok" ? '<small>기대 ' + r.expected + "</small>" : ""), "l muted"));
+  const sel = (r.selected || []).map((s) => "<span>" + s.label + " <b>" + s.n + "</b></span>").join("");
+  tr.appendChild(td(sel || '<span class="muted">–</span>', "sel"));
+  const p = r.perf;
+  if (!p) {
+    tr.appendChild(td('<span class="muted">' + (r.perfNote || "성과 집계 없음") + "</span>", "l"));
+    tr.appendChild(td('<span class="muted">–</span>', "l"));
+  } else {
+    const h5 = p.h5, label = (st.groups && st.groups[p.group]) || p.group;
+    const main = h5.n ? '<span class="' + cls(h5.meanExcessPct) + '"><b>' + pct(h5.meanExcessPct) + "p</b></span> (" + h5.n + "건)" : '<span class="muted">완료 표본 없음 (대기 ' + (h5.pending || 0) + "건)</span>";
+    const h20 = p.h20 && p.h20.n ? " · 20일 " + pct(p.h20.meanExcessPct) + "p (" + p.h20.n + "건)" : "";
+    tr.appendChild(td(main + "<small>" + label + h20 + "</small>", "l"));
+    const j = h5.status === "ok" ? ["g", "해석 가능"] : ["y", "아직 판단 불가"];
+    const why = h5.status === "none" ? "아직 표본 없음" : h5.status === "thin" ? "표본 부족" : h5.status === "concentrated" ? "독립 구간 " + h5.independentWindows + "개 (5개 필요)" : "";
+    tr.appendChild(td('<span class="pill ' + j[0] + '">' + j[1] + "</span>" + (why ? "<small>" + why + "</small>" : ""), "l"));
+  }
+  return tr;
+}
+function renderBoard() {
+  const core = $("boardCore"), res = $("boardResearch"), cards = $("boardCards");
+  if (!BOARD) { core.innerHTML = res.innerHTML = '<tr><td class="empty err l" colspan="6">현황판 파일을 불러오지 못했습니다. 다음 집계 후 표시됩니다.</td></tr>'; return; }
+  core.textContent = res.textContent = "";
+  BOARD.rows.forEach((r) => (r.tier === "core" ? core : res).appendChild(boardRow(r)));
+  const c = BOARD.counts;
+  cards.innerHTML = '<div class="card"><div class="label">정상</div><div class="value">' + c.ok + '</div></div>'
+    + '<div class="card"><div class="label">지연</div><div class="value" style="color:var(--y-text)">' + c.lag + '</div></div>'
+    + '<div class="card"><div class="label">중단</div><div class="value" style="color:var(--r-text)">' + c.down + '</div></div>'
+    + '<div class="card"><div class="label">갱신</div><div class="value" style="font-size:14px">' + BOARD.generatedAt.slice(0, 16).replace("T", " ") + ' UTC</div><div class="sub">전략·시장 ' + BOARD.rows.length + '개</div></div>';
+}
+fetch("../research/board.json", {cache: "no-store"}).then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then((d) => { BOARD = d; renderBoard(); }).catch(() => renderBoard());
 fetch("../research/ledger.json", {cache: "no-store"}).then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
   .then((d) => { DATA = d; render(); })
   .catch(() => { $("rows").innerHTML = '<tr><td class="empty err l" colspan="10">성과 집계 파일을 불러오지 못했습니다. 첫 집계가 끝나면 표시됩니다.</td></tr>'; render(); });
