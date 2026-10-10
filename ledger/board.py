@@ -28,7 +28,7 @@ TRACKER_FILE = {"sepa": "", "range": "range_", "aggressive": "aggressive_", "reb
 BOARD = [
     {"key": "sepa", "name": "SEPA 추세템플릿", "tier": "core", "cadence": "daily", "kind": "tracker", "markets": ("kr", "us"),
      "perf": ("sepa", ("TREND",)), "groups": {"TREND": "추세 통과", "READY": "진입 준비", "GO": "진입 신호"}},
-    {"key": "funnel", "name": "대박주 깔때기", "tier": "core", "cadence": "daily", "kind": "funnel", "markets": ("kr", "us"),
+    {"key": "funnel", "name": "실적 턴어라운드", "tier": "core", "cadence": "daily", "kind": "funnel", "markets": ("kr", "us"),
      "perf": ("funnel", ("TOP50", "T1_ON")), "groups": {}},
     {"key": "picks", "name": "오늘의 추천", "tier": "core", "cadence": "daily", "kind": "picks", "markets": ("kr", "us"),
      "perf": ("picks", ("PICK",)), "groups": {"PICK": "추천"}},

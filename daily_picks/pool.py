@@ -8,7 +8,7 @@ from pathlib import Path
 from . import config as C
 
 ROOT = Path(__file__).resolve().parents[1]
-CORE = {"sepa": "SEPA", "funnel": "깔때기"}
+CORE = {"sepa": "SEPA", "funnel": "실적 턴어라운드"}
 RESEARCH = {"multifactor": "멀티팩터", "technical": "기술적", "range": "RANGE-MR", "aggressive": "계좌복구", "rebound": "반등관찰"}
 TRACKER_FILES = {"sepa": "", "range": "range_", "aggressive": "aggressive_", "rebound": "rebound_"}
 

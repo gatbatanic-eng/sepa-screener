@@ -45,10 +45,10 @@
 <div class="wrap">
   <header>
     <h1>오늘의 추천</h1>
-    <div class="subtitle">핵심 전략(SEPA·깔때기)이 고른 종목을 매일 다시 심사해 시장별 최대 3개를 냅니다. 모든 전략의 선정 건수로 점수를 매기고, 손절폭·추격·유동성 조건을 통과한 종목만 올립니다. 매수 권유가 아니며, 하루 한 번 기록해 나중에 성과를 검증합니다.</div>
+    <div class="subtitle">핵심 전략(SEPA·실적 턴어라운드)이 고른 종목을 매일 다시 심사해 시장별 최대 3개를 냅니다. 모든 전략의 선정 건수로 점수를 매기고, 손절폭·추격·유동성 조건을 통과한 종목만 올립니다. 매수 권유가 아니며, 하루 한 번 기록해 나중에 성과를 검증합니다.</div>
     <div class="nav">
       <a href="../">SEPA 추세템플릿</a>
-      <a href="../funnel/">대박주 깔때기</a>
+      <a href="../funnel/">실적 턴어라운드</a>
       <a class="here" href="./">오늘의 추천</a>
       <a href="../performance/">전략 현황</a>
       <a href="../agents/">에이전트 리그</a>
@@ -65,7 +65,7 @@ const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;
 function pick(p, names, core) {
   const e = p.entry;
   const tags = Object.keys(p.strategies).map(k => `<span class="tag ${core.includes(k)?"core":""}">${esc(names[k]||k)}</span>`).join("");
-  const fr = p.funnelRank ? `깔때기 ${p.funnelRank}위` : "깔때기 밖";
+  const fr = p.funnelRank ? `턴어라운드 ${p.funnelRank}위` : "턴어라운드 밖";
   return `<div class="pick"><div class="top"><span class="nm">${esc(p.name)}</span><span class="code">${esc(p.code)} · ${esc(p.market||"")}</span><span class="score">점수 ${p.score}</span></div>
     <div class="why">${tags}</div>
     <div class="kv"><span>손절폭 <b>${e.riskPct}%</b> (${esc(e.riskSource)})</span><span>${fr}</span><span>SEPA 구간 <b>${esc(e.zone||"-")}</b></span><span>종가 <b>${p.price!=null?Number(p.price).toLocaleString():"-"}</b></span></div></div>`;

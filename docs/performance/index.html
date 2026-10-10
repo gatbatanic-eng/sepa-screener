@@ -125,7 +125,7 @@
       <a href="../technical/">기술적 신호</a>
       <a href="../recovery/">계좌복구 공격매매</a>
       <a href="../fpd/">FPD 연구</a>
-      <a href="../funnel/">대박주 깔때기</a>
+      <a href="../funnel/">실적 턴어라운드</a>
       <a href="../picks/">오늘의 추천</a>
       <a class="here" href="./">전략 현황</a>
       <a href="../agents/">에이전트 리그</a>
@@ -191,7 +191,7 @@
 const STRATS = {
   sepa: {name: "SEPA 추세템플릿", desc: "기존 추적기의 신호 기록(신호 후 5·20·60일). 대조군이 없어 지수 대비만 봅니다. 120일은 추적기가 아직 계산하지 않습니다.",
     groups: {TREND: "추세 템플릿 통과", READY: "진입 준비", GO: "진입 신호", EXP_READY: "완화 기준 준비(실험)", EXP_GO: "완화 기준 진입(실험)"}},
-  funnel: {name: "대박주 깔때기", desc: "깔때기를 실행할 때마다 남긴 스냅샷(주 1회 + 수동 실행)에서 뽑은 신호입니다. 관문을 통과한 종목 중 상위 50위와 타이밍 ON 종목을 대조군과 비교합니다.",
+  funnel: {name: "실적 턴어라운드", desc: "실적 턴어라운드를 실행할 때마다 남긴 스냅샷(주 1회 + 수동 실행)에서 뽑은 신호입니다. 관문을 통과한 종목 중 상위 50위와 타이밍 ON 종목을 대조군과 비교합니다.",
     groups: {TOP50: "관문 통과 상위 50위", T1_ON: "타이밍(T1) ON", CONTROL: "대조군(무작위 150)"}},
   range: {name: "RANGE-MR", desc: "박스권 하단 반등(RANGE-MR) 추적기의 신호 기록입니다. 대조군이 없어 지수 대비만 봅니다.",
     groups: {RANGE_GO: "진입 신호", RANGE_WATCH: "관찰"}},
@@ -201,7 +201,7 @@ const STRATS = {
     groups: {REB_WATCH: "반등 관찰"}},
   technical: {name: "기술적 신호", desc: "기술적 신호 실행 결과 중 판정이 나온 종목(매수검토·관찰·보류)을 신호별로 남긴 기록입니다. 2026-10-10부터 쌓입니다.",
     groups: {TREND_REVIEW: "추세 매수검토", TREND_WATCH: "추세 관찰", TREND_HOLD: "추세 보류", REBOUND_REVIEW: "반등 매수검토", REBOUND_WATCH: "반등 관찰", REBOUND_HOLD: "반등 보류", CONTROL: "대조군(무작위 150)"}},
-  picks: {name: "오늘의 추천", desc: "매일 SEPA·깔때기 선정 종목 중 진입 조건(손절폭·추격·유동성)을 통과한 시장별 최대 3종목의 기록입니다. 대조군은 같은 날 후보 풀에서 추천을 뺀 무작위 표본입니다.",
+  picks: {name: "오늘의 추천", desc: "매일 SEPA·실적 턴어라운드 선정 종목 중 진입 조건(손절폭·추격·유동성)을 통과한 시장별 최대 3종목의 기록입니다. 대조군은 같은 날 후보 풀에서 추천을 뺀 무작위 표본입니다.",
     groups: {PICK: "추천", CONTROL: "후보 풀 무작위(추천 제외)"}},
   multifactor: {name: "멀티팩터", desc: "멀티팩터 실행 결과를 신호별로 남긴 기록입니다. BUY·WATCH·SELL이 대조군과 실제로 다른지 봅니다.",
     groups: {BUY: "BUY (매수 후보)", WATCH: "WATCH (관찰)", NEUTRAL: "NEUTRAL (중립)", SELL: "SELL (비중 축소)", CONTROL: "대조군(무작위 150)"}}

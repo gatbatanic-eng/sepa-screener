@@ -92,7 +92,7 @@ jobs:
           }
           rc=0
           if [ -s "$RUNNER_TEMP/new_picks.txt" ] && [ -z "$(gh issue list --state open --search '"오늘의 추천" in:title' --json title --jq '[.[] | select(.title | startswith("오늘의 추천"))][0].title')" ]; then
-            gh issue create --title "오늘의 추천 (한국·미국 일간)" --body "SEPA·깔때기가 고른 종목을 매일 다시 심사한 시장별 추천 3종목입니다. 투자 권유가 아니며 기록은 성과 검증용입니다." || rc=1
+            gh issue create --title "오늘의 추천 (한국·미국 일간)" --body "SEPA·실적 턴어라운드가 고른 종목을 매일 다시 심사한 시장별 추천 3종목입니다. 투자 권유가 아니며 기록은 성과 검증용입니다." || rc=1
           fi
           post "$RUNNER_TEMP/new_picks.txt" "오늘의 추천" || rc=1
           post "$RUNNER_TEMP/new_reports.txt" "에이전트 리그 보고" || rc=1

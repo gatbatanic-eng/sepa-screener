@@ -166,7 +166,7 @@ def write_report(path: Path, market: str, today: dt.date, top: list[dict], stats
              f"C 적자−흑자 {fmt_pct(heat['C_lossMinusProfit'])} · D 주식 수 증가율 중앙값 {fmt_pct(heat['D_shareGrowthMedian'])}, "
              f"증자·CB 공시 종목 비율 {fmt_pct(heat['D_dilutionEventShare'])}",
              "- 6개월 상위: " + ", ".join("{}({}) {}".format(m["symbol"], m["tier"], fmt_pct(m["ret6m"])) for m in heat["topMovers"][:5]),
-             "", "## 깔때기 상위 후보", "", "| # | 종목 | 시총 | 종합 | S1(이익 가속) | S2(이익의 질) | S6(자본 배분) | S4(소외도) | T1(타이밍) | 매출 YoY(최근→과거) | 근거 | P1(10배 산수) |",
+             "", "## 턴어라운드 상위 후보", "", "| # | 종목 | 시총 | 종합 | S1(이익 가속) | S2(이익의 질) | S6(자본 배분) | S4(소외도) | T1(타이밍) | 매출 YoY(최근→과거) | 근거 | P1(10배 산수) |",
              "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in top:
         s = r["scores"]
@@ -341,7 +341,7 @@ def run_market(market: str, args, today: dt.date) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="대박주 선별 깔때기 스크리너")
+    parser = argparse.ArgumentParser(description="실적 턴어라운드 스크리너")
     parser.add_argument("--market", choices=["kr", "us", "all"], default="all")
     parser.add_argument("--limit", type=int, default=None, help="점검용: 유니버스 일부만")
     parser.add_argument("--shortlist", type=int, default=150, help="정밀 조회 대상 수")

@@ -8,7 +8,7 @@
 | 전략 | 신호 출처 | 그룹 | 비고 |
 |---|---|---|---|
 | SEPA 추세템플릿 | `research/{kr,us}.json` 추적기(기존) | TREND·READY·GO·EXP_READY·EXP_GO | 사후 성과는 추적기가 계산(5·20·60일). 대조군 없음, 지수 대비만. 120일 없음 |
-| 대박주 깔때기 | `research/funnel/{kr,us}/snapshots/` | TOP50(관문 통과 상위 50위), T1_ON(관문 통과·타이밍 ON), CONTROL | 하루가 끝난 스냅샷만 고정. 깔때기는 2026-10-12부터 평일 매일 기록(그 전엔 주 1회). 신호일은 스냅샷의 `session`(거래일) |
+| 실적 턴어라운드 | `research/funnel/{kr,us}/snapshots/` | TOP50(관문 통과 상위 50위), T1_ON(관문 통과·타이밍 ON), CONTROL | 하루가 끝난 스냅샷만 고정. 깔때기는 2026-10-12부터 평일 매일 기록(그 전엔 주 1회). 신호일은 스냅샷의 `session`(거래일) |
 | 멀티팩터 | `output/screening_result.csv` → `python -m ledger.collect_multifactor` | BUY·WATCH·NEUTRAL·SELL, CONTROL | 결과 CSV가 매번 덮어써져 신호별 기록은 2026-10-01부터만 있다(소급 불가) |
 | RANGE-MR | `research/range_{kr,us}.json` 추적기(기존) | RANGE_GO·RANGE_WATCH | SEPA와 같은 방식(추적기 성과를 그대로 읽음). 대조군 없음 |
 | 계좌복구(공격) | `research/aggressive_{kr,us}.json` 추적기(기존) | AGGR_GO·AGGR_WATCH | 〃 |
@@ -43,7 +43,7 @@
 - `ledger.yml`이 원장 갱신 때마다 `docs/research/board.json`을 다시 쓴다.
 
 ## 운영
-- `ledger.yml`: 평일 22:40 UTC에 깔때기 스냅샷 고정 → 가격 조회 → 성과 계산 → 통계 → 커밋. Yahoo는 Actions에서만 열린다.
+- `ledger.yml`: 평일 22:40 UTC에 실적 턴어라운드 스냅샷 고정 → 가격 조회 → 성과 계산 → 통계 → 커밋. Yahoo는 Actions에서만 열린다.
 - `screener_daily.yml`: 멀티팩터 실행 직후 `ledger.collect_multifactor`로 신호를 고정한다(실패해도 대시보드는 계속).
 - `technical_daily.yml`: 기술적 신호 실행 직후 `ledger.collect_technical`로 그날 판정을 고정한다(시장별, 실패해도 대시보드는 계속).
 - 테스트: `python -m unittest tests.test_ledger tests.test_board`
