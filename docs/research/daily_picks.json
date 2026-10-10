@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "generatedAt": "2026-10-10T10:59:50.595087+00:00",
+ "generatedAt": "2026-10-10T11:03:02.016725+00:00",
  "latest": {
   "kr": {
    "market": "kr",
@@ -535,7 +535,7 @@
    "regime": "GREEN",
    "gate": "우호적",
    "candidates": 88,
-   "suitable": 3,
+   "suitable": 14,
    "picks": [
     {
      "code": "CVX",
@@ -590,29 +590,28 @@
      "reject": null
     },
     {
-     "code": "EQIX",
-     "name": "EQUINIX INC",
+     "code": "CHRD",
+     "name": "Chord Energy Corp",
      "market": "Nasdaq",
-     "price": 1026.06005859375,
+     "price": 141.5399932861328,
      "score": 2,
      "strategies": {
-      "funnel": 45
+      "funnel": 3
      },
-     "funnelRank": 45,
+     "funnelRank": 3,
      "entry": {
-      "riskPct": 2.98,
-      "riskSource": "SEPA",
+      "riskPct": 7.79,
+      "riskSource": "직접 계산",
       "verdict": null,
       "chase": [],
-      "liquidityOk": true,
-      "zone": "SETUP"
+      "liquidityOk": null,
+      "zone": null
      },
      "reject": null
     }
    ],
    "rejectSummary": {
-    "손절폭 미확인": 36,
-    "손절폭 8% 초과": 32,
+    "손절폭 8% 초과": 57,
     "SEPA 진입 NO-GO": 16,
     "손절폭 0 이하(계산 불가)": 1
    },
@@ -708,8 +707,45 @@
     "ILMN": 264.57000732421875,
     "MRNA": 197.0
    },
-   "directComputed": [],
-   "entryUnknown": 36,
+   "directComputed": [
+    "ALGM",
+    "BB",
+    "BETA",
+    "CDNA",
+    "CHRD",
+    "COHU",
+    "CRON",
+    "DAR",
+    "DINO",
+    "DK",
+    "FIVN",
+    "FRSH",
+    "GNK",
+    "GSHD",
+    "HCC",
+    "HUBS",
+    "IRWD",
+    "JOE",
+    "KWR",
+    "LFST",
+    "LPG",
+    "MDB",
+    "MMI",
+    "MNTN",
+    "MQ",
+    "PATH",
+    "QNST",
+    "RDN",
+    "REPX",
+    "RGR",
+    "SD",
+    "TRC",
+    "TWFG",
+    "WK",
+    "WTI",
+    "XRN"
+   ],
+   "entryUnknown": 0,
    "rules": {
     "maxRiskPct": 8.0,
     "stopLossPct": 8.0,
@@ -745,9 +781,9 @@
       "zone": "WATCH"
      },
      "v2": {
-      "score": 4,
-      "sector": null,
-      "sectorAdj": 0,
+      "score": 5,
+      "sector": "Energy",
+      "sectorAdj": 1,
       "marketAdj": 0
      },
      "why": [
@@ -761,11 +797,11 @@
       },
       {
        "kind": "sector",
-       "text": "업종을 알 수 없어 섹터 점수 0"
+       "text": "업종 Energy 강세: 50일선 위 67%, 평균 RS 72, 11개 업종 중 1위 (점수 +1)"
       },
       {
        "kind": "market",
-       "text": "시장 US GREEN"
+       "text": "시장 미국 GREEN"
       },
       {
        "kind": "macro",
@@ -795,9 +831,9 @@
       "zone": "WATCH"
      },
      "v2": {
-      "score": 3,
-      "sector": null,
-      "sectorAdj": 0,
+      "score": 4,
+      "sector": "Healthcare",
+      "sectorAdj": 1,
       "marketAdj": 0
      },
      "why": [
@@ -811,7 +847,11 @@
       },
       {
        "kind": "sector",
-       "text": "업종을 알 수 없어 섹터 점수 0"
+       "text": "업종 Healthcare 강세: 50일선 위 48%, 평균 RS 63, 11개 업종 중 3위 (점수 +1)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 미국 GREEN"
       },
       {
        "kind": "macro",
@@ -820,41 +860,45 @@
      ]
     },
     {
-     "code": "EQIX",
-     "name": "EQUINIX INC",
+     "code": "CHRD",
+     "name": "Chord Energy Corp",
      "market": "Nasdaq",
-     "price": 1026.06005859375,
+     "price": 141.5399932861328,
      "score": 2,
      "strategies": {
-      "funnel": 45
+      "funnel": 3
      },
-     "funnelRank": 45,
+     "funnelRank": 3,
      "entry": {
-      "riskPct": 2.98,
-      "riskSource": "SEPA",
+      "riskPct": 7.79,
+      "riskSource": "직접 계산",
       "verdict": null,
       "chase": [],
-      "liquidityOk": true,
-      "zone": "SETUP"
+      "liquidityOk": null,
+      "zone": null
      },
      "v2": {
-      "score": 2,
-      "sector": null,
-      "sectorAdj": 0,
+      "score": 3,
+      "sector": "Energy",
+      "sectorAdj": 1,
       "marketAdj": 0
      },
      "why": [
       {
        "kind": "strategy",
-       "text": "실적 턴어라운드 45위 선정 (v1 점수 2)"
+       "text": "실적 턴어라운드 3위 선정 (v1 점수 2)"
       },
       {
        "kind": "entry",
-       "text": "손절폭 2.98%(SEPA), 추격·NO-GO·유동성 조건 통과"
+       "text": "손절폭 7.79%(직접 계산), 추격·NO-GO·유동성 조건 통과"
       },
       {
        "kind": "sector",
-       "text": "업종을 알 수 없어 섹터 점수 0"
+       "text": "업종 Energy 강세: 50일선 위 67%, 평균 RS 72, 11개 업종 중 1위 (점수 +1)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 미국 GREEN"
       },
       {
        "kind": "macro",
@@ -879,10 +923,121 @@
      ]
     },
     "sectorCoverage": {
-     "known": 0,
+     "known": 88,
      "candidates": 88
     },
-    "sectors": []
+    "sectors": [
+     {
+      "sector": "Energy",
+      "n": 21,
+      "above50Pct": 66.7,
+      "avgRs": 71.5,
+      "strength": 69.1,
+      "rank": 1,
+      "of": 11,
+      "adj": 1
+     },
+     {
+      "sector": "Technology",
+      "n": 90,
+      "above50Pct": 63.3,
+      "avgRs": 69.2,
+      "strength": 66.3,
+      "rank": 2,
+      "of": 11,
+      "adj": 1
+     },
+     {
+      "sector": "Healthcare",
+      "n": 60,
+      "above50Pct": 48.3,
+      "avgRs": 63.0,
+      "strength": 55.7,
+      "rank": 3,
+      "of": 11,
+      "adj": 1
+     },
+     {
+      "sector": "Industrials",
+      "n": 76,
+      "above50Pct": 25.0,
+      "avgRs": 46.8,
+      "strength": 35.9,
+      "rank": 4,
+      "of": 11,
+      "adj": 0
+     },
+     {
+      "sector": "Consumer Defensive",
+      "n": 32,
+      "above50Pct": 25.0,
+      "avgRs": 46.7,
+      "strength": 35.8,
+      "rank": 5,
+      "of": 11,
+      "adj": 0
+     },
+     {
+      "sector": "Financial Services",
+      "n": 70,
+      "above50Pct": 21.4,
+      "avgRs": 49.2,
+      "strength": 35.3,
+      "rank": 6,
+      "of": 11,
+      "adj": 0
+     },
+     {
+      "sector": "Communication Services",
+      "n": 22,
+      "above50Pct": 27.3,
+      "avgRs": 40.2,
+      "strength": 33.7,
+      "rank": 7,
+      "of": 11,
+      "adj": 0
+     },
+     {
+      "sector": "Basic Materials",
+      "n": 19,
+      "above50Pct": 15.8,
+      "avgRs": 47.1,
+      "strength": 31.5,
+      "rank": 8,
+      "of": 11,
+      "adj": 0
+     },
+     {
+      "sector": "Consumer Cyclical",
+      "n": 55,
+      "above50Pct": 20.0,
+      "avgRs": 34.5,
+      "strength": 27.2,
+      "rank": 9,
+      "of": 11,
+      "adj": -1
+     },
+     {
+      "sector": "Utilities",
+      "n": 31,
+      "above50Pct": 12.9,
+      "avgRs": 23.5,
+      "strength": 18.2,
+      "rank": 10,
+      "of": 11,
+      "adj": -1
+     },
+     {
+      "sector": "Real Estate",
+      "n": 30,
+      "above50Pct": 0.0,
+      "avgRs": 32.9,
+      "strength": 16.4,
+      "rank": 11,
+      "of": 11,
+      "adj": -1
+     }
+    ]
    }
   }
  },
