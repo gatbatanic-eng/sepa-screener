@@ -178,9 +178,9 @@ def ingest_picks(market: str, picks_dir: Path | None = None, signals_dir: Path |
         rec = read_json(file)
         if not rec or not rec.get("session"):
             continue
-        # PICK = v1(섹터 미반영), PICK_V2 = v2(섹터·시장 환경 반영), PICK_V3 = v3(손절폭 필터 없이 비중 조절). 같은 종목이 둘 다면 한 행에 그룹 두 개.
+        # PICK = v1(섹터 미반영), PICK_V2 = v2(섹터·시장 환경 반영), PICK_V3 = v3(손절폭 필터 없이 비중 조절), PICK_V4 = v4(미국 추세 통과 + 변동성 3% 이상). 같은 종목이 둘 다면 한 행에 그룹 두 개.
         by: dict[str, dict] = {}
-        for key, group in (("picks", "PICK"), ("picksV2", "PICK_V2"), ("picksV3", "PICK_V3")):
+        for key, group in (("picks", "PICK"), ("picksV2", "PICK_V2"), ("picksV3", "PICK_V3"), ("picksV4", "PICK_V4")):
             for i, p in enumerate(rec.get(key) or [], 1):
                 if not p.get("price"):
                     continue

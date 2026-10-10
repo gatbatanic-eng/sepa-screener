@@ -50,6 +50,9 @@ def build_market(market: str, root: Path, fetch=fetch_entry_metrics, fetch_secto
     v3 = V2.rank_v3(rows, ctx, sectors, market, rs)
     out["picksV3"] = v3["picks"]
     out["v3"] = {"candidates": v3["candidates"], "skipped": v3["skipped"]}
+    v4 = V2.rank_v4(rows, ctx, sectors, market, pool["sepaRows"], lambda c: X.atr_pct_from_chart(c, root))
+    out["picksV4"] = v4["picks"]
+    out["v4"] = {k: v4[k] for k in ("candidates", "missingAtr", "skipped") if k in v4}
     out["context"] = {"regimes": ctx["regimes"], "macro": ctx["macro"],
                       "sectorCoverage": {"known": sum(1 for r in rows if sectors.get(r["code"])), "candidates": len(rows)},
                       "sectors": sorted(({"sector": s, **v} for s, v in ctx["sectorStats"].items()), key=lambda x: x["rank"])}
@@ -94,6 +97,9 @@ def render_md(recs: dict[str, dict]) -> str:
         v3 = r.get("picksV3") or []
         if v3:
             lines.append("- 실험 v3(손절폭 필터 없이 비중 조절): " + ", ".join(f"{p['name']}(비중 {p['weight']:.0%}, 손절폭 {p['entry']['riskPct']}%)" for p in v3))
+        v4 = r.get("picksV4") or []
+        if v4:
+            lines.append("- 실험 v4(추세 통과 + 변동성 3% 이상, 미국 전용): " + ", ".join(f"{p['name']}(ATR {p['atrPct']}%, 비중 {p['weight']:.0%})" for p in v4))
         if r.get("shortfall") and len(picks) < C.MAX_PICKS:
             lines.append(f"- {r['shortfall']}")
         if r["rejectSummary"]:

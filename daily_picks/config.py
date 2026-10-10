@@ -19,3 +19,7 @@ SEPA_GROUPS = ("TREND", "READY", "GO")
 SECTOR_MIN_N = 5              # 업종 강도를 계산할 최소 종목 수(세파 유니버스 안)
 SECTOR_BONUS = 1              # 업종 강도 상위 1/3 +1, 하위 1/3 -1
 REGIME_PENALTY = 1            # 종목이 속한 시장이 RED이면 -1
+
+# v4 (2026-10-10 고정, 미국 전용 실험): 추세 통과(RS 70+) & 변동성(ATR14/종가) 3% 이상. 견고성 확인(research/leader_backtest/robust.md)에서 미국만 PASS(TREND_VOL), 한국은 전부 FAIL.
+V4_MIN_RS = 70
+V4_MIN_ATR_PCT = 0.03
