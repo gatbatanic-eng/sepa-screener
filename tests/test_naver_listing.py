@@ -7,7 +7,7 @@ import pandas as pd
 import naver_listing as nl
 
 ROOT = Path(__file__).resolve().parents[1]
-COPIES = [ROOT / "screener" / "naver_listing.py", ROOT / "technical_signals" / "naver_listing.py", ROOT / "momentum_signals" / "naver_listing.py",
+COPIES = [ROOT / "screener" / "naver_listing.py", ROOT / "technical_signals" / "naver_listing.py",
           ROOT / "range_vrebound" / "src" / "data" / "naver_listing.py"]
 
 
