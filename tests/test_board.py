@@ -91,6 +91,23 @@ class ReadTest(unittest.TestCase):
             self.assertEqual(out["counts"]["ok"] + out["counts"]["lag"] + out["counts"]["down"] + out["counts"]["wait"], len(out["rows"]))
 
 
+class FunnelBoardTest(unittest.TestCase):
+    def test_funnel_row_uses_session_and_flags_degraded_runs(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "docs" / "research").mkdir(parents=True)
+            doc = {"recordedAt": "2026-10-13T09:25:00+00:00", "session": "2026-10-13", "top": [{}] * 50,
+                   "degraded": {"events": "DART 주요사항 공시 2/4 구간을 읽지 못해 증자·분할 건수를 미상으로 뒀습니다"}}
+            (root / "docs" / "research" / "funnel_kr.json").write_text(json.dumps(doc), encoding="utf-8")
+            r = board.read_funnel("kr", root)
+            self.assertEqual(r["last"], "2026-10-13")
+            out = board.build({"strategies": {}}, now=at(2026, 10, 13, 14, 0), root=root)
+            row = next(x for x in out["rows"] if x["key"] == "funnel" and x["market"] == "kr")
+            self.assertEqual(row["status"], "lag")                  # 기록은 됐지만 일부 규칙이 미반영
+            self.assertTrue(any("미상" in n for n in row["notes"]))
+            self.assertEqual(row["cadence"], "daily")
+
+
 class TechnicalLedgerTest(unittest.TestCase):
     def rows(self):
         base = {"status": "OK", "close": 100.0, "market": "KOSPI", "trendScore": 10}

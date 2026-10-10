@@ -39,7 +39,7 @@ def update(snapshot_dir: Path, path: Path, prices: dict[str, float], bench_now: 
     state = json.loads(path.read_text()) if path.exists() else {"schemaVersion": 1, "snapshots": {}}
     for file in sorted(snapshot_dir.glob("*.json.gz")):
         snap = json.loads(gzip.open(file, "rt", encoding="utf-8").read())
-        date = snap["recordedAt"][:10]
+        date = snap.get("session") or snap["recordedAt"][:10]   # 2026-10-12부터 거래일(session)로 센다. 그 전 기록은 기록일 그대로(고정값 보존)
         age = (today - dt.date.fromisoformat(date)).days
         if age < 1:
             continue

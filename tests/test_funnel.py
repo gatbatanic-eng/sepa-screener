@@ -278,5 +278,103 @@ class PriceAndValidationTest(unittest.TestCase):
             self.assertEqual(later["snapshots"]["2026-01-01"]["frozen"]["6m"]["top"]["avgReturnPct"], 100.0)
 
 
+class DailyRecordTest(unittest.TestCase):
+    """깔때기 매일 기록: 거래일 이름·한 번만 기록·마감 전 기록 금지·DART 일부 실패 표시."""
+
+    def snap(self, d, name, recorded_at, session=None):
+        folder = Path(d) / "snapshots"
+        folder.mkdir(exist_ok=True)
+        doc = {"recordedAt": recorded_at, "rows": []}
+        if session:
+            doc["session"] = session
+        with gzip.open(folder / name, "wt", encoding="utf-8") as f:
+            json.dump(doc, f)
+        return folder
+
+    def test_effective_date_is_last_confirmed_session(self):
+        from funnel import main as fm
+        self.assertEqual(fm.effective_date("2026-10-12T09:23:00+00:00", "kr"), dt.date(2026, 10, 12))   # 한국 장 마감(07시 UTC) 뒤
+        self.assertEqual(fm.effective_date("2026-10-12T05:00:00+00:00", "kr"), dt.date(2026, 10, 11))   # 마감 전이면 전날
+        self.assertEqual(fm.effective_date("2026-10-13T05:47:00+00:00", "us"), dt.date(2026, 10, 12))   # 미국은 21시 UTC 뒤에 그날
+
+    def test_recorded_sessions_reads_legacy_and_new(self):
+        from funnel import main as fm
+        with tempfile.TemporaryDirectory() as d:
+            folder = self.snap(d, "2026-10-03.json.gz", "2026-10-03T05:32:01+00:00")           # 옛 기록: 토요일 실행 = 금요일 거래일
+            self.snap(d, "2026-10-12.json.gz", "2026-10-12T09:25:00+00:00", session="2026-10-12")
+            self.assertEqual(fm.recorded_sessions(folder, "kr"), {"2026-10-02", "2026-10-12"})
+
+    def test_plan_session_rules(self):
+        from unittest import mock
+        from funnel import main as fm
+        with tempfile.TemporaryDirectory() as d:
+            folder = self.snap(d, "2026-10-12.json.gz", "2026-10-12T09:25:00+00:00", session="2026-10-12")
+            now = dt.datetime(2026, 10, 13, 9, 23, tzinfo=dt.timezone.utc)
+            with mock.patch.object(fm.px, "last_session", return_value=dt.date(2026, 10, 13)):
+                self.assertEqual(fm.plan_session("kr", now, folder, False)[0], dt.date(2026, 10, 13))
+            with mock.patch.object(fm.px, "last_session", return_value=dt.date(2026, 10, 12)):   # 휴장일: 마지막 봉이 이미 기록된 날
+                session, why = fm.plan_session("kr", now, folder, False)
+                self.assertIsNone(session)
+                self.assertIn("이미 기록", why)
+                self.assertEqual(fm.plan_session("kr", now, folder, True)[0], dt.date(2026, 10, 12))   # --refresh-view
+            with mock.patch.object(fm.px, "last_session", return_value=dt.date(2026, 10, 13)):   # 장중 시각이면 오늘 봉은 미확정
+                early = dt.datetime(2026, 10, 13, 3, 0, tzinfo=dt.timezone.utc)
+                session, why = fm.plan_session("kr", early, folder, False)
+                self.assertIsNone(session)
+                self.assertIn("확정 전", why)
+            with mock.patch.object(fm.px, "last_session", return_value=None):
+                with self.assertRaises(RuntimeError):
+                    fm.plan_session("kr", now, folder, False)
+
+    def test_validation_keys_new_snapshots_by_session(self):
+        with tempfile.TemporaryDirectory() as d:
+            folder = self.snap(d, "2026-10-12.json.gz", "2026-10-13T05:47:00+00:00", session="2026-10-12")
+            doc = json.loads(gzip.open(folder / "2026-10-12.json.gz", "rt", encoding="utf-8").read())
+            doc.update(benchmark={"price": 100}, rows=[{"symbol": "A", "price": 10, "rank": 1, "excluded": False}])
+            with gzip.open(folder / "2026-10-12.json.gz", "wt", encoding="utf-8") as f:
+                json.dump(doc, f)
+            state = validation.update(folder, Path(d) / "validation.json", {"A": 11}, 101, dt.date(2026, 10, 14), top_k=1)
+            self.assertIn("2026-10-12", state["snapshots"])           # 기록일(10-13)이 아니라 거래일
+            self.assertEqual(state["snapshots"]["2026-10-12"]["ageDays"], 2)
+
+    def test_partial_dart_failure_makes_event_counts_unknown(self):
+        from funnel import data_kr
+
+        class FlakyDart:
+            def __init__(self):
+                self.n = 0
+
+            def request(self, endpoint, **params):
+                if params["bgn_de"] < "20260620":     # 가장 이른 구간만 실패
+                    raise RuntimeError("DART status 800")
+                return [{"stock_code": "000001", "report_nm": "주요사항보고서(유상증자결정)"}] if params["page_no"] == 1 else []
+
+        status = {}
+        counts = data_kr.fetch_events(FlakyDart(), dt.date(2026, 9, 30), status)
+        self.assertGreaterEqual(status["windowsFailed"], 1)
+        self.assertIn("000001", counts)    # 읽은 구간의 건수는 남지만, collect는 일부 실패 시 전 종목을 미상으로 둔다
+
+    def test_collect_marks_events_unknown_and_reports_degraded(self):
+        from unittest import mock
+        from funnel import data_kr
+
+        class Api:
+            corps_source = "cache"
+
+            def corporations(self):
+                return {"000001": "C1"}
+
+            def request(self, endpoint, **params):
+                raise RuntimeError("DART status 800")
+
+        universe = [{"symbol": "000001", "marcap": 1.0}]
+        with mock.patch.object(data_kr, "load_universe", return_value=universe), \
+                mock.patch.object(data_kr, "fetch_quarters", return_value={}):
+            records, _ = data_kr.collect(Api(), dt.date(2026, 10, 13))
+        self.assertIsNone(records[0]["dilutionEvents12m"])   # 0이 아니라 '모름'
+        self.assertIsNone(records[0]["splitEvents12m"])
+        self.assertEqual(set(data_kr.collect.degraded), {"corpList", "events"})
+
+
 if __name__ == "__main__":
     unittest.main()

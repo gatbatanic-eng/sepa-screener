@@ -28,6 +28,16 @@ ROOT = Path(__file__).resolve().parent.parent
 MANUAL = ROOT / "data" / "funnel_manual.csv"
 BASKET = ROOT / "data" / "ai_infra_basket.csv"
 BENCHMARK = {"kr": "^KS11", "us": "^GSPC"}
+# 그날 종가가 확정됐다고 보는 UTC 시각. ledger/config.py의 CLOSE_FINAL_UTC_HOUR와 같은 값이다(하위 시스템끼리 import하지 않는 저장소 관례로 복사).
+CLOSE_FINAL_UTC_HOUR = {"kr": 7, "us": 21}
+
+
+def effective_date(recorded_at: str, market: str) -> dt.date:
+    """기록 시각 기준으로 가격이 가리키는 거래일(그 시각에 이미 확정된 마지막 날짜). 주말·휴일은 벤치마크 일봉이 알려준다."""
+    t = dt.datetime.fromisoformat(recorded_at.replace("Z", "+00:00"))
+    t = t if t.tzinfo else t.replace(tzinfo=dt.timezone.utc)
+    t = t.astimezone(dt.timezone.utc)
+    return t.date() if t.hour >= CLOSE_FINAL_UTC_HOUR[market] else t.date() - dt.timedelta(days=1)
 UNIT = {"kr": 1e8, "us": 1e6}          # 수작업 P1 입력 단위: 한국 억원, 미국 백만$
 MIN_MARCAP = {"kr": 500e8, "us": 3e8}
 DETAIL_WORKERS = {"kr": 4, "us": 2}  # SEC는 초당 10건 제한이 있어 미국은 2건만 동시에
@@ -172,8 +182,41 @@ def write_report(path: Path, market: str, today: dt.date, top: list[dict], stats
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def recorded_sessions(snap_dir: Path, market: str) -> set[str]:
+    """이미 기록된 거래일. session 필드가 있으면 그것을, 없는 옛 기록은 기록 시각이 가리키는 거래일을 쓴다."""
+    out = set()
+    for file in snap_dir.glob("*.json.gz"):
+        try:
+            snap = json.loads(gzip.open(file, "rt", encoding="utf-8").read())
+            out.add(snap.get("session") or effective_date(snap["recordedAt"], market).isoformat())
+        except (OSError, ValueError, KeyError):
+            continue
+    return out
+
+
+def plan_session(market: str, now: dt.datetime, snap_dir: Path, refresh_view: bool) -> tuple[dt.date | None, str]:
+    """이번 실행이 기록할 거래일과 이유. 거래일이 None이면 이번 실행은 아무것도 하지 않는다.
+    ① 벤치마크 일봉의 마지막 봉이 그 시장의 거래일 ② 아직 마감 확정 전(장중)이면 기록하지 않음 ③ 이미 기록된 거래일이면 건너뜀(휴장일·재실행·예비 실행)."""
+    session = px.last_session(BENCHMARK[market])
+    if session is None:
+        raise RuntimeError(f"{market}: 벤치마크 일봉을 받지 못해 거래일을 확인할 수 없음")
+    allowed = effective_date(now.isoformat(), market)
+    if session > allowed:
+        return None, f"{session} 시세가 아직 마감 확정 전입니다(확정 거래일 {allowed}) — 기록하지 않음"
+    if session.isoformat() in recorded_sessions(snap_dir, market) and not refresh_view:
+        return None, f"{session} 거래일은 이미 기록됨 — 건너뜀"
+    return session, ""
+
+
 def run_market(market: str, args, today: dt.date) -> None:
     from funnel import data_kr, data_us
+
+    snap_dir = ROOT / "research" / "funnel" / market / "snapshots"
+    session, why = plan_session(market, dt.datetime.now(dt.timezone.utc), snap_dir, args.refresh_view)
+    if session is None:
+        log.info("%s: %s", market, why)
+        return
+    degraded: dict = {}
 
     if market == "kr":
         from publish_fundamentals import Dart
@@ -182,6 +225,7 @@ def run_market(market: str, args, today: dt.date) -> None:
             raise RuntimeError("DART_API_KEY is not configured")
         api = Dart(key)
         records, _ = data_kr.collect(api, today, args.limit, ROOT / "research" / "funnel" / "cache" / "kr")
+        degraded.update(getattr(data_kr.collect, "degraded", {}) or {})
     else:
         api = None
         records = data_us.collect(today, args.limit)
@@ -258,7 +302,8 @@ def run_market(market: str, args, today: dt.date) -> None:
                    if r.get("manual") and r["symbol"] not in {t["symbol"] for t in top}]
 
     heat = sector_heat(records, results, market)
-    doc = {"schemaVersion": 1, "market": market, "recordedAt": dt.datetime.now(dt.timezone.utc).isoformat(),
+    doc = {"schemaVersion": 1, "market": market, "recordedAt": dt.datetime.now(dt.timezone.utc).isoformat(), "session": session.isoformat(),
+           "degraded": degraded or None,
            "note": "투자 추천이 아닌 검증·분석용 규칙 판정. 결측은 null.",
            "thresholds": {"minMarcap": MIN_MARCAP[market], "weights": rules.WEIGHTS, "P1Cutoff": rules.P1_CUTOFF},
            "stats": stats, "sectorHeat": heat, "top": top, "manualTracked": manual_rows,
@@ -268,7 +313,7 @@ def run_market(market: str, args, today: dt.date) -> None:
 
     base = ROOT / "research" / "funnel" / market
     write_report(base / "report.md", market, today, top, stats, heat)
-    snap = {"recordedAt": doc["recordedAt"], "market": market, "topK": args.top,
+    snap = {"recordedAt": doc["recordedAt"], "session": session.isoformat(), "degraded": degraded or None, "market": market, "topK": args.top,
             "benchmark": {"symbol": bench, "price": (bench_metrics or {}).get("price")},
             "sectorHeat": {k: heat[k] for k in ("level", "hits", "flags", "A_share100", "B_fringeMinusCore",
                                                  "C_lossMinusProfit", "D_shareGrowthMedian", "D_dilutionEventShare")},
@@ -276,13 +321,19 @@ def run_market(market: str, args, today: dt.date) -> None:
                       "composite": results[r["symbol"]]["composite"], "excluded": results[r["symbol"]]["gates"]["excluded"],
                       "meetsS1Floor": results[r["symbol"]]["meetsS1Floor"],
                       "T1": results[r["symbol"]]["T1"], "exchange": r.get("exchange")} for r in records]}
-    snap_dir = base / "snapshots"
     snap_dir.mkdir(parents=True, exist_ok=True)
-    with gzip.open(snap_dir / f"{today.isoformat()}.json.gz", "wt", encoding="utf-8") as f:
-        json.dump(snap, f, ensure_ascii=False, separators=(",", ":"))
+    # 스냅샷은 거래일 이름으로 한 번만 쓴다(수정 금지). 같은 거래일이 이미 있으면(--refresh-view) 화면용 파일만 다시 만든다.
+    if session.isoformat() in recorded_sessions(snap_dir, market):
+        log.info("%s: %s 스냅샷은 이미 있어 덮어쓰지 않음(화면 파일만 갱신)", market, session)
+    else:
+        path = snap_dir / f"{session.isoformat()}.json.gz"
+        if path.exists():  # 옛 기록과 이름만 겹치는 경우(다른 거래일)
+            path = snap_dir / f"{session.isoformat()}-{doc['recordedAt'][:10]}.json.gz"
+        with gzip.open(path, "wt", encoding="utf-8") as f:
+            json.dump(snap, f, ensure_ascii=False, separators=(",", ":"))
     current = {r["symbol"]: (r.get("prices") or {}).get("price") for r in records}
     doc["validation"] = validation.update(snap_dir, base / "validation.json", current,
-                                          (bench_metrics or {}).get("price"), today, args.top)
+                                          (bench_metrics or {}).get("price"), session, args.top)
     public = ROOT / "docs" / "research" / f"funnel_{market}.json"
     public.parent.mkdir(parents=True, exist_ok=True)
     public.write_text(json.dumps(doc, ensure_ascii=False, indent=1, allow_nan=False), encoding="utf-8")
@@ -295,6 +346,7 @@ def main() -> None:
     parser.add_argument("--limit", type=int, default=None, help="점검용: 유니버스 일부만")
     parser.add_argument("--shortlist", type=int, default=150, help="정밀 조회 대상 수")
     parser.add_argument("--top", type=int, default=50, help="기록할 상위 후보 수")
+    parser.add_argument("--refresh-view", action="store_true", help="이미 기록된 거래일이어도 화면용 파일을 다시 만든다(코드 변경 확인용). 스냅샷은 덮어쓰지 않는다")
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
     today = dt.date.today()

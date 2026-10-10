@@ -143,6 +143,18 @@ class AdapterTest(unittest.TestCase):
             self.assertFalse(any(s["symbol"] == "000007" and s["group"] != "CONTROL" for s in sigs))  # 관문 탈락은 신호 아님
             self.assertEqual(sum(1 for s in sigs if s["group"] == "CONTROL"), config.CONTROL_PER_DATE)
 
+    def test_funnel_ingest_prefers_session_over_recorded_time(self):
+        with tempfile.TemporaryDirectory() as d:
+            funnel, ledger = Path(d) / "funnel", Path(d) / "ledger"
+            snap_dir = funnel / "us" / "snapshots"
+            snap_dir.mkdir(parents=True)
+            rows = [{"symbol": f"S{i}", "price": 10.0, "rank": i, "composite": 70.0, "excluded": False, "T1": "OFF", "exchange": "NYSE"} for i in range(1, 60)]
+            with gzip.open(snap_dir / "2026-10-12.json.gz", "wt", encoding="utf-8") as f:
+                json.dump({"recordedAt": "2026-10-14T05:47:00+00:00", "session": "2026-10-12", "rows": rows}, f)   # 지연되어 이틀 뒤에 기록된 월요일 거래일
+            adapters.ingest_funnel("us", dt.date(2026, 10, 20), funnel, ledger)
+            sigs = adapters.ledger_signals("funnel", "us", ledger)
+            self.assertTrue(sigs and all(s["date"] == "2026-10-12" for s in sigs))
+
     def test_multifactor_ingest_first_write_wins_per_effective_date(self):
         with tempfile.TemporaryDirectory() as d:
             ledger = Path(d) / "ledger"
