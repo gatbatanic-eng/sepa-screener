@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>대박주 깔때기</title>
+<title>실적 턴어라운드</title>
 <style>
   /* 기존 대시보드(멀티팩터 등)와 같은 토큰·패널·내비 구조. 신호 색은 판정(양호·주의·경계)에만 쓴다. */
   :root {
@@ -102,8 +102,8 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>대박주 깔때기</h1>
-    <div class="subtitle">한국(코스피·코스닥)·미국(NYSE·나스닥) 전 종목에 관문 → 사업 점수 → 가격(P1) → 타이밍(T1) 깔때기를 적용한 결과입니다. 매주 토요일 갱신되며, 투자 추천이 아니라 검증·분석용 후보 목록입니다.</div>
+    <h1>실적 턴어라운드</h1>
+    <div class="subtitle">한국(코스피·코스닥)·미국(NYSE·나스닥) 전 종목에서 ① 부실·희석 종목 제외 → ② 매출 가속·흑자전환 점수 → ③ 52주 고점 확인(T1) 순으로 실적이 막 돌아서는 종목을 거른 결과입니다(구 이름: 대박주 깔때기). 매일 기록하며, 투자 추천이 아니라 검증·분석용 후보 목록입니다.</div>
     <div class="nav">
       <a href="../">SEPA 추세템플릿</a>
       <a href="../range_vrebound/">RANGE-MR · V-REBOUND</a>
@@ -111,7 +111,7 @@
       <a href="../technical/">기술적 신호</a>
       <a href="../recovery/">계좌복구 공격매매</a>
       <a href="../fpd/">FPD 연구</a>
-      <a class="here" href="./">대박주 깔때기</a>
+      <a class="here" href="./">실적 턴어라운드</a>
       <a href="../picks/">오늘의 추천</a>
       <a href="../performance/">전략 현황</a>
     </div>
@@ -347,7 +347,7 @@ function render(d, m) {
   app.appendChild(tp);
 
   const top = el("section", "panel");
-  top.appendChild(el("h2", null, "깔때기 상위 후보"));
+  top.appendChild(el("h2", null, "턴어라운드 상위 후보"));
   top.appendChild(el("p", "desc", "관문을 통과하고 S1(이익 가속) 최소 조건을 넘은 종목의 자동 점수 순위입니다. P2(사이클)는 사이클 업종이라 정상 이익 기준으로 따로 평가해야 합니다. * 표시 시총은 주가 × 희석주식수 추정치입니다. 표 머리글에 마우스를 올리면 항목 설명이 나오고, 종목명을 누르면 네이버 증권이 새 탭으로 열립니다."));
   const filters = el("div", "filters");
   const mk = (id, label, checked, onChange) => {

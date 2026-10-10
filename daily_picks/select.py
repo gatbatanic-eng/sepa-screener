@@ -63,7 +63,7 @@ def pick(market: str, pool: dict, direct: dict[str, dict] | None = None) -> dict
     direct = direct or {}
     rows = []
     for code, strategies in pool["selected"].items():
-        # 후보 풀 = 핵심 전략(SEPA·깔때기)이 고른 종목. 연구 전략만 고른 종목은 점수에만 반영한다.
+        # 후보 풀 = 핵심 전략(SEPA·실적 턴어라운드)이 고른 종목. 연구 전략만 고른 종목은 점수에만 반영한다.
         if not (set(strategies) & set(CORE)):
             continue
         view = entry_view(code, pool, direct.get(code))
