@@ -36,10 +36,15 @@ RULES = {
 CONTROL_OF = {"TREND_VOL_PB": "TREND_VOL", "FOUND_TREND": "TREND_VOL", "TREND_PB": "TREND_VOL", "OVERSOLD_VOL": "VOL", "FOUND_ALL": "VOL", "TREND_VOL": "VOL"}
 
 
-def build_panel(data: dict[str, pd.DataFrame], market: str) -> pd.DataFrame:
+MIN_TV = {"us": 5e6, "kr": 5e8}      # 넓힌 유니버스의 최소 20일 평균 거래대금(달러·원). 한국은 세파 유니버스의 하한과 같다.
+
+
+def build_panel(data: dict[str, pd.DataFrame], market: str, min_tv: float | None = None) -> pd.DataFrame:
     rows = []
     for code, df in data.items():
         f = extra_features(df)
+        if min_tv:
+            f["tv20"] = (df["close"] * df["volume"]).rolling(20).mean()
         for h in (20, 40):
             lab = labels(df["close"], COST[market], h)
             f[f"ret{h}"], f[f"mdd{h}"] = lab["ret"], lab["mdd"]
@@ -50,7 +55,28 @@ def build_panel(data: dict[str, pd.DataFrame], market: str) -> pd.DataFrame:
     p.index.name = "date"
     p = p.reset_index()
     p["rs"] = p.groupby("date")["ret252"].rank(pct=True) * 100
-    return p[(p["date"] >= START_EVAL) & p["ok"]].reset_index(drop=True)
+    keep = (p["date"] >= START_EVAL) & p["ok"]
+    if min_tv:
+        keep &= p["tv20"] >= min_tv
+        p["rs"] = p.loc[p["tv20"] >= min_tv].groupby("date")["ret252"].rank(pct=True) * 100       # RS는 유동성 하한을 넘은 종목끼리의 백분위
+    return p[keep].reset_index(drop=True)
+
+
+def wide_universe(market: str, root=ROOT) -> dict[str, str]:
+    """넓힌 유니버스 = 실적 턴어라운드(깔때기)의 전 종목(미국 시총 3억 달러 이상, 한국 500억 원 이상, 우선주·스팩 제외). 최신 스냅샷의 종목 목록을 쓴다."""
+    import glob
+    import gzip
+    f = sorted(glob.glob(str(root / "research" / "funnel" / market / "snapshots" / "*.json.gz")))[-1]
+    with gzip.open(f, "rt", encoding="utf-8") as fh:
+        rows = json.load(fh)["rows"]
+    syms = {}
+    for r in rows:
+        code = str(r["symbol"])
+        if market == "us":
+            syms[code.replace(".", "-")] = code
+        else:
+            syms[code.zfill(6) + (".KQ" if str(r.get("exchange") or "").upper().startswith("KOSDAQ") else ".KS")] = code
+    return syms
 
 
 def rule_masks(p: pd.DataFrame) -> dict[str, pd.Series]:
@@ -141,10 +167,11 @@ def verdict(out: dict) -> dict:
 
 
 def to_markdown(res: dict) -> str:
-    o = ["# 먹을 자리 조건 견고성 확인", "", f"> 실행 {res['ranAt']} · 규칙·판정 기준 2026-10-10 고정 · 생존편향·상승장 한계 · 연구용",
+    o = ["# 먹을 자리 조건 견고성 확인", "", f"> 실행 {res['ranAt']} · 유니버스 {res.get('universe', 'sepa')} · 규칙·판정 기준 2026-10-10 고정 · 생존편향·상승장 한계 · 연구용",
          "판정(PASS): (a) G15 배수 T1·T2·T3 모두 ≥1.5 (b) G10·G15·G20 중 2개 이상 전체 배수 ≥1.5 (c) 20일 수익률 ALL 대비 95% 구간 하한 >0 (d) T3 평균수익 > 같은 기간 ALL (e) 대조 규칙보다 G15 배수 높음", ""]
     for m in res["markets"].values():
-        o += [f"## {m['market'].upper()} — 분석 행 {m['rows']:,}", "", "### 규칙별 판정", "| 규칙 | 정의 | a | b | c | d | e(대조) | PASS |", "|---|---|---|---|---|---|---|---|"]
+        uni = f" · 유니버스 {m['listed']:,}종목 중 데이터 {m['fetched']:,}, 거래대금 하한 통과 {m['stocks']:,}" if m.get("listed") else ""
+        o += [f"## {m['market'].upper()} — 분석 행 {m['rows']:,}{uni}", "", "### 규칙별 판정", "| 규칙 | 정의 | a | b | c | d | e(대조) | PASS |", "|---|---|---|---|---|---|---|---|"]
         for r, v in m["verdict"].items():
             o.append(f"| {r} | {RULES[r]} | {'O' if v['a_G15_lift_all_thirds'] else 'X'} | {'O' if v['b_two_of_three_defs'] else 'X'} | {'O' if v['c_ret_CI_above0'] else 'X'} | {'O' if v['d_T3_beats_all'] else 'X'} | {'O' if v['e_beats_control'] else 'X'}({v['control']}) | **{'PASS' if v['PASS'] else 'FAIL'}** |")
         for pname, per in m["periods"].items():
@@ -158,19 +185,29 @@ def to_markdown(res: dict) -> str:
 
 
 def main() -> None:
+    import argparse
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
-    res = {"ranAt": dt.datetime.now(dt.timezone.utc).isoformat(), "goods": {k: list(v) for k, v in GOODS.items()}, "rules": RULES, "markets": {}}
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--universe", choices=["sepa", "wide"], default="sepa", help="sepa=세파 유니버스(기본), wide=실적 턴어라운드 전 종목(거래대금 하한 적용)")
+    wide = ap.parse_args().universe == "wide"
+    res = {"ranAt": dt.datetime.now(dt.timezone.utc).isoformat(), "universe": "wide" if wide else "sepa", "goods": {k: list(v) for k, v in GOODS.items()}, "rules": RULES, "markets": {}}
     for market in ("us", "kr"):
-        rows = json.loads((ROOT / "docs" / "data" / f"latest_{market}.json").read_text(encoding="utf-8"))
-        syms = {}
-        for u in (r for r in rows if r.get("status") == "OK" and r.get("code")):
-            code = str(u["code"])
-            syms[code.replace(".", "-") if market == "us" else code.zfill(6) + (".KQ" if u.get("market") == "KOSDAQ" else ".KS")] = code
-        panel = build_panel(fetch_ohlcv(list(syms)), market)
-        res["markets"][market] = {"market": market, **evaluate(panel)}
+        if wide:
+            syms = wide_universe(market)
+        else:
+            rows = json.loads((ROOT / "docs" / "data" / f"latest_{market}.json").read_text(encoding="utf-8"))
+            syms = {}
+            for u in (r for r in rows if r.get("status") == "OK" and r.get("code")):
+                code = str(u["code"])
+                syms[code.replace(".", "-") if market == "us" else code.zfill(6) + (".KQ" if u.get("market") == "KOSDAQ" else ".KS")] = code
+        data = fetch_ohlcv(list(syms))
+        panel = build_panel(data, market, MIN_TV[market] if wide else None)
+        res["markets"][market] = {"market": market, "listed": len(syms), "fetched": len(data), "stocks": int(panel["code"].nunique()), **evaluate(panel)}
+        del panel, data
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    (OUT_DIR / "robust.json").write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
-    (OUT_DIR / "robust.md").write_text(to_markdown(res), encoding="utf-8")
+    suffix = "_wide" if wide else ""
+    (OUT_DIR / f"robust{suffix}.json").write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
+    (OUT_DIR / f"robust{suffix}.md").write_text(to_markdown(res), encoding="utf-8")
     print(to_markdown(res))
 
 
