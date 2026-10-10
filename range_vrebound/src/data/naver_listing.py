@@ -1,7 +1,7 @@
 """KRX 종목 목록(data.krx.co.kr)이 점검·장애로 막혔을 때 쓰는 네이버 금융 대체 목록.
 
 이 파일은 하위 시스템끼리 코드를 import하지 않는 이 저장소 관례에 맞춰 같은 내용으로 복사해 둔다
-(루트, technical_signals/, momentum_signals/, range_vrebound/src/data/).
+(루트, screener/, technical_signals/, range_vrebound/src/data/).
 사본이 달라지지 않도록 tests/test_naver_listing.py가 네 파일이 같은지 검사한다. 고칠 때는 모두 같이 고친다.
 
 네이버 모바일 시총 순위(KOSPI·KOSDAQ)에서 종목코드·이름·시장·시총·거래대금을 읽는다.
