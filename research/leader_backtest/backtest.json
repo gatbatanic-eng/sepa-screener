@@ -1,0 +1,2192 @@
+{
+ "ranAt": "2026-10-10T11:58:27.379836+00:00",
+ "config": {
+  "rs_trend": 70,
+  "rs_leader": 90,
+  "rs_pullback": 80,
+  "risk_max": 8.0,
+  "rsi_chase": 75.0,
+  "pivot_chase": 5.0,
+  "swing": 40,
+  "atr": 14,
+  "atr_stop": 1.75,
+  "atr_buffer": 0.5,
+  "pivot": 60,
+  "ema": 20,
+  "touch": 1.01,
+  "rsi_pullback": 65.0,
+  "vol_break": 1.4,
+  "stop_exit": 0.08,
+  "cooldown": 10,
+  "min_low_ratio": 1.3,
+  "min_high_ratio": 0.75
+ },
+ "horizons": [
+  20,
+  40
+ ],
+ "markets": {
+  "us": {
+   "market": "us",
+   "stocks": 506,
+   "firstDate": "2024-09-03",
+   "lastDate": "2026-10-09",
+   "splitDate": "2025-09-23",
+   "passRate": {
+    "ALL": 99.75,
+    "TREND": 0.52,
+    "V1": 0.25,
+    "LEADER": 0.24,
+    "PULLBACK": 0.57,
+    "BREAKOUT": 0.3
+   },
+   "results": {
+    "HOLD20": {
+     "all": {
+      "ALL": {
+       "signals": 255624,
+       "days": 507,
+       "meanPct": 1.12,
+       "medianPct": 0.5,
+       "winRatePct": 52.6,
+       "worstPct": -62.4,
+       "avgRiskPct": 12.4,
+       "sizedMeanPct": 0.53,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 1334,
+       "days": 435,
+       "meanPct": 2.09,
+       "medianPct": 1.05,
+       "winRatePct": 55.1,
+       "worstPct": -31.2,
+       "avgRiskPct": 16.3,
+       "sizedMeanPct": 0.83,
+       "vsAllPp": 1.0,
+       "vsAllCI95": [
+        0.22,
+        1.68
+       ]
+      },
+      "V1": {
+       "signals": 637,
+       "days": 333,
+       "meanPct": 0.86,
+       "medianPct": 0.47,
+       "winRatePct": 53.1,
+       "worstPct": -25.8,
+       "avgRiskPct": 7.0,
+       "sizedMeanPct": 0.86,
+       "vsAllPp": -0.64,
+       "vsAllCI95": [
+        -1.46,
+        0.32
+       ]
+      },
+      "LEADER": {
+       "signals": 611,
+       "days": 326,
+       "meanPct": 3.25,
+       "medianPct": 1.16,
+       "winRatePct": 56.5,
+       "worstPct": -30.9,
+       "avgRiskPct": 20.8,
+       "sizedMeanPct": 1.11,
+       "vsAllPp": 1.47,
+       "vsAllCI95": [
+        -0.23,
+        3.23
+       ]
+      },
+      "PULLBACK": {
+       "signals": 1454,
+       "days": 450,
+       "meanPct": 2.31,
+       "medianPct": 0.92,
+       "winRatePct": 55.1,
+       "worstPct": -41.6,
+       "avgRiskPct": 18.1,
+       "sizedMeanPct": 0.78,
+       "vsAllPp": 0.76,
+       "vsAllCI95": [
+        -0.6,
+        1.88
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 791,
+       "days": 313,
+       "meanPct": 1.02,
+       "medianPct": 0.15,
+       "winRatePct": 50.7,
+       "worstPct": -37.7,
+       "avgRiskPct": 21.9,
+       "sizedMeanPct": 0.18,
+       "vsAllPp": 0.68,
+       "vsAllCI95": [
+        -1.27,
+        2.42
+       ]
+      }
+     },
+     "firstHalf": {
+      "ALL": {
+       "signals": 132791,
+       "days": 264,
+       "meanPct": 1.11,
+       "medianPct": 0.59,
+       "winRatePct": 53.3,
+       "worstPct": -62.4,
+       "avgRiskPct": 12.2,
+       "sizedMeanPct": 0.42,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 723,
+       "days": 223,
+       "meanPct": 2.38,
+       "medianPct": 1.53,
+       "winRatePct": 58.5,
+       "worstPct": -31.2,
+       "avgRiskPct": 15.9,
+       "sizedMeanPct": 0.85,
+       "vsAllPp": 1.34,
+       "vsAllCI95": [
+        0.41,
+        1.86
+       ]
+      },
+      "V1": {
+       "signals": 389,
+       "days": 182,
+       "meanPct": 1.11,
+       "medianPct": 0.53,
+       "winRatePct": 54.0,
+       "worstPct": -25.8,
+       "avgRiskPct": 7.0,
+       "sizedMeanPct": 1.11,
+       "vsAllPp": -0.3,
+       "vsAllCI95": [
+        -1.54,
+        1.02
+       ]
+      },
+      "LEADER": {
+       "signals": 350,
+       "days": 175,
+       "meanPct": 3.51,
+       "medianPct": 1.48,
+       "winRatePct": 60.0,
+       "worstPct": -30.9,
+       "avgRiskPct": 19.8,
+       "sizedMeanPct": 1.22,
+       "vsAllPp": 1.86,
+       "vsAllCI95": [
+        -0.66,
+        3.5
+       ]
+      },
+      "PULLBACK": {
+       "signals": 757,
+       "days": 230,
+       "meanPct": 1.58,
+       "medianPct": 0.62,
+       "winRatePct": 53.8,
+       "worstPct": -40.8,
+       "avgRiskPct": 16.1,
+       "sizedMeanPct": 0.48,
+       "vsAllPp": 0.39,
+       "vsAllCI95": [
+        -1.86,
+        1.81
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 422,
+       "days": 153,
+       "meanPct": 1.41,
+       "medianPct": 0.89,
+       "winRatePct": 54.0,
+       "worstPct": -37.7,
+       "avgRiskPct": 20.1,
+       "sizedMeanPct": 0.3,
+       "vsAllPp": 1.59,
+       "vsAllCI95": [
+        -0.73,
+        3.28
+       ]
+      }
+     },
+     "secondHalf": {
+      "ALL": {
+       "signals": 122833,
+       "days": 243,
+       "meanPct": 1.14,
+       "medianPct": 0.38,
+       "winRatePct": 51.9,
+       "worstPct": -55.5,
+       "avgRiskPct": 12.6,
+       "sizedMeanPct": 0.66,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 611,
+       "days": 212,
+       "meanPct": 1.75,
+       "medianPct": 0.26,
+       "winRatePct": 51.1,
+       "worstPct": -30.2,
+       "avgRiskPct": 16.8,
+       "sizedMeanPct": 0.8,
+       "vsAllPp": 0.64,
+       "vsAllCI95": [
+        -0.65,
+        1.8
+       ]
+      },
+      "V1": {
+       "signals": 248,
+       "days": 151,
+       "meanPct": 0.47,
+       "medianPct": 0.33,
+       "winRatePct": 51.6,
+       "worstPct": -25.4,
+       "avgRiskPct": 7.1,
+       "sizedMeanPct": 0.47,
+       "vsAllPp": -1.04,
+       "vsAllCI95": [
+        -2.22,
+        0.12
+       ]
+      },
+      "LEADER": {
+       "signals": 261,
+       "days": 151,
+       "meanPct": 2.91,
+       "medianPct": 0.32,
+       "winRatePct": 51.7,
+       "worstPct": -30.7,
+       "avgRiskPct": 22.1,
+       "sizedMeanPct": 0.95,
+       "vsAllPp": 1.01,
+       "vsAllCI95": [
+        -1.71,
+        4.55
+       ]
+      },
+      "PULLBACK": {
+       "signals": 697,
+       "days": 220,
+       "meanPct": 3.1,
+       "medianPct": 1.41,
+       "winRatePct": 56.5,
+       "worstPct": -41.6,
+       "avgRiskPct": 20.2,
+       "sizedMeanPct": 1.11,
+       "vsAllPp": 1.15,
+       "vsAllCI95": [
+        -0.57,
+        2.79
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 369,
+       "days": 160,
+       "meanPct": 0.57,
+       "medianPct": -0.72,
+       "winRatePct": 46.9,
+       "worstPct": -34.8,
+       "avgRiskPct": 24.0,
+       "sizedMeanPct": 0.03,
+       "vsAllPp": -0.19,
+       "vsAllCI95": [
+        -3.47,
+        2.62
+       ]
+      }
+     }
+    },
+    "STOP820": {
+     "all": {
+      "ALL": {
+       "signals": 255624,
+       "days": 507,
+       "meanPct": 0.79,
+       "medianPct": 0.06,
+       "winRatePct": 50.3,
+       "worstPct": -44.9,
+       "avgRiskPct": 12.4,
+       "sizedMeanPct": 0.34,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 1334,
+       "days": 435,
+       "meanPct": 1.72,
+       "medianPct": 0.61,
+       "winRatePct": 53.4,
+       "worstPct": -26.7,
+       "avgRiskPct": 16.3,
+       "sizedMeanPct": 0.68,
+       "vsAllPp": 0.97,
+       "vsAllCI95": [
+        0.23,
+        1.64
+       ]
+      },
+      "V1": {
+       "signals": 637,
+       "days": 333,
+       "meanPct": 0.7,
+       "medianPct": 0.44,
+       "winRatePct": 52.7,
+       "worstPct": -27.4,
+       "avgRiskPct": 7.0,
+       "sizedMeanPct": 0.7,
+       "vsAllPp": -0.41,
+       "vsAllCI95": [
+        -1.17,
+        0.48
+       ]
+      },
+      "LEADER": {
+       "signals": 611,
+       "days": 326,
+       "meanPct": 2.69,
+       "medianPct": 0.57,
+       "winRatePct": 53.4,
+       "worstPct": -26.7,
+       "avgRiskPct": 20.8,
+       "sizedMeanPct": 0.94,
+       "vsAllPp": 1.2,
+       "vsAllCI95": [
+        -0.41,
+        2.98
+       ]
+      },
+      "PULLBACK": {
+       "signals": 1454,
+       "days": 450,
+       "meanPct": 1.7,
+       "medianPct": 0.32,
+       "winRatePct": 51.4,
+       "worstPct": -26.9,
+       "avgRiskPct": 18.1,
+       "sizedMeanPct": 0.57,
+       "vsAllPp": 0.49,
+       "vsAllCI95": [
+        -0.58,
+        1.45
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 791,
+       "days": 313,
+       "meanPct": 0.69,
+       "medianPct": -0.29,
+       "winRatePct": 48.4,
+       "worstPct": -33.4,
+       "avgRiskPct": 21.9,
+       "sizedMeanPct": 0.11,
+       "vsAllPp": 0.61,
+       "vsAllCI95": [
+        -0.95,
+        2.12
+       ]
+      }
+     },
+     "firstHalf": {
+      "ALL": {
+       "signals": 132791,
+       "days": 264,
+       "meanPct": 0.8,
+       "medianPct": 0.29,
+       "winRatePct": 51.5,
+       "worstPct": -42.9,
+       "avgRiskPct": 12.2,
+       "sizedMeanPct": 0.22,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 723,
+       "days": 223,
+       "meanPct": 2.03,
+       "medianPct": 1.25,
+       "winRatePct": 57.3,
+       "worstPct": -26.7,
+       "avgRiskPct": 15.9,
+       "sizedMeanPct": 0.66,
+       "vsAllPp": 1.34,
+       "vsAllCI95": [
+        0.41,
+        1.84
+       ]
+      },
+      "V1": {
+       "signals": 389,
+       "days": 182,
+       "meanPct": 0.81,
+       "medianPct": 0.51,
+       "winRatePct": 53.7,
+       "worstPct": -27.4,
+       "avgRiskPct": 7.0,
+       "sizedMeanPct": 0.81,
+       "vsAllPp": -0.3,
+       "vsAllCI95": [
+        -1.42,
+        0.94
+       ]
+      },
+      "LEADER": {
+       "signals": 350,
+       "days": 175,
+       "meanPct": 3.05,
+       "medianPct": 1.2,
+       "winRatePct": 58.0,
+       "worstPct": -26.7,
+       "avgRiskPct": 19.8,
+       "sizedMeanPct": 1.07,
+       "vsAllPp": 1.68,
+       "vsAllCI95": [
+        -0.49,
+        3.12
+       ]
+      },
+      "PULLBACK": {
+       "signals": 757,
+       "days": 230,
+       "meanPct": 1.27,
+       "medianPct": 0.28,
+       "winRatePct": 51.4,
+       "worstPct": -23.7,
+       "avgRiskPct": 16.1,
+       "sizedMeanPct": 0.35,
+       "vsAllPp": 0.39,
+       "vsAllCI95": [
+        -1.35,
+        1.49
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 422,
+       "days": 153,
+       "meanPct": 1.17,
+       "medianPct": 0.56,
+       "winRatePct": 52.4,
+       "worstPct": -33.4,
+       "avgRiskPct": 20.1,
+       "sizedMeanPct": 0.27,
+       "vsAllPp": 1.62,
+       "vsAllCI95": [
+        -0.4,
+        3.14
+       ]
+      }
+     },
+     "secondHalf": {
+      "ALL": {
+       "signals": 122833,
+       "days": 243,
+       "meanPct": 0.78,
+       "medianPct": -0.23,
+       "winRatePct": 49.0,
+       "worstPct": -44.9,
+       "avgRiskPct": 12.6,
+       "sizedMeanPct": 0.47,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 611,
+       "days": 212,
+       "meanPct": 1.36,
+       "medianPct": -0.21,
+       "winRatePct": 48.8,
+       "worstPct": -26.7,
+       "avgRiskPct": 16.8,
+       "sizedMeanPct": 0.69,
+       "vsAllPp": 0.59,
+       "vsAllCI95": [
+        -0.64,
+        1.83
+       ]
+      },
+      "V1": {
+       "signals": 248,
+       "days": 151,
+       "meanPct": 0.53,
+       "medianPct": 0.33,
+       "winRatePct": 51.2,
+       "worstPct": -18.2,
+       "avgRiskPct": 7.1,
+       "sizedMeanPct": 0.53,
+       "vsAllPp": -0.55,
+       "vsAllCI95": [
+        -1.82,
+        0.56
+       ]
+      },
+      "LEADER": {
+       "signals": 261,
+       "days": 151,
+       "meanPct": 2.21,
+       "medianPct": -0.95,
+       "winRatePct": 47.1,
+       "worstPct": -21.2,
+       "avgRiskPct": 22.1,
+       "sizedMeanPct": 0.76,
+       "vsAllPp": 0.64,
+       "vsAllCI95": [
+        -2.11,
+        4.25
+       ]
+      },
+      "PULLBACK": {
+       "signals": 697,
+       "days": 220,
+       "meanPct": 2.16,
+       "medianPct": 0.61,
+       "winRatePct": 51.4,
+       "worstPct": -26.9,
+       "avgRiskPct": 20.2,
+       "sizedMeanPct": 0.8,
+       "vsAllPp": 0.59,
+       "vsAllCI95": [
+        -0.83,
+        1.97
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 369,
+       "days": 160,
+       "meanPct": 0.13,
+       "medianPct": -1.55,
+       "winRatePct": 43.9,
+       "worstPct": -22.3,
+       "avgRiskPct": 24.0,
+       "sizedMeanPct": -0.08,
+       "vsAllPp": -0.36,
+       "vsAllCI95": [
+        -2.82,
+        1.93
+       ]
+      }
+     }
+    },
+    "HOLD40": {
+     "all": {
+      "ALL": {
+       "signals": 245504,
+       "days": 487,
+       "meanPct": 2.58,
+       "medianPct": 1.21,
+       "winRatePct": 54.3,
+       "worstPct": -60.7,
+       "avgRiskPct": 12.3,
+       "sizedMeanPct": 1.34,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 1285,
+       "days": 417,
+       "meanPct": 3.78,
+       "medianPct": 1.89,
+       "winRatePct": 57.4,
+       "worstPct": -47.8,
+       "avgRiskPct": 16.3,
+       "sizedMeanPct": 1.47,
+       "vsAllPp": 1.68,
+       "vsAllCI95": [
+        0.44,
+        3.06
+       ]
+      },
+      "V1": {
+       "signals": 612,
+       "days": 319,
+       "meanPct": 0.97,
+       "medianPct": 0.5,
+       "winRatePct": 52.5,
+       "worstPct": -32.0,
+       "avgRiskPct": 7.0,
+       "sizedMeanPct": 0.97,
+       "vsAllPp": -0.81,
+       "vsAllCI95": [
+        -1.94,
+        0.39
+       ]
+      },
+      "LEADER": {
+       "signals": 587,
+       "days": 315,
+       "meanPct": 5.19,
+       "medianPct": 2.22,
+       "winRatePct": 57.2,
+       "worstPct": -47.8,
+       "avgRiskPct": 20.7,
+       "sizedMeanPct": 1.6,
+       "vsAllPp": 2.61,
+       "vsAllCI95": [
+        -0.28,
+        6.12
+       ]
+      },
+      "PULLBACK": {
+       "signals": 1403,
+       "days": 430,
+       "meanPct": 4.08,
+       "medianPct": 2.24,
+       "winRatePct": 57.7,
+       "worstPct": -58.7,
+       "avgRiskPct": 18.1,
+       "sizedMeanPct": 1.55,
+       "vsAllPp": 1.56,
+       "vsAllCI95": [
+        -1.76,
+        4.23
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 776,
+       "days": 304,
+       "meanPct": 1.76,
+       "medianPct": -0.1,
+       "winRatePct": 49.4,
+       "worstPct": -42.4,
+       "avgRiskPct": 21.9,
+       "sizedMeanPct": 0.24,
+       "vsAllPp": 0.89,
+       "vsAllCI95": [
+        -1.78,
+        3.83
+       ]
+      }
+     },
+     "firstHalf": {
+      "ALL": {
+       "signals": 132791,
+       "days": 264,
+       "meanPct": 2.21,
+       "medianPct": 1.17,
+       "winRatePct": 54.3,
+       "worstPct": -60.7,
+       "avgRiskPct": 12.2,
+       "sizedMeanPct": 0.84,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 723,
+       "days": 223,
+       "meanPct": 3.75,
+       "medianPct": 2.31,
+       "winRatePct": 58.9,
+       "worstPct": -47.8,
+       "avgRiskPct": 15.9,
+       "sizedMeanPct": 1.09,
+       "vsAllPp": 2.07,
+       "vsAllCI95": [
+        0.06,
+        2.77
+       ]
+      },
+      "V1": {
+       "signals": 389,
+       "days": 182,
+       "meanPct": 0.35,
+       "medianPct": 0.33,
+       "winRatePct": 51.4,
+       "worstPct": -32.0,
+       "avgRiskPct": 7.0,
+       "sizedMeanPct": 0.35,
+       "vsAllPp": -1.17,
+       "vsAllCI95": [
+        -2.91,
+        0.73
+       ]
+      },
+      "LEADER": {
+       "signals": 350,
+       "days": 175,
+       "meanPct": 5.27,
+       "medianPct": 2.65,
+       "winRatePct": 60.0,
+       "worstPct": -47.8,
+       "avgRiskPct": 19.8,
+       "sizedMeanPct": 1.55,
+       "vsAllPp": 3.03,
+       "vsAllCI95": [
+        -1.36,
+        5.58
+       ]
+      },
+      "PULLBACK": {
+       "signals": 757,
+       "days": 230,
+       "meanPct": 2.24,
+       "medianPct": 1.93,
+       "winRatePct": 57.2,
+       "worstPct": -58.7,
+       "avgRiskPct": 16.1,
+       "sizedMeanPct": 0.68,
+       "vsAllPp": -0.06,
+       "vsAllCI95": [
+        -4.63,
+        2.45
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 422,
+       "days": 153,
+       "meanPct": 1.6,
+       "medianPct": -0.24,
+       "winRatePct": 48.8,
+       "worstPct": -42.4,
+       "avgRiskPct": 20.1,
+       "sizedMeanPct": -0.03,
+       "vsAllPp": 2.33,
+       "vsAllCI95": [
+        -2.32,
+        3.61
+       ]
+      }
+     },
+     "secondHalf": {
+      "ALL": {
+       "signals": 112713,
+       "days": 223,
+       "meanPct": 3.02,
+       "medianPct": 1.25,
+       "winRatePct": 54.2,
+       "worstPct": -54.4,
+       "avgRiskPct": 12.5,
+       "sizedMeanPct": 1.93,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 562,
+       "days": 194,
+       "meanPct": 3.81,
+       "medianPct": 1.45,
+       "winRatePct": 55.5,
+       "worstPct": -36.7,
+       "avgRiskPct": 16.7,
+       "sizedMeanPct": 1.94,
+       "vsAllPp": 1.22,
+       "vsAllCI95": [
+        -0.46,
+        4.04
+       ]
+      },
+      "V1": {
+       "signals": 223,
+       "days": 137,
+       "meanPct": 2.04,
+       "medianPct": 1.22,
+       "winRatePct": 54.3,
+       "worstPct": -28.1,
+       "avgRiskPct": 7.1,
+       "sizedMeanPct": 2.04,
+       "vsAllPp": -0.33,
+       "vsAllCI95": [
+        -1.34,
+        0.78
+       ]
+      },
+      "LEADER": {
+       "signals": 237,
+       "days": 140,
+       "meanPct": 5.06,
+       "medianPct": 1.45,
+       "winRatePct": 53.2,
+       "worstPct": -36.8,
+       "avgRiskPct": 22.0,
+       "sizedMeanPct": 1.68,
+       "vsAllPp": 2.09,
+       "vsAllCI95": [
+        -2.12,
+        8.73
+       ]
+      },
+      "PULLBACK": {
+       "signals": 646,
+       "days": 200,
+       "meanPct": 6.24,
+       "medianPct": 2.77,
+       "winRatePct": 58.2,
+       "worstPct": -42.9,
+       "avgRiskPct": 20.5,
+       "sizedMeanPct": 2.56,
+       "vsAllPp": 3.42,
+       "vsAllCI95": [
+        -0.36,
+        7.99
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 354,
+       "days": 151,
+       "meanPct": 1.95,
+       "medianPct": 0.02,
+       "winRatePct": 50.0,
+       "worstPct": -39.8,
+       "avgRiskPct": 24.0,
+       "sizedMeanPct": 0.56,
+       "vsAllPp": -0.56,
+       "vsAllCI95": [
+        -3.61,
+        5.43
+       ]
+      }
+     }
+    },
+    "STOP840": {
+     "all": {
+      "ALL": {
+       "signals": 245504,
+       "days": 487,
+       "meanPct": 1.61,
+       "medianPct": -0.9,
+       "winRatePct": 47.5,
+       "worstPct": -44.9,
+       "avgRiskPct": 12.3,
+       "sizedMeanPct": 0.74,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 1285,
+       "days": 417,
+       "meanPct": 2.87,
+       "medianPct": 0.47,
+       "winRatePct": 51.4,
+       "worstPct": -26.7,
+       "avgRiskPct": 16.3,
+       "sizedMeanPct": 1.07,
+       "vsAllPp": 1.54,
+       "vsAllCI95": [
+        0.47,
+        2.8
+       ]
+      },
+      "V1": {
+       "signals": 612,
+       "days": 319,
+       "meanPct": 0.71,
+       "medianPct": -0.34,
+       "winRatePct": 49.2,
+       "worstPct": -27.4,
+       "avgRiskPct": 7.0,
+       "sizedMeanPct": 0.71,
+       "vsAllPp": -0.42,
+       "vsAllCI95": [
+        -1.41,
+        0.72
+       ]
+      },
+      "LEADER": {
+       "signals": 587,
+       "days": 315,
+       "meanPct": 4.15,
+       "medianPct": -0.06,
+       "winRatePct": 49.7,
+       "worstPct": -26.7,
+       "avgRiskPct": 20.7,
+       "sizedMeanPct": 1.35,
+       "vsAllPp": 2.16,
+       "vsAllCI95": [
+        -0.21,
+        5.48
+       ]
+      },
+      "PULLBACK": {
+       "signals": 1403,
+       "days": 430,
+       "meanPct": 2.86,
+       "medianPct": -0.47,
+       "winRatePct": 49.2,
+       "worstPct": -23.7,
+       "avgRiskPct": 18.1,
+       "sizedMeanPct": 1.15,
+       "vsAllPp": 1.1,
+       "vsAllCI95": [
+        -1.15,
+        3.27
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 776,
+       "days": 304,
+       "meanPct": 1.12,
+       "medianPct": -3.02,
+       "winRatePct": 42.7,
+       "worstPct": -33.4,
+       "avgRiskPct": 21.9,
+       "sizedMeanPct": 0.08,
+       "vsAllPp": 0.73,
+       "vsAllCI95": [
+        -1.02,
+        3.22
+       ]
+      }
+     },
+     "firstHalf": {
+      "ALL": {
+       "signals": 132791,
+       "days": 264,
+       "meanPct": 1.29,
+       "medianPct": -0.67,
+       "winRatePct": 48.0,
+       "worstPct": -42.9,
+       "avgRiskPct": 12.2,
+       "sizedMeanPct": 0.21,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 723,
+       "days": 223,
+       "meanPct": 3.15,
+       "medianPct": 1.16,
+       "winRatePct": 54.2,
+       "worstPct": -26.7,
+       "avgRiskPct": 15.9,
+       "sizedMeanPct": 0.84,
+       "vsAllPp": 2.3,
+       "vsAllCI95": [
+        0.45,
+        3.11
+       ]
+      },
+      "V1": {
+       "signals": 389,
+       "days": 182,
+       "meanPct": 0.1,
+       "medianPct": -0.51,
+       "winRatePct": 47.8,
+       "worstPct": -27.4,
+       "avgRiskPct": 7.0,
+       "sizedMeanPct": 0.1,
+       "vsAllPp": -0.66,
+       "vsAllCI95": [
+        -2.21,
+        1.24
+       ]
+      },
+      "LEADER": {
+       "signals": 350,
+       "days": 175,
+       "meanPct": 4.7,
+       "medianPct": 1.59,
+       "winRatePct": 54.3,
+       "worstPct": -26.7,
+       "avgRiskPct": 19.8,
+       "sizedMeanPct": 1.47,
+       "vsAllPp": 3.05,
+       "vsAllCI95": [
+        -0.55,
+        5.55
+       ]
+      },
+      "PULLBACK": {
+       "signals": 757,
+       "days": 230,
+       "meanPct": 2.02,
+       "medianPct": 0.34,
+       "winRatePct": 51.3,
+       "worstPct": -23.7,
+       "avgRiskPct": 16.1,
+       "sizedMeanPct": 0.63,
+       "vsAllPp": 0.76,
+       "vsAllCI95": [
+        -2.41,
+        2.39
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 422,
+       "days": 153,
+       "meanPct": 1.52,
+       "medianPct": -1.86,
+       "winRatePct": 45.3,
+       "worstPct": -33.4,
+       "avgRiskPct": 20.1,
+       "sizedMeanPct": 0.02,
+       "vsAllPp": 2.54,
+       "vsAllCI95": [
+        -0.9,
+        3.31
+       ]
+      }
+     },
+     "secondHalf": {
+      "ALL": {
+       "signals": 112713,
+       "days": 223,
+       "meanPct": 1.99,
+       "medianPct": -1.21,
+       "winRatePct": 46.9,
+       "worstPct": -44.9,
+       "avgRiskPct": 12.5,
+       "sizedMeanPct": 1.35,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 562,
+       "days": 194,
+       "meanPct": 2.52,
+       "medianPct": -1.06,
+       "winRatePct": 47.7,
+       "worstPct": -17.5,
+       "avgRiskPct": 16.7,
+       "sizedMeanPct": 1.36,
+       "vsAllPp": 0.67,
+       "vsAllCI95": [
+        -0.77,
+        3.09
+       ]
+      },
+      "V1": {
+       "signals": 223,
+       "days": 137,
+       "meanPct": 1.78,
+       "medianPct": 0.77,
+       "winRatePct": 51.6,
+       "worstPct": -18.2,
+       "avgRiskPct": 7.1,
+       "sizedMeanPct": 1.78,
+       "vsAllPp": -0.09,
+       "vsAllCI95": [
+        -1.26,
+        0.82
+       ]
+      },
+      "LEADER": {
+       "signals": 237,
+       "days": 140,
+       "meanPct": 3.34,
+       "medianPct": -5.94,
+       "winRatePct": 43.0,
+       "worstPct": -21.2,
+       "avgRiskPct": 22.0,
+       "sizedMeanPct": 1.17,
+       "vsAllPp": 1.04,
+       "vsAllCI95": [
+        -2.24,
+        7.14
+       ]
+      },
+      "PULLBACK": {
+       "signals": 646,
+       "days": 200,
+       "meanPct": 3.85,
+       "medianPct": -2.32,
+       "winRatePct": 46.7,
+       "worstPct": -20.6,
+       "avgRiskPct": 20.5,
+       "sizedMeanPct": 1.75,
+       "vsAllPp": 1.5,
+       "vsAllCI95": [
+        -1.82,
+        5.58
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 354,
+       "days": 151,
+       "meanPct": 0.64,
+       "medianPct": -6.21,
+       "winRatePct": 39.5,
+       "worstPct": -22.3,
+       "avgRiskPct": 24.0,
+       "sizedMeanPct": 0.16,
+       "vsAllPp": -1.1,
+       "vsAllCI95": [
+        -2.63,
+        2.63
+       ]
+      }
+     }
+    }
+   }
+  },
+  "kr": {
+   "market": "kr",
+   "stocks": 658,
+   "firstDate": "2024-09-02",
+   "lastDate": "2026-10-08",
+   "splitDate": "2025-09-19",
+   "passRate": {
+    "ALL": 98.0,
+    "TREND": 0.42,
+    "V1": 0.02,
+    "LEADER": 0.2,
+    "PULLBACK": 0.4,
+    "BREAKOUT": 0.32
+   },
+   "results": {
+    "HOLD20": {
+     "all": {
+      "ALL": {
+       "signals": 310756,
+       "days": 487,
+       "meanPct": 3.32,
+       "medianPct": -0.06,
+       "winRatePct": 49.8,
+       "worstPct": -88.0,
+       "avgRiskPct": 20.4,
+       "sizedMeanPct": 1.78,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 1356,
+       "days": 422,
+       "meanPct": 4.05,
+       "medianPct": -0.85,
+       "winRatePct": 48.2,
+       "worstPct": -63.8,
+       "avgRiskPct": 31.7,
+       "sizedMeanPct": 1.36,
+       "vsAllPp": 0.1,
+       "vsAllCI95": [
+        -1.78,
+        2.6
+       ]
+      },
+      "V1": {
+       "signals": 71,
+       "days": 65,
+       "meanPct": 1.67,
+       "medianPct": 0.29,
+       "winRatePct": 52.1,
+       "worstPct": -15.3,
+       "avgRiskPct": 7.1,
+       "sizedMeanPct": 1.67,
+       "vsAllPp": -1.34,
+       "vsAllCI95": [
+        -3.11,
+        -0.17
+       ]
+      },
+      "LEADER": {
+       "signals": 641,
+       "days": 346,
+       "meanPct": 4.79,
+       "medianPct": 0.11,
+       "winRatePct": 50.2,
+       "worstPct": -63.8,
+       "avgRiskPct": 40.5,
+       "sizedMeanPct": 1.27,
+       "vsAllPp": 1.82,
+       "vsAllCI95": [
+        -1.21,
+        5.92
+       ]
+      },
+      "PULLBACK": {
+       "signals": 1327,
+       "days": 421,
+       "meanPct": 2.84,
+       "medianPct": -0.38,
+       "winRatePct": 48.8,
+       "worstPct": -64.7,
+       "avgRiskPct": 32.1,
+       "sizedMeanPct": 1.04,
+       "vsAllPp": -0.41,
+       "vsAllCI95": [
+        -2.0,
+        1.6
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 1044,
+       "days": 367,
+       "meanPct": 4.33,
+       "medianPct": -0.9,
+       "winRatePct": 47.8,
+       "worstPct": -63.6,
+       "avgRiskPct": 39.4,
+       "sizedMeanPct": 1.05,
+       "vsAllPp": 0.49,
+       "vsAllCI95": [
+        -0.96,
+        2.83
+       ]
+      }
+     },
+     "firstHalf": {
+      "ALL": {
+       "signals": 159385,
+       "days": 254,
+       "meanPct": 2.73,
+       "medianPct": 0.05,
+       "winRatePct": 50.2,
+       "worstPct": -77.8,
+       "avgRiskPct": 17.6,
+       "sizedMeanPct": 1.48,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 669,
+       "days": 217,
+       "meanPct": 3.02,
+       "medianPct": -0.83,
+       "winRatePct": 48.1,
+       "worstPct": -55.9,
+       "avgRiskPct": 26.5,
+       "sizedMeanPct": 1.04,
+       "vsAllPp": -0.89,
+       "vsAllCI95": [
+        -2.67,
+        0.62
+       ]
+      },
+      "V1": {
+       "signals": 59,
+       "days": 53,
+       "meanPct": 0.14,
+       "medianPct": -0.72,
+       "winRatePct": 45.8,
+       "worstPct": -15.3,
+       "avgRiskPct": 7.1,
+       "sizedMeanPct": 0.14,
+       "vsAllPp": -2.0,
+       "vsAllCI95": [
+        -3.15,
+        0.29
+       ]
+      },
+      "LEADER": {
+       "signals": 319,
+       "days": 177,
+       "meanPct": 4.3,
+       "medianPct": -0.07,
+       "winRatePct": 49.5,
+       "worstPct": -57.5,
+       "avgRiskPct": 34.3,
+       "sizedMeanPct": 1.31,
+       "vsAllPp": 2.31,
+       "vsAllCI95": [
+        -2.28,
+        6.45
+       ]
+      },
+      "PULLBACK": {
+       "signals": 662,
+       "days": 227,
+       "meanPct": 3.08,
+       "medianPct": -0.08,
+       "winRatePct": 49.7,
+       "worstPct": -57.5,
+       "avgRiskPct": 26.6,
+       "sizedMeanPct": 1.05,
+       "vsAllPp": 0.88,
+       "vsAllCI95": [
+        -0.78,
+        3.16
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 445,
+       "days": 188,
+       "meanPct": 5.02,
+       "medianPct": 0.05,
+       "winRatePct": 50.3,
+       "worstPct": -50.1,
+       "avgRiskPct": 33.0,
+       "sizedMeanPct": 1.28,
+       "vsAllPp": 1.35,
+       "vsAllCI95": [
+        -0.56,
+        3.26
+       ]
+      }
+     },
+     "secondHalf": {
+      "ALL": {
+       "signals": 151371,
+       "days": 233,
+       "meanPct": 3.94,
+       "medianPct": -0.23,
+       "winRatePct": 49.4,
+       "worstPct": -88.0,
+       "avgRiskPct": 23.4,
+       "sizedMeanPct": 2.09,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 687,
+       "days": 205,
+       "meanPct": 5.06,
+       "medianPct": -0.87,
+       "winRatePct": 48.2,
+       "worstPct": -63.8,
+       "avgRiskPct": 36.9,
+       "sizedMeanPct": 1.67,
+       "vsAllPp": 1.15,
+       "vsAllCI95": [
+        -2.32,
+        5.76
+       ]
+      },
+      "V1": {
+       "signals": 12,
+       "days": 12,
+       "meanPct": 9.18,
+       "medianPct": 5.73,
+       "winRatePct": 83.3,
+       "worstPct": -9.6,
+       "avgRiskPct": 7.3,
+       "sizedMeanPct": 9.18,
+       "vsAllPp": 1.62,
+       "vsAllCI95": null
+      },
+      "LEADER": {
+       "signals": 322,
+       "days": 169,
+       "meanPct": 5.27,
+       "medianPct": 0.69,
+       "winRatePct": 50.9,
+       "worstPct": -63.8,
+       "avgRiskPct": 46.6,
+       "sizedMeanPct": 1.23,
+       "vsAllPp": 1.32,
+       "vsAllCI95": [
+        -3.34,
+        7.38
+       ]
+      },
+      "PULLBACK": {
+       "signals": 665,
+       "days": 194,
+       "meanPct": 2.6,
+       "medianPct": -0.82,
+       "winRatePct": 47.8,
+       "worstPct": -64.7,
+       "avgRiskPct": 37.5,
+       "sizedMeanPct": 1.03,
+       "vsAllPp": -1.93,
+       "vsAllCI95": [
+        -4.92,
+        1.75
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 599,
+       "days": 179,
+       "meanPct": 3.82,
+       "medianPct": -1.89,
+       "winRatePct": 45.9,
+       "worstPct": -63.6,
+       "avgRiskPct": 44.1,
+       "sizedMeanPct": 0.87,
+       "vsAllPp": -0.42,
+       "vsAllCI95": [
+        -2.58,
+        4.01
+       ]
+      }
+     }
+    },
+    "STOP820": {
+     "all": {
+      "ALL": {
+       "signals": 310756,
+       "days": 487,
+       "meanPct": 2.06,
+       "medianPct": -4.23,
+       "winRatePct": 40.7,
+       "worstPct": -80.5,
+       "avgRiskPct": 20.4,
+       "sizedMeanPct": 1.18,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 1356,
+       "days": 422,
+       "meanPct": 2.9,
+       "medianPct": -8.54,
+       "winRatePct": 37.8,
+       "worstPct": -53.8,
+       "avgRiskPct": 31.7,
+       "sizedMeanPct": 1.05,
+       "vsAllPp": 0.27,
+       "vsAllCI95": [
+        -0.94,
+        1.73
+       ]
+      },
+      "V1": {
+       "signals": 71,
+       "days": 65,
+       "meanPct": 1.46,
+       "medianPct": 0.29,
+       "winRatePct": 52.1,
+       "worstPct": -12.0,
+       "avgRiskPct": 7.1,
+       "sizedMeanPct": 1.46,
+       "vsAllPp": -0.04,
+       "vsAllCI95": [
+        -1.74,
+        1.44
+       ]
+      },
+      "LEADER": {
+       "signals": 641,
+       "days": 346,
+       "meanPct": 3.62,
+       "medianPct": -8.77,
+       "winRatePct": 36.5,
+       "worstPct": -53.8,
+       "avgRiskPct": 40.5,
+       "sizedMeanPct": 0.97,
+       "vsAllPp": 2.4,
+       "vsAllCI95": [
+        -0.01,
+        5.75
+       ]
+      },
+      "PULLBACK": {
+       "signals": 1327,
+       "days": 421,
+       "meanPct": 1.63,
+       "medianPct": -8.56,
+       "winRatePct": 37.6,
+       "worstPct": -53.8,
+       "avgRiskPct": 32.1,
+       "sizedMeanPct": 0.63,
+       "vsAllPp": -0.08,
+       "vsAllCI95": [
+        -0.96,
+        1.26
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 1044,
+       "days": 367,
+       "meanPct": 3.05,
+       "medianPct": -8.66,
+       "winRatePct": 37.8,
+       "worstPct": -34.5,
+       "avgRiskPct": 39.4,
+       "sizedMeanPct": 0.82,
+       "vsAllPp": 0.29,
+       "vsAllCI95": [
+        -1.18,
+        2.29
+       ]
+      }
+     },
+     "firstHalf": {
+      "ALL": {
+       "signals": 159385,
+       "days": 254,
+       "meanPct": 1.69,
+       "medianPct": -2.21,
+       "winRatePct": 43.4,
+       "worstPct": -55.4,
+       "avgRiskPct": 17.6,
+       "sizedMeanPct": 0.89,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 669,
+       "days": 217,
+       "meanPct": 2.2,
+       "medianPct": -4.33,
+       "winRatePct": 41.1,
+       "worstPct": -53.8,
+       "avgRiskPct": 26.5,
+       "sizedMeanPct": 0.78,
+       "vsAllPp": 0.15,
+       "vsAllCI95": [
+        -1.34,
+        1.51
+       ]
+      },
+      "V1": {
+       "signals": 59,
+       "days": 53,
+       "meanPct": -0.11,
+       "medianPct": -0.72,
+       "winRatePct": 45.8,
+       "worstPct": -12.0,
+       "avgRiskPct": 7.1,
+       "sizedMeanPct": -0.11,
+       "vsAllPp": -0.71,
+       "vsAllCI95": [
+        -1.32,
+        1.75
+       ]
+      },
+      "LEADER": {
+       "signals": 319,
+       "days": 177,
+       "meanPct": 3.44,
+       "medianPct": -6.27,
+       "winRatePct": 38.9,
+       "worstPct": -53.8,
+       "avgRiskPct": 34.3,
+       "sizedMeanPct": 1.02,
+       "vsAllPp": 2.57,
+       "vsAllCI95": [
+        -0.62,
+        5.97
+       ]
+      },
+      "PULLBACK": {
+       "signals": 662,
+       "days": 227,
+       "meanPct": 1.66,
+       "medianPct": -3.1,
+       "winRatePct": 41.1,
+       "worstPct": -53.8,
+       "avgRiskPct": 26.6,
+       "sizedMeanPct": 0.5,
+       "vsAllPp": 0.52,
+       "vsAllCI95": [
+        -0.83,
+        2.31
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 445,
+       "days": 188,
+       "meanPct": 4.1,
+       "medianPct": -2.58,
+       "winRatePct": 44.7,
+       "worstPct": -34.5,
+       "avgRiskPct": 33.0,
+       "sizedMeanPct": 1.08,
+       "vsAllPp": 1.47,
+       "vsAllCI95": [
+        -0.28,
+        3.45
+       ]
+      }
+     },
+     "secondHalf": {
+      "ALL": {
+       "signals": 151371,
+       "days": 233,
+       "meanPct": 2.45,
+       "medianPct": -8.59,
+       "winRatePct": 37.8,
+       "worstPct": -80.5,
+       "avgRiskPct": 23.4,
+       "sizedMeanPct": 1.48,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 687,
+       "days": 205,
+       "meanPct": 3.58,
+       "medianPct": -8.82,
+       "winRatePct": 34.5,
+       "worstPct": -29.8,
+       "avgRiskPct": 36.9,
+       "sizedMeanPct": 1.32,
+       "vsAllPp": 0.41,
+       "vsAllCI95": [
+        -1.78,
+        2.6
+       ]
+      },
+      "V1": {
+       "signals": 12,
+       "days": 12,
+       "meanPct": 9.18,
+       "medianPct": 5.73,
+       "winRatePct": 83.3,
+       "worstPct": -9.6,
+       "avgRiskPct": 7.3,
+       "sizedMeanPct": 9.18,
+       "vsAllPp": 2.89,
+       "vsAllCI95": null
+      },
+      "LEADER": {
+       "signals": 322,
+       "days": 169,
+       "meanPct": 3.79,
+       "medianPct": -9.29,
+       "winRatePct": 34.2,
+       "worstPct": -30.3,
+       "avgRiskPct": 46.6,
+       "sizedMeanPct": 0.91,
+       "vsAllPp": 2.21,
+       "vsAllCI95": [
+        -1.99,
+        7.01
+       ]
+      },
+      "PULLBACK": {
+       "signals": 665,
+       "days": 194,
+       "meanPct": 1.6,
+       "medianPct": -9.12,
+       "winRatePct": 34.1,
+       "worstPct": -31.2,
+       "avgRiskPct": 37.5,
+       "sizedMeanPct": 0.76,
+       "vsAllPp": -0.78,
+       "vsAllCI95": [
+        -2.27,
+        1.31
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 599,
+       "days": 179,
+       "meanPct": 2.27,
+       "medianPct": -9.22,
+       "winRatePct": 32.7,
+       "worstPct": -29.2,
+       "avgRiskPct": 44.1,
+       "sizedMeanPct": 0.63,
+       "vsAllPp": -0.95,
+       "vsAllCI95": [
+        -3.35,
+        2.45
+       ]
+      }
+     }
+    },
+    "HOLD40": {
+     "all": {
+      "ALL": {
+       "signals": 297596,
+       "days": 467,
+       "meanPct": 7.32,
+       "medianPct": 1.09,
+       "winRatePct": 52.4,
+       "worstPct": -89.7,
+       "avgRiskPct": 20.0,
+       "sizedMeanPct": 4.29,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 1333,
+       "days": 408,
+       "meanPct": 9.16,
+       "medianPct": 1.67,
+       "winRatePct": 52.4,
+       "worstPct": -86.2,
+       "avgRiskPct": 31.4,
+       "sizedMeanPct": 3.24,
+       "vsAllPp": 1.45,
+       "vsAllCI95": [
+        -0.98,
+        5.0
+       ]
+      },
+      "V1": {
+       "signals": 71,
+       "days": 65,
+       "meanPct": 6.62,
+       "medianPct": 4.16,
+       "winRatePct": 64.8,
+       "worstPct": -19.8,
+       "avgRiskPct": 7.1,
+       "sizedMeanPct": 6.62,
+       "vsAllPp": -0.95,
+       "vsAllCI95": null
+      },
+      "LEADER": {
+       "signals": 631,
+       "days": 337,
+       "meanPct": 8.98,
+       "medianPct": 0.56,
+       "winRatePct": 50.7,
+       "worstPct": -71.4,
+       "avgRiskPct": 40.2,
+       "sizedMeanPct": 2.66,
+       "vsAllPp": 1.81,
+       "vsAllCI95": [
+        -1.8,
+        8.41
+       ]
+      },
+      "PULLBACK": {
+       "signals": 1316,
+       "days": 414,
+       "meanPct": 7.11,
+       "medianPct": 1.14,
+       "winRatePct": 52.2,
+       "worstPct": -80.6,
+       "avgRiskPct": 31.9,
+       "sizedMeanPct": 2.56,
+       "vsAllPp": -0.17,
+       "vsAllCI95": [
+        -3.07,
+        4.33
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 1033,
+       "days": 360,
+       "meanPct": 8.23,
+       "medianPct": 2.52,
+       "winRatePct": 53.4,
+       "worstPct": -71.4,
+       "avgRiskPct": 39.3,
+       "sizedMeanPct": 2.19,
+       "vsAllPp": 1.28,
+       "vsAllCI95": [
+        -0.64,
+        4.91
+       ]
+      }
+     },
+     "firstHalf": {
+      "ALL": {
+       "signals": 159385,
+       "days": 254,
+       "meanPct": 6.27,
+       "medianPct": 1.37,
+       "winRatePct": 53.3,
+       "worstPct": -78.8,
+       "avgRiskPct": 17.6,
+       "sizedMeanPct": 3.81,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 669,
+       "days": 217,
+       "meanPct": 7.69,
+       "medianPct": 1.95,
+       "winRatePct": 53.5,
+       "worstPct": -58.8,
+       "avgRiskPct": 26.5,
+       "sizedMeanPct": 3.08,
+       "vsAllPp": 0.73,
+       "vsAllCI95": [
+        -2.62,
+        4.05
+       ]
+      },
+      "V1": {
+       "signals": 59,
+       "days": 53,
+       "meanPct": 5.04,
+       "medianPct": 3.06,
+       "winRatePct": 62.7,
+       "worstPct": -19.8,
+       "avgRiskPct": 7.1,
+       "sizedMeanPct": 5.04,
+       "vsAllPp": -1.06,
+       "vsAllCI95": null
+      },
+      "LEADER": {
+       "signals": 319,
+       "days": 177,
+       "meanPct": 10.31,
+       "medianPct": 1.87,
+       "winRatePct": 53.9,
+       "worstPct": -49.0,
+       "avgRiskPct": 34.3,
+       "sizedMeanPct": 3.3,
+       "vsAllPp": 4.56,
+       "vsAllCI95": [
+        -0.61,
+        9.31
+       ]
+      },
+      "PULLBACK": {
+       "signals": 662,
+       "days": 227,
+       "meanPct": 8.01,
+       "medianPct": 2.68,
+       "winRatePct": 55.7,
+       "worstPct": -45.8,
+       "avgRiskPct": 26.6,
+       "sizedMeanPct": 2.95,
+       "vsAllPp": 2.98,
+       "vsAllCI95": [
+        -1.17,
+        8.1
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 445,
+       "days": 188,
+       "meanPct": 9.31,
+       "medianPct": 4.13,
+       "winRatePct": 58.0,
+       "worstPct": -46.9,
+       "avgRiskPct": 33.0,
+       "sizedMeanPct": 2.75,
+       "vsAllPp": 2.79,
+       "vsAllCI95": [
+        -0.34,
+        6.35
+       ]
+      }
+     },
+     "secondHalf": {
+      "ALL": {
+       "signals": 138211,
+       "days": 213,
+       "meanPct": 8.54,
+       "medianPct": 0.67,
+       "winRatePct": 51.2,
+       "worstPct": -89.7,
+       "avgRiskPct": 22.8,
+       "sizedMeanPct": 4.83,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 664,
+       "days": 191,
+       "meanPct": 10.64,
+       "medianPct": 0.91,
+       "winRatePct": 51.2,
+       "worstPct": -86.2,
+       "avgRiskPct": 36.3,
+       "sizedMeanPct": 3.4,
+       "vsAllPp": 2.27,
+       "vsAllCI95": [
+        -1.97,
+        9.08
+       ]
+      },
+      "V1": {
+       "signals": 12,
+       "days": 12,
+       "meanPct": 14.38,
+       "medianPct": 7.36,
+       "winRatePct": 75.0,
+       "worstPct": -5.1,
+       "avgRiskPct": 7.3,
+       "sizedMeanPct": 14.38,
+       "vsAllPp": -0.44,
+       "vsAllCI95": null
+      },
+      "LEADER": {
+       "signals": 312,
+       "days": 160,
+       "meanPct": 7.63,
+       "medianPct": -1.11,
+       "winRatePct": 47.4,
+       "worstPct": -71.4,
+       "avgRiskPct": 46.3,
+       "sizedMeanPct": 2.01,
+       "vsAllPp": -1.23,
+       "vsAllCI95": [
+        -7.99,
+        11.59
+       ]
+      },
+      "PULLBACK": {
+       "signals": 654,
+       "days": 187,
+       "meanPct": 6.19,
+       "medianPct": -1.16,
+       "winRatePct": 48.6,
+       "worstPct": -80.6,
+       "avgRiskPct": 37.4,
+       "sizedMeanPct": 2.16,
+       "vsAllPp": -3.98,
+       "vsAllCI95": [
+        -8.3,
+        1.26
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 588,
+       "days": 172,
+       "meanPct": 7.41,
+       "medianPct": 0.0,
+       "winRatePct": 50.0,
+       "worstPct": -71.4,
+       "avgRiskPct": 44.0,
+       "sizedMeanPct": 1.76,
+       "vsAllPp": -0.37,
+       "vsAllCI95": [
+        -2.02,
+        6.87
+       ]
+      }
+     }
+    },
+    "STOP840": {
+     "all": {
+      "ALL": {
+       "signals": 297596,
+       "days": 467,
+       "meanPct": 4.22,
+       "medianPct": -8.79,
+       "winRatePct": 36.0,
+       "worstPct": -80.5,
+       "avgRiskPct": 20.0,
+       "sizedMeanPct": 2.6,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 1333,
+       "days": 408,
+       "meanPct": 5.86,
+       "medianPct": -8.91,
+       "winRatePct": 33.9,
+       "worstPct": -53.8,
+       "avgRiskPct": 31.4,
+       "sizedMeanPct": 2.14,
+       "vsAllPp": 1.69,
+       "vsAllCI95": [
+        -0.08,
+        3.84
+       ]
+      },
+      "V1": {
+       "signals": 71,
+       "days": 65,
+       "meanPct": 4.76,
+       "medianPct": 3.06,
+       "winRatePct": 59.2,
+       "worstPct": -12.0,
+       "avgRiskPct": 7.1,
+       "sizedMeanPct": 4.76,
+       "vsAllPp": 0.81,
+       "vsAllCI95": null
+      },
+      "LEADER": {
+       "signals": 631,
+       "days": 337,
+       "meanPct": 5.91,
+       "medianPct": -9.32,
+       "winRatePct": 31.1,
+       "worstPct": -53.8,
+       "avgRiskPct": 40.2,
+       "sizedMeanPct": 1.76,
+       "vsAllPp": 2.88,
+       "vsAllCI95": [
+        0.43,
+        7.04
+       ]
+      },
+      "PULLBACK": {
+       "signals": 1316,
+       "days": 414,
+       "meanPct": 3.92,
+       "medianPct": -9.02,
+       "winRatePct": 32.6,
+       "worstPct": -53.8,
+       "avgRiskPct": 31.9,
+       "sizedMeanPct": 1.45,
+       "vsAllPp": 0.14,
+       "vsAllCI95": [
+        -1.32,
+        2.52
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 1033,
+       "days": 360,
+       "meanPct": 5.44,
+       "medianPct": -9.17,
+       "winRatePct": 34.8,
+       "worstPct": -34.5,
+       "avgRiskPct": 39.3,
+       "sizedMeanPct": 1.52,
+       "vsAllPp": 1.65,
+       "vsAllCI95": [
+        -0.27,
+        4.08
+       ]
+      }
+     },
+     "firstHalf": {
+      "ALL": {
+       "signals": 159385,
+       "days": 254,
+       "meanPct": 3.72,
+       "medianPct": -8.56,
+       "winRatePct": 39.6,
+       "worstPct": -55.4,
+       "avgRiskPct": 17.6,
+       "sizedMeanPct": 2.24,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 669,
+       "days": 217,
+       "meanPct": 5.0,
+       "medianPct": -8.65,
+       "winRatePct": 37.7,
+       "worstPct": -53.8,
+       "avgRiskPct": 26.5,
+       "sizedMeanPct": 2.12,
+       "vsAllPp": 1.09,
+       "vsAllCI95": [
+        -1.92,
+        4.44
+       ]
+      },
+      "V1": {
+       "signals": 59,
+       "days": 53,
+       "meanPct": 2.93,
+       "medianPct": 2.71,
+       "winRatePct": 55.9,
+       "worstPct": -12.0,
+       "avgRiskPct": 7.1,
+       "sizedMeanPct": 2.93,
+       "vsAllPp": 0.24,
+       "vsAllCI95": null
+      },
+      "LEADER": {
+       "signals": 319,
+       "days": 177,
+       "meanPct": 6.04,
+       "medianPct": -8.92,
+       "winRatePct": 33.9,
+       "worstPct": -53.8,
+       "avgRiskPct": 34.3,
+       "sizedMeanPct": 2.08,
+       "vsAllPp": 3.86,
+       "vsAllCI95": [
+        -0.45,
+        7.75
+       ]
+      },
+      "PULLBACK": {
+       "signals": 662,
+       "days": 227,
+       "meanPct": 3.93,
+       "medianPct": -8.64,
+       "winRatePct": 38.7,
+       "worstPct": -53.8,
+       "avgRiskPct": 26.6,
+       "sizedMeanPct": 1.52,
+       "vsAllPp": 1.47,
+       "vsAllCI95": [
+        -1.01,
+        4.78
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 445,
+       "days": 188,
+       "meanPct": 6.67,
+       "medianPct": -8.65,
+       "winRatePct": 42.5,
+       "worstPct": -34.5,
+       "avgRiskPct": 33.0,
+       "sizedMeanPct": 2.08,
+       "vsAllPp": 2.73,
+       "vsAllCI95": [
+        0.97,
+        5.2
+       ]
+      }
+     },
+     "secondHalf": {
+      "ALL": {
+       "signals": 138211,
+       "days": 213,
+       "meanPct": 4.81,
+       "medianPct": -9.14,
+       "winRatePct": 31.8,
+       "worstPct": -80.5,
+       "avgRiskPct": 22.8,
+       "sizedMeanPct": 3.01,
+       "vsAllPp": null,
+       "vsAllCI95": null
+      },
+      "TREND": {
+       "signals": 664,
+       "days": 191,
+       "meanPct": 6.72,
+       "medianPct": -9.34,
+       "winRatePct": 30.1,
+       "worstPct": -29.8,
+       "avgRiskPct": 36.3,
+       "sizedMeanPct": 2.16,
+       "vsAllPp": 2.37,
+       "vsAllCI95": [
+        1.05,
+        5.27
+       ]
+      },
+      "V1": {
+       "signals": 12,
+       "days": 12,
+       "meanPct": 13.76,
+       "medianPct": 7.36,
+       "winRatePct": 75.0,
+       "worstPct": -9.6,
+       "avgRiskPct": 7.3,
+       "sizedMeanPct": 13.76,
+       "vsAllPp": 3.31,
+       "vsAllCI95": null
+      },
+      "LEADER": {
+       "signals": 312,
+       "days": 160,
+       "meanPct": 5.78,
+       "medianPct": -9.76,
+       "winRatePct": 28.2,
+       "worstPct": -30.3,
+       "avgRiskPct": 46.3,
+       "sizedMeanPct": 1.42,
+       "vsAllPp": 1.79,
+       "vsAllCI95": [
+        -2.44,
+        8.62
+       ]
+      },
+      "PULLBACK": {
+       "signals": 654,
+       "days": 187,
+       "meanPct": 3.91,
+       "medianPct": -9.6,
+       "winRatePct": 26.5,
+       "worstPct": -31.2,
+       "avgRiskPct": 37.4,
+       "sizedMeanPct": 1.39,
+       "vsAllPp": -1.47,
+       "vsAllCI95": [
+        -2.41,
+        1.05
+       ]
+      },
+      "BREAKOUT": {
+       "signals": 588,
+       "days": 172,
+       "meanPct": 4.51,
+       "medianPct": -9.59,
+       "winRatePct": 28.9,
+       "worstPct": -29.2,
+       "avgRiskPct": 44.0,
+       "sizedMeanPct": 1.09,
+       "vsAllPp": 0.47,
+       "vsAllCI95": [
+        -2.01,
+        5.58
+       ]
+      }
+     }
+    }
+   }
+  }
+ }
+}
