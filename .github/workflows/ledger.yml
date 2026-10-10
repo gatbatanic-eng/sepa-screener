@@ -21,6 +21,8 @@ on:
       - agents/**
       - advisory/**
       - tests/test_ledger.py
+      - tests/test_daily_picks.py
+      - daily_picks/**
       - tests/test_agents.py
       - tests/test_advisory.py
       - tests/test_picks.py
@@ -54,7 +56,11 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Verify ledger rules
-        run: python -m unittest tests.test_ledger tests.test_agents tests.test_advisory tests.test_picks tests.test_freshness tests.test_nhplug tests.test_accumulation tests.test_flowforward tests.test_close_report -v
+        run: python -m unittest tests.test_ledger tests.test_daily_picks tests.test_agents tests.test_advisory tests.test_picks tests.test_freshness tests.test_nhplug tests.test_accumulation tests.test_flowforward tests.test_close_report -v
+      - name: Daily picks (오늘의 추천, 시장별 하루 한 번 기록)
+        # 코드 변경(push)은 기록·알림 없이 화면용 JSON만 갱신한다. 예약·수동 실행만 write-once로 기록한다.
+        continue-on-error: true
+        run: python -m daily_picks.main ${{ github.event_name == 'push' && '--no-record' || format('--new-list {0}/new_picks.txt', runner.temp) }}
       - name: Update ledger, outcomes and statistics
         run: python -m ledger.main
       - name: Update agent league (virtual accounts)
@@ -85,6 +91,10 @@ jobs:
             done < "$1"
           }
           rc=0
+          if [ -s "$RUNNER_TEMP/new_picks.txt" ] && [ -z "$(gh issue list --state open --search '"오늘의 추천" in:title' --json title --jq '[.[] | select(.title | startswith("오늘의 추천"))][0].title')" ]; then
+            gh issue create --title "오늘의 추천 (한국·미국 일간)" --body "SEPA·깔때기가 고른 종목을 매일 다시 심사한 시장별 추천 3종목입니다. 투자 권유가 아니며 기록은 성과 검증용입니다." || rc=1
+          fi
+          post "$RUNNER_TEMP/new_picks.txt" "오늘의 추천" || rc=1
           post "$RUNNER_TEMP/new_reports.txt" "에이전트 리그 보고" || rc=1
           post "$RUNNER_TEMP/new_memos.txt" "투자 자문 메모" || rc=1
           exit $rc
@@ -93,7 +103,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for p in research/ledger research/agents research/advisory docs/research/ledger.json docs/research/board.json docs/research/agents.json docs/agents/reports docs/advisory; do
+          for p in research/ledger research/daily_picks docs/research/daily_picks.json research/agents research/advisory docs/research/ledger.json docs/research/board.json docs/research/agents.json docs/agents/reports docs/advisory; do
             if [ -e "$p" ]; then git add -f "$p"; fi
           done
           git diff --cached --quiet && exit 0

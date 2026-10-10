@@ -132,7 +132,7 @@ def ingest_multifactor(csv_path: Path, recorded_at: str, signals_dir: Path | Non
 
 
 # --- 기술적 신호: docs/technical/data/latest_{kr,us}.json (실행 때마다 덮어써지므로 신호별로 따로 남겨야 한다) ---------
-LEDGER_STRATEGIES = ("funnel", "multifactor", "technical")  # 원장이 신호 파일을 직접 만들고 가격으로 성과를 계산하는 전략
+LEDGER_STRATEGIES = ("funnel", "multifactor", "technical", "picks")  # 원장이 신호 파일을 직접 만들고 가격으로 성과를 계산하는 전략
 TECH_VERDICT = {"매수검토": "REVIEW", "관찰": "WATCH", "진입보류": "HOLD"}
 
 
@@ -163,6 +163,33 @@ def ingest_technical(market: str, latest_path: Path, recorded_at: str, signals_d
                          "score": r.get("trendScore"), "groups": groups})
     out = {"strategy": "technical", "market": market, "fileDate": eff, "recordedAt": recorded_at, "effectiveDate": eff, "rows": kept}
     return 1 if write_immutable_gz((signals_dir or config.SIGNALS_DIR) / "technical" / market / f"{eff}.json.gz", out) else 0
+
+
+# --- 오늘의 추천: research/daily_picks/{market}/{거래일}.json (이미 하루 한 번 고정된 기록) ----------------------------
+def ingest_picks(market: str, picks_dir: Path | None = None, signals_dir: Path | None = None) -> int:
+    """추천 기록 → 원장. PICK = 그날 추천 종목, CONTROL = 같은 날 후보 풀에서 추천을 뺀 무작위 표본(필터가 풀 평균보다 나은지 본다)."""
+    src = (picks_dir or config.ROOT / "research" / "daily_picks") / market
+    target = (signals_dir or config.SIGNALS_DIR) / "picks" / market
+    added = 0
+    for file in sorted(src.glob("*.json")):
+        name = file.stem + ".json.gz"
+        if (target / name).exists():
+            continue
+        rec = read_json(file)
+        if not rec or not rec.get("session"):
+            continue
+        rows = [{"symbol": p["code"], "name": p.get("name"), "price": p["price"], "exchange": norm_exchange(market, p.get("market")),
+                 "score": p.get("score"), "rank": i, "groups": ["PICK"]} for i, p in enumerate(rec["picks"], 1) if p.get("price")]
+        picked = {r["symbol"] for r in rows}
+        rest = [c for c, px in (rec.get("poolPrices") or {}).items() if c not in picked and px]
+        for sym in control_sample("picks", market, rec["session"], rest):
+            rows.append({"symbol": sym, "name": None, "price": rec["poolPrices"][sym], "exchange": "US" if market == "us" else None,
+                         "score": None, "rank": None, "groups": ["CONTROL"]})
+        doc = {"strategy": "picks", "market": market, "fileDate": rec["session"], "recordedAt": rec["recordedAt"],
+               "effectiveDate": rec["session"], "rows": rows}
+        if rows and write_immutable_gz(target / name, doc):
+            added += 1
+    return added
 
 
 def ledger_signals(strategy: str, market: str, signals_dir: Path | None = None) -> list[dict]:

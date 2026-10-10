@@ -156,7 +156,7 @@ class TrackerAdapterTest(unittest.TestCase):
             self.assertEqual(rows[0]["outcomes"][5]["excessPct"], 1.0)
             self.assertEqual(adapters.tracker_signals("rebound", "us", research), [])
         self.assertEqual(set(adapters.TRACKERS), {"sepa", "range", "aggressive", "rebound"})
-        self.assertEqual(adapters.LEDGER_STRATEGIES, ("funnel", "multifactor", "technical"))
+        self.assertEqual(adapters.LEDGER_STRATEGIES, ("funnel", "multifactor", "technical", "picks"))
 
 
 if __name__ == "__main__":

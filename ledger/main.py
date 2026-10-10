@@ -44,6 +44,7 @@ def update_market(market: str, today: dt.date, bench: dict, fetch=prices.fetch_c
 def run(today: dt.date, fetch=prices.fetch_closes, bench_fetch=prices.fetch_benchmarks) -> dict:
     for market in ("kr", "us"):
         adapters.ingest_funnel(market, today)
+        adapters.ingest_picks(market)
     start = (today - dt.timedelta(days=400)).isoformat()
     bench = bench_fetch(start)
     result = {"schemaVersion": 1, "generatedAt": dt.datetime.now(dt.timezone.utc).isoformat(), "today": today.isoformat(),
