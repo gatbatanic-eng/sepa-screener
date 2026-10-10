@@ -246,15 +246,16 @@ def classify_disclosure(title: str) -> str | None:
     return None
 
 
-def _events_window(api: Dart, start: dt.date, end: dt.date) -> list[tuple[str, str]]:
-    """3개월 구간의 주요사항보고를 페이지 순서대로 읽어 (종목코드, 종류) 목록으로."""
-    found, page = [], 1
+def _events_window(api: Dart, start: dt.date, end: dt.date) -> tuple[list[tuple[str, str]], bool]:
+    """3개월 구간의 주요사항보고를 페이지 순서대로 읽어 ((종목코드, 종류) 목록, 끝까지 읽었나)."""
+    found, page, ok = [], 1, True
     while True:
         try:
             obj = api.request("list.json", bgn_de=start.strftime("%Y%m%d"), end_de=end.strftime("%Y%m%d"),
                               pblntf_ty="B", page_no=page, page_count=100)
         except RuntimeError as exc:
             log.warning("DART 공시검색 실패 %s~%s p%d: %s", start, end, page, exc)
+            ok = False
             break
         for r in obj:
             kind = classify_disclosure(r.get("report_nm", ""))
@@ -264,22 +265,27 @@ def _events_window(api: Dart, start: dt.date, end: dt.date) -> list[tuple[str, s
         if len(obj) < 100:
             break
         page += 1
-    return found
+    return found, ok
 
 
-def fetch_events(api: Dart, today: dt.date) -> dict[str, Counter]:
-    """최근 12개월 주요사항보고 → 종목별 {dilution, split} 건수. 3개월 구간 4개를 동시에 조회."""
+def fetch_events(api: Dart, today: dt.date, status: dict | None = None) -> dict[str, Counter]:
+    """최근 12개월 주요사항보고 → 종목별 {dilution, split} 건수. 3개월 구간 4개를 동시에 조회.
+    status에 {'windowsFailed': 끝까지 못 읽은 구간 수}를 채운다(건수가 모자란 채로 0으로 믿지 않게)."""
     windows, end = [], today
     for _ in range(4):  # corp_code 없이 조회하면 기간이 3개월로 제한된다
         start = end - dt.timedelta(days=90)
         windows.append((start, end))
         end = start - dt.timedelta(days=1)
     counts: dict[str, Counter] = {}
+    failed = 0
     with ThreadPoolExecutor(max_workers=len(windows)) as pool:
-        for found in pool.map(lambda w: _events_window(api, *w), windows):
+        for found, ok in pool.map(lambda w: _events_window(api, *w), windows):
+            failed += 0 if ok else 1
             for code, kind in found:
                 counts.setdefault(code, Counter())[kind] += 1
-    log.info("DART 주요사항 공시: 증자·CB·BW/분할 해당 %d개사", len(counts))
+    if status is not None:
+        status["windowsFailed"] = failed
+    log.info("DART 주요사항 공시: 증자·CB·BW/분할 해당 %d개사 (조회 실패 구간 %d/%d)", len(counts), failed, len(windows))
     return counts
 
 
@@ -335,12 +341,21 @@ def collect(api: Dart, today: dt.date, limit: int | None = None, cache_dir: Path
         universe = sorted(universe, key=lambda r: -r["marcap"])[:limit]
     corps = api.corporations()
     quarters = fetch_quarters(api, corps, [r["symbol"] for r in universe], today, cache_dir)
-    events = fetch_events(api, today)
+    ev_status: dict = {}
+    events = fetch_events(api, today, ev_status)
+    # DART가 일부만 응답하면 증자·분할 건수가 모자란 채로 0이 되므로, 그땐 미상(None)으로 둔다(규칙은 None을 '모름'으로 처리한다).
+    events_known = not ev_status.get("windowsFailed")
     for r in universe:
         r["quarters"] = quarters.get(r["symbol"], [])
         ev = events.get(r["symbol"], Counter())
-        r["dilutionEvents12m"] = ev.get("dilution", 0)
-        r["splitEvents12m"] = ev.get("split", 0)
+        r["dilutionEvents12m"] = ev.get("dilution", 0) if events_known else None
+        r["splitEvents12m"] = ev.get("split", 0) if events_known else None
         r["sharesNow"] = r["sharesYearAgo"] = r["ocfToNi"] = r["ocfTTMPositive"] = None
         r["corpCode"] = corps.get(r["symbol"])
+    degraded = {}
+    if getattr(api, "corps_source", None) == "cache":
+        degraded["corpList"] = "DART 기업 목록을 받지 못해 직전 성공본을 썼습니다"
+    if not events_known:
+        degraded["events"] = f"DART 주요사항 공시 {ev_status['windowsFailed']}/4 구간을 읽지 못해 증자·분할 건수를 미상으로 뒀습니다(G2·G4 해당 여부 미반영)"
+    collect.degraded = degraded
     return universe, corps

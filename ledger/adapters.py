@@ -79,8 +79,9 @@ def ingest_funnel(market: str, today: dt.date, funnel_dir: Path | None = None, s
             if groups:
                 kept.append({"symbol": r["symbol"], "price": r["price"], "rank": r.get("rank"), "score": r.get("composite"),
                              "exchange": norm_exchange(market, r.get("exchange")), "groups": groups})
+        # 2026-10-12부터 스냅샷에 거래일(session)이 들어 있다. 그 전 기록은 기록 시각이 가리키는 거래일을 쓴다.
         doc = {"strategy": "funnel", "market": market, "fileDate": file_date, "recordedAt": snap["recordedAt"],
-               "effectiveDate": effective_date(snap["recordedAt"], market).isoformat(), "rows": kept}
+               "effectiveDate": snap.get("session") or effective_date(snap["recordedAt"], market).isoformat(), "rows": kept}
         if write_immutable_gz(target / file.name, doc):
             added += 1
     return added

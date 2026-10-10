@@ -28,7 +28,7 @@ TRACKER_FILE = {"sepa": "", "range": "range_", "aggressive": "aggressive_", "reb
 BOARD = [
     {"key": "sepa", "name": "SEPA 추세템플릿", "tier": "core", "cadence": "daily", "kind": "tracker", "markets": ("kr", "us"),
      "perf": ("sepa", ("TREND",)), "groups": {"TREND": "추세 통과", "READY": "진입 준비", "GO": "진입 신호"}},
-    {"key": "funnel", "name": "대박주 깔때기", "tier": "core", "cadence": "weekly", "kind": "funnel", "markets": ("kr", "us"),
+    {"key": "funnel", "name": "대박주 깔때기", "tier": "core", "cadence": "daily", "kind": "funnel", "markets": ("kr", "us"),
      "perf": ("funnel", ("TOP50", "T1_ON")), "groups": {}},
     {"key": "multifactor", "name": "멀티팩터", "tier": "research", "cadence": "daily", "kind": "multifactor", "markets": ("kr", "us"),
      "perf": ("multifactor", ("BUY", "WATCH")), "groups": {"BUY": "매수", "WATCH": "관찰"}},
@@ -154,8 +154,11 @@ def read_funnel(market: str, root: Path) -> dict | None:
     if not doc or not doc.get("recordedAt"):
         return None
     rec = doc["recordedAt"]
-    return {"last": effective_date(rec, market).isoformat(), "updatedAt": rec, "selected": {"TOP50": len(doc.get("top") or [])},
-            "note": "주 1회(토요일) 전 종목 평가"}
+    out = {"last": doc.get("session") or effective_date(rec, market).isoformat(), "updatedAt": rec,
+           "selected": {"TOP50": len(doc.get("top") or [])}}
+    if doc.get("degraded"):
+        out["degraded"] = list(doc["degraded"].values())
+    return out
 
 
 def _latest_ledger_file(strategy: str, market: str, root: Path):
@@ -283,6 +286,10 @@ def build(ledger: dict, now: dt.datetime | None = None, root: Path | None = None
             if status == "ok" and cov and cov["ratio"] < MIN_OBSERVED_RATIO:
                 status = "lag"
                 notes.append(f"판정 가능한 종목이 적습니다({cov['observed']}/{cov['rows']})")
+            if data and data.get("degraded"):
+                if status == "ok":
+                    status = "lag"
+                notes.extend(data["degraded"])
             if data and data.get("note"):
                 notes.append(data["note"])
             if status in ("lag", "down") and why.get("behind"):

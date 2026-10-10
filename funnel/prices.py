@@ -1,6 +1,7 @@
 """주간 종가로 가격 지표를 계산한다 (Yahoo 일괄 다운로드)."""
 from __future__ import annotations
 
+import datetime as dt
 import logging
 import time
 
@@ -63,3 +64,23 @@ def download_weekly(symbols: list[str], period: str = "4y") -> dict[str, pd.Seri
         log.info("가격 %d/%d 종목 수집", len(out), min(i + CHUNK, len(symbols)))
         time.sleep(1)
     return out
+
+
+def last_session(symbol: str) -> dt.date | None:
+    """벤치마크 일봉의 마지막 봉 날짜 = 가격이 가리키는 시장의 거래일. 못 받으면 None.
+    주간 가격(download_weekly)은 마지막 봉 날짜가 그 주 월요일이라 거래일을 알 수 없어 따로 확인한다."""
+    import yfinance as yf
+
+    for attempt in range(3):
+        try:
+            frame = yf.download(symbol, period="10d", interval="1d", auto_adjust=True, progress=False)
+            if frame is not None and not frame.empty:
+                close = frame["Close"]
+                close = close.iloc[:, 0] if hasattr(close, "columns") else close
+                close = close.dropna()
+                if not close.empty:
+                    return pd.Timestamp(close.index[-1]).date()
+        except Exception as exc:  # noqa: BLE001
+            log.warning("벤치마크 일봉 조회 실패 (%d/%d): %s", attempt + 1, 3, exc)
+        time.sleep(3 * (attempt + 1))
+    return None
