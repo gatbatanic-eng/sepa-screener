@@ -215,3 +215,52 @@ class V3Test(unittest.TestCase):
             adapters.ingest_picks("us", root / "research" / "daily_picks", root / "signals")
             doc = read_gz(root / "signals" / "picks" / "us" / "2026-10-09.json.gz")
             self.assertEqual({r["symbol"]: r["groups"] for r in doc["rows"]}, {"B": ["PICK_V3"], "C": ["CONTROL"]})
+
+
+class V4Test(unittest.TestCase):
+    def chart(self, root, code, atr_frac):
+        d = root / "docs" / "data" / "stock_charts" / "us"
+        d.mkdir(parents=True, exist_ok=True)
+        n = 60
+        close = [100.0] * n
+        high = [100.0 * (1 + atr_frac / 2)] * n
+        low = [100.0 * (1 - atr_frac / 2)] * n
+        (d / f"{code}.json").write_text(json.dumps({"close": close, "high": high, "low": low}), encoding="utf-8")
+
+    def test_atr_from_chart_matches_range(self):
+        from daily_picks import context as X
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self.chart(root, "A", 0.05)
+            self.assertAlmostEqual(X.atr_pct_from_chart("A", root), 0.05, places=3)
+            self.assertIsNone(X.atr_pct_from_chart("NOPE", root))
+
+    def test_v4_uses_trend_rs_and_atr_only_and_is_us_only(self):
+        from daily_picks import v2
+        ctx = {"sectorStats": {}, "regimes": {"US": "GREEN"}, "macro": None, "krClose": {}}
+        def row(code, score, risk, liquid=None):
+            return {"code": code, "name": code, "market": "US", "price": 10.0, "score": score, "strategies": {"sepa": ["TREND"]}, "funnelRank": None,
+                    "entry": {"riskPct": risk, "riskSource": "SEPA", "verdict": "NO-GO", "chase": ["과열"], "liquidityOk": liquid, "zone": None}, "reject": "손절폭 8% 초과"}
+        rows = [row("A", 3, 20.0), row("B", 3, 4.0), row("C", 5, 30.0), row("D", 5, 10.0), row("E", 5, 10.0, liquid=False), row("F", 5, 10.0)]
+        sepa = {"A": {"passAll": True, "rsRank": 90}, "B": {"passAll": True, "rsRank": 95}, "C": {"passAll": True, "rsRank": 60},   # C는 RS 70 미만
+                "D": {"passAll": False, "rsRank": 99}, "E": {"passAll": True, "rsRank": 99}, "F": {"passAll": True, "rsRank": 99}}
+        atr = {"A": 0.04, "B": 0.05, "C": 0.06, "D": 0.06, "E": 0.06, "F": 0.02}                                                 # F는 변동성 3% 미만
+        out = v2.rank_v4(rows, ctx, {}, "us", sepa, lambda c: atr.get(c))
+        self.assertEqual([p["code"] for p in out["picks"]], ["B", "A"])                                                          # 점수 같으면 RS 높은 순
+        self.assertEqual({p["code"]: p["weight"] for p in out["picks"]}, {"B": 1.0, "A": 0.4})                                   # NO-GO·과열 표시가 있어도 후보, 비중은 8%/손절폭
+        self.assertEqual(out["candidates"], 2)
+        self.assertEqual(v2.rank_v4(rows, ctx, {}, "kr", sepa, lambda c: 0.05)["picks"], [])                                   # 한국은 적용하지 않는다
+        out2 = v2.rank_v4(rows, ctx, {}, "us", sepa, lambda c: None)
+        self.assertEqual(out2["missingAtr"], 4)                                                                                  # 일봉이 없으면 판정하지 않고 센다
+
+    def test_ledger_has_v4_group(self):
+        now = dt.datetime(2026, 10, 10, 1, 0, tzinfo=dt.timezone.utc)
+        rec = {"session": "2026-10-09", "market": "us", "picks": [], "picksV2": [], "picksV3": [],
+               "picksV4": [{"code": "B", "name": "b", "market": "US", "price": 20.0, "score": 3, "v2": {"score": 3}, "entry": {"riskPct": 4}}],
+               "poolPrices": {"B": 20.0, "C": 30.0}, "rejectSummary": {}}
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            dp.write_once(root, "us", rec, now)
+            adapters.ingest_picks("us", root / "research" / "daily_picks", root / "signals")
+            doc = read_gz(root / "signals" / "picks" / "us" / "2026-10-09.json.gz")
+            self.assertEqual({r["symbol"]: r["groups"] for r in doc["rows"]}, {"B": ["PICK_V4"], "C": ["CONTROL"]})

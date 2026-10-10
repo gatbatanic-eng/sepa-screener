@@ -4,6 +4,8 @@ from __future__ import annotations
 import datetime as dt
 import json
 import statistics
+
+import numpy as np
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -138,3 +140,23 @@ def kr_close_context(session: str | None, root: Path = ROOT) -> dict:
     names = lambda key: {x["sector"]: x for x in d.get(key, []) if x.get("sector")}   # noqa: E731
     return {"strong": names("strongSectors"), "weak": names("weakSectors"), "flowIn": names("flowInSectors"), "flowOut": names("flowOutSectors"),
             "issues": {x["code"]: x for x in d.get("issues", []) if x.get("code")}}
+
+
+def atr_pct_from_chart(code: str, root: Path = ROOT) -> float | None:
+    """종목 차트 파일(docs/data/stock_charts/us)의 일봉으로 ATR14(Wilder)/종가. 백테스트(leader_backtest.rules)와 같은 정의. 이력이 모자라면 None."""
+    d = _json(root / "docs" / "data" / "stock_charts" / "us" / f"{code}.json")
+    if not d or len(d.get("close") or []) < 30:
+        return None
+    try:
+        h, l, c = (np.array(d[k], dtype=float) for k in ("high", "low", "close"))
+    except (KeyError, TypeError, ValueError):
+        return None
+    prev = np.r_[np.nan, c[:-1]]
+    tr = np.nanmax(np.vstack([h - l, np.abs(h - prev), np.abs(l - prev)]), axis=0)
+    tr = tr[~np.isnan(tr)]
+    if len(tr) < 15 or not np.isfinite(c[-1]) or c[-1] <= 0:
+        return None
+    alpha, atr = 1.0 / C.ATR_PERIOD, tr[0]
+    for x in tr[1:]:
+        atr = alpha * x + (1 - alpha) * atr
+    return float(atr / c[-1])

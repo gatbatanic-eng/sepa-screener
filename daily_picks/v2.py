@@ -104,3 +104,33 @@ def rank_v3(rows: list[dict], ctx: dict, sectors: dict[str, str], market: str, r
             p["why"].insert(2, {"kind": "entry", "text": "참고: " + ", ".join(flags) + " — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"})
         picks.append(p)
     return {"picks": picks, "candidates": len(cands), "skipped": skipped}
+
+
+def rank_v4(rows: list[dict], ctx: dict, sectors: dict[str, str], market: str, sepa_rows: dict, atr_of) -> dict:
+    """v4(2026-10-10 고정, 미국 전용 실험): SEPA 추세 통과(passAll) & RS 70 이상 & ATR14/종가 3% 이상. 손절폭·NO-GO·추격 필터 없음(v3와 같음). 순위는 v2 점수 → RS → ATR, 최대 3개, 권고 비중 min(1, 8%/손절폭).
+    근거: 견고성 확인에서 미국의 '추세 통과 + 변동성 3% 이상'이 GOOD 배수 2.6배(전·후반·T3 모두 1.5배 이상), 20일 수익률 ALL 대비 +3.4%p(95% 구간 0.9~5.3)로 PASS. 한국은 FAIL이라 적용하지 않는다."""
+    if market != "us":
+        return {"picks": [], "candidates": 0, "missingAtr": 0, "skipped": "한국은 견고성 확인에서 FAIL이라 적용하지 않음"}
+    by_code = {r["code"]: r for r in rows}
+    cands, missing = [], 0
+    for code, s in sepa_rows.items():
+        if not s.get("passAll") or (s.get("rsRank") or 0) < C.V4_MIN_RS or code not in by_code:
+            continue
+        a = atr_of(code)
+        if a is None:
+            missing += 1
+        elif a >= C.V4_MIN_ATR_PCT:
+            r = by_code[code]
+            e = r["entry"]
+            if e["liquidityOk"] is False or not e["riskPct"] or e["riskPct"] <= 0:
+                continue
+            cands.append((r, score_row(r, ctx, sectors, market), a, s.get("rsRank") or 0))
+    cands.sort(key=lambda x: (-x[1]["score"], -x[3], -x[2], x[0]["code"]))
+    picks = []
+    for r, v2, a, rs in cands[:C.MAX_PICKS]:
+        risk = r["entry"]["riskPct"]
+        w = min(1.0, C.MAX_RISK_PCT / risk)
+        p = _pick_row(r, v2, ctx, market, weight=round(w, 2), atrPct=round(a * 100, 2), rs=round(rs, 1))
+        p["why"][1] = {"kind": "entry", "text": f"추세 통과(RS {rs:.0f}) · 변동성 ATR {a:.1%} ≥ 3% (v4 조건), 손절폭 {_fmt(risk, 2)}% → 권고 비중 {w:.0%}"}
+        picks.append(p)
+    return {"picks": picks, "candidates": len(cands), "missingAtr": missing}
