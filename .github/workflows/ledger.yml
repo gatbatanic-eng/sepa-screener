@@ -93,7 +93,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for p in research/ledger research/agents research/advisory docs/research/ledger.json docs/research/agents.json docs/agents/reports docs/advisory; do
+          for p in research/ledger research/agents research/advisory docs/research/ledger.json docs/research/board.json docs/research/agents.json docs/agents/reports docs/advisory; do
             if [ -e "$p" ]; then git add -f "$p"; fi
           done
           git diff --cached --quiet && exit 0

@@ -219,8 +219,8 @@ class RunTest(unittest.TestCase):
                     calls.append(symbols)
                     return {"000001": series("2026-01-05", [100 + 2 * i for i in range(30)])}, {"000001": "KOSPI"}
 
-                orig = adapters.sepa_signals
-                adapters.sepa_signals = lambda market, research_dir=None: []
+                orig = adapters.tracker_signals
+                adapters.tracker_signals = lambda strategy, market, research_dir=None: []
                 try:
                     signals, outs = lmain.update_market("kr", dt.date(2026, 3, 1), bench, fetch)
                     self.assertEqual(outs[signals[0]["id"]]["5"]["status"], "complete")
@@ -229,7 +229,7 @@ class RunTest(unittest.TestCase):
                     lmain.update_market("kr", dt.date(2026, 3, 2), bench, fetch)
                     self.assertEqual(len(calls), 2)  # 아직 끝나지 않은 호라이즌이 있어 다시 조회
                 finally:
-                    adapters.sepa_signals = orig
+                    adapters.tracker_signals = orig
             finally:
                 config.SIGNALS_DIR, config.OUTCOMES_DIR, _ = old
 

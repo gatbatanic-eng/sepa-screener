@@ -1,16 +1,20 @@
 # 전략 성과 원장 (ledger)
 
 각 탭 전략이 낸 신호를 같은 형식으로 쌓고, 신호 후 5·20·60·120거래일 수익률을 지수와 대조군에 견줘 통계로 낸다.
-화면: `docs/performance/` (전략 성과 탭). 집계 파일: `docs/research/ledger.json`. 원장: `research/ledger/`.
+화면: `docs/performance/` (**전략 현황판** 탭 = 상태·선별·성과 한 줄 요약 + 상세 성과). 집계 파일: `docs/research/ledger.json`(성과), `docs/research/board.json`(현황판). 원장: `research/ledger/`.
 **기준은 2026-10-01에 고정했다. 결과를 본 뒤 바꾸지 않는다.** 바꿔야 하면 아래 변경 이력에 사유를 쓰고 새 계열로 센다.
 
-## 대상 (1차)
+## 대상
 | 전략 | 신호 출처 | 그룹 | 비고 |
 |---|---|---|---|
 | SEPA 추세템플릿 | `research/{kr,us}.json` 추적기(기존) | TREND·READY·GO·EXP_READY·EXP_GO | 사후 성과는 추적기가 계산(5·20·60일). 대조군 없음, 지수 대비만. 120일 없음 |
 | 대박주 깔때기 | `research/funnel/{kr,us}/snapshots/` | TOP50(관문 통과 상위 50위), T1_ON(관문 통과·타이밍 ON), CONTROL | 하루가 끝난 스냅샷만 고정. 깔때기는 주 1회+수동 실행이라 신호일도 주 1회 안팎 |
 | 멀티팩터 | `output/screening_result.csv` → `python -m ledger.collect_multifactor` | BUY·WATCH·NEUTRAL·SELL, CONTROL | 결과 CSV가 매번 덮어써져 신호별 기록은 2026-10-01부터만 있다(소급 불가) |
-| 나머지 탭(기술적 신호·모멘텀·계좌복구·RANGE-MR·FPD) | 아직 없음 | | 2차 범위. 신호 정의가 탭마다 달라 하나씩 검증하며 붙인다 |
+| RANGE-MR | `research/range_{kr,us}.json` 추적기(기존) | RANGE_GO·RANGE_WATCH | SEPA와 같은 방식(추적기 성과를 그대로 읽음). 대조군 없음 |
+| 계좌복구(공격) | `research/aggressive_{kr,us}.json` 추적기(기존) | AGGR_GO·AGGR_WATCH | 〃 |
+| 반등관찰(한국) | `research/rebound_kr.json` 추적기(기존) | REB_WATCH | 〃. 미국 없음 |
+| 기술적 신호 | `docs/technical/data/latest_{kr,us}.json` → `python -m ledger.collect_technical` | TREND_REVIEW·TREND_WATCH·TREND_HOLD·REBOUND_REVIEW·REBOUND_WATCH·REBOUND_HOLD, CONTROL | 판정(매수검토·관찰·진입보류)이 나온 종목만 기록, 대조군은 상태 OK 종목에서 150. 2026-10-10부터(소급 불가). 신호가 하루 수 종목뿐이라 표본이 천천히 쌓인다 |
+| FPD·매집 필터 | 원장 대상 아님 | | 현황판에 상태만 표시. 성과 검증은 각자의 연구 화면 |
 
 ## 고정 규칙
 - **신호일(유효 거래일):** 기록 시각에 가격이 가리키는 거래일. 한국 07:00 UTC, 미국 21:00 UTC 이전에 기록된 값은 전 거래일 종가로 본다(장중 값을 종가로 쓰지 않는다).
@@ -30,12 +34,22 @@
 - 생존편향: 이 원장은 신호 시점에 기록한 것이라 상폐 종목도 남는다(조회 불가로 센다). 다만 Yahoo가 상폐 종목 가격을 지우면 조회 불가 비율이 올라가므로 화면의 '불가' 열을 같이 본다.
 - 이 통계는 전략이 과거 신호에서 지수·무작위 대비 나았는지를 보는 것이지, 앞으로의 수익이나 매매 결과를 보장하지 않는다.
 
+## 전략 현황판 (`ledger/board.py`, 2026-10-10)
+읽기 전용 요약이다. 새로 계산하지 않고 각 전략의 산출물과 원장 집계를 한 줄로 모은다.
+- **상태**: 정상(기대한 거래일까지 기록 있음) · 지연(한 거래일 뒤처짐, 또는 판정 가능한 종목 80% 미만) · 중단(2거래일 이상, 주간 전략은 토요일 실행을 놓침) · 기록 대기.
+  기대 거래일: 한국 d는 d 13:00 UTC, 미국 d는 d+1일 12:00 UTC가 기한. 한국 휴장일은 NHPLUG 개장일 목록(`research/nhplug/kr_flow.json`)으로 판정한다.
+- **오늘 선별**: 추적기 전략은 최신 계열의 현재 소속 종목 수, 원장 전략은 최신 기록 파일의 그룹별 종목 수.
+- **성과**: 대표 그룹의 5·20거래일 지수 대비 평균(%p)과 표본 수. 판단 문구는 위 해석 가능 조건 그대로(30건·독립 구간 5개 전에는 '아직 판단 불가').
+- `ledger.yml`이 원장 갱신 때마다 `docs/research/board.json`을 다시 쓴다.
+
 ## 운영
 - `ledger.yml`: 평일 22:40 UTC에 깔때기 스냅샷 고정 → 가격 조회 → 성과 계산 → 통계 → 커밋. Yahoo는 Actions에서만 열린다.
 - `screener_daily.yml`: 멀티팩터 실행 직후 `ledger.collect_multifactor`로 신호를 고정한다(실패해도 대시보드는 계속).
-- 테스트: `python -m unittest tests.test_ledger`
+- `technical_daily.yml`: 기술적 신호 실행 직후 `ledger.collect_technical`로 그날 판정을 고정한다(시장별, 실패해도 대시보드는 계속).
+- 테스트: `python -m unittest tests.test_ledger tests.test_board`
 
 ## 변경 이력
 | 날짜 | 변경 | 사유 |
 |---|---|---|
 | 2026-10-01 | 최초 규칙 고정. 해석 가능 조건을 '신호일 5일'이 아니라 '독립 구간 5개'로 정함 | 결과가 나오기 전에, 연속 신호일의 겹치는 보유 기간이 표본 수를 부풀리는 것을 막기 위해 |
+| 2026-10-10 | 원장 대상에 RANGE-MR·계좌복구·반등관찰(기존 추적기 성과를 그대로 읽음)과 기술적 신호(신규 기록)를 추가하고, 전략 성과 탭을 전략 현황판으로 확장 | 사용자 요청: 전략별 상태·선별·성과를 한 곳에서 보기. 기존 전략의 고정 규칙(horizon·표본 조건·통계)은 그대로이고 대상만 늘렸다 |
