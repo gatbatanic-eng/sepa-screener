@@ -87,6 +87,18 @@ function market(m, r, names, core) {
   const v4 = (r.picksV4 || []).length ? `<details class="v3"><summary>실험 v4 · 추세 통과 + 변동성 3% 이상, 미국 전용 (${r.picksV4.length}종목)</summary>
     ${r.picksV4.map(p => `<div class="meta"><b>${esc(p.name)}</b> ${esc(p.code)} · 종합 ${p.v2.score}점 · RS ${p.rs} · ATR ${p.atrPct}% · 손절폭 ${p.entry.riskPct}% · 권고 비중 <b>${Math.round(p.weight*100)}%</b></div>`).join("")}
     <div class="meta">견고성 확인에서 미국만 통과한 조건입니다(한국은 실패). 평균보다 중앙값이 훨씬 낮은 변동 큰 전략이며 앞으로의 기록으로 검증합니다.</div></details>` : "";
+  const cmpRows = (() => {
+    const by = {};
+    [["v1", r.picks], ["v2", r.picksV2], ["v3", r.picksV3], ["v4", r.picksV4]].forEach(([k, list]) => (list || []).forEach(p => {
+      const e = by[p.code] = by[p.code] || {code: p.code, name: p.name, risk: p.entry && p.entry.riskPct};
+      e[k] = (k === "v3" || k === "v4") && p.weight != null ? `${Math.round(p.weight*100)}%` : "●";
+    }));
+    return Object.values(by).sort((a, b) => ["v2","v1","v3","v4"].findIndex(k => a[k]) - ["v2","v1","v3","v4"].findIndex(k => b[k]) || a.name.localeCompare(b.name));
+  })();
+  const cmp = cmpRows.length ? `<details class="v3" open><summary>버전별 추천 비교 (●=추천, v3·v4는 권고 비중)</summary>
+    <div class="scroll"><table><thead><tr><th>종목</th><th>손절폭</th><th>v1<br><span class="code">섹터 미반영</span></th><th>v2<br><span class="code">주 추천</span></th><th>v3<br><span class="code">필터 없이 비중</span></th><th>v4<br><span class="code">${m === "us" ? "추세+변동성" : "미국 전용"}</span></th></tr></thead><tbody>
+    ${cmpRows.map(x => `<tr><td><b>${esc(x.name)}</b> <span class="code">${esc(x.code)}</span></td><td>${x.risk != null ? x.risk + "%" : "-"}</td>${["v1","v2","v3","v4"].map(k => `<td style="text-align:center">${x[k] || ""}</td>`).join("")}</tr>`).join("")}
+    </tbody></table></div></details>` : "";
   const regs = Object.entries((r.context||{}).regimes||{}).map(([k,v]) => `<span class="pill ${esc(v)}">${esc(k)} ${esc(v)}</span>`).join("");
   const cov = (r.context||{}).sectorCoverage;
   const sec = ((r.context||{}).sectors||[]);
@@ -95,7 +107,7 @@ function market(m, r, names, core) {
     <div class="meta">기준 ${esc(r.session)} · 후보 ${r.candidates}개 중 진입 적합 ${r.suitable}개</div>
     ${picks.length ? picks.map(p => pick(p, names, core)).join("") : `<div class="empty">오늘은 진입 적합 종목이 없습니다.</div>`}
     ${r.shortfall && picks.length < 3 ? `<div class="note">${esc(r.shortfall)}</div>` : ""}
-    ${v1}${v3}${v4}${secLine}
+    ${cmp}${v1}${v3}${v4}${secLine}
     ${rej ? `<div class="meta">탈락 사유: ${rej}</div>` : ""}
     ${r.entryUnknown ? `<div class="meta">손절폭을 계산하지 못한 종목 ${r.entryUnknown}개는 제외했습니다.</div>` : ""}</div>`;
 }
