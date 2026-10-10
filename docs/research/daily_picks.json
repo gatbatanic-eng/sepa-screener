@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "generatedAt": "2026-10-10T11:06:35.906925+00:00",
+ "generatedAt": "2026-10-10T11:59:49.511149+00:00",
  "latest": {
   "kr": {
    "market": "kr",
@@ -328,6 +328,205 @@
      ]
     }
    ],
+   "picksV3": [
+    {
+     "code": "159010",
+     "name": "아스플로",
+     "market": "KOSDAQ",
+     "price": 32100.0,
+     "score": 4,
+     "strategies": {
+      "sepa": [
+       "TREND"
+      ],
+      "funnel": 44
+     },
+     "funnelRank": 44,
+     "entry": {
+      "riskPct": 42.99,
+      "riskSource": "SEPA",
+      "verdict": "NO-GO",
+      "chase": [
+       "기술적 추격 경고",
+       "SEPA 과열 구간"
+      ],
+      "liquidityOk": true,
+      "zone": "EXTENDED"
+     },
+     "v2": {
+      "score": 4,
+      "sector": "기계·장비",
+      "sectorAdj": 1,
+      "marketAdj": -1
+     },
+     "why": [
+      {
+       "kind": "strategy",
+       "text": "SEPA, 실적 턴어라운드 44위 선정 (v1 점수 4)"
+      },
+      {
+       "kind": "entry",
+       "text": "손절폭 42.99%(SEPA) → 권고 비중 19% (8% 초과분은 8%÷손절폭으로 축소)"
+      },
+      {
+       "kind": "entry",
+       "text": "참고: SEPA NO-GO, 기술적 추격 경고, SEPA 과열 구간 — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"
+      },
+      {
+       "kind": "sector",
+       "text": "업종 기계·장비 강세: 50일선 위 83%, 평균 RS 64, 18개 업종 중 2위 (점수 +1)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 KOSDAQ RED (점수 -1)"
+      },
+      {
+       "kind": "sector",
+       "text": "오늘 업종 강세: 평균 +1.7%, 수급/거래대금 -1.6% (참고, 점수 아님)"
+      },
+      {
+       "kind": "sector",
+       "text": "외국인·기관 순매수 유입 업종: 평균 +1.7%, 수급/거래대금 -1.6% (참고, 점수 아님)"
+      },
+      {
+       "kind": "macro",
+       "text": "매크로 중립 (VIX 15.4, 달러지수 102.1, 원/달러 1,343, 미 10년 5.28%) — 참고, 점수 아님"
+      }
+     ],
+     "weight": 0.19
+    },
+    {
+     "code": "032580",
+     "name": "피델릭스",
+     "market": "KOSDAQ",
+     "price": 7420.0,
+     "score": 4,
+     "strategies": {
+      "sepa": [
+       "TREND"
+      ],
+      "funnel": 1
+     },
+     "funnelRank": 1,
+     "entry": {
+      "riskPct": 41.02,
+      "riskSource": "SEPA",
+      "verdict": "NO-GO",
+      "chase": [],
+      "liquidityOk": null,
+      "zone": "SETUP"
+     },
+     "v2": {
+      "score": 4,
+      "sector": "전기·전자",
+      "sectorAdj": 1,
+      "marketAdj": -1
+     },
+     "why": [
+      {
+       "kind": "strategy",
+       "text": "SEPA, 실적 턴어라운드 1위 선정 (v1 점수 4)"
+      },
+      {
+       "kind": "entry",
+       "text": "손절폭 41.02%(SEPA) → 권고 비중 20% (8% 초과분은 8%÷손절폭으로 축소)"
+      },
+      {
+       "kind": "entry",
+       "text": "참고: SEPA NO-GO — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"
+      },
+      {
+       "kind": "sector",
+       "text": "업종 전기·전자 강세: 50일선 위 88%, 평균 RS 69, 18개 업종 중 1위 (점수 +1)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 KOSDAQ RED (점수 -1)"
+      },
+      {
+       "kind": "sector",
+       "text": "외국인·기관 순매도 업종: 평균 -0.3%, 수급/거래대금 -17.6% (참고, 점수 아님)"
+      },
+      {
+       "kind": "macro",
+       "text": "매크로 중립 (VIX 15.4, 달러지수 102.1, 원/달러 1,343, 미 10년 5.28%) — 참고, 점수 아님"
+      }
+     ],
+     "weight": 0.2
+    },
+    {
+     "code": "281820",
+     "name": "케이씨텍",
+     "market": "KOSPI",
+     "price": 123200.0,
+     "score": 3,
+     "strategies": {
+      "sepa": [
+       "TREND"
+      ],
+      "multifactor": [
+       "WATCH",
+       "CONTROL"
+      ]
+     },
+     "funnelRank": null,
+     "entry": {
+      "riskPct": 50.28,
+      "riskSource": "SEPA",
+      "verdict": "NO-GO",
+      "chase": [
+       "기술적 추격 경고",
+       "SEPA 과열 구간"
+      ],
+      "liquidityOk": true,
+      "zone": "EXTENDED"
+     },
+     "v2": {
+      "score": 4,
+      "sector": "의료·정밀기기",
+      "sectorAdj": 1,
+      "marketAdj": 0
+     },
+     "why": [
+      {
+       "kind": "strategy",
+       "text": "SEPA, 멀티팩터 선정 (v1 점수 3)"
+      },
+      {
+       "kind": "entry",
+       "text": "손절폭 50.28%(SEPA) → 권고 비중 16% (8% 초과분은 8%÷손절폭으로 축소)"
+      },
+      {
+       "kind": "entry",
+       "text": "참고: SEPA NO-GO, 기술적 추격 경고, SEPA 과열 구간 — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"
+      },
+      {
+       "kind": "sector",
+       "text": "업종 의료·정밀기기 강세: 50일선 위 73%, 평균 RS 58, 18개 업종 중 3위 (점수 +1)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 KOSPI YELLOW"
+      },
+      {
+       "kind": "sector",
+       "text": "외국인·기관 순매수 유입 업종: 평균 -1.9%, 수급/거래대금 +2.6% (참고, 점수 아님)"
+      },
+      {
+       "kind": "macro",
+       "text": "매크로 중립 (VIX 15.4, 달러지수 102.1, 원/달러 1,343, 미 10년 5.28%) — 참고, 점수 아님"
+      }
+     ],
+     "weight": 0.16
+    }
+   ],
+   "v3": {
+    "candidates": 27,
+    "skipped": {
+     "유동성 부족": 0,
+     "손절폭 미확인": 1
+    }
+   },
    "context": {
     "regimes": {
      "KOSPI": "YELLOW",
@@ -896,6 +1095,189 @@
      ]
     }
    ],
+   "picksV3": [
+    {
+     "code": "VLO",
+     "name": "VALERO ENERGY CORP/TX",
+     "market": "NYSE",
+     "price": 433.75,
+     "score": 5,
+     "strategies": {
+      "sepa": [
+       "TREND"
+      ],
+      "funnel": 49,
+      "aggressive": [
+       "AGGR_WATCH"
+      ]
+     },
+     "funnelRank": 49,
+     "entry": {
+      "riskPct": 17.62,
+      "riskSource": "SEPA",
+      "verdict": "NO-GO",
+      "chase": [],
+      "liquidityOk": true,
+      "zone": "LATE"
+     },
+     "v2": {
+      "score": 6,
+      "sector": "Energy",
+      "sectorAdj": 1,
+      "marketAdj": 0
+     },
+     "why": [
+      {
+       "kind": "strategy",
+       "text": "SEPA, 실적 턴어라운드 49위, 계좌복구 선정 (v1 점수 5)"
+      },
+      {
+       "kind": "entry",
+       "text": "손절폭 17.62%(SEPA) → 권고 비중 45% (8% 초과분은 8%÷손절폭으로 축소)"
+      },
+      {
+       "kind": "entry",
+       "text": "참고: SEPA NO-GO — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"
+      },
+      {
+       "kind": "sector",
+       "text": "업종 Energy 강세: 50일선 위 71%, 평균 RS 71, 11개 업종 중 1위 (점수 +1)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 미국 GREEN"
+      },
+      {
+       "kind": "macro",
+       "text": "매크로 중립 (VIX 15.4, 달러지수 102.1, 미 10년 5.28%) — 참고, 점수 아님"
+      }
+     ],
+     "weight": 0.45
+    },
+    {
+     "code": "PSX",
+     "name": "Phillips 66",
+     "market": "NYSE",
+     "price": 278.17999267578125,
+     "score": 5,
+     "strategies": {
+      "sepa": [
+       "TREND"
+      ],
+      "funnel": 33,
+      "aggressive": [
+       "AGGR_WATCH"
+      ]
+     },
+     "funnelRank": 33,
+     "entry": {
+      "riskPct": 12.17,
+      "riskSource": "SEPA",
+      "verdict": "NO-GO",
+      "chase": [],
+      "liquidityOk": true,
+      "zone": "BREAKOUT_ZONE"
+     },
+     "v2": {
+      "score": 6,
+      "sector": "Energy",
+      "sectorAdj": 1,
+      "marketAdj": 0
+     },
+     "why": [
+      {
+       "kind": "strategy",
+       "text": "SEPA, 실적 턴어라운드 33위, 계좌복구 선정 (v1 점수 5)"
+      },
+      {
+       "kind": "entry",
+       "text": "손절폭 12.17%(SEPA) → 권고 비중 66% (8% 초과분은 8%÷손절폭으로 축소)"
+      },
+      {
+       "kind": "entry",
+       "text": "참고: SEPA NO-GO — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"
+      },
+      {
+       "kind": "sector",
+       "text": "업종 Energy 강세: 50일선 위 71%, 평균 RS 71, 11개 업종 중 1위 (점수 +1)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 미국 GREEN"
+      },
+      {
+       "kind": "macro",
+       "text": "매크로 중립 (VIX 15.4, 달러지수 102.1, 미 10년 5.28%) — 참고, 점수 아님"
+      }
+     ],
+     "weight": 0.66
+    },
+    {
+     "code": "KEYS",
+     "name": "Keysight Technologies, Inc.",
+     "market": "NYSE",
+     "price": 382.75,
+     "score": 5,
+     "strategies": {
+      "sepa": [
+       "TREND"
+      ],
+      "funnel": 50,
+      "aggressive": [
+       "AGGR_WATCH"
+      ]
+     },
+     "funnelRank": 50,
+     "entry": {
+      "riskPct": 20.05,
+      "riskSource": "SEPA",
+      "verdict": "NO-GO",
+      "chase": [],
+      "liquidityOk": true,
+      "zone": "LATE"
+     },
+     "v2": {
+      "score": 6,
+      "sector": "Technology",
+      "sectorAdj": 1,
+      "marketAdj": 0
+     },
+     "why": [
+      {
+       "kind": "strategy",
+       "text": "SEPA, 실적 턴어라운드 50위, 계좌복구 선정 (v1 점수 5)"
+      },
+      {
+       "kind": "entry",
+       "text": "손절폭 20.05%(SEPA) → 권고 비중 40% (8% 초과분은 8%÷손절폭으로 축소)"
+      },
+      {
+       "kind": "entry",
+       "text": "참고: SEPA NO-GO — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"
+      },
+      {
+       "kind": "sector",
+       "text": "업종 Technology 강세: 50일선 위 61%, 평균 RS 70, 11개 업종 중 2위 (점수 +1)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 미국 GREEN"
+      },
+      {
+       "kind": "macro",
+       "text": "매크로 중립 (VIX 15.4, 달러지수 102.1, 미 10년 5.28%) — 참고, 점수 아님"
+      }
+     ],
+     "weight": 0.4
+    }
+   ],
+   "v3": {
+    "candidates": 44,
+    "skipped": {
+     "유동성 부족": 0,
+     "손절폭 미확인": 0
+    }
+   },
    "context": {
     "regimes": {
      "US": "GREEN"

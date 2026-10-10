@@ -183,3 +183,35 @@ class V2Test(unittest.TestCase):
             self.assertEqual(by["A"], ["PICK", "PICK_V2"])
             self.assertEqual(by["B"], ["PICK_V2"])
             self.assertEqual(by["C"], ["CONTROL"])
+
+
+class V3Test(unittest.TestCase):
+    def test_v3_has_no_risk_filter_but_sizes_by_stop_distance(self):
+        from daily_picks import v2
+        ctx = {"sectorStats": {}, "regimes": {"US": "GREEN"}, "macro": None, "krClose": {}}
+        def row(code, score, risk, strategies, verdict=None, liquid=None, chase=()):
+            return {"code": code, "name": code, "market": "US", "price": 10.0, "score": score, "strategies": strategies, "funnelRank": None,
+                    "entry": {"riskPct": risk, "riskSource": "SEPA", "verdict": verdict, "chase": list(chase), "liquidityOk": liquid, "zone": None},
+                    "reject": "손절폭 8% 초과" if (risk or 0) > 8 else None}
+        rows = [row("A", 3, 4.0, {"sepa": ["TREND"]}),
+                row("B", 3, 20.0, {"sepa": ["TREND"]}, verdict="NO-GO", chase=["기술적 추격 경고"]),   # 필터에 걸리던 종목도 후보
+                row("C", 5, 3.0, {"funnel": 1}),                                                   # SEPA 선정이 아니면 v3 후보가 아니다
+                row("D", 4, 5.0, {"sepa": ["TREND"]}, liquid=False),                              # 유동성 부족은 제외
+                row("E", 4, None, {"sepa": ["TREND"]})]                                            # 손절폭 미확인은 제외
+        out = v2.rank_v3(rows, ctx, {}, "us", {"A": 80, "B": 95})
+        self.assertEqual([p["code"] for p in out["picks"]], ["B", "A"])                           # 점수 같으면 RS 높은 순
+        self.assertEqual({p["code"]: p["weight"] for p in out["picks"]}, {"B": 0.4, "A": 1.0})    # 8%/20% = 0.4, 8% 이하는 100%
+        self.assertEqual(out["skipped"], {"유동성 부족": 1, "손절폭 미확인": 1})
+        self.assertTrue(any("NO-GO" in w["text"] for w in out["picks"][0]["why"]))
+
+    def test_ledger_has_v3_group(self):
+        now = dt.datetime(2026, 10, 10, 1, 0, tzinfo=dt.timezone.utc)
+        rec = {"session": "2026-10-09", "market": "us", "picks": [], "picksV2": [],
+               "picksV3": [{"code": "B", "name": "b", "market": "US", "price": 20.0, "score": 3, "v2": {"score": 3}, "entry": {"riskPct": 20}}],
+               "poolPrices": {"B": 20.0, "C": 30.0}, "rejectSummary": {}}
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            dp.write_once(root, "us", rec, now)
+            adapters.ingest_picks("us", root / "research" / "daily_picks", root / "signals")
+            doc = read_gz(root / "signals" / "picks" / "us" / "2026-10-09.json.gz")
+            self.assertEqual({r["symbol"]: r["groups"] for r in doc["rows"]}, {"B": ["PICK_V3"], "C": ["CONTROL"]})

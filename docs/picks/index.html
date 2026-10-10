@@ -37,6 +37,7 @@
   .kv { margin-top:8px; display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:6px 14px; font-size:12px; color:var(--dim); }
   .kv b { color:var(--text); font-variant-numeric:tabular-nums; }
   .note { background:var(--y-bg); color:var(--y-text); border-radius:8px; padding:8px 12px; font-size:13px; margin:8px 0; }
+  details.v3 { margin:8px 0; font-size:13px; } details.v3 summary { cursor:pointer; color:var(--accent); }
   .empty { color:var(--dim); padding:10px 0; }
   table { width:100%; border-collapse:collapse; font-size:12px; } th,td { text-align:left; padding:5px 8px; border-bottom:1px solid var(--border); }
   .scroll { overflow-x:auto; }
@@ -80,6 +81,9 @@ function market(m, r, names, core) {
   const picks = r.picksV2 || r.picks;
   const v1 = r.picksV2 && r.picks.map(p=>p.code).join() !== r.picksV2.map(p=>p.code).join()
     ? `<div class="meta">참고 · v1(섹터 미반영) 추천: ${r.picks.map(p=>esc(p.name)).join(", ") || "없음"}</div>` : "";
+  const v3 = (r.picksV3 || []).length ? `<details class="v3"><summary>실험 v3 · 손절폭 필터 없이 비중 조절 (${r.picksV3.length}종목)</summary>
+    ${r.picksV3.map(p => `<div class="meta"><b>${esc(p.name)}</b> ${esc(p.code)} · 종합 ${p.v2.score}점 · 손절폭 ${p.entry.riskPct}% · 권고 비중 <b>${Math.round(p.weight*100)}%</b>${(p.why||[]).filter(w=>w.text.startsWith("참고")).map(w=>`<br>${esc(w.text)}`).join("")}</div>`).join("")}
+    <div class="meta">백테스트에서 손절폭 8% 이하 필터가 추세 통과의 초과수익을 없앴기 때문에 만든 실험 계열입니다. 앞으로의 기록으로 검증하며 아직 근거로 쓰지 않습니다.</div></details>` : "";
   const regs = Object.entries((r.context||{}).regimes||{}).map(([k,v]) => `<span class="pill ${esc(v)}">${esc(k)} ${esc(v)}</span>`).join("");
   const cov = (r.context||{}).sectorCoverage;
   const sec = ((r.context||{}).sectors||[]);
@@ -88,7 +92,7 @@ function market(m, r, names, core) {
     <div class="meta">기준 ${esc(r.session)} · 후보 ${r.candidates}개 중 진입 적합 ${r.suitable}개</div>
     ${picks.length ? picks.map(p => pick(p, names, core)).join("") : `<div class="empty">오늘은 진입 적합 종목이 없습니다.</div>`}
     ${r.shortfall && picks.length < 3 ? `<div class="note">${esc(r.shortfall)}</div>` : ""}
-    ${v1}${secLine}
+    ${v1}${v3}${secLine}
     ${rej ? `<div class="meta">탈락 사유: ${rej}</div>` : ""}
     ${r.entryUnknown ? `<div class="meta">손절폭을 계산하지 못한 종목 ${r.entryUnknown}개는 제외했습니다.</div>` : ""}</div>`;
 }
