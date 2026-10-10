@@ -1,0 +1,41 @@
+name: Leader Entry Backtest
+
+# 주도주 진입 규칙(손절폭 8% 이하 필터 vs 추격 허용·눌림목·돌파) 백테스트. 수동 실행 전용, 기존 파이프라인과 연결하지 않는다. 결과는 research/leader_backtest.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: leader-backtest
+  cancel-in-progress: false
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Unit tests
+        run: python -m unittest tests.test_leader_backtest -v
+      - name: Run backtest
+        run: python -m leader_backtest.main
+      - name: Save
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f research/leader_backtest
+          git diff --cached --quiet && exit 0
+          git commit -m "주도주 진입 규칙 백테스트 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+          for i in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && break
+            sleep $((i * 5))
+          done
