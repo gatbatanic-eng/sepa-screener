@@ -136,3 +136,28 @@ class RobustTest(unittest.TestCase):
         m = robust.rule_masks(p)
         self.assertEqual(list(m["TREND_VOL_PB"]), [True, False])                                  # ATR 3% 경계
         self.assertEqual(list(m["FOUND_TREND"]), [True, False])                                   # ATR 2.95% 경계(0.029 < 0.0295)
+
+
+class WideUniverseTest(unittest.TestCase):
+    def test_wide_universe_reads_funnel_snapshot_and_maps_symbols(self):
+        import gzip, json, tempfile
+        from pathlib import Path
+        from leader_backtest import robust
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            for m, rows in (("us", [{"symbol": "BRK.B"}, {"symbol": "AAPL"}]), ("kr", [{"symbol": "5930", "exchange": "KOSPI"}, {"symbol": "247540", "exchange": "KOSDAQ"}])):
+                p = root / "research" / "funnel" / m / "snapshots"
+                p.mkdir(parents=True)
+                with gzip.open(p / "2026-10-10.json.gz", "wt", encoding="utf-8") as fh:
+                    json.dump({"rows": rows}, fh)
+            self.assertEqual(robust.wide_universe("us", root), {"BRK-B": "BRK.B", "AAPL": "AAPL"})
+            self.assertEqual(robust.wide_universe("kr", root), {"005930.KS": "5930", "247540.KQ": "247540"})
+
+    def test_liquidity_floor_filters_panel(self):
+        from leader_backtest import robust
+        thin = synth(seed=1)
+        thin["volume"] = 1.0                              # 거래대금이 거의 없는 종목
+        liquid = synth(seed=2)
+        liquid["volume"] = 1_000_000.0
+        panel = robust.build_panel({"THIN": thin, "LIQ": liquid}, "us", 5e6)
+        self.assertEqual(set(panel["code"]), {"LIQ"})
