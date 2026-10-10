@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "generatedAt": "2026-10-10T10:59:50.595087+00:00",
+ "generatedAt": "2026-10-10T11:06:35.906925+00:00",
  "latest": {
   "kr": {
    "market": "kr",
@@ -76,9 +76,9 @@
    ],
    "rejectSummary": {
     "손절폭 8% 초과": 62,
-    "손절폭 미확인": 2,
-    "손절폭 0 이하(계산 불가)": 1,
-    "SEPA 진입 NO-GO": 1
+    "손절폭 0 이하(계산 불가)": 2,
+    "SEPA 진입 NO-GO": 1,
+    "손절폭 미확인": 1
    },
    "shortfall": null,
    "session": "2026-10-08",
@@ -159,8 +159,10 @@
     "036540": 11580.0,
     "351320": 4445.0
    },
-   "directComputed": [],
-   "entryUnknown": 2,
+   "directComputed": [
+    "234920"
+   ],
+   "entryUnknown": 1,
    "rules": {
     "maxRiskPct": 8.0,
     "stopLossPct": 8.0,
@@ -534,22 +536,18 @@
    "market": "us",
    "regime": "GREEN",
    "gate": "우호적",
-   "candidates": 88,
-   "suitable": 3,
+   "candidates": 89,
+   "suitable": 13,
    "picks": [
     {
-     "code": "CVX",
-     "name": "Chevron Corporation",
+     "code": "ZBRA",
+     "name": "Zebra Technologies",
      "market": "US",
-     "price": 211.5500030517578,
-     "score": 4,
+     "price": 387.1799926757813,
+     "score": 3,
      "strategies": {
       "sepa": [
        "TREND"
-      ],
-      "multifactor": [
-       "WATCH",
-       "CONTROL"
       ],
       "aggressive": [
        "AGGR_WATCH"
@@ -557,90 +555,92 @@
      },
      "funnelRank": null,
      "entry": {
-      "riskPct": 5.57,
+      "riskPct": 5.59,
       "riskSource": "SEPA",
       "verdict": "WATCH",
       "chase": [],
       "liquidityOk": true,
-      "zone": "WATCH"
+      "zone": "BREAKOUT_ZONE"
      },
      "reject": null
     },
     {
-     "code": "VEEV",
-     "name": "VEEVA SYSTEMS INC",
-     "market": "NYSE",
-     "price": 296.1300048828125,
-     "score": 3,
-     "strategies": {
-      "funnel": 36,
-      "aggressive": [
-       "AGGR_WATCH"
-      ]
-     },
-     "funnelRank": 36,
-     "entry": {
-      "riskPct": 5.77,
-      "riskSource": "SEPA",
-      "verdict": null,
-      "chase": [],
-      "liquidityOk": true,
-      "zone": "WATCH"
-     },
-     "reject": null
-    },
-    {
-     "code": "EQIX",
-     "name": "EQUINIX INC",
+     "code": "CHRD",
+     "name": "Chord Energy Corp",
      "market": "Nasdaq",
-     "price": 1026.06005859375,
+     "price": 141.5399932861328,
      "score": 2,
      "strategies": {
-      "funnel": 45
+      "funnel": 3
      },
-     "funnelRank": 45,
+     "funnelRank": 3,
      "entry": {
-      "riskPct": 2.98,
-      "riskSource": "SEPA",
+      "riskPct": 7.79,
+      "riskSource": "직접 계산",
       "verdict": null,
       "chase": [],
-      "liquidityOk": true,
-      "zone": "SETUP"
+      "liquidityOk": null,
+      "zone": null
+     },
+     "reject": null
+    },
+    {
+     "code": "TWFG",
+     "name": "TWFG, Inc.",
+     "market": "Nasdaq",
+     "price": 24.760000228881836,
+     "score": 2,
+     "strategies": {
+      "funnel": 5
+     },
+     "funnelRank": 5,
+     "entry": {
+      "riskPct": 7.01,
+      "riskSource": "직접 계산",
+      "verdict": null,
+      "chase": [],
+      "liquidityOk": null,
+      "zone": null
      },
      "reject": null
     }
    ],
    "rejectSummary": {
-    "손절폭 미확인": 36,
-    "손절폭 8% 초과": 32,
-    "SEPA 진입 NO-GO": 16,
+    "손절폭 8% 초과": 62,
+    "SEPA 진입 NO-GO": 13,
     "손절폭 0 이하(계산 불가)": 1
    },
    "shortfall": null,
    "session": "2026-10-09",
    "poolPrices": {
     "PSX": 278.17999267578125,
-    "AMD": 608.0999755859375,
-    "TER": 402.67999267578125,
     "VLO": 433.75,
     "KEYS": 382.75,
-    "AAPL": 340.4200134277344,
-    "CVX": 211.5500030517578,
-    "EXPD": 193.7100067138672,
-    "ABBV": 272.4200134277344,
+    "AMD": 608.0999755859375,
+    "TER": 402.67999267578125,
+    "EXPD": 193.2400054931641,
+    "BIIB": 225.7100067138672,
+    "ABBV": 276.4700012207031,
+    "APH": 87.23999786376953,
     "DOC": 18.799999237060547,
     "VEEV": 296.1300048828125,
-    "A": 168.1699981689453,
-    "BIIB": 218.42999267578125,
-    "ZBRA": 382.1400146484375,
-    "XOM": 168.5,
-    "ANET": 210.97000122070312,
-    "FFIV": 461.6600036621094,
-    "APA": 45.470001220703125,
-    "APH": 85.31999969482422,
-    "FTNT": 189.1000061035156,
-    "NTAP": 231.0500030517578,
-    "P": 150.57000732421875,
+    "A": 170.5399932861328,
+    "ZBRA": 387.1799926757813,
+    "AMGN": 414.8699951171875,
+    "XOM": 168.94000244140625,
+    "NDSN": 328.1700134277344,
+    "ANET": 216.7400054931641,
+    "APA": 45.880001068115234,
+    "FFIV": 479.8299865722656,
+    "DELL": 586.0599975585938,
+    "FTNT": 194.75,
+    "HUM": 431.8699951171875,
+    "MPC": 455.0299987792969,
+    "NTAP": 237.1499938964844,
+    "LITE": 1103.35498046875,
+    "DDOG": 293.260009765625,
+    "HPE": 73.45999908447266,
+    "P": 154.49000549316406,
     "FIVN": 36.400001525878906,
     "MDB": 385.92999267578125,
     "CHRD": 141.5399932861328,
@@ -684,32 +684,64 @@
     "DK": 74.51000213623047,
     "COHU": 68.19000244140625,
     "NUE": 250.3300018310547,
-    "WST": 363.2699890136719,
-    "MU": 1035.8399658203125,
-    "WAT": 429.1300048828125,
-    "TWLO": 275.7699890136719,
-    "CRL": 298.0,
-    "NDSN": 326.8699951171875,
-    "HPQ": 32.439998626708984,
-    "CRWD": 263.010009765625,
-    "VTRS": 17.440000534057617,
-    "PM": 200.5,
-    "RVTY": 152.16000366210938,
-    "SNOW": 343.3999938964844,
-    "PANW": 398.5,
-    "BE": 272.82000732421875,
-    "DELL": 574.5499877929688,
-    "MRVL": 274.6600036621094,
-    "LITE": 1048.5999755859375,
-    "DDOG": 273.79998779296875,
-    "MPC": 463.3399963378906,
-    "SWKS": 80.75,
-    "HPE": 71.0,
-    "ILMN": 264.57000732421875,
-    "MRNA": 197.0
+    "MU": 1029.0,
+    "WAT": 433.7699890136719,
+    "MRK": 145.60000610351562,
+    "CRL": 301.7900085449219,
+    "NVT": 167.42999267578125,
+    "WSM": 241.77999877929688,
+    "FCX": 73.69000244140625,
+    "PM": 201.19000244140625,
+    "VTRS": 17.639999389648438,
+    "TWLO": 289.4700012207031,
+    "RVTY": 154.17999267578125,
+    "CRWD": 275.0400085449219,
+    "MRVL": 275.2799987792969,
+    "BE": 280.5,
+    "PANW": 418.7799987792969,
+    "SNOW": 368.8900146484375,
+    "ILMN": 278.1700134277344,
+    "MRNA": 225.0
    },
-   "directComputed": [],
-   "entryUnknown": 36,
+   "directComputed": [
+    "ALGM",
+    "BB",
+    "BETA",
+    "CDNA",
+    "CHRD",
+    "COHU",
+    "CRON",
+    "DAR",
+    "DINO",
+    "DK",
+    "FIVN",
+    "FRSH",
+    "GNK",
+    "GSHD",
+    "HCC",
+    "HUBS",
+    "IRWD",
+    "JOE",
+    "KWR",
+    "LFST",
+    "LPG",
+    "MDB",
+    "MMI",
+    "MNTN",
+    "MQ",
+    "PATH",
+    "QNST",
+    "RDN",
+    "REPX",
+    "RGR",
+    "SD",
+    "TRC",
+    "TWFG",
+    "WK",
+    "WTI",
+    "XRN"
+   ],
+   "entryUnknown": 0,
    "rules": {
     "maxRiskPct": 8.0,
     "stopLossPct": 8.0,
@@ -718,18 +750,14 @@
    },
    "picksV2": [
     {
-     "code": "CVX",
-     "name": "Chevron Corporation",
+     "code": "ZBRA",
+     "name": "Zebra Technologies",
      "market": "US",
-     "price": 211.5500030517578,
-     "score": 4,
+     "price": 387.1799926757813,
+     "score": 3,
      "strategies": {
       "sepa": [
        "TREND"
-      ],
-      "multifactor": [
-       "WATCH",
-       "CONTROL"
       ],
       "aggressive": [
        "AGGR_WATCH"
@@ -737,35 +765,35 @@
      },
      "funnelRank": null,
      "entry": {
-      "riskPct": 5.57,
+      "riskPct": 5.59,
       "riskSource": "SEPA",
       "verdict": "WATCH",
       "chase": [],
       "liquidityOk": true,
-      "zone": "WATCH"
+      "zone": "BREAKOUT_ZONE"
      },
      "v2": {
       "score": 4,
-      "sector": null,
-      "sectorAdj": 0,
+      "sector": "Technology",
+      "sectorAdj": 1,
       "marketAdj": 0
      },
      "why": [
       {
        "kind": "strategy",
-       "text": "SEPA, 멀티팩터, 계좌복구 선정 (v1 점수 4)"
+       "text": "SEPA, 계좌복구 선정 (v1 점수 3)"
       },
       {
        "kind": "entry",
-       "text": "손절폭 5.57%(SEPA), 추격·NO-GO·유동성 조건 통과"
+       "text": "손절폭 5.59%(SEPA), 추격·NO-GO·유동성 조건 통과"
       },
       {
        "kind": "sector",
-       "text": "업종을 알 수 없어 섹터 점수 0"
+       "text": "업종 Technology 강세: 50일선 위 61%, 평균 RS 70, 11개 업종 중 2위 (점수 +1)"
       },
       {
        "kind": "market",
-       "text": "시장 US GREEN"
+       "text": "시장 미국 GREEN"
       },
       {
        "kind": "macro",
@@ -774,44 +802,45 @@
      ]
     },
     {
-     "code": "VEEV",
-     "name": "VEEVA SYSTEMS INC",
-     "market": "NYSE",
-     "price": 296.1300048828125,
-     "score": 3,
+     "code": "CHRD",
+     "name": "Chord Energy Corp",
+     "market": "Nasdaq",
+     "price": 141.5399932861328,
+     "score": 2,
      "strategies": {
-      "funnel": 36,
-      "aggressive": [
-       "AGGR_WATCH"
-      ]
+      "funnel": 3
      },
-     "funnelRank": 36,
+     "funnelRank": 3,
      "entry": {
-      "riskPct": 5.77,
-      "riskSource": "SEPA",
+      "riskPct": 7.79,
+      "riskSource": "직접 계산",
       "verdict": null,
       "chase": [],
-      "liquidityOk": true,
-      "zone": "WATCH"
+      "liquidityOk": null,
+      "zone": null
      },
      "v2": {
       "score": 3,
-      "sector": null,
-      "sectorAdj": 0,
+      "sector": "Energy",
+      "sectorAdj": 1,
       "marketAdj": 0
      },
      "why": [
       {
        "kind": "strategy",
-       "text": "실적 턴어라운드 36위, 계좌복구 선정 (v1 점수 3)"
+       "text": "실적 턴어라운드 3위 선정 (v1 점수 2)"
       },
       {
        "kind": "entry",
-       "text": "손절폭 5.77%(SEPA), 추격·NO-GO·유동성 조건 통과"
+       "text": "손절폭 7.79%(직접 계산), 추격·NO-GO·유동성 조건 통과"
       },
       {
        "kind": "sector",
-       "text": "업종을 알 수 없어 섹터 점수 0"
+       "text": "업종 Energy 강세: 50일선 위 71%, 평균 RS 71, 11개 업종 중 1위 (점수 +1)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 미국 GREEN"
       },
       {
        "kind": "macro",
@@ -820,41 +849,45 @@
      ]
     },
     {
-     "code": "EQIX",
-     "name": "EQUINIX INC",
-     "market": "Nasdaq",
-     "price": 1026.06005859375,
+     "code": "SD",
+     "name": "SANDRIDGE ENERGY INC",
+     "market": "NYSE",
+     "price": 13.84000015258789,
      "score": 2,
      "strategies": {
-      "funnel": 45
+      "funnel": 13
      },
-     "funnelRank": 45,
+     "funnelRank": 13,
      "entry": {
-      "riskPct": 2.98,
-      "riskSource": "SEPA",
+      "riskPct": 5.04,
+      "riskSource": "직접 계산",
       "verdict": null,
       "chase": [],
-      "liquidityOk": true,
-      "zone": "SETUP"
+      "liquidityOk": null,
+      "zone": null
      },
      "v2": {
-      "score": 2,
-      "sector": null,
-      "sectorAdj": 0,
+      "score": 3,
+      "sector": "Energy",
+      "sectorAdj": 1,
       "marketAdj": 0
      },
      "why": [
       {
        "kind": "strategy",
-       "text": "실적 턴어라운드 45위 선정 (v1 점수 2)"
+       "text": "실적 턴어라운드 13위 선정 (v1 점수 2)"
       },
       {
        "kind": "entry",
-       "text": "손절폭 2.98%(SEPA), 추격·NO-GO·유동성 조건 통과"
+       "text": "손절폭 5.04%(직접 계산), 추격·NO-GO·유동성 조건 통과"
       },
       {
        "kind": "sector",
-       "text": "업종을 알 수 없어 섹터 점수 0"
+       "text": "업종 Energy 강세: 50일선 위 71%, 평균 RS 71, 11개 업종 중 1위 (점수 +1)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 미국 GREEN"
       },
       {
        "kind": "macro",
@@ -879,10 +912,121 @@
      ]
     },
     "sectorCoverage": {
-     "known": 0,
-     "candidates": 88
+     "known": 89,
+     "candidates": 89
     },
-    "sectors": []
+    "sectors": [
+     {
+      "sector": "Energy",
+      "n": 21,
+      "above50Pct": 71.4,
+      "avgRs": 71.3,
+      "strength": 71.3,
+      "rank": 1,
+      "of": 11,
+      "adj": 1
+     },
+     {
+      "sector": "Technology",
+      "n": 90,
+      "above50Pct": 61.1,
+      "avgRs": 69.9,
+      "strength": 65.5,
+      "rank": 2,
+      "of": 11,
+      "adj": 1
+     },
+     {
+      "sector": "Healthcare",
+      "n": 60,
+      "above50Pct": 56.7,
+      "avgRs": 64.2,
+      "strength": 60.4,
+      "rank": 3,
+      "of": 11,
+      "adj": 1
+     },
+     {
+      "sector": "Consumer Defensive",
+      "n": 32,
+      "above50Pct": 31.2,
+      "avgRs": 45.2,
+      "strength": 38.2,
+      "rank": 4,
+      "of": 11,
+      "adj": 0
+     },
+     {
+      "sector": "Industrials",
+      "n": 76,
+      "above50Pct": 28.9,
+      "avgRs": 46.9,
+      "strength": 37.9,
+      "rank": 5,
+      "of": 11,
+      "adj": 0
+     },
+     {
+      "sector": "Financial Services",
+      "n": 70,
+      "above50Pct": 21.4,
+      "avgRs": 49.0,
+      "strength": 35.2,
+      "rank": 6,
+      "of": 11,
+      "adj": 0
+     },
+     {
+      "sector": "Basic Materials",
+      "n": 19,
+      "above50Pct": 21.1,
+      "avgRs": 46.1,
+      "strength": 33.6,
+      "rank": 7,
+      "of": 11,
+      "adj": 0
+     },
+     {
+      "sector": "Communication Services",
+      "n": 22,
+      "above50Pct": 27.3,
+      "avgRs": 36.8,
+      "strength": 32.1,
+      "rank": 8,
+      "of": 11,
+      "adj": 0
+     },
+     {
+      "sector": "Consumer Cyclical",
+      "n": 55,
+      "above50Pct": 21.8,
+      "avgRs": 34.1,
+      "strength": 28.0,
+      "rank": 9,
+      "of": 11,
+      "adj": -1
+     },
+     {
+      "sector": "Real Estate",
+      "n": 30,
+      "above50Pct": 10.0,
+      "avgRs": 34.3,
+      "strength": 22.1,
+      "rank": 10,
+      "of": 11,
+      "adj": -1
+     },
+     {
+      "sector": "Utilities",
+      "n": 31,
+      "above50Pct": 16.1,
+      "avgRs": 23.5,
+      "strength": 19.8,
+      "rank": 11,
+      "of": 11,
+      "adj": -1
+     }
+    ]
    }
   }
  },
