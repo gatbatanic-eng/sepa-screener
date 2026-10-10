@@ -36,6 +36,6 @@ jobs:
           git diff --cached --quiet && exit 0
           git commit -m "주도주 진입 규칙 백테스트 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
           for i in 1 2 3; do
-            git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && break
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && break
             sleep $((i * 5))
           done
