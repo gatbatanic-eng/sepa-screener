@@ -32,6 +32,8 @@
   .why { margin:8px 0 0; display:flex; flex-wrap:wrap; gap:6px; }
   .tag { font-size:12px; border:1px solid var(--border); border-radius:6px; padding:1px 8px; }
   .tag.core { border-color:var(--accent); color:var(--accent); }
+  .reasons { margin:8px 0 0; padding-left:0; list-style:none; font-size:13px; }
+  .reasons li { padding:2px 0; } .reasons .k { display:inline-block; min-width:46px; color:var(--dim); font-size:11px; margin-right:6px; }
   .kv { margin-top:8px; display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:6px 14px; font-size:12px; color:var(--dim); }
   .kv b { color:var(--text); font-variant-numeric:tabular-nums; }
   .note { background:var(--y-bg); color:var(--y-text); border-radius:8px; padding:8px 12px; font-size:13px; margin:8px 0; }
@@ -45,7 +47,7 @@
 <div class="wrap">
   <header>
     <h1>오늘의 추천</h1>
-    <div class="subtitle">핵심 전략(SEPA·실적 턴어라운드)이 고른 종목을 매일 다시 심사해 시장별 최대 3개를 냅니다. 모든 전략의 선정 건수로 점수를 매기고, 손절폭·추격·유동성 조건을 통과한 종목만 올립니다. 매수 권유가 아니며, 하루 한 번 기록해 나중에 성과를 검증합니다.</div>
+    <div class="subtitle">핵심 전략(SEPA·실적 턴어라운드)이 고른 종목을 매일 다시 심사해 시장별 최대 3개를 냅니다. 전략 선정 건수에 업종 강도·시장 환경을 더해 점수를 매기고, 손절폭·추격·유동성 조건을 통과한 종목만 올립니다. 매크로·이슈는 근거로만 보여주고 점수에는 넣지 않습니다. 매수 권유가 아니며, 하루 한 번 기록해 나중에 성과를 검증합니다.</div>
     <div class="nav">
       <a href="../">SEPA 추세템플릿</a>
       <a href="../funnel/">실적 턴어라운드</a>
@@ -62,20 +64,31 @@
 <script>
 const MK = {kr:"한국", us:"미국"};
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const KIND = {strategy:"전략", entry:"진입", sector:"업종", market:"시장", macro:"매크로", issue:"이슈"};
 function pick(p, names, core) {
-  const e = p.entry;
+  const e = p.entry, v = p.v2 || {};
   const tags = Object.keys(p.strategies).map(k => `<span class="tag ${core.includes(k)?"core":""}">${esc(names[k]||k)}</span>`).join("");
-  const fr = p.funnelRank ? `턴어라운드 ${p.funnelRank}위` : "턴어라운드 밖";
-  return `<div class="pick"><div class="top"><span class="nm">${esc(p.name)}</span><span class="code">${esc(p.code)} · ${esc(p.market||"")}</span><span class="score">점수 ${p.score}</span></div>
+  const adj = [v.sectorAdj ? `업종 ${v.sectorAdj>0?"+":""}${v.sectorAdj}` : "", v.marketAdj ? `시장 ${v.marketAdj}` : ""].filter(Boolean).join(" · ");
+  const why = (p.why||[]).map(w => `<li><span class="k">${esc(KIND[w.kind]||w.kind)}</span>${esc(w.text)}</li>`).join("");
+  return `<div class="pick"><div class="top"><span class="nm">${esc(p.name)}</span><span class="code">${esc(p.code)} · ${esc(p.market||"")}</span><span class="score">종합 ${v.score ?? p.score}점 <span class="code">(v1 ${p.score}${adj ? " · "+adj : ""})</span></span></div>
     <div class="why">${tags}</div>
-    <div class="kv"><span>손절폭 <b>${e.riskPct}%</b> (${esc(e.riskSource)})</span><span>${fr}</span><span>SEPA 구간 <b>${esc(e.zone||"-")}</b></span><span>종가 <b>${p.price!=null?Number(p.price).toLocaleString():"-"}</b></span></div></div>`;
+    <ul class="reasons">${why}</ul>
+    <div class="kv"><span>손절폭 <b>${e.riskPct}%</b> (${esc(e.riskSource)})</span><span>종가 <b>${p.price!=null?Number(p.price).toLocaleString():"-"}</b></span></div></div>`;
 }
 function market(m, r, names, core) {
   const rej = Object.entries(r.rejectSummary||{}).map(([k,v]) => `${esc(k)} ${v}`).join(" · ");
-  return `<div class="panel"><h2>${MK[m]} <span class="pill ${esc(r.regime)}">시장 ${esc(r.regime||"-")}</span></h2>
+  const picks = r.picksV2 || r.picks;
+  const v1 = r.picksV2 && r.picks.map(p=>p.code).join() !== r.picksV2.map(p=>p.code).join()
+    ? `<div class="meta">참고 · v1(섹터 미반영) 추천: ${r.picks.map(p=>esc(p.name)).join(", ") || "없음"}</div>` : "";
+  const regs = Object.entries((r.context||{}).regimes||{}).map(([k,v]) => `<span class="pill ${esc(v)}">${esc(k)} ${esc(v)}</span>`).join("");
+  const cov = (r.context||{}).sectorCoverage;
+  const sec = ((r.context||{}).sectors||[]);
+  const secLine = sec.length ? `<div class="meta">업종 강도 상위: ${sec.slice(0,3).map(s=>esc(s.sector)+" "+s.strength).join(", ")} · 하위: ${sec.slice(-3).map(s=>esc(s.sector)+" "+s.strength).join(", ")}${cov ? ` · 후보 ${cov.candidates}개 중 업종 확인 ${cov.known}개` : ""}</div>` : "";
+  return `<div class="panel"><h2>${MK[m]} ${regs}</h2>
     <div class="meta">기준 ${esc(r.session)} · 후보 ${r.candidates}개 중 진입 적합 ${r.suitable}개</div>
-    ${r.picks.length ? r.picks.map(p => pick(p, names, core)).join("") : `<div class="empty">오늘은 진입 적합 종목이 없습니다.</div>`}
-    ${r.shortfall ? `<div class="note">${esc(r.shortfall)}</div>` : ""}
+    ${picks.length ? picks.map(p => pick(p, names, core)).join("") : `<div class="empty">오늘은 진입 적합 종목이 없습니다.</div>`}
+    ${r.shortfall && picks.length < 3 ? `<div class="note">${esc(r.shortfall)}</div>` : ""}
+    ${v1}${secLine}
     ${rej ? `<div class="meta">탈락 사유: ${rej}</div>` : ""}
     ${r.entryUnknown ? `<div class="meta">손절폭을 계산하지 못한 종목 ${r.entryUnknown}개는 제외했습니다.</div>` : ""}</div>`;
 }
@@ -84,7 +97,7 @@ fetch("../research/daily_picks.json", {cache:"no-store"}).then(r => r.json()).th
   const rows = d.history.map(h => `<tr><td>${esc(h.session)}</td><td>${MK[h.market]}</td><td>${h.picks.map(p=>esc(p.name)+" "+p.riskPct+"%").join(", ")||"-"}</td><td>${h.suitable}/${h.candidates}</td></tr>`).join("");
   document.getElementById("hist").innerHTML = rows ? `<table><thead><tr><th>기준일</th><th>시장</th><th>추천(손절폭)</th><th>적합/후보</th></tr></thead><tbody>${rows}</tbody></table>` : '<div class="empty">기록 없음</div>';
   const r = d.rules;
-  document.getElementById("rules").textContent = `규칙: 손절폭 0 초과 ${r.maxRiskPct}% 이하, 추격·SEPA NO-GO·유동성 부족 제외. 보유 가정은 종가 -${r.stopLossPct}% 이하 청산, ${r.holdDays}거래일. 장중 손절은 가정하지 않으며 주문은 하지 않습니다. 이 규칙은 결과를 본 뒤 바꾸지 않고, 바꿀 때는 새 계열로 병행합니다.`;
+  document.getElementById("rules").textContent = `규칙(v2): 점수 = 전략 선정(핵심 2·연구 1) + 업종 강도 상위 1/3 +1·하위 1/3 -1 + 시장 RED -1. 손절폭 0 초과 ${r.maxRiskPct}% 이하, 추격·SEPA NO-GO·유동성 부족 제외. 보유 가정은 종가 -${r.stopLossPct}% 이하 청산, ${r.holdDays}거래일. 장중 손절은 가정하지 않으며 주문은 하지 않습니다. 이 규칙은 결과를 본 뒤 바꾸지 않고, 바꿀 때는 새 계열로 병행합니다.`;
 }).catch(() => { document.getElementById("app").innerHTML = '<div class="empty">추천 파일을 읽지 못했습니다.</div>'; });
 </script>
 </body>

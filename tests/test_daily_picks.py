@@ -109,3 +109,77 @@ class RecordTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class V2Test(unittest.TestCase):
+    def sepa_rows(self):
+        rows = {}
+        for i in range(6):   # 강한 업종 A: 모두 50일선 위, RS 높음
+            rows[f"A{i}"] = {"status": "OK", "close": 110, "sma50": 100, "rsRank": 90, "market": "KOSPI", "regime": "YELLOW"}
+        for i in range(6):   # 중간 B
+            rows[f"B{i}"] = {"status": "OK", "close": 110 if i < 3 else 90, "sma50": 100, "rsRank": 50, "market": "KOSPI", "regime": "YELLOW"}
+        for i in range(6):   # 약한 C
+            rows[f"C{i}"] = {"status": "OK", "close": 90, "sma50": 100, "rsRank": 10, "market": "KOSDAQ", "regime": "RED"}
+        return rows
+
+    def test_sector_strength_thirds_and_min_n(self):
+        from daily_picks import context as X
+        rows = self.sepa_rows()
+        sectors = {c: c[0] for c in rows}
+        rows["D0"] = {"status": "OK", "close": 200, "sma50": 100, "rsRank": 99, "market": "KOSPI", "regime": "YELLOW"}
+        sectors["D0"] = "D"                                   # 종목 1개뿐인 업종은 강도를 계산하지 않는다
+        st = X.sector_strength(rows, sectors)
+        self.assertEqual({k: v["adj"] for k, v in st.items()}, {"A": 1, "B": 0, "C": -1})
+        self.assertNotIn("D", st)
+        self.assertEqual(X.market_regimes(rows), {"KOSPI": "YELLOW", "KOSDAQ": "RED"})
+
+    def test_v2_rank_adds_sector_and_red_market_and_explains(self):
+        from daily_picks import context as X, v2
+        rows = self.sepa_rows()
+        sectors = {c: c[0] for c in rows}
+        sectors.update({"X": "A", "Y": "C", "Z": None})
+        ctx = {"sectorStats": X.sector_strength(rows, sectors), "regimes": X.market_regimes(rows), "macro": {"label": "중립", "vix": 15.4, "dxy": 102.1, "usdkrw": 1343, "us10y": 5.28}, "krClose": {}}
+        def row(code, score, market):
+            return {"code": code, "name": code, "market": market, "price": 100.0, "score": score, "strategies": {"funnel": 3}, "funnelRank": 3,
+                    "entry": {"riskPct": 3.0, "riskSource": "SEPA"}, "reject": None}
+        out = v2.rank([row("X", 2, "KOSPI"), row("Y", 3, "KOSDAQ"), row("Z", 2, "KOSPI")], ctx, sectors, "kr")
+        by = {p["code"]: p["v2"]["score"] for p in out["picks"]}
+        self.assertEqual(by, {"X": 3, "Y": 1, "Z": 2})        # 강세 업종 +1, 약세 업종 -1과 코스닥 RED -1, 업종 미상 0
+        self.assertEqual([p["code"] for p in out["picks"]], ["X", "Z", "Y"])
+        kinds = [w["kind"] for w in out["picks"][0]["why"]]
+        self.assertIn("sector", kinds)
+        self.assertIn("macro", kinds)
+        self.assertTrue(any("업종을 알 수 없어" in w["text"] for w in out["picks"][1]["why"]))
+
+    def test_us_regime_is_single_and_us_sector_cache_is_incremental(self):
+        from daily_picks import context as X, v2
+        self.assertEqual(v2.regime_of({"regimes": {"US": "GREEN"}}, "NYSE", "us"), "GREEN")
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            calls = []
+            def fetch(sym):
+                calls.append(sym)
+                return None if sym == "BAD" else "Energy"
+            today = dt.date(2026, 10, 10)
+            self.assertEqual(X.fetch_us_sectors(["CVX", "BAD"], root, today, fetch), 1)
+            self.assertEqual(X.fetch_us_sectors(["CVX", "BAD", "XOM"], root, today, fetch), 1)   # 이미 받은 종목·못 받은 종목(7일 내)은 다시 받지 않는다
+            self.assertEqual(calls, ["CVX", "BAD", "XOM"])
+            self.assertEqual(X.fetch_us_sectors(["BAD"], root, today + dt.timedelta(days=8), fetch), 0)   # 7일 뒤 재시도(또 못 받음)
+            self.assertEqual(calls[-1], "BAD")
+            self.assertEqual(X.sector_map("us", root), {"CVX": "Energy", "XOM": "Energy"})
+
+    def test_ledger_groups_for_v1_and_v2(self):
+        now = dt.datetime(2026, 10, 10, 1, 0, tzinfo=dt.timezone.utc)
+        rec = {"session": "2026-10-09", "market": "us", "picks": [{"code": "A", "name": "a", "market": "US", "price": 10.0, "score": 4, "entry": {"riskPct": 3}}],
+               "picksV2": [{"code": "A", "name": "a", "market": "US", "price": 10.0, "score": 4, "v2": {"score": 5}, "entry": {"riskPct": 3}},
+                           {"code": "B", "name": "b", "market": "US", "price": 20.0, "score": 3, "v2": {"score": 4}, "entry": {"riskPct": 3}}],
+               "poolPrices": {"A": 10.0, "B": 20.0, "C": 30.0}, "rejectSummary": {}}
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            dp.write_once(root, "us", rec, now)
+            adapters.ingest_picks("us", root / "research" / "daily_picks", root / "signals")
+            doc = read_gz(root / "signals" / "picks" / "us" / "2026-10-09.json.gz")
+            by = {r["symbol"]: r["groups"] for r in doc["rows"]}
+            self.assertEqual(by["A"], ["PICK", "PICK_V2"])
+            self.assertEqual(by["B"], ["PICK_V2"])
+            self.assertEqual(by["C"], ["CONTROL"])

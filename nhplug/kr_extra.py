@@ -118,6 +118,63 @@ def run_full(tok: str) -> int:
     return 0 if errors < len(stocks) * 0.2 else 1
 
 
+SECTOR_EXTRA = ROOT / "research" / "nhplug" / "kr_sector_extra.json"
+SECTOR_REFRESH_DAYS = 30
+
+
+def sector_topup_codes(root: Path = ROOT) -> list[tuple[str, str]]:
+    """세파 유니버스 밖이지만 실적 턴어라운드(깔때기) 상위에 오른 종목 중 업종을 아직 모르는 종목(또는 30일 넘게 묵은 종목)."""
+    try:
+        base = {c for c, _ in universe()}
+        top = json.loads((root / "docs" / "research" / "funnel_kr.json").read_text(encoding="utf-8")).get("top") or []
+    except (OSError, ValueError):
+        return []
+    have = {}
+    try:
+        have = json.loads(SECTOR_EXTRA.read_text(encoding="utf-8")).get("stocks") or {}
+    except (OSError, ValueError):
+        pass
+    today = dt.datetime.now(dt.timezone.utc).date()
+    out = []
+    for t in top:
+        code = str(t.get("symbol"))
+        if code in base:
+            continue
+        v = have.get(code)
+        if v and v.get("sector") and (today - dt.date.fromisoformat(v["fetchedAt"])).days < SECTOR_REFRESH_DAYS:
+            continue
+        out.append((code, "4" if str(t.get("exchange") or "").upper().startswith("KOSDAQ") else "1"))
+    return out
+
+
+def run_sector_topup(tok: str) -> int:
+    """깔때기 상위 후보 중 업종 파일에 없는 종목만 받아 kr_sector_extra.json에 더한다(호출 수십 건). kr_extra.json은 건드리지 않는다."""
+    todo = sector_topup_codes()
+    if not todo:
+        return 0
+    try:
+        stocks = json.loads(SECTOR_EXTRA.read_text(encoding="utf-8")).get("stocks") or {}
+    except (OSError, ValueError):
+        stocks = {}
+    today = dt.datetime.now(dt.timezone.utc)
+    errors = 0
+    for code, mk in todo:
+        try:
+            p = kr_period(tok, code, mk, today.strftime("%Y%m%d"), 1)
+            o0 = ((p["data"] or {}).get("Output_0")) or {}
+            if isinstance(o0, list):
+                o0 = o0[0] if o0 else {}
+            stocks[code] = {"name": str(o0.get("iem_nm") or "").lstrip("*#"), "sector": o0.get("bstp_kor_isnm"), "sectorCode": o0.get("bstp_cls_code"),
+                            "fetchedAt": today.date().isoformat()}
+        except Exception as e:  # noqa: BLE001
+            errors += 1
+            print("업종 보완 실패", code, repr(e)[:80])
+    SECTOR_EXTRA.parent.mkdir(parents=True, exist_ok=True)
+    SECTOR_EXTRA.write_text(json.dumps({"schemaVersion": 1, "generatedAt": today.isoformat(), "stocks": stocks}, ensure_ascii=False), encoding="utf-8")
+    print("업종 보완 저장:", SECTOR_EXTRA, "종목", len(stocks), "이번 요청", len(todo), "오류", errors)
+    return 0
+
+
 def run_flow(tok: str) -> int:
     from .flowstore import FlowStore
     kst_today = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=9)).strftime("%Y%m%d")
@@ -167,6 +224,10 @@ def main() -> None:
     tok = token()
     rc = run_full(tok) if mode == "full" else 0
     rc = max(rc, run_flow(tok))  # 전종목 갱신 날에도 수급은 같이 받는다
+    try:
+        run_sector_topup(tok)  # 실패해도 수급 수집 결과(종료 코드)에는 영향 없음
+    except Exception as e:  # noqa: BLE001
+        print("업종 보완 건너뜀:", repr(e)[:120])
     sys.exit(rc)
 
 

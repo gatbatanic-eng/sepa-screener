@@ -31,7 +31,7 @@ BOARD = [
     {"key": "funnel", "name": "실적 턴어라운드", "tier": "core", "cadence": "daily", "kind": "funnel", "markets": ("kr", "us"),
      "perf": ("funnel", ("TOP50", "T1_ON")), "groups": {}},
     {"key": "picks", "name": "오늘의 추천", "tier": "core", "cadence": "daily", "kind": "picks", "markets": ("kr", "us"),
-     "perf": ("picks", ("PICK",)), "groups": {"PICK": "추천"}},
+     "perf": ("picks", ("PICK_V2", "PICK")), "groups": {"PICK_V2": "추천(v2)", "PICK": "추천(v1)"}},
     {"key": "multifactor", "name": "멀티팩터", "tier": "research", "cadence": "daily", "kind": "multifactor", "markets": ("kr", "us"),
      "perf": ("multifactor", ("BUY", "WATCH")), "groups": {"BUY": "매수", "WATCH": "관찰"}},
     {"key": "technical", "name": "기술적 신호", "tier": "research", "cadence": "daily", "kind": "technical", "markets": ("kr", "us"),
