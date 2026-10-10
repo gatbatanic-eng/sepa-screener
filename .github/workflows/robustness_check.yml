@@ -32,7 +32,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f research/leader_backtest.robust.json research/leader_backtest/winners.md
+          git add -f research/leader_backtest/robust.json research/leader_backtest/robust.md
           git diff --cached --quiet && exit 0
           git commit -m "먹을 자리 견고성 확인 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
           for i in 1 2 3; do
