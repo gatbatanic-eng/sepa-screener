@@ -178,9 +178,17 @@ def ingest_picks(market: str, picks_dir: Path | None = None, signals_dir: Path |
         rec = read_json(file)
         if not rec or not rec.get("session"):
             continue
-        rows = [{"symbol": p["code"], "name": p.get("name"), "price": p["price"], "exchange": norm_exchange(market, p.get("market")),
-                 "score": p.get("score"), "rank": i, "groups": ["PICK"]} for i, p in enumerate(rec["picks"], 1) if p.get("price")]
-        picked = {r["symbol"] for r in rows}
+        # PICK = v1(섹터 미반영), PICK_V2 = v2(섹터·시장 환경 반영). 같은 종목이 둘 다면 한 행에 그룹 두 개.
+        by: dict[str, dict] = {}
+        for key, group in (("picks", "PICK"), ("picksV2", "PICK_V2")):
+            for i, p in enumerate(rec.get(key) or [], 1):
+                if not p.get("price"):
+                    continue
+                row = by.setdefault(p["code"], {"symbol": p["code"], "name": p.get("name"), "price": p["price"], "exchange": norm_exchange(market, p.get("market")),
+                                                "score": (p.get("v2") or {}).get("score", p.get("score")), "rank": i, "groups": []})
+                row["groups"].append(group)
+        rows = list(by.values())
+        picked = set(by)
         rest = [c for c, px in (rec.get("poolPrices") or {}).items() if c not in picked and px]
         for sym in control_sample("picks", market, rec["session"], rest):
             rows.append({"symbol": sym, "name": None, "price": rec["poolPrices"][sym], "exchange": "US" if market == "us" else None,

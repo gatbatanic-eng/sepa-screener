@@ -14,3 +14,8 @@ PIVOT_LOOKBACK = 60
 CORE_POINTS = 2               # 핵심 전략(SEPA, 깔때기) 선정 1건당 점수
 RESEARCH_POINTS = 1           # 연구 전략 선정 1건당 점수
 SEPA_GROUPS = ("TREND", "READY", "GO")
+
+# v2 (2026-10-10 고정): v1 점수에 섹터·시장 환경을 더한다. v1은 그대로 두고 나란히 기록한다.
+SECTOR_MIN_N = 5              # 업종 강도를 계산할 최소 종목 수(세파 유니버스 안)
+SECTOR_BONUS = 1              # 업종 강도 상위 1/3 +1, 하위 1/3 -1
+REGIME_PENALTY = 1            # 종목이 속한 시장이 RED이면 -1

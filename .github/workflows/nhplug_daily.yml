@@ -62,7 +62,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f research/nhplug/kr_extra.json research/nhplug/kr_flow.json research/nhplug/flow_history research/accumulation/forward research/accumulation/forward_v2 research/accumulation/forward_summary.json research/accumulation/forward_summary.md docs/research/accumulation.json
+          git add -f research/nhplug/kr_extra.json research/nhplug/kr_sector_extra.json research/nhplug/kr_flow.json research/nhplug/flow_history research/accumulation/forward research/accumulation/forward_v2 research/accumulation/forward_summary.json research/accumulation/forward_summary.md docs/research/accumulation.json
           git diff --cached --quiet && exit 0
           git commit -m "NHPLUG 한국 업종·수급 갱신 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
           for i in 1 2 3; do
