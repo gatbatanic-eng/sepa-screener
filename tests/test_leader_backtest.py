@@ -106,3 +106,33 @@ class WinnersTest(unittest.TestCase):
             self.assertLessEqual(c["threshold"], x.max())
         md = winners.to_markdown({"ranAt": "x", "markets": {"us": res}})
         self.assertIn("공통점", md)
+
+
+class RobustTest(unittest.TestCase):
+    def test_robust_pipeline_runs_and_gives_verdicts(self):
+        from leader_backtest import robust
+        data = {f"S{i}": synth(seed=i, drift=0.003 if i % 2 else -0.0003, vol=0.025) for i in range(20)}
+        panel = robust.build_panel(data, "us")
+        res = robust.evaluate(panel)
+        self.assertEqual(set(res["periods"]), {"ALL", "T1", "T2", "T3"})
+        self.assertEqual(res["periods"]["ALL"]["ALL"]["rows"], len(panel))
+        self.assertEqual(set(res["verdict"]), set(robust.RULES) - {"VOL"})
+        for v in res["verdict"].values():
+            self.assertIn("PASS", v)
+        md = robust.to_markdown({"ranAt": "x", "markets": {"us": {"market": "us", **res}}})
+        self.assertIn("규칙별 판정", md)
+
+    def test_good_definitions(self):
+        from leader_backtest import robust
+        p = pd.DataFrame({"ret20": [0.20, 0.20, 0.05, np.nan], "mdd20": [-0.05, -0.12, -0.01, -0.01],
+                          "ret40": [0.3, 0.3, 0.1, np.nan], "mdd40": [-0.10, -0.15, -0.01, -0.01]})
+        self.assertEqual(list(robust.good_flag(p, "G15").iloc[:3]), [True, False, False])        # 낙폭 -12%는 -8% 한도 밖
+        self.assertTrue(np.isnan(robust.good_flag(p, "G15").iloc[3]))                            # 미래 값이 없으면 판정하지 않는다
+        self.assertEqual(list(robust.good_flag(p, "G40").iloc[:2]), [True, False])               # 40일 정의는 -12% 한도
+
+    def test_rules_use_frozen_thresholds(self):
+        from leader_backtest import robust
+        p = pd.DataFrame({"trend": [True, True], "rs": [80, 80], "atrPct": [0.031, 0.029], "distEma20": [0.0, 0.0], "risk": [25.0, 25.0], "rsi": [30.0, 30.0]})
+        m = robust.rule_masks(p)
+        self.assertEqual(list(m["TREND_VOL_PB"]), [True, False])                                  # ATR 3% 경계
+        self.assertEqual(list(m["FOUND_TREND"]), [True, False])                                   # ATR 2.95% 경계(0.029 < 0.0295)
