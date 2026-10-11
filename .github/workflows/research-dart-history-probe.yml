@@ -1,0 +1,27 @@
+name: Research DART Original History Probe
+on:
+  push:
+    branches: [codex/dart-history-probe-20261012]
+    paths: [research_dart_history_probe.py, .github/workflows/research-dart-history-probe.yml]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Collect bounded original filing sample
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+        run: python research_dart_history_probe.py
+      - name: Preserve data and failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-dart-original-history
+          path: research-dart-probe/
+          retention-days: 14
