@@ -66,6 +66,10 @@ class KrHolidayTest(unittest.TestCase):
         r = fr.check(D, at(6, 15, 10), self.S, self.bars())
         self.assertFalse(r["hold"])
         self.assertEqual(r["krClosed"], "2026-10-02")
+        self.assertEqual(r["basis"]["kr"], "2026-10-02")          # 표기·시세 자르기는 실제로 쓰는 개장일
+        self.assertEqual(r["basis"]["krHoliday"], "2026-10-05")
+        md = rp.to_markdown({"title": "t", "disclaimer": "d", "dataAsOf": "a", "sections": [], "basis": r["basis"]})
+        self.assertIn("한국 2026-10-02(2026-10-05 휴장)", md)
 
     def test_us_is_still_required_on_a_korean_holiday(self):
         r = fr.check(D, at(6, 15, 10), {"kr": "2026-10-02", "us": "2026-10-02"}, self.bars())
