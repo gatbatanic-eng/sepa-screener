@@ -1,0 +1,29 @@
+name: Research DART Retry Missing Annual Batch
+on:
+  push:
+    branches: [codex/dart-history-probe-20261012]
+    paths: [.github/workflows/research-dart-retry.yml]
+permissions:
+  contents: read
+jobs:
+  retry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 32
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Retry original annual data for fixed failed batch
+        timeout-minutes: 28
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+          DART_SAMPLE_CODES: '000990,001040,001120,001430,001450,001510'
+        run: python research_dart_history_probe.py
+      - name: Preserve data and failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-dart-original-history-retry
+          path: research-dart-probe/
+          retention-days: 14
