@@ -236,7 +236,8 @@ def to_markdown(rep: dict) -> str:
     out = [f"# {rep['title']}", f"> {rep['disclaimer']}", f"> 데이터 기준: {rep['dataAsOf']}", ""]
     if rep.get("basis"):
         b = rep["basis"]
-        out.insert(3, f"> 시세 기준: 한국 {b['kr']} · 미국 {b['us']} 장 마감")
+        kr = f"{b['kr']}({b['krHoliday']} 휴장)" if b.get("krHoliday") else b["kr"]
+        out.insert(3, f"> 시세 기준: 한국 {kr} · 미국 {b['us']} 장 마감")
     if rep.get("staleNote"):
         out.insert(3, f"> ⚠ {rep['staleNote']}")
     for s in rep["sections"]:

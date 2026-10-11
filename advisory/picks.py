@@ -110,7 +110,8 @@ def plan(r: dict) -> dict | None:
     if not close:
         return None
     why = "기준 손절가"
-    if not (stop and 0 < stop < close):   # 돌파 전 종목은 기준 손절가가 현재가보다 위에 있을 수 있다
+    # 돌파 전 종목은 기준 손절가가 현재가보다 위에 있거나, 현재가에 거의 붙어(예: -0.1%) 손절로 의미가 없을 수 있다
+    if not (stop and 0 < stop < close) or (close - stop) / close * 100 < config.PICK_MIN_STOP_PCT:
         atr, pct = _n(r.get("atr14")), config.PICK_FALLBACK_STOP_PCT
         atr_pct = atr / close * 100 if atr else None
         why = f"종가 -{pct:.0f}% 규칙"

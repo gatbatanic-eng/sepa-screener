@@ -71,6 +71,8 @@ def check(today: dt.date, now: dt.datetime | None = None, sessions: dict[str, st
         prior = max(b for b in kr_bar["bars"] if b <= need)
         if prior < need:   # 기준일이 개장일 목록(그 앞뒤 날짜가 있는 구간)에 없다 = 한국 휴장. 그 이전 마지막 개장일까지만 기다린다
             needs["kr"], closed = prior, prior
+    if closed:   # 표기·시세 자르기에는 실제로 쓰는 한국 장 마감일(휴장 전 마지막 개장일)을 쓴다
+        base = {**base, "kr": closed, "krHoliday": need}
     stale = {m: {"have": sessions.get(m) or "", "need": needs[m]} for m in MARKETS if (sessions.get(m) or "") < needs[m]}
     if not stale:
         return {"hold": False, "forced": False, "stale": {}, "note": None, "krClosed": closed, "basis": base}

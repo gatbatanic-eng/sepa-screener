@@ -62,6 +62,12 @@ class LensTest(unittest.TestCase):
         self.assertAlmostEqual(pl["plannedLossPct"], 8.0)
         self.assertAlmostEqual(pl["referenceStop"], 92.0)
 
+    def test_plan_ignores_a_stop_hugging_the_price(self):  # 기준 손절가가 종가에 붙어 있으면(-0.1%) 손절로 쓰지 않는다
+        pl = picks.plan(row(close=100.0, referenceStop=99.9, breakoutLevel=110.0))
+        self.assertAlmostEqual(pl["plannedLossPct"], 8.0)
+        kept = picks.plan(row(close=100.0, referenceStop=95.0, breakoutLevel=110.0))
+        self.assertAlmostEqual(kept["plannedLossPct"], 5.0)  # 2% 이상 떨어진 기준 손절가는 그대로
+
 
 class VerifyTest(unittest.TestCase):
     def audit(self, rec=None, scr=None, ctx=None, chart_close=None):
