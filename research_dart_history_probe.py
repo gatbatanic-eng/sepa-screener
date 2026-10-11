@@ -3,7 +3,7 @@
 No account signals, no prices, no model calls, no publication to existing feeds.
 """
 import os,pathlib,json,datetime,time,zipfile,io,xml.etree.ElementTree as ET,hashlib,re,urllib.request,urllib.parse
-P=pathlib.Path('research-dart-probe');CODES=['000120','000150','000240'];MAX_DOCS=110
+P=pathlib.Path('research-dart-probe');CODES=os.environ.get('DART_SAMPLE_CODES','000120,000150,000240').split(',');MAX_DOCS=48;SOFT_SECONDS=1500
 def save(p,x):p.write_text(json.dumps(x,ensure_ascii=False,indent=2),encoding='utf-8')
 def local(tag):return tag.rsplit('}',1)[-1]
 def fetch(endpoint,**params):
@@ -27,24 +27,27 @@ def fetch(endpoint,**params):
     raise RuntimeError('DART system unavailable after bounded retries')
 def extract_candidates(raw):
     # Only collect accounting facts and their contexts. No economic score until verified.
-    wanted={'GrossProfit','Assets','Revenue','CostOfSales','ProfitLoss','BasicEarningsLossPerShare','DilutedEarningsLossPerShare','CashFlowsFromUsedInOperatingActivities','CurrentAssets','CurrentLiabilities','NoncurrentLiabilities','Equity','DepreciationDepletionAndAmortisationExpense'}
+    wanted={'GrossProfit','Assets','Revenue','CostOfSales','ProfitLoss','BasicEarningsLossPerShare','DilutedEarningsLossPerShare','CashFlowsFromUsedInOperatingActivities','CurrentAssets','CurrentLiabilities','NoncurrentLiabilities','Equity','DepreciationDepletionAndAmortisationExpense','CashAndCashEquivalents','CurrentTaxLiabilities','CurrentBorrowings','NoncurrentBorrowings','CurrentPortionOfNoncurrentBorrowings','NumberOfSharesOutstanding','NumberOfOrdinarySharesOutstanding','IssuedCapital'}
     records=[]
     with zipfile.ZipFile(io.BytesIO(raw)) as z:
         for name in z.namelist():
             if not name.lower().endswith(('.xml','.xbrl')):continue
             try:root=ET.fromstring(z.read(name))
             except ET.ParseError:continue
-            context={}
+            context={};units={}
             for node in root.iter():
-                if local(node.tag)=='context':context[node.attrib.get('id')]=dict(period={local(x.tag):x.text for x in node.iter() if local(x.tag) in ['startDate','endDate','instant']},dimensions=[dict(dimension=x.attrib.get('dimension'),member=x.text) for x in node.iter() if local(x.tag)=='explicitMember'])
+                if local(node.tag)=='unit':units[node.attrib.get('id')]=[x.text for x in node.iter() if local(x.tag)=='measure']
+            for node in root.iter():
+                if local(node.tag)=='context':context[node.attrib.get('id')]=dict(period={local(x.tag):x.text for x in node.iter() if local(x.tag) in ['startDate','endDate','instant']},entities=[x.text for x in node.iter() if local(x.tag)=='identifier'],dimensions=[dict(dimension=x.attrib.get('dimension'),member=x.text) for x in node.iter() if local(x.tag)=='explicitMember'])
             for node in root.iter():
                 tag=local(node.tag)
                 if tag in wanted and 'contextRef' in node.attrib:
-                    records.append(dict(file=name,tag=node.tag,text=node.text,unit=node.attrib.get('unitRef'),decimals=node.attrib.get('decimals'),context=context.get(node.attrib['contextRef']),contextRef=node.attrib['contextRef']))
+                    records.append(dict(file=name,tag=node.tag,text=node.text,unit=node.attrib.get('unitRef'),unitMeasures=units.get(node.attrib.get('unitRef')),decimals=node.attrib.get('decimals'),context=context.get(node.attrib['contextRef']),contextRef=node.attrib['contextRef']))
     return records
 def main():
-    P.mkdir(exist_ok=True);(P/'raw').mkdir(exist_ok=True);now=datetime.datetime.now(datetime.timezone.utc).isoformat()
-    plan=dict(startedAt=now,sampleCodes=CODES,selection='first3 lexicographic original337 codes, data-quality sample only; not winner selection',filingRange=['2018-01-01','2026-10-08'],maxOriginalDocuments=MAX_DOCS,releaseNote='original regular filing date is not necessarily earliest earnings release; PEAD requires IR/KIND comparison',productionEligible=False)
+    P.mkdir(exist_ok=True);(P/'raw').mkdir(exist_ok=True);now=datetime.datetime.now(datetime.timezone.utc).isoformat();started=time.monotonic()
+    assert all(re.fullmatch(r'\d{6}',code) for code in CODES)
+    plan=dict(startedAt=now,sampleCodes=CODES,selection='first24 lexicographic original337 codes split into4 batches of6, fixed before financial performance; deliberate pilot sample not full market',filingRange=['2018-01-01','2026-10-08'],priority='2018..2025 original annual reports;8years include financial warmup; staged collection not strategy change',maxOriginalDocuments=MAX_DOCS,softLimitSeconds=SOFT_SECONDS,releaseNote='original regular filing date is not necessarily earliest earnings release; PEAD requires IR/KIND comparison',productionEligible=False)
     save(P/'plan.json',plan);out=dict(plan=plan,status='running',companies=[],documents=[],errors=[])
     try:
         raw=fetch('corpCode.xml')
@@ -60,15 +63,16 @@ def main():
                 filings.extend(obj.get('list',[]))
                 if page>=obj.get('total_page',0):break
             save(P/f'filings-{code}.json',filings);original={}
+            metadata=json.loads(fetch('company.json',corp_code=corp));save(P/f'company-{code}.json',{k:metadata.get(k) for k in ['corp_code','corp_name','stock_code','induty_code','jurir_no','bizr_no']})
             for row in sorted(filings,key=lambda x:(x['rcept_dt'],x['rcept_no'])):
                 name=row['report_nm'];match=re.search(r'(사업보고서|반기보고서|분기보고서)\s*\((\d{4})\.(\d{2})\)',name)
                 if not match or '정정' in name:continue
                 kind,year,month=match.groups();year=int(year);month=int(month)
-                if not 2018<=year<=2026 or month not in [3,6,9,12]:continue
+                if not 2018<=year<=2025 or month!=12 or kind!='사업보고서':continue
                 key=(year,month);original.setdefault(key,row)
             out['companies'].append(dict(code=code,corpCode=corp,filings=len(filings),originalPeriods=len(original)))
             for (year,month),row in sorted(original.items()):
-                if len(out['documents'])>=MAX_DOCS:break
+                if len(out['documents'])>=MAX_DOCS or time.monotonic()-started>SOFT_SECONDS:break
                 receipt=row['rcept_no'];reprt={3:'11013',6:'11012',9:'11014',12:'11011'}[month]
                 try:
                     raw=fetch('fnlttXbrl.xml',rcept_no=receipt,reprt_code=reprt)

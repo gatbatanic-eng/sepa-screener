@@ -8,20 +8,31 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 32
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        codes:
+          - '000120,000150,000240,000250,000270,000370'
+          - '000500,000650,000660,000670,000810,000880'
+          - '000990,001040,001120,001430,001450,001510'
+          - '001530,001740,001800,001820,002380,002790'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - name: Collect bounded original filing sample
+        timeout-minutes: 28
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
+          DART_SAMPLE_CODES: ${{ matrix.codes }}
         run: python research_dart_history_probe.py
       - name: Preserve data and failure evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: research-dart-original-history
+          name: research-dart-original-history-${{ strategy.job-index }}
           path: research-dart-probe/
           retention-days: 14
