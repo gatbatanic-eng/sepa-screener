@@ -1,38 +1,14 @@
 {
  "schemaVersion": 1,
- "generatedAt": "2026-10-11T04:37:09.386931+00:00",
+ "generatedAt": "2026-10-13T01:24:12.108661+00:00",
  "latest": {
   "kr": {
    "market": "kr",
-   "regime": "YELLOW",
+   "regime": "RED",
    "gate": "중립",
-   "candidates": 75,
+   "candidates": 78,
    "suitable": 9,
    "picks": [
-    {
-     "code": "005930",
-     "name": "삼성전자",
-     "market": "KOSPI",
-     "price": 276000.0,
-     "score": 3,
-     "strategies": {
-      "funnel": 32,
-      "multifactor": [
-       "WATCH",
-       "CONTROL"
-      ]
-     },
-     "funnelRank": 32,
-     "entry": {
-      "riskPct": 1.83,
-      "riskSource": "SEPA",
-      "verdict": null,
-      "chase": [],
-      "liquidityOk": true,
-      "zone": "SETUP"
-     },
-     "reject": null
-    },
     {
      "code": "049550",
      "name": "잉크테크",
@@ -44,7 +20,7 @@
      },
      "funnelRank": 2,
      "entry": {
-      "riskPct": 7.4,
+      "riskPct": 8.0,
       "riskSource": "기술적",
       "verdict": null,
       "chase": [],
@@ -54,45 +30,66 @@
      "reject": null
     },
     {
-     "code": "020120",
-     "name": "키다리스튜디오",
+     "code": "004000",
+     "name": "롯데정밀화학",
      "market": "KOSPI",
-     "price": 8290.0,
+     "price": 42850.0,
      "score": 2,
      "strategies": {
-      "funnel": 5
+      "funnel": 18
      },
-     "funnelRank": 5,
+     "funnelRank": 18,
      "entry": {
-      "riskPct": 3.49,
-      "riskSource": "SEPA",
+      "riskPct": 5.09,
+      "riskSource": "기술적",
       "verdict": null,
       "chase": [],
       "liquidityOk": true,
-      "zone": "SETUP"
+      "zone": null
+     },
+     "reject": null
+    },
+    {
+     "code": "123890",
+     "name": "한국자산신탁",
+     "market": "KOSPI",
+     "price": 2390.0,
+     "score": 2,
+     "strategies": {
+      "funnel": 29
+     },
+     "funnelRank": 29,
+     "entry": {
+      "riskPct": 7.46,
+      "riskSource": "기술적",
+      "verdict": null,
+      "chase": [],
+      "liquidityOk": null,
+      "zone": null
      },
      "reject": null
     }
    ],
    "rejectSummary": {
-    "손절폭 8% 초과": 62,
-    "손절폭 0 이하(계산 불가)": 2,
-    "SEPA 진입 NO-GO": 1,
+    "손절폭 8% 초과": 64,
+    "추격(과열)": 2,
+    "유동성 부족": 1,
+    "손절폭 0 이하(계산 불가)": 1,
     "손절폭 미확인": 1
    },
    "shortfall": null,
-   "session": "2026-10-08",
+   "session": "2026-10-12",
    "poolPrices": {
-    "032580": 7420.0,
     "396300": 6150.0,
+    "005930": 276000.0,
     "159010": 32100.0,
     "355150": 23300.0,
-    "005930": 276000.0,
     "136150": 12440.0,
-    "010950": 169000.0,
-    "252990": 18200.0,
-    "031980": 209500.0,
-    "281820": 123200.0,
+    "252990": 17690.0,
+    "131290": 313500.0,
+    "281820": 111400.0,
+    "031980": 200500.0,
+    "032580": 7420.0,
     "049550": 3420.0,
     "302550": 2635.0,
     "005950": 11520.0,
@@ -137,27 +134,30 @@
     "376300": 18750.0,
     "093190": 8160.0,
     "234920": 5310.0,
-    "000500": 299500.0,
-    "098120": 57600.0,
-    "317400": 9880.0,
-    "001820": 157600.0,
-    "064290": 60600.0,
-    "327260": 53000.0,
-    "051160": 14220.0,
-    "071200": 10850.0,
-    "036710": 5020.0,
-    "222800": 170700.0,
-    "036930": 263500.0,
-    "059090": 24350.0,
-    "417840": 20850.0,
-    "080580": 27600.0,
-    "144960": 14000.0,
-    "219130": 97000.0,
-    "217190": 10200.0,
-    "446540": 11030.0,
-    "092870": 52900.0,
-    "036540": 11580.0,
-    "351320": 4445.0
+    "092870": 57600.0,
+    "071200": 10440.0,
+    "036710": 4795.0,
+    "041960": 11130.0,
+    "059090": 24450.0,
+    "051160": 12830.0,
+    "091580": 24500.0,
+    "219130": 89300.0,
+    "222800": 155800.0,
+    "144960": 13540.0,
+    "446540": 10830.0,
+    "417840": 19810.0,
+    "036930": 250000.0,
+    "327260": 54100.0,
+    "217190": 9800.0,
+    "001820": 149900.0,
+    "005160": 4450.0,
+    "064290": 57200.0,
+    "036540": 10720.0,
+    "080580": 28300.0,
+    "042510": 16520.0,
+    "098120": 57000.0,
+    "001210": 11070.0,
+    "351320": 4860.0
    },
    "directComputed": [
     "234920"
@@ -171,123 +171,64 @@
    },
    "picksV2": [
     {
-     "code": "005930",
-     "name": "삼성전자",
+     "code": "004000",
+     "name": "롯데정밀화학",
      "market": "KOSPI",
-     "price": 276000.0,
-     "score": 3,
+     "price": 42850.0,
+     "score": 2,
      "strategies": {
-      "funnel": 32,
-      "multifactor": [
-       "WATCH",
-       "CONTROL"
-      ]
+      "funnel": 18
      },
-     "funnelRank": 32,
+     "funnelRank": 18,
      "entry": {
-      "riskPct": 1.83,
-      "riskSource": "SEPA",
+      "riskPct": 5.09,
+      "riskSource": "기술적",
       "verdict": null,
       "chase": [],
       "liquidityOk": true,
-      "zone": "SETUP"
+      "zone": null
      },
      "v2": {
-      "score": 4,
-      "sector": "전기·전자",
-      "sectorAdj": 1,
+      "score": 2,
+      "sector": "화학",
+      "sectorAdj": 0,
       "marketAdj": 0
      },
      "why": [
       {
        "kind": "strategy",
-       "text": "실적 턴어라운드 32위, 멀티팩터 선정 (v1 점수 3)"
+       "text": "실적 턴어라운드 18위 선정 (v1 점수 2)"
       },
       {
        "kind": "entry",
-       "text": "손절폭 1.83%(SEPA), 추격·NO-GO·유동성 조건 통과"
+       "text": "손절폭 5.09%(기술적), 추격·NO-GO·유동성 조건 통과"
       },
       {
        "kind": "sector",
-       "text": "업종 전기·전자 강세: 50일선 위 86%, 평균 RS 67, 18개 업종 중 1위 (점수 +1)"
+       "text": "업종 화학: 세파 유니버스 종목이 5개 미만이라 강도를 계산하지 않음 (점수 0)"
       },
       {
        "kind": "market",
        "text": "시장 KOSPI YELLOW"
       },
       {
-       "kind": "sector",
-       "text": "외국인·기관 순매도 업종: 평균 -0.3%, 수급/거래대금 -17.6% (참고, 점수 아님)"
-      },
-      {
        "kind": "macro",
-       "text": "매크로 중립 (VIX 15.4, 달러지수 102.1, 원/달러 1,343, 미 10년 5.28%) — 참고, 점수 아님"
+       "text": "매크로 리스크오프 (VIX 14.8, 달러지수 102.1, 원/달러 1,337, 미 10년 5.22%) — 참고, 점수 아님"
       }
      ]
     },
     {
-     "code": "020120",
-     "name": "키다리스튜디오",
+     "code": "123890",
+     "name": "한국자산신탁",
      "market": "KOSPI",
-     "price": 8290.0,
+     "price": 2390.0,
      "score": 2,
      "strategies": {
-      "funnel": 5
+      "funnel": 29
      },
-     "funnelRank": 5,
+     "funnelRank": 29,
      "entry": {
-      "riskPct": 3.49,
-      "riskSource": "SEPA",
-      "verdict": null,
-      "chase": [],
-      "liquidityOk": true,
-      "zone": "SETUP"
-     },
-     "v2": {
-      "score": 3,
-      "sector": "IT 서비스",
-      "sectorAdj": 1,
-      "marketAdj": 0
-     },
-     "why": [
-      {
-       "kind": "strategy",
-       "text": "실적 턴어라운드 5위 선정 (v1 점수 2)"
-      },
-      {
-       "kind": "entry",
-       "text": "손절폭 3.49%(SEPA), 추격·NO-GO·유동성 조건 통과"
-      },
-      {
-       "kind": "sector",
-       "text": "업종 IT 서비스 강세: 50일선 위 53%, 평균 RS 50, 18개 업종 중 6위 (점수 +1)"
-      },
-      {
-       "kind": "market",
-       "text": "시장 KOSPI YELLOW"
-      },
-      {
-       "kind": "sector",
-       "text": "오늘 업종 약세: 평균 -3.2%, 수급/거래대금 -9.9% (참고, 점수 아님)"
-      },
-      {
-       "kind": "macro",
-       "text": "매크로 중립 (VIX 15.4, 달러지수 102.1, 원/달러 1,343, 미 10년 5.28%) — 참고, 점수 아님"
-      }
-     ]
-    },
-    {
-     "code": "049550",
-     "name": "잉크테크",
-     "market": "KOSDAQ",
-     "price": 3420.0,
-     "score": 2,
-     "strategies": {
-      "funnel": 2
-     },
-     "funnelRank": 2,
-     "entry": {
-      "riskPct": 7.4,
+      "riskPct": 7.46,
       "riskSource": "기술적",
       "verdict": null,
       "chase": [],
@@ -296,39 +237,133 @@
      },
      "v2": {
       "score": 2,
-      "sector": "화학",
-      "sectorAdj": 1,
+      "sector": "금융",
+      "sectorAdj": 0,
+      "marketAdj": 0
+     },
+     "why": [
+      {
+       "kind": "strategy",
+       "text": "실적 턴어라운드 29위 선정 (v1 점수 2)"
+      },
+      {
+       "kind": "entry",
+       "text": "손절폭 7.46%(기술적), 추격·NO-GO·유동성 조건 통과"
+      },
+      {
+       "kind": "sector",
+       "text": "업종 금융: 세파 유니버스 종목이 5개 미만이라 강도를 계산하지 않음 (점수 0)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 KOSPI YELLOW"
+      },
+      {
+       "kind": "macro",
+       "text": "매크로 리스크오프 (VIX 14.8, 달러지수 102.1, 원/달러 1,337, 미 10년 5.22%) — 참고, 점수 아님"
+      }
+     ]
+    },
+    {
+     "code": "068270",
+     "name": "셀트리온",
+     "market": "KOSPI",
+     "price": 182600.0,
+     "score": 2,
+     "strategies": {
+      "funnel": 45
+     },
+     "funnelRank": 45,
+     "entry": {
+      "riskPct": 4.39,
+      "riskSource": "기술적",
+      "verdict": null,
+      "chase": [],
+      "liquidityOk": true,
+      "zone": null
+     },
+     "v2": {
+      "score": 2,
+      "sector": "제약",
+      "sectorAdj": 0,
+      "marketAdj": 0
+     },
+     "why": [
+      {
+       "kind": "strategy",
+       "text": "실적 턴어라운드 45위 선정 (v1 점수 2)"
+      },
+      {
+       "kind": "entry",
+       "text": "손절폭 4.39%(기술적), 추격·NO-GO·유동성 조건 통과"
+      },
+      {
+       "kind": "sector",
+       "text": "업종 제약: 세파 유니버스 종목이 5개 미만이라 강도를 계산하지 않음 (점수 0)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 KOSPI YELLOW"
+      },
+      {
+       "kind": "macro",
+       "text": "매크로 리스크오프 (VIX 14.8, 달러지수 102.1, 원/달러 1,337, 미 10년 5.22%) — 참고, 점수 아님"
+      }
+     ]
+    }
+   ],
+   "picksV3": [
+    {
+     "code": "396300",
+     "name": "HT로보틱스",
+     "market": "KOSDAQ",
+     "price": 6150.0,
+     "score": 4,
+     "strategies": {
+      "sepa": [
+       "TREND"
+      ],
+      "funnel": 30
+     },
+     "funnelRank": 30,
+     "entry": {
+      "riskPct": 37.88,
+      "riskSource": "기술적",
+      "verdict": null,
+      "chase": [],
+      "liquidityOk": true,
+      "zone": null
+     },
+     "v2": {
+      "score": 3,
+      "sector": "금속",
+      "sectorAdj": 0,
       "marketAdj": -1
      },
      "why": [
       {
        "kind": "strategy",
-       "text": "실적 턴어라운드 2위 선정 (v1 점수 2)"
+       "text": "SEPA, 실적 턴어라운드 30위 선정 (v1 점수 4)"
       },
       {
        "kind": "entry",
-       "text": "손절폭 7.40%(기술적), 추격·NO-GO·유동성 조건 통과"
+       "text": "손절폭 37.88%(기술적) → 권고 비중 21% (8% 초과분은 8%÷손절폭으로 축소)"
       },
       {
        "kind": "sector",
-       "text": "업종 화학 강세: 50일선 위 69%, 평균 RS 47, 18개 업종 중 4위 (점수 +1)"
+       "text": "업종 금속: 세파 유니버스 종목이 5개 미만이라 강도를 계산하지 않음 (점수 0)"
       },
       {
        "kind": "market",
        "text": "시장 KOSDAQ RED (점수 -1)"
       },
       {
-       "kind": "sector",
-       "text": "외국인·기관 순매수 유입 업종: 평균 -0.6%, 수급/거래대금 +5.0% (참고, 점수 아님)"
-      },
-      {
        "kind": "macro",
-       "text": "매크로 중립 (VIX 15.4, 달러지수 102.1, 원/달러 1,343, 미 10년 5.28%) — 참고, 점수 아님"
+       "text": "매크로 리스크오프 (VIX 14.8, 달러지수 102.1, 원/달러 1,337, 미 10년 5.22%) — 참고, 점수 아님"
       }
-     ]
-    }
-   ],
-   "picksV3": [
+     ],
+     "weight": 0.21
+    },
     {
      "code": "159010",
      "name": "아스플로",
@@ -343,20 +378,17 @@
      },
      "funnelRank": 44,
      "entry": {
-      "riskPct": 42.99,
-      "riskSource": "SEPA",
-      "verdict": "NO-GO",
-      "chase": [
-       "기술적 추격 경고",
-       "SEPA 과열 구간"
-      ],
+      "riskPct": 44.59,
+      "riskSource": "기술적",
+      "verdict": null,
+      "chase": [],
       "liquidityOk": true,
-      "zone": "EXTENDED"
+      "zone": null
      },
      "v2": {
-      "score": 4,
+      "score": 3,
       "sector": "기계·장비",
-      "sectorAdj": 1,
+      "sectorAdj": 0,
       "marketAdj": -1
      },
      "why": [
@@ -366,99 +398,28 @@
       },
       {
        "kind": "entry",
-       "text": "손절폭 42.99%(SEPA) → 권고 비중 19% (8% 초과분은 8%÷손절폭으로 축소)"
-      },
-      {
-       "kind": "entry",
-       "text": "참고: SEPA NO-GO, 기술적 추격 경고, SEPA 과열 구간 — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"
+       "text": "손절폭 44.59%(기술적) → 권고 비중 18% (8% 초과분은 8%÷손절폭으로 축소)"
       },
       {
        "kind": "sector",
-       "text": "업종 기계·장비 강세: 50일선 위 83%, 평균 RS 64, 18개 업종 중 2위 (점수 +1)"
+       "text": "업종 기계·장비: 세파 유니버스 종목이 5개 미만이라 강도를 계산하지 않음 (점수 0)"
       },
       {
        "kind": "market",
        "text": "시장 KOSDAQ RED (점수 -1)"
       },
       {
-       "kind": "sector",
-       "text": "오늘 업종 강세: 평균 +1.7%, 수급/거래대금 -1.6% (참고, 점수 아님)"
-      },
-      {
-       "kind": "sector",
-       "text": "외국인·기관 순매수 유입 업종: 평균 +1.7%, 수급/거래대금 -1.6% (참고, 점수 아님)"
-      },
-      {
        "kind": "macro",
-       "text": "매크로 중립 (VIX 15.4, 달러지수 102.1, 원/달러 1,343, 미 10년 5.28%) — 참고, 점수 아님"
+       "text": "매크로 리스크오프 (VIX 14.8, 달러지수 102.1, 원/달러 1,337, 미 10년 5.22%) — 참고, 점수 아님"
       }
      ],
-     "weight": 0.19
-    },
-    {
-     "code": "032580",
-     "name": "피델릭스",
-     "market": "KOSDAQ",
-     "price": 7420.0,
-     "score": 4,
-     "strategies": {
-      "sepa": [
-       "TREND"
-      ],
-      "funnel": 1
-     },
-     "funnelRank": 1,
-     "entry": {
-      "riskPct": 41.02,
-      "riskSource": "SEPA",
-      "verdict": "NO-GO",
-      "chase": [],
-      "liquidityOk": null,
-      "zone": "SETUP"
-     },
-     "v2": {
-      "score": 4,
-      "sector": "전기·전자",
-      "sectorAdj": 1,
-      "marketAdj": -1
-     },
-     "why": [
-      {
-       "kind": "strategy",
-       "text": "SEPA, 실적 턴어라운드 1위 선정 (v1 점수 4)"
-      },
-      {
-       "kind": "entry",
-       "text": "손절폭 41.02%(SEPA) → 권고 비중 20% (8% 초과분은 8%÷손절폭으로 축소)"
-      },
-      {
-       "kind": "entry",
-       "text": "참고: SEPA NO-GO — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"
-      },
-      {
-       "kind": "sector",
-       "text": "업종 전기·전자 강세: 50일선 위 86%, 평균 RS 67, 18개 업종 중 1위 (점수 +1)"
-      },
-      {
-       "kind": "market",
-       "text": "시장 KOSDAQ RED (점수 -1)"
-      },
-      {
-       "kind": "sector",
-       "text": "외국인·기관 순매도 업종: 평균 -0.3%, 수급/거래대금 -17.6% (참고, 점수 아님)"
-      },
-      {
-       "kind": "macro",
-       "text": "매크로 중립 (VIX 15.4, 달러지수 102.1, 원/달러 1,343, 미 10년 5.28%) — 참고, 점수 아님"
-      }
-     ],
-     "weight": 0.2
+     "weight": 0.18
     },
     {
      "code": "281820",
      "name": "케이씨텍",
      "market": "KOSPI",
-     "price": 123200.0,
+     "price": 111400.0,
      "score": 3,
      "strategies": {
       "sepa": [
@@ -471,20 +432,17 @@
      },
      "funnelRank": null,
      "entry": {
-      "riskPct": 50.28,
-      "riskSource": "SEPA",
-      "verdict": "NO-GO",
-      "chase": [
-       "기술적 추격 경고",
-       "SEPA 과열 구간"
-      ],
+      "riskPct": 48.8,
+      "riskSource": "기술적",
+      "verdict": null,
+      "chase": [],
       "liquidityOk": true,
-      "zone": "EXTENDED"
+      "zone": null
      },
      "v2": {
-      "score": 4,
+      "score": 3,
       "sector": "의료·정밀기기",
-      "sectorAdj": 1,
+      "sectorAdj": 0,
       "marketAdj": 0
      },
      "why": [
@@ -494,34 +452,26 @@
       },
       {
        "kind": "entry",
-       "text": "손절폭 50.28%(SEPA) → 권고 비중 16% (8% 초과분은 8%÷손절폭으로 축소)"
-      },
-      {
-       "kind": "entry",
-       "text": "참고: SEPA NO-GO, 기술적 추격 경고, SEPA 과열 구간 — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"
+       "text": "손절폭 48.80%(기술적) → 권고 비중 16% (8% 초과분은 8%÷손절폭으로 축소)"
       },
       {
        "kind": "sector",
-       "text": "업종 의료·정밀기기 강세: 50일선 위 72%, 평균 RS 58, 18개 업종 중 3위 (점수 +1)"
+       "text": "업종 의료·정밀기기: 세파 유니버스 종목이 5개 미만이라 강도를 계산하지 않음 (점수 0)"
       },
       {
        "kind": "market",
        "text": "시장 KOSPI YELLOW"
       },
       {
-       "kind": "sector",
-       "text": "외국인·기관 순매수 유입 업종: 평균 -1.9%, 수급/거래대금 +2.6% (참고, 점수 아님)"
-      },
-      {
        "kind": "macro",
-       "text": "매크로 중립 (VIX 15.4, 달러지수 102.1, 원/달러 1,343, 미 10년 5.28%) — 참고, 점수 아님"
+       "text": "매크로 리스크오프 (VIX 14.8, 달러지수 102.1, 원/달러 1,337, 미 10년 5.22%) — 참고, 점수 아님"
       }
      ],
      "weight": 0.16
     }
    ],
    "v3": {
-    "candidates": 27,
+    "candidates": 29,
     "skipped": {
      "유동성 부족": 0,
      "손절폭 미확인": 1
@@ -535,220 +485,69 @@
    },
    "context": {
     "regimes": {
-     "KOSPI": "YELLOW",
-     "KOSDAQ": "RED"
+     "KOSDAQ": "RED",
+     "KOSPI": "YELLOW"
     },
     "macro": {
-     "label": "중립",
-     "generatedAt": "2026-10-09 10:19 KST",
-     "vix": 15.41,
-     "usdkrw": 1342.62,
-     "dxy": 102.063,
-     "us10y": 5.28,
+     "label": "리스크오프",
+     "generatedAt": "2026-10-12 09:41 KST",
+     "vix": 14.84,
+     "usdkrw": 1337.4301,
+     "dxy": 102.147,
+     "us10y": 5.22,
      "signals": [
-      "달러 강세(DXY 1개월 +3.3%, 1년 백분위 98) — 외국인 코스피 순매도 압력"
+      "달러 강세(DXY 1개월 +3.0%, 1년 백분위 98) — 외국인 코스피 순매도 압력",
+      "하이일드 스프레드 315bp(1주 -9bp, 백분위 90) — 신용 스트레스 신호"
      ]
     },
     "sectorCoverage": {
-     "known": 72,
-     "candidates": 75
+     "known": 75,
+     "candidates": 78
     },
-    "sectors": [
-     {
-      "sector": "전기·전자",
-      "n": 137,
-      "above50Pct": 86.1,
-      "avgRs": 67.4,
-      "strength": 76.8,
-      "rank": 1,
-      "of": 18,
-      "adj": 1
-     },
-     {
-      "sector": "기계·장비",
-      "n": 81,
-      "above50Pct": 82.7,
-      "avgRs": 64.3,
-      "strength": 73.5,
-      "rank": 2,
-      "of": 18,
-      "adj": 1
-     },
-     {
-      "sector": "의료·정밀기기",
-      "n": 18,
-      "above50Pct": 72.2,
-      "avgRs": 57.5,
-      "strength": 64.9,
-      "rank": 3,
-      "of": 18,
-      "adj": 1
-     },
-     {
-      "sector": "화학",
-      "n": 67,
-      "above50Pct": 68.7,
-      "avgRs": 47.3,
-      "strength": 58.0,
-      "rank": 4,
-      "of": 18,
-      "adj": 1
-     },
-     {
-      "sector": "일반서비스",
-      "n": 46,
-      "above50Pct": 65.2,
-      "avgRs": 41.4,
-      "strength": 53.3,
-      "rank": 5,
-      "of": 18,
-      "adj": 1
-     },
-     {
-      "sector": "IT 서비스",
-      "n": 47,
-      "above50Pct": 53.2,
-      "avgRs": 49.8,
-      "strength": 51.5,
-      "rank": 6,
-      "of": 18,
-      "adj": 1
-     },
-     {
-      "sector": "제약",
-      "n": 52,
-      "above50Pct": 63.5,
-      "avgRs": 38.4,
-      "strength": 50.9,
-      "rank": 7,
-      "of": 18,
-      "adj": 0
-     },
-     {
-      "sector": "비금속",
-      "n": 5,
-      "above50Pct": 40.0,
-      "avgRs": 60.8,
-      "strength": 50.4,
-      "rank": 8,
-      "of": 18,
-      "adj": 0
-     },
-     {
-      "sector": "운송·창고",
-      "n": 10,
-      "above50Pct": 60.0,
-      "avgRs": 39.4,
-      "strength": 49.7,
-      "rank": 9,
-      "of": 18,
-      "adj": 0
-     },
-     {
-      "sector": "금속",
-      "n": 34,
-      "above50Pct": 55.9,
-      "avgRs": 42.5,
-      "strength": 49.2,
-      "rank": 10,
-      "of": 18,
-      "adj": 0
-     },
-     {
-      "sector": "유통",
-      "n": 35,
-      "above50Pct": 57.1,
-      "avgRs": 41.4,
-      "strength": 49.2,
-      "rank": 11,
-      "of": 18,
-      "adj": 0
-     },
-     {
-      "sector": "보험",
-      "n": 9,
-      "above50Pct": 33.3,
-      "avgRs": 48.8,
-      "strength": 41.1,
-      "rank": 12,
-      "of": 18,
-      "adj": 0
-     },
-     {
-      "sector": "금융",
-      "n": 44,
-      "above50Pct": 38.6,
-      "avgRs": 40.3,
-      "strength": 39.5,
-      "rank": 13,
-      "of": 18,
-      "adj": -1
-     },
-     {
-      "sector": "오락·문화",
-      "n": 12,
-      "above50Pct": 50.0,
-      "avgRs": 23.7,
-      "strength": 36.9,
-      "rank": 14,
-      "of": 18,
-      "adj": -1
-     },
-     {
-      "sector": "운송장비·부품",
-      "n": 26,
-      "above50Pct": 34.6,
-      "avgRs": 35.4,
-      "strength": 35.0,
-      "rank": 15,
-      "of": 18,
-      "adj": -1
-     },
-     {
-      "sector": "건설",
-      "n": 12,
-      "above50Pct": 8.3,
-      "avgRs": 47.8,
-      "strength": 28.1,
-      "rank": 16,
-      "of": 18,
-      "adj": -1
-     },
-     {
-      "sector": "음식료·담배",
-      "n": 9,
-      "above50Pct": 22.2,
-      "avgRs": 21.4,
-      "strength": 21.8,
-      "rank": 17,
-      "of": 18,
-      "adj": -1
-     },
-     {
-      "sector": "증권",
-      "n": 7,
-      "above50Pct": 0.0,
-      "avgRs": 13.4,
-      "strength": 6.7,
-      "rank": 18,
-      "of": 18,
-      "adj": -1
-     }
-    ]
+    "sectors": []
    }
   },
   "us": {
    "market": "us",
    "regime": "GREEN",
    "gate": "우호적",
-   "candidates": 89,
+   "candidates": 87,
    "suitable": 13,
    "picks": [
+    {
+     "code": "AAPL",
+     "name": "Apple Inc.",
+     "market": "US",
+     "price": 340.9700012207031,
+     "score": 4,
+     "strategies": {
+      "sepa": [
+       "TREND"
+      ],
+      "multifactor": [
+       "WATCH",
+       "CONTROL"
+      ],
+      "aggressive": [
+       "AGGR_WATCH"
+      ]
+     },
+     "funnelRank": null,
+     "entry": {
+      "riskPct": 5.45,
+      "riskSource": "SEPA",
+      "verdict": "WATCH",
+      "chase": [],
+      "liquidityOk": true,
+      "zone": "READY"
+     },
+     "reject": null
+    },
     {
      "code": "ZBRA",
      "name": "Zebra Technologies",
      "market": "US",
-     "price": 387.1799926757813,
+     "price": 388.1199951171875,
      "score": 3,
      "strategies": {
       "sepa": [
@@ -760,32 +559,12 @@
      },
      "funnelRank": null,
      "entry": {
-      "riskPct": 5.59,
+      "riskPct": 5.79,
       "riskSource": "SEPA",
       "verdict": "WATCH",
       "chase": [],
       "liquidityOk": true,
-      "zone": "BREAKOUT_ZONE"
-     },
-     "reject": null
-    },
-    {
-     "code": "CHRD",
-     "name": "Chord Energy Corp",
-     "market": "Nasdaq",
-     "price": 141.5399932861328,
-     "score": 2,
-     "strategies": {
-      "funnel": 3
-     },
-     "funnelRank": 3,
-     "entry": {
-      "riskPct": 7.79,
-      "riskSource": "직접 계산",
-      "verdict": null,
-      "chase": [],
-      "liquidityOk": null,
-      "zone": null
+      "zone": "READY"
      },
      "reject": null
     },
@@ -811,41 +590,38 @@
     }
    ],
    "rejectSummary": {
-    "손절폭 8% 초과": 62,
-    "SEPA 진입 NO-GO": 13,
+    "손절폭 8% 초과": 61,
+    "SEPA 진입 NO-GO": 12,
     "손절폭 0 이하(계산 불가)": 1
    },
    "shortfall": null,
    "session": "2026-10-09",
    "poolPrices": {
     "PSX": 278.17999267578125,
+    "COP": 134.10000610351562,
+    "AMD": 608.0999755859375,
     "VLO": 433.75,
     "KEYS": 382.75,
-    "AMD": 608.0999755859375,
-    "TER": 402.67999267578125,
-    "EXPD": 193.2400054931641,
-    "BIIB": 225.7100067138672,
-    "ABBV": 276.4700012207031,
-    "APH": 87.23999786376953,
+    "AAPL": 340.9700012207031,
+    "EXPD": 193.41000366210935,
+    "CVX": 215.0,
+    "BIIB": 229.41000366210935,
+    "APA": 46.84000015258789,
     "DOC": 18.799999237060547,
     "VEEV": 296.1300048828125,
-    "A": 170.5399932861328,
-    "ZBRA": 387.1799926757813,
-    "AMGN": 414.8699951171875,
-    "XOM": 168.94000244140625,
-    "NDSN": 328.1700134277344,
-    "ANET": 216.7400054931641,
-    "APA": 45.880001068115234,
-    "FFIV": 479.8299865722656,
-    "DELL": 586.0599975585938,
-    "FTNT": 194.75,
-    "HUM": 431.8699951171875,
-    "MPC": 455.0299987792969,
-    "NTAP": 237.1499938964844,
-    "LITE": 1103.35498046875,
-    "DDOG": 293.260009765625,
-    "HPE": 73.45999908447266,
-    "P": 154.49000549316406,
+    "A": 171.3300018310547,
+    "ZBRA": 388.1199951171875,
+    "AMGN": 417.5700073242188,
+    "NDSN": 330.44000244140625,
+    "XOM": 172.14999389648438,
+    "ABBV": 281.1199951171875,
+    "SNOW": 360.3699951171875,
+    "PM": 202.0,
+    "FFIV": 473.489990234375,
+    "FTNT": 192.94000244140625,
+    "MPC": 458.80999755859375,
+    "DDOG": 287.2900085449219,
+    "P": 155.30999755859375,
     "FIVN": 36.400001525878906,
     "MDB": 385.92999267578125,
     "CHRD": 141.5399932861328,
@@ -883,30 +659,31 @@
     "BETA": 20.979999542236328,
     "JOE": 64.86000061035156,
     "DAR": 60.2599983215332,
-    "COP": 134.10000610351562,
+    "TER": 402.67999267578125,
     "GSHD": 43.5099983215332,
     "EQIX": 1026.06005859375,
     "DK": 74.51000213623047,
     "COHU": 68.19000244140625,
     "NUE": 250.3300018310547,
-    "MU": 1029.0,
-    "WAT": 433.7699890136719,
-    "MRK": 145.60000610351562,
-    "CRL": 301.7900085449219,
-    "NVT": 167.42999267578125,
-    "WSM": 241.77999877929688,
-    "FCX": 73.69000244140625,
-    "PM": 201.19000244140625,
-    "VTRS": 17.639999389648438,
-    "TWLO": 289.4700012207031,
-    "RVTY": 154.17999267578125,
-    "CRWD": 275.0400085449219,
-    "MRVL": 275.2799987792969,
-    "BE": 280.5,
-    "PANW": 418.7799987792969,
-    "SNOW": 368.8900146484375,
-    "ILMN": 278.1700134277344,
-    "MRNA": 225.0
+    "WAT": 432.1000061035156,
+    "IFF": 84.95999908447266,
+    "MRK": 145.4499969482422,
+    "TWLO": 282.6600036621094,
+    "ANET": 210.8800048828125,
+    "CRL": 301.8599853515625,
+    "CRWD": 263.010009765625,
+    "FCX": 73.29000091552734,
+    "VTRS": 17.540000915527344,
+    "MRVL": 265.8599853515625,
+    "PANW": 403.8299865722656,
+    "RVTY": 155.61000061035156,
+    "DELL": 576.760009765625,
+    "LITE": 995.4099731445312,
+    "HUM": 433.5,
+    "MRNA": 213.7400054931641,
+    "NTAP": 239.17999267578125,
+    "HPE": 70.33000183105469,
+    "ILMN": 276.6700134277344
    },
    "directComputed": [
     "ALGM",
@@ -955,10 +732,66 @@
    },
    "picksV2": [
     {
+     "code": "AAPL",
+     "name": "Apple Inc.",
+     "market": "US",
+     "price": 340.9700012207031,
+     "score": 4,
+     "strategies": {
+      "sepa": [
+       "TREND"
+      ],
+      "multifactor": [
+       "WATCH",
+       "CONTROL"
+      ],
+      "aggressive": [
+       "AGGR_WATCH"
+      ]
+     },
+     "funnelRank": null,
+     "entry": {
+      "riskPct": 5.45,
+      "riskSource": "SEPA",
+      "verdict": "WATCH",
+      "chase": [],
+      "liquidityOk": true,
+      "zone": "READY"
+     },
+     "v2": {
+      "score": 5,
+      "sector": "Technology",
+      "sectorAdj": 1,
+      "marketAdj": 0
+     },
+     "why": [
+      {
+       "kind": "strategy",
+       "text": "SEPA, 멀티팩터, 계좌복구 선정 (v1 점수 4)"
+      },
+      {
+       "kind": "entry",
+       "text": "손절폭 5.45%(SEPA), 추격·NO-GO·유동성 조건 통과"
+      },
+      {
+       "kind": "sector",
+       "text": "업종 Technology 강세: 50일선 위 57%, 평균 RS 68, 11개 업종 중 2위 (점수 +1)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 미국 GREEN"
+      },
+      {
+       "kind": "macro",
+       "text": "매크로 리스크오프 (VIX 14.8, 달러지수 102.1, 미 10년 5.22%) — 참고, 점수 아님"
+      }
+     ]
+    },
+    {
      "code": "ZBRA",
      "name": "Zebra Technologies",
      "market": "US",
-     "price": 387.1799926757813,
+     "price": 388.1199951171875,
      "score": 3,
      "strategies": {
       "sepa": [
@@ -970,12 +803,12 @@
      },
      "funnelRank": null,
      "entry": {
-      "riskPct": 5.59,
+      "riskPct": 5.79,
       "riskSource": "SEPA",
       "verdict": "WATCH",
       "chase": [],
       "liquidityOk": true,
-      "zone": "BREAKOUT_ZONE"
+      "zone": "READY"
      },
      "v2": {
       "score": 4,
@@ -990,11 +823,11 @@
       },
       {
        "kind": "entry",
-       "text": "손절폭 5.59%(SEPA), 추격·NO-GO·유동성 조건 통과"
+       "text": "손절폭 5.79%(SEPA), 추격·NO-GO·유동성 조건 통과"
       },
       {
        "kind": "sector",
-       "text": "업종 Technology 강세: 50일선 위 61%, 평균 RS 70, 11개 업종 중 2위 (점수 +1)"
+       "text": "업종 Technology 강세: 50일선 위 57%, 평균 RS 68, 11개 업종 중 2위 (점수 +1)"
       },
       {
        "kind": "market",
@@ -1002,54 +835,7 @@
       },
       {
        "kind": "macro",
-       "text": "매크로 중립 (VIX 15.4, 달러지수 102.1, 미 10년 5.28%) — 참고, 점수 아님"
-      }
-     ]
-    },
-    {
-     "code": "CHRD",
-     "name": "Chord Energy Corp",
-     "market": "Nasdaq",
-     "price": 141.5399932861328,
-     "score": 2,
-     "strategies": {
-      "funnel": 3
-     },
-     "funnelRank": 3,
-     "entry": {
-      "riskPct": 7.79,
-      "riskSource": "직접 계산",
-      "verdict": null,
-      "chase": [],
-      "liquidityOk": null,
-      "zone": null
-     },
-     "v2": {
-      "score": 3,
-      "sector": "Energy",
-      "sectorAdj": 1,
-      "marketAdj": 0
-     },
-     "why": [
-      {
-       "kind": "strategy",
-       "text": "실적 턴어라운드 3위 선정 (v1 점수 2)"
-      },
-      {
-       "kind": "entry",
-       "text": "손절폭 7.79%(직접 계산), 추격·NO-GO·유동성 조건 통과"
-      },
-      {
-       "kind": "sector",
-       "text": "업종 Energy 강세: 50일선 위 71%, 평균 RS 71, 11개 업종 중 1위 (점수 +1)"
-      },
-      {
-       "kind": "market",
-       "text": "시장 미국 GREEN"
-      },
-      {
-       "kind": "macro",
-       "text": "매크로 중립 (VIX 15.4, 달러지수 102.1, 미 10년 5.28%) — 참고, 점수 아님"
+       "text": "매크로 리스크오프 (VIX 14.8, 달러지수 102.1, 미 10년 5.22%) — 참고, 점수 아님"
       }
      ]
     },
@@ -1088,7 +874,7 @@
       },
       {
        "kind": "sector",
-       "text": "업종 Energy 강세: 50일선 위 71%, 평균 RS 71, 11개 업종 중 1위 (점수 +1)"
+       "text": "업종 Energy 강세: 50일선 위 71%, 평균 RS 73, 11개 업종 중 1위 (점수 +1)"
       },
       {
        "kind": "market",
@@ -1096,71 +882,13 @@
       },
       {
        "kind": "macro",
-       "text": "매크로 중립 (VIX 15.4, 달러지수 102.1, 미 10년 5.28%) — 참고, 점수 아님"
+       "text": "매크로 리스크오프 (VIX 14.8, 달러지수 102.1, 미 10년 5.22%) — 참고, 점수 아님"
       }
      ]
     }
    ],
    "picksV3": [
     {
-     "code": "VLO",
-     "name": "VALERO ENERGY CORP/TX",
-     "market": "NYSE",
-     "price": 433.75,
-     "score": 5,
-     "strategies": {
-      "sepa": [
-       "TREND"
-      ],
-      "funnel": 49,
-      "aggressive": [
-       "AGGR_WATCH"
-      ]
-     },
-     "funnelRank": 49,
-     "entry": {
-      "riskPct": 17.62,
-      "riskSource": "SEPA",
-      "verdict": "NO-GO",
-      "chase": [],
-      "liquidityOk": true,
-      "zone": "LATE"
-     },
-     "v2": {
-      "score": 6,
-      "sector": "Energy",
-      "sectorAdj": 1,
-      "marketAdj": 0
-     },
-     "why": [
-      {
-       "kind": "strategy",
-       "text": "SEPA, 실적 턴어라운드 49위, 계좌복구 선정 (v1 점수 5)"
-      },
-      {
-       "kind": "entry",
-       "text": "손절폭 17.62%(SEPA) → 권고 비중 45% (8% 초과분은 8%÷손절폭으로 축소)"
-      },
-      {
-       "kind": "entry",
-       "text": "참고: SEPA NO-GO — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"
-      },
-      {
-       "kind": "sector",
-       "text": "업종 Energy 강세: 50일선 위 71%, 평균 RS 71, 11개 업종 중 1위 (점수 +1)"
-      },
-      {
-       "kind": "market",
-       "text": "시장 미국 GREEN"
-      },
-      {
-       "kind": "macro",
-       "text": "매크로 중립 (VIX 15.4, 달러지수 102.1, 미 10년 5.28%) — 참고, 점수 아님"
-      }
-     ],
-     "weight": 0.45
-    },
-    {
      "code": "PSX",
      "name": "Phillips 66",
      "market": "NYSE",
@@ -1177,7 +905,7 @@
      },
      "funnelRank": 33,
      "entry": {
-      "riskPct": 12.17,
+      "riskPct": 13.19,
       "riskSource": "SEPA",
       "verdict": "NO-GO",
       "chase": [],
@@ -1197,7 +925,7 @@
       },
       {
        "kind": "entry",
-       "text": "손절폭 12.17%(SEPA) → 권고 비중 66% (8% 초과분은 8%÷손절폭으로 축소)"
+       "text": "손절폭 13.19%(SEPA) → 권고 비중 61% (8% 초과분은 8%÷손절폭으로 축소)"
       },
       {
        "kind": "entry",
@@ -1205,7 +933,7 @@
       },
       {
        "kind": "sector",
-       "text": "업종 Energy 강세: 50일선 위 71%, 평균 RS 71, 11개 업종 중 1위 (점수 +1)"
+       "text": "업종 Energy 강세: 50일선 위 71%, 평균 RS 73, 11개 업종 중 1위 (점수 +1)"
       },
       {
        "kind": "market",
@@ -1213,101 +941,34 @@
       },
       {
        "kind": "macro",
-       "text": "매크로 중립 (VIX 15.4, 달러지수 102.1, 미 10년 5.28%) — 참고, 점수 아님"
+       "text": "매크로 리스크오프 (VIX 14.8, 달러지수 102.1, 미 10년 5.22%) — 참고, 점수 아님"
       }
      ],
-     "weight": 0.66
+     "weight": 0.61
     },
     {
-     "code": "KEYS",
-     "name": "Keysight Technologies, Inc.",
+     "code": "COP",
+     "name": "CONOCOPHILLIPS",
      "market": "NYSE",
-     "price": 382.75,
+     "price": 134.10000610351562,
      "score": 5,
      "strategies": {
       "sepa": [
        "TREND"
       ],
-      "funnel": 50,
+      "funnel": 42,
       "aggressive": [
        "AGGR_WATCH"
       ]
      },
-     "funnelRank": 50,
+     "funnelRank": 42,
      "entry": {
-      "riskPct": 20.05,
+      "riskPct": 11.44,
       "riskSource": "SEPA",
       "verdict": "NO-GO",
       "chase": [],
       "liquidityOk": true,
-      "zone": "LATE"
-     },
-     "v2": {
-      "score": 6,
-      "sector": "Technology",
-      "sectorAdj": 1,
-      "marketAdj": 0
-     },
-     "why": [
-      {
-       "kind": "strategy",
-       "text": "SEPA, 실적 턴어라운드 50위, 계좌복구 선정 (v1 점수 5)"
-      },
-      {
-       "kind": "entry",
-       "text": "손절폭 20.05%(SEPA) → 권고 비중 40% (8% 초과분은 8%÷손절폭으로 축소)"
-      },
-      {
-       "kind": "entry",
-       "text": "참고: SEPA NO-GO — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"
-      },
-      {
-       "kind": "sector",
-       "text": "업종 Technology 강세: 50일선 위 61%, 평균 RS 70, 11개 업종 중 2위 (점수 +1)"
-      },
-      {
-       "kind": "market",
-       "text": "시장 미국 GREEN"
-      },
-      {
-       "kind": "macro",
-       "text": "매크로 중립 (VIX 15.4, 달러지수 102.1, 미 10년 5.28%) — 참고, 점수 아님"
-      }
-     ],
-     "weight": 0.4
-    }
-   ],
-   "v3": {
-    "candidates": 44,
-    "skipped": {
-     "유동성 부족": 0,
-     "손절폭 미확인": 0
-    }
-   },
-   "picksV4": [
-    {
-     "code": "VLO",
-     "name": "VALERO ENERGY CORP/TX",
-     "market": "NYSE",
-     "price": 433.75,
-     "score": 5,
-     "strategies": {
-      "sepa": [
-       "TREND"
-      ],
-      "funnel": 49,
-      "aggressive": [
-       "AGGR_WATCH"
-      ]
-     },
-     "funnelRank": 49,
-     "entry": {
-      "riskPct": 17.62,
-      "riskSource": "SEPA",
-      "verdict": "NO-GO",
-      "chase": [],
-      "liquidityOk": true,
-      "zone": "LATE"
+      "zone": "WATCH"
      },
      "v2": {
       "score": 6,
@@ -1318,15 +979,19 @@
      "why": [
       {
        "kind": "strategy",
-       "text": "SEPA, 실적 턴어라운드 49위, 계좌복구 선정 (v1 점수 5)"
+       "text": "SEPA, 실적 턴어라운드 42위, 계좌복구 선정 (v1 점수 5)"
       },
       {
        "kind": "entry",
-       "text": "추세 통과(RS 97) · 변동성 ATR 3.7% ≥ 3% (v4 조건), 손절폭 17.62% → 권고 비중 45%"
+       "text": "손절폭 11.44%(SEPA) → 권고 비중 70% (8% 초과분은 8%÷손절폭으로 축소)"
+      },
+      {
+       "kind": "entry",
+       "text": "참고: SEPA NO-GO — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"
       },
       {
        "kind": "sector",
-       "text": "업종 Energy 강세: 50일선 위 71%, 평균 RS 71, 11개 업종 중 1위 (점수 +1)"
+       "text": "업종 Energy 강세: 50일선 위 71%, 평균 RS 73, 11개 업종 중 1위 (점수 +1)"
       },
       {
        "kind": "market",
@@ -1334,68 +999,10 @@
       },
       {
        "kind": "macro",
-       "text": "매크로 중립 (VIX 15.4, 달러지수 102.1, 미 10년 5.28%) — 참고, 점수 아님"
+       "text": "매크로 리스크오프 (VIX 14.8, 달러지수 102.1, 미 10년 5.22%) — 참고, 점수 아님"
       }
      ],
-     "weight": 0.45,
-     "atrPct": 3.72,
-     "rs": 97.2
-    },
-    {
-     "code": "PSX",
-     "name": "Phillips 66",
-     "market": "NYSE",
-     "price": 278.17999267578125,
-     "score": 5,
-     "strategies": {
-      "sepa": [
-       "TREND"
-      ],
-      "funnel": 33,
-      "aggressive": [
-       "AGGR_WATCH"
-      ]
-     },
-     "funnelRank": 33,
-     "entry": {
-      "riskPct": 12.17,
-      "riskSource": "SEPA",
-      "verdict": "NO-GO",
-      "chase": [],
-      "liquidityOk": true,
-      "zone": "BREAKOUT_ZONE"
-     },
-     "v2": {
-      "score": 6,
-      "sector": "Energy",
-      "sectorAdj": 1,
-      "marketAdj": 0
-     },
-     "why": [
-      {
-       "kind": "strategy",
-       "text": "SEPA, 실적 턴어라운드 33위, 계좌복구 선정 (v1 점수 5)"
-      },
-      {
-       "kind": "entry",
-       "text": "추세 통과(RS 96) · 변동성 ATR 3.1% ≥ 3% (v4 조건), 손절폭 12.17% → 권고 비중 66%"
-      },
-      {
-       "kind": "sector",
-       "text": "업종 Energy 강세: 50일선 위 71%, 평균 RS 71, 11개 업종 중 1위 (점수 +1)"
-      },
-      {
-       "kind": "market",
-       "text": "시장 미국 GREEN"
-      },
-      {
-       "kind": "macro",
-       "text": "매크로 중립 (VIX 15.4, 달러지수 102.1, 미 10년 5.28%) — 참고, 점수 아님"
-      }
-     ],
-     "weight": 0.66,
-     "atrPct": 3.11,
-     "rs": 95.7
+     "weight": 0.7
     },
     {
      "code": "AMD",
@@ -1411,12 +1018,12 @@
      },
      "funnelRank": 28,
      "entry": {
-      "riskPct": 4.0,
+      "riskPct": 1.74,
       "riskSource": "SEPA",
       "verdict": "NO-GO",
       "chase": [],
       "liquidityOk": true,
-      "zone": "WATCH"
+      "zone": "SETUP"
      },
      "v2": {
       "score": 5,
@@ -1431,11 +1038,15 @@
       },
       {
        "kind": "entry",
-       "text": "추세 통과(RS 98) · 변동성 ATR 3.9% ≥ 3% (v4 조건), 손절폭 4.00% → 권고 비중 100%"
+       "text": "손절폭 1.74%(SEPA) → 권고 비중 100%"
+      },
+      {
+       "kind": "entry",
+       "text": "참고: SEPA NO-GO — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"
       },
       {
        "kind": "sector",
-       "text": "업종 Technology 강세: 50일선 위 61%, 평균 RS 70, 11개 업종 중 2위 (점수 +1)"
+       "text": "업종 Technology 강세: 50일선 위 57%, 평균 RS 68, 11개 업종 중 2위 (점수 +1)"
       },
       {
        "kind": "market",
@@ -1443,16 +1054,185 @@
       },
       {
        "kind": "macro",
-       "text": "매크로 중립 (VIX 15.4, 달러지수 102.1, 미 10년 5.28%) — 참고, 점수 아님"
+       "text": "매크로 리스크오프 (VIX 14.8, 달러지수 102.1, 미 10년 5.22%) — 참고, 점수 아님"
+      }
+     ],
+     "weight": 1.0
+    }
+   ],
+   "v3": {
+    "candidates": 42,
+    "skipped": {
+     "유동성 부족": 0,
+     "손절폭 미확인": 0
+    }
+   },
+   "picksV4": [
+    {
+     "code": "PSX",
+     "name": "Phillips 66",
+     "market": "NYSE",
+     "price": 278.17999267578125,
+     "score": 5,
+     "strategies": {
+      "sepa": [
+       "TREND"
+      ],
+      "funnel": 33,
+      "aggressive": [
+       "AGGR_WATCH"
+      ]
+     },
+     "funnelRank": 33,
+     "entry": {
+      "riskPct": 13.19,
+      "riskSource": "SEPA",
+      "verdict": "NO-GO",
+      "chase": [],
+      "liquidityOk": true,
+      "zone": "BREAKOUT_ZONE"
+     },
+     "v2": {
+      "score": 6,
+      "sector": "Energy",
+      "sectorAdj": 1,
+      "marketAdj": 0
+     },
+     "why": [
+      {
+       "kind": "strategy",
+       "text": "SEPA, 실적 턴어라운드 33위, 계좌복구 선정 (v1 점수 5)"
+      },
+      {
+       "kind": "entry",
+       "text": "추세 통과(RS 96) · 변동성 ATR 3.0% ≥ 3% (v4 조건), 손절폭 13.19% → 권고 비중 61%"
+      },
+      {
+       "kind": "sector",
+       "text": "업종 Energy 강세: 50일선 위 71%, 평균 RS 73, 11개 업종 중 1위 (점수 +1)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 미국 GREEN"
+      },
+      {
+       "kind": "macro",
+       "text": "매크로 리스크오프 (VIX 14.8, 달러지수 102.1, 미 10년 5.22%) — 참고, 점수 아님"
+      }
+     ],
+     "weight": 0.61,
+     "atrPct": 3.05,
+     "rs": 95.9
+    },
+    {
+     "code": "AMD",
+     "name": "ADVANCED MICRO DEVICES INC",
+     "market": "Nasdaq",
+     "price": 608.0999755859375,
+     "score": 4,
+     "strategies": {
+      "sepa": [
+       "TREND"
+      ],
+      "funnel": 28
+     },
+     "funnelRank": 28,
+     "entry": {
+      "riskPct": 1.74,
+      "riskSource": "SEPA",
+      "verdict": "NO-GO",
+      "chase": [],
+      "liquidityOk": true,
+      "zone": "SETUP"
+     },
+     "v2": {
+      "score": 5,
+      "sector": "Technology",
+      "sectorAdj": 1,
+      "marketAdj": 0
+     },
+     "why": [
+      {
+       "kind": "strategy",
+       "text": "SEPA, 실적 턴어라운드 28위 선정 (v1 점수 4)"
+      },
+      {
+       "kind": "entry",
+       "text": "추세 통과(RS 98) · 변동성 ATR 4.0% ≥ 3% (v4 조건), 손절폭 1.74% → 권고 비중 100%"
+      },
+      {
+       "kind": "sector",
+       "text": "업종 Technology 강세: 50일선 위 57%, 평균 RS 68, 11개 업종 중 2위 (점수 +1)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 미국 GREEN"
+      },
+      {
+       "kind": "macro",
+       "text": "매크로 리스크오프 (VIX 14.8, 달러지수 102.1, 미 10년 5.22%) — 참고, 점수 아님"
       }
      ],
      "weight": 1.0,
-     "atrPct": 3.93,
-     "rs": 98.0
+     "atrPct": 3.99,
+     "rs": 98.4
+    },
+    {
+     "code": "VLO",
+     "name": "VALERO ENERGY CORP/TX",
+     "market": "NYSE",
+     "price": 433.75,
+     "score": 4,
+     "strategies": {
+      "sepa": [
+       "TREND"
+      ],
+      "funnel": 49
+     },
+     "funnelRank": 49,
+     "entry": {
+      "riskPct": 18.05,
+      "riskSource": "SEPA",
+      "verdict": "NO-GO",
+      "chase": [],
+      "liquidityOk": true,
+      "zone": "LATE"
+     },
+     "v2": {
+      "score": 5,
+      "sector": "Energy",
+      "sectorAdj": 1,
+      "marketAdj": 0
+     },
+     "why": [
+      {
+       "kind": "strategy",
+       "text": "SEPA, 실적 턴어라운드 49위 선정 (v1 점수 4)"
+      },
+      {
+       "kind": "entry",
+       "text": "추세 통과(RS 97) · 변동성 ATR 3.7% ≥ 3% (v4 조건), 손절폭 18.05% → 권고 비중 44%"
+      },
+      {
+       "kind": "sector",
+       "text": "업종 Energy 강세: 50일선 위 71%, 평균 RS 73, 11개 업종 중 1위 (점수 +1)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 미국 GREEN"
+      },
+      {
+       "kind": "macro",
+       "text": "매크로 리스크오프 (VIX 14.8, 달러지수 102.1, 미 10년 5.22%) — 참고, 점수 아님"
+      }
+     ],
+     "weight": 0.44,
+     "atrPct": 3.69,
+     "rs": 97.4
     }
    ],
    "v4": {
-    "candidates": 29,
+    "candidates": 24,
     "missingAtr": 0
    },
    "context": {
@@ -1460,27 +1240,28 @@
      "US": "GREEN"
     },
     "macro": {
-     "label": "중립",
-     "generatedAt": "2026-10-09 10:19 KST",
-     "vix": 15.41,
-     "usdkrw": 1342.62,
-     "dxy": 102.063,
-     "us10y": 5.28,
+     "label": "리스크오프",
+     "generatedAt": "2026-10-12 09:41 KST",
+     "vix": 14.84,
+     "usdkrw": 1337.4301,
+     "dxy": 102.147,
+     "us10y": 5.22,
      "signals": [
-      "달러 강세(DXY 1개월 +3.3%, 1년 백분위 98) — 외국인 코스피 순매도 압력"
+      "달러 강세(DXY 1개월 +3.0%, 1년 백분위 98) — 외국인 코스피 순매도 압력",
+      "하이일드 스프레드 315bp(1주 -9bp, 백분위 90) — 신용 스트레스 신호"
      ]
     },
     "sectorCoverage": {
-     "known": 89,
-     "candidates": 89
+     "known": 87,
+     "candidates": 87
     },
     "sectors": [
      {
       "sector": "Energy",
       "n": 21,
       "above50Pct": 71.4,
-      "avgRs": 71.3,
-      "strength": 71.3,
+      "avgRs": 73.3,
+      "strength": 72.3,
       "rank": 1,
       "of": 11,
       "adj": 1
@@ -1488,9 +1269,9 @@
      {
       "sector": "Technology",
       "n": 90,
-      "above50Pct": 61.1,
-      "avgRs": 69.9,
-      "strength": 65.5,
+      "above50Pct": 56.7,
+      "avgRs": 68.5,
+      "strength": 62.6,
       "rank": 2,
       "of": 11,
       "adj": 1
@@ -1498,9 +1279,9 @@
      {
       "sector": "Healthcare",
       "n": 60,
-      "above50Pct": 56.7,
-      "avgRs": 64.2,
-      "strength": 60.4,
+      "above50Pct": 58.3,
+      "avgRs": 64.8,
+      "strength": 61.6,
       "rank": 3,
       "of": 11,
       "adj": 1
@@ -1508,9 +1289,9 @@
      {
       "sector": "Consumer Defensive",
       "n": 32,
-      "above50Pct": 31.2,
-      "avgRs": 45.2,
-      "strength": 38.2,
+      "above50Pct": 43.8,
+      "avgRs": 46.5,
+      "strength": 45.1,
       "rank": 4,
       "of": 11,
       "adj": 0
@@ -1518,9 +1299,9 @@
      {
       "sector": "Industrials",
       "n": 76,
-      "above50Pct": 28.9,
-      "avgRs": 46.9,
-      "strength": 37.9,
+      "above50Pct": 27.6,
+      "avgRs": 47.1,
+      "strength": 37.4,
       "rank": 5,
       "of": 11,
       "adj": 0
@@ -1528,9 +1309,9 @@
      {
       "sector": "Financial Services",
       "n": 70,
-      "above50Pct": 21.4,
-      "avgRs": 49.0,
-      "strength": 35.2,
+      "above50Pct": 24.3,
+      "avgRs": 48.5,
+      "strength": 36.4,
       "rank": 6,
       "of": 11,
       "adj": 0
@@ -1539,8 +1320,8 @@
       "sector": "Basic Materials",
       "n": 19,
       "above50Pct": 21.1,
-      "avgRs": 46.1,
-      "strength": 33.6,
+      "avgRs": 46.6,
+      "strength": 33.8,
       "rank": 7,
       "of": 11,
       "adj": 0
@@ -1549,7 +1330,7 @@
       "sector": "Communication Services",
       "n": 22,
       "above50Pct": 27.3,
-      "avgRs": 36.8,
+      "avgRs": 37.0,
       "strength": 32.1,
       "rank": 8,
       "of": 11,
@@ -1558,29 +1339,29 @@
      {
       "sector": "Consumer Cyclical",
       "n": 55,
-      "above50Pct": 21.8,
-      "avgRs": 34.1,
-      "strength": 28.0,
+      "above50Pct": 23.6,
+      "avgRs": 34.0,
+      "strength": 28.8,
       "rank": 9,
-      "of": 11,
-      "adj": -1
-     },
-     {
-      "sector": "Real Estate",
-      "n": 30,
-      "above50Pct": 10.0,
-      "avgRs": 34.3,
-      "strength": 22.1,
-      "rank": 10,
       "of": 11,
       "adj": -1
      },
      {
       "sector": "Utilities",
       "n": 31,
-      "above50Pct": 16.1,
-      "avgRs": 23.5,
-      "strength": 19.8,
+      "above50Pct": 29.0,
+      "avgRs": 23.9,
+      "strength": 26.5,
+      "rank": 10,
+      "of": 11,
+      "adj": -1
+     },
+     {
+      "sector": "Real Estate",
+      "n": 30,
+      "above50Pct": 13.3,
+      "avgRs": 34.4,
+      "strength": 23.9,
       "rank": 11,
       "of": 11,
       "adj": -1
@@ -1590,6 +1371,33 @@
   }
  },
  "history": [
+  {
+   "market": "kr",
+   "session": "2026-10-12",
+   "recordedAt": "2026-10-13T01:24:12.108661+00:00",
+   "picks": [
+    {
+     "code": "004000",
+     "name": "롯데정밀화학",
+     "score": 2,
+     "riskPct": 5.09
+    },
+    {
+     "code": "123890",
+     "name": "한국자산신탁",
+     "score": 2,
+     "riskPct": 7.46
+    },
+    {
+     "code": "068270",
+     "name": "셀트리온",
+     "score": 2,
+     "riskPct": 4.39
+    }
+   ],
+   "suitable": 9,
+   "candidates": 78
+  },
   {
    "market": "us",
    "session": "2026-10-09",
