@@ -143,6 +143,22 @@ class ConsensusTest(unittest.TestCase):
         self.assertIsNone(X.consensus_line(None, 100, today))
         self.assertIsNone(X.consensus_line({"recommendationKey": "none"}, 100, today))
 
+    def test_kr_snapshot_and_line(self):
+        today = dt.date(2026, 10, 14)
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            got = X.fetch_us_consensus(["005930", "000660"], root, today,
+                                       lambda c: {"eps": 2089.0, "fyEnd": "2026-12-31", "targetMeanPrice": 90000.0, "recommMean": 4.1} if c == "005930" else {}, market="kr")
+            self.assertEqual(list(got), ["005930"])
+            self.assertTrue(X.consensus_path(root, "kr", today).exists())
+            self.assertFalse(X.consensus_path(root, "us", today).exists())
+        line = X.consensus_line_kr(got["005930"], 80000.0, today)
+        self.assertIn("2026년 EPS 추정 2,089원", line)
+        self.assertIn("+12%", line)
+        self.assertIn("4.1/5", line)
+        self.assertIn("점수 아님", line)
+        self.assertIsNone(X.consensus_line_kr({}, 80000.0, today))
+
 
 
 if __name__ == "__main__":

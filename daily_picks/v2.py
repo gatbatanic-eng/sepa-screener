@@ -49,8 +49,8 @@ def why_lines(p: dict, v2: dict, ctx: dict, market: str) -> list[dict]:
         if iss:
             out.append({"kind": "issue", "text": f"오늘 이슈: {iss['chg']:+.1f}% · 거래대금 20일 평균의 {iss['surge']:.0f}배 — 변동 주의 (점수 아님)" + (f" · '{iss['headlines'][0]}'" if iss.get("headlines") else "")})
     cons = (ctx.get("consensus") or {}).get(p["code"])
-    if market == "us" and cons:
-        line = X.consensus_line(cons, p.get("price"), ctx["today"])
+    if cons:
+        line = (X.consensus_line if market == "us" else X.consensus_line_kr)(cons, p.get("price"), ctx["today"])
         if line:
             out.append({"kind": "consensus", "text": line})
     m = ctx.get("macro")
