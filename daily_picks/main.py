@@ -23,7 +23,7 @@ def _yahoo_hint(code: str, pool: dict) -> str:
     return code + ".KQ" if ex.startswith("KOSDAQ") else code + ".KS" if ex.startswith("KOSPI") else code
 
 
-def build_market(market: str, root: Path, fetch=fetch_entry_metrics, fetch_sector=None) -> dict:
+def build_market(market: str, root: Path, fetch=fetch_entry_metrics, fetch_sector=None, fetch_consensus=None) -> dict:
     pool = load(market, root)
     core_codes = [c for c, s in pool["selected"].items() if set(s) & set(CORE)]
     missing = [c for c in core_codes if needs_direct(c, pool)]
@@ -42,8 +42,15 @@ def build_market(market: str, root: Path, fetch=fetch_entry_metrics, fetch_secto
         except Exception:  # noqa: BLE001 — 업종을 못 받아도 v1·v2(업종 0점)는 낸다
             log.exception("미국 업종 수집 실패")
     sectors = X.sector_map(market, root)
+    consensus = {}
+    if market == "us" and fetch_sector is not False and (fetch_consensus is not None or fetch_sector is None):
+        try:
+            consensus = X.fetch_us_consensus([r["code"] for r in rows], root, fetch=fetch_consensus)
+        except Exception:  # noqa: BLE001 — 컨센서스를 못 받아도 추천은 낸다
+            log.exception("미국 컨센서스 수집 실패")
     ctx = {"sectorStats": X.sector_strength(pool["sepaRows"], sectors), "regimes": X.market_regimes(pool["sepaRows"]),
-           "macro": X.macro_summary(root), "krClose": X.kr_close_context(pool["asOf"], root) if market == "kr" else {}}
+           "macro": X.macro_summary(root), "krClose": X.kr_close_context(pool["asOf"], root) if market == "kr" else {},
+           "consensus": consensus, "today": dt.datetime.now(dt.timezone.utc).date()}
     v2 = V2.rank(rows, ctx, sectors, market)
     out["picksV2"] = v2["picks"]
     rs = {c: r.get("rsRank") for c, r in pool["sepaRows"].items()}
@@ -53,7 +60,7 @@ def build_market(market: str, root: Path, fetch=fetch_entry_metrics, fetch_secto
     v4 = V2.rank_v4(rows, ctx, sectors, market, pool["sepaRows"], lambda c: X.atr_pct_from_chart(c, root))
     out["picksV4"] = v4["picks"]
     out["v4"] = {k: v4[k] for k in ("candidates", "missingAtr", "skipped") if k in v4}
-    out["context"] = {"regimes": ctx["regimes"], "macro": ctx["macro"],
+    out["context"] = {"regimes": ctx["regimes"], "macro": ctx["macro"], "consensus": {"known": len(consensus), "candidates": len(rows)} if market == "us" else None,
                       "sectorCoverage": {"known": sum(1 for r in rows if sectors.get(r["code"])), "candidates": len(rows)},
                       "sectors": sorted(({"sector": s, **v} for s, v in ctx["sectorStats"].items()), key=lambda x: x["rank"])}
     return out
@@ -124,12 +131,12 @@ def history(root: Path, limit: int = 30) -> list[dict]:
     return sorted(out, key=lambda r: (r["session"] or "", r["market"]), reverse=True)
 
 
-def run(root: Path = ROOT, now: dt.datetime | None = None, new_list: Path | None = None, fetch=fetch_entry_metrics, record: bool = True, fetch_sector=None) -> dict:
+def run(root: Path = ROOT, now: dt.datetime | None = None, new_list: Path | None = None, fetch=fetch_entry_metrics, record: bool = True, fetch_sector=None, fetch_consensus=None) -> dict:
     now = now or dt.datetime.now(dt.timezone.utc)
     recs, fresh = {}, {}
     for m in ("kr", "us"):
         try:
-            recs[m] = build_market(m, root, fetch, fetch_sector)
+            recs[m] = build_market(m, root, fetch, fetch_sector, fetch_consensus)
         except Exception:  # noqa: BLE001 — 한 시장 실패가 다른 시장 기록을 막지 않게 한다
             log.exception("%s 추천 계산 실패", m)
             continue

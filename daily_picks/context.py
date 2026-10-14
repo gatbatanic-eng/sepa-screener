@@ -160,3 +160,70 @@ def atr_pct_from_chart(code: str, root: Path = ROOT) -> float | None:
     for x in tr[1:]:
         atr = alpha * x + (1 - alpha) * atr
     return float(atr / c[-1])
+
+
+# --- 미국 컨센서스(야후 애널리스트 정보): 추천 후보에 대해 하루 한 번 받아 일별 스냅샷으로 남긴다(이력이 있어야 나중에 수정률을 계산할 수 있다) -------------
+CONSENSUS_FIELDS = ("targetMeanPrice", "targetHighPrice", "targetLowPrice", "numberOfAnalystOpinions", "recommendationKey",
+                    "earningsTimestampStart", "earningsTimestamp")
+
+
+def consensus_path(root: Path, market: str, day: dt.date) -> Path:
+    return root / "research" / "daily_picks" / "consensus" / market / f"{day.isoformat()}.json"
+
+
+def fetch_us_consensus(symbols: list[str], root: Path = ROOT, today: dt.date | None = None, fetch=None, workers: int = 8) -> dict[str, dict]:
+    """오늘(UTC 날짜) 스냅샷이 있으면 그대로 읽고, 없으면 받아서 한 번만 쓴다(수정 금지). 받지 못한 종목은 결과에서 빠진다(0으로 채우지 않음)."""
+    today = today or dt.datetime.now(dt.timezone.utc).date()
+    path = consensus_path(root, "us", today)
+    snap = (_json(path, {}) or {}).get("symbols") if path.exists() else None
+    if snap is not None:
+        return snap
+    if fetch is None:
+        def fetch(sym):
+            import yfinance as yf
+            info = yf.Ticker(sym).info or {}
+            return {k: info.get(k) for k in CONSENSUS_FIELDS}
+    from concurrent.futures import ThreadPoolExecutor
+
+    def one(sym):
+        try:
+            d = fetch(sym)
+        except Exception:  # noqa: BLE001 — 한 종목 실패가 전체를 막지 않게
+            return sym, None
+        d = {k: v for k, v in (d or {}).items() if v not in (None, "", 0) and not (isinstance(v, float) and v != v)}
+        return sym, (d or None)
+
+    with ThreadPoolExecutor(workers) as ex:
+        got = {s: d for s, d in ex.map(one, list(dict.fromkeys(symbols))) if d}
+    if got:                                        # 하나도 못 받았으면 스냅샷을 남기지 않는다(빈 기록으로 굳지 않게)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({"date": today.isoformat(), "source": "yahoo", "symbols": got}, ensure_ascii=False, sort_keys=True), encoding="utf-8")
+    return got
+
+
+RATING_KO = {"strong_buy": "적극 매수", "buy": "매수", "hold": "중립", "underperform": "비중 축소", "sell": "매도", "none": None}
+
+
+def consensus_line(c: dict | None, price: float | None, today: dt.date) -> str | None:
+    """컨센서스 한 줄. 값이 없는 항목은 생략하고, 하나도 없으면 줄 자체를 만들지 않는다."""
+    if not c:
+        return None
+    bits = []
+    n, tgt = c.get("numberOfAnalystOpinions"), c.get("targetMeanPrice")
+    if n:
+        bits.append(f"애널리스트 {int(n)}명")
+    if tgt:
+        bits.append(f"평균 목표가 ${tgt:,.0f}" + (f" (현재가 대비 {(tgt / price - 1) * 100:+.0f}%)" if price else ""))
+    rating = RATING_KO.get(str(c.get("recommendationKey") or "").lower())
+    if rating:
+        bits.append(f"투자의견 {rating}")
+    ts = c.get("earningsTimestampStart") or c.get("earningsTimestamp")
+    if ts:
+        try:
+            d = dt.datetime.fromtimestamp(float(ts), dt.timezone.utc).date()
+            if d >= today:
+                gap = (d - today).days
+                bits.append(f"다음 실적 발표 {d:%m/%d} (D-{gap}{', 변동성 주의' if gap <= 14 else ''})")
+        except (ValueError, OSError, OverflowError):
+            pass
+    return (f"컨센서스(야후, {today:%m/%d}): " + " · ".join(bits) + " (참고, 점수 아님)") if bits else None
