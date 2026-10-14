@@ -65,7 +65,7 @@
 <script>
 const MK = {kr:"한국", us:"미국"};
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const KIND = {strategy:"전략", entry:"진입", sector:"업종", market:"시장", macro:"매크로", issue:"이슈"};
+const KIND = {strategy:"전략", entry:"진입", sector:"업종", market:"시장", macro:"매크로", issue:"이슈", consensus:"컨센"};
 function pick(p, names, core) {
   const e = p.entry, v = p.v2 || {};
   const tags = Object.keys(p.strategies).map(k => `<span class="tag ${core.includes(k)?"core":""}">${esc(names[k]||k)}</span>`).join("");

@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from daily_picks import config as C, main as dp, select
+from daily_picks import config as C, context as X, main as dp, select
 from daily_picks.entry import entry_metrics
 from ledger import adapters
 from ledger.store import read_gz
@@ -105,6 +105,44 @@ class RecordTest(unittest.TestCase):
         self.assertIn("에이", md)
         self.assertIn("2개뿐", md)
         self.assertIn("추격(과열) 3", md)
+
+class ConsensusTest(unittest.TestCase):
+    def test_snapshot_write_once_and_missing_omitted(self):
+        calls = []
+
+        def fetch(sym):
+            calls.append(sym)
+            if sym == "BAD":
+                raise RuntimeError("x")
+            return {"targetMeanPrice": 245.0, "numberOfAnalystOpinions": 34, "recommendationKey": "buy", "targetLowPrice": None}
+
+        with tempfile.TemporaryDirectory() as d:
+            root, today = Path(d), dt.date(2026, 10, 14)
+            got = X.fetch_us_consensus(["AAA", "BAD", "AAA"], root, today, fetch)
+            self.assertEqual(list(got), ["AAA"])
+            self.assertEqual(calls.count("AAA"), 1)
+            self.assertNotIn("targetLowPrice", got["AAA"])
+            n = len(calls)
+            self.assertEqual(X.fetch_us_consensus(["AAA", "BAD"], root, today, fetch), got)   # 같은 날은 다시 받지 않는다
+            self.assertEqual(len(calls), n)
+
+    def test_no_snapshot_when_nothing_fetched(self):
+        with tempfile.TemporaryDirectory() as d:
+            root, today = Path(d), dt.date(2026, 10, 14)
+            self.assertEqual(X.fetch_us_consensus(["A"], root, today, lambda s: {}), {})
+            self.assertFalse(X.consensus_path(root, "us", today).exists())
+
+    def test_line(self):
+        today = dt.date(2026, 10, 14)
+        ts = dt.datetime(2026, 10, 28, 12, tzinfo=dt.timezone.utc).timestamp()
+        line = X.consensus_line({"numberOfAnalystOpinions": 34, "targetMeanPrice": 245.0, "recommendationKey": "buy", "earningsTimestamp": ts}, 216.0, today)
+        self.assertIn("애널리스트 34명", line)
+        self.assertIn("+13%", line)
+        self.assertIn("D-14, 변동성 주의", line)
+        self.assertIn("점수 아님", line)
+        self.assertIsNone(X.consensus_line(None, 100, today))
+        self.assertIsNone(X.consensus_line({"recommendationKey": "none"}, 100, today))
+
 
 
 if __name__ == "__main__":
