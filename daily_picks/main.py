@@ -43,11 +43,14 @@ def build_market(market: str, root: Path, fetch=fetch_entry_metrics, fetch_secto
             log.exception("미국 업종 수집 실패")
     sectors = X.sector_map(market, root)
     consensus = {}
-    if market == "us" and fetch_sector is not False and (fetch_consensus is not None or fetch_sector is None):
+    if fetch_sector is not False and (fetch_consensus is not None or fetch_sector is None):
         try:
-            consensus = X.fetch_us_consensus([r["code"] for r in rows], root, fetch=fetch_consensus)
+            if market == "us":
+                consensus = X.fetch_us_consensus([r["code"] for r in rows], root, fetch=fetch_consensus)
+            else:
+                consensus = X.fetch_us_consensus([r["code"] for r in rows], root, fetch=fetch_consensus or X.fetch_kr_naver, workers=4, market="kr")
         except Exception:  # noqa: BLE001 — 컨센서스를 못 받아도 추천은 낸다
-            log.exception("미국 컨센서스 수집 실패")
+            log.exception("컨센서스 수집 실패 (%s)", market)
     ctx = {"sectorStats": X.sector_strength(pool["sepaRows"], sectors), "regimes": X.market_regimes(pool["sepaRows"]),
            "macro": X.macro_summary(root), "krClose": X.kr_close_context(pool["asOf"], root) if market == "kr" else {},
            "consensus": consensus, "today": dt.datetime.now(dt.timezone.utc).date()}
@@ -60,7 +63,7 @@ def build_market(market: str, root: Path, fetch=fetch_entry_metrics, fetch_secto
     v4 = V2.rank_v4(rows, ctx, sectors, market, pool["sepaRows"], lambda c: X.atr_pct_from_chart(c, root))
     out["picksV4"] = v4["picks"]
     out["v4"] = {k: v4[k] for k in ("candidates", "missingAtr", "skipped") if k in v4}
-    out["context"] = {"regimes": ctx["regimes"], "macro": ctx["macro"], "consensus": {"known": len(consensus), "candidates": len(rows)} if market == "us" else None,
+    out["context"] = {"regimes": ctx["regimes"], "macro": ctx["macro"], "consensus": {"known": len(consensus), "candidates": len(rows)},
                       "sectorCoverage": {"known": sum(1 for r in rows if sectors.get(r["code"])), "candidates": len(rows)},
                       "sectors": sorted(({"sector": s, **v} for s, v in ctx["sectorStats"].items()), key=lambda x: x["rank"])}
     return out

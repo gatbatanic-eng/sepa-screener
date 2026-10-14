@@ -171,10 +171,11 @@ def consensus_path(root: Path, market: str, day: dt.date) -> Path:
     return root / "research" / "daily_picks" / "consensus" / market / f"{day.isoformat()}.json"
 
 
-def fetch_us_consensus(symbols: list[str], root: Path = ROOT, today: dt.date | None = None, fetch=None, workers: int = 8) -> dict[str, dict]:
-    """오늘(UTC 날짜) 스냅샷이 있으면 그대로 읽고, 없으면 받아서 한 번만 쓴다(수정 금지). 받지 못한 종목은 결과에서 빠진다(0으로 채우지 않음)."""
+def fetch_us_consensus(symbols: list[str], root: Path = ROOT, today: dt.date | None = None, fetch=None, workers: int = 8, market: str = "us") -> dict[str, dict]:
+    """오늘(UTC 날짜) 스냅샷이 있으면 그대로 읽고, 없으면 받아서 한 번만 쓴다(수정 금지). 받지 못한 종목은 결과에서 빠진다(0으로 채우지 않음).
+    market="kr"이면 fetch(네이버)를 반드시 넘긴다."""
     today = today or dt.datetime.now(dt.timezone.utc).date()
-    path = consensus_path(root, "us", today)
+    path = consensus_path(root, market, today)
     snap = (_json(path, {}) or {}).get("symbols") if path.exists() else None
     if snap is not None:
         return snap
@@ -197,7 +198,7 @@ def fetch_us_consensus(symbols: list[str], root: Path = ROOT, today: dt.date | N
         got = {s: d for s, d in ex.map(one, list(dict.fromkeys(symbols))) if d}
     if got:                                        # 하나도 못 받았으면 스냅샷을 남기지 않는다(빈 기록으로 굳지 않게)
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps({"date": today.isoformat(), "source": "yahoo", "symbols": got}, ensure_ascii=False, sort_keys=True), encoding="utf-8")
+        path.write_text(json.dumps({"date": today.isoformat(), "source": "yahoo" if market == "us" else "naver", "symbols": got}, ensure_ascii=False, sort_keys=True), encoding="utf-8")
     return got
 
 
@@ -227,3 +228,45 @@ def consensus_line(c: dict | None, price: float | None, today: dt.date) -> str |
         except (ValueError, OSError, OverflowError):
             pass
     return (f"컨센서스(야후, {today:%m/%d}): " + " · ".join(bits) + " (참고, 점수 아님)") if bits else None
+
+
+def fetch_kr_naver(code: str, today: dt.date | None = None, session=None) -> dict:
+    """네이버 모바일 API: 올해(가장 가까운 미래 결산) 연간 컨센서스 + 목표가·투자의견(integration 엔드포인트). 못 받은 항목은 빠진다."""
+    import requests
+    from fpd.provider_naver import fetch_annual, number
+    today = today or dt.datetime.now(dt.timezone.utc).date()
+    session = session or requests.Session()
+    out = {}
+    try:
+        rows = sorted(fetch_annual(session, code, today), key=lambda r: r["periodEnd"])
+        if rows:
+            r = rows[0]
+            out.update({"fyEnd": r["periodEnd"], "eps": r["eps"]["avg"], "revenue": r["revenue"]["avg"], "operatingIncome": r["operatingIncome"]})
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        j = session.get(f"https://m.stock.naver.com/api/stock/{code}/integration", timeout=12).json()
+        ci = j.get("consensusInfo") or {}
+        out["targetMeanPrice"] = number(ci.get("priceTargetMean"))
+        out["recommMean"] = number(ci.get("recommMean"))
+        out["asOf"] = ci.get("createDate")
+    except Exception:  # noqa: BLE001
+        pass
+    return out
+
+
+def consensus_line_kr(c: dict | None, price: float | None, today: dt.date) -> str | None:
+    """한국 컨센서스 한 줄. 값이 없는 항목은 생략."""
+    if not c:
+        return None
+    bits = []
+    eps = c.get("eps")
+    if eps:
+        bits.append(f"{c['fyEnd'][:4]}년 EPS 추정 {eps:,.0f}원" if c.get("fyEnd") else f"EPS 추정 {eps:,.0f}원")
+    tgt = c.get("targetMeanPrice")
+    if tgt:
+        bits.append(f"평균 목표가 {tgt:,.0f}원" + (f" (현재가 대비 {(tgt / price - 1) * 100:+.0f}%)" if price else ""))
+    rm = c.get("recommMean")
+    if rm:
+        bits.append(f"투자의견 평균 {rm:.1f}/5")
+    return (f"컨센서스(네이버, {today:%m/%d}): " + " · ".join(bits) + " (참고, 점수 아님)") if bits else None
