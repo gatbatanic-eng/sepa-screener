@@ -22,6 +22,7 @@ on:
       - advisory/**
       - tests/test_ledger.py
       - tests/test_daily_picks.py
+      - tests/test_code_str_guard.py
       - daily_picks/**
       - tests/test_agents.py
       - tests/test_advisory.py
@@ -56,7 +57,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Verify ledger rules
-        run: python -m unittest tests.test_ledger tests.test_daily_picks tests.test_agents tests.test_advisory tests.test_picks tests.test_freshness tests.test_nhplug tests.test_accumulation tests.test_flowforward tests.test_close_report -v
+        run: python -m unittest tests.test_ledger tests.test_daily_picks tests.test_code_str_guard tests.test_agents tests.test_advisory tests.test_picks tests.test_freshness tests.test_nhplug tests.test_accumulation tests.test_flowforward tests.test_close_report -v
       - name: Daily picks (오늘의 추천, 시장별 하루 한 번 기록)
         # 코드 변경(push)은 기록·알림 없이 화면용 JSON만 갱신한다. 예약·수동 실행만 write-once로 기록한다.
         continue-on-error: true
