@@ -49,7 +49,13 @@ def latest_multifactor(market: str, root: Path = ROOT) -> dict[str, dict]:
 
 def load(market: str, root: Path = ROOT) -> dict:
     """{'sepaRows', 'funnel', 'techRows', 'aggrRows', 'selected': {code: {strategy: detail}}, 'regime', 'asOf'}"""
-    sepa_rows = {r["code"]: r for r in (_json(root / "docs" / "data" / f"latest_{market}.json") or [])}
+    raw_rows = _json(root / "docs" / "data" / f"latest_{market}.json") or []
+    if market == "kr" and raw_rows:
+        # 한국 종목 코드는 6자리 문자열이어야 한다. 숫자로 깨진 파일(앞자리 0 소실)로 기록하면 업종·진입 자료 매칭이 전부 실패한 채 굳는다.
+        bad = sum(1 for r in raw_rows if not (isinstance(r.get("code"), str) and len(r["code"]) == 6))
+        if bad > len(raw_rows) * 0.05:
+            raise ValueError(f"SEPA 한국 종목 코드 {bad}/{len(raw_rows)}개가 6자리 문자열이 아닙니다(앞자리 0 소실 의심) — 이번 한국 추천은 기록하지 않습니다")
+    sepa_rows = {r["code"]: r for r in raw_rows}
     funnel_doc = _json(root / "docs" / "research" / f"funnel_{market}.json") or {}
     funnel = {t["symbol"]: t for t in funnel_doc.get("top", [])}
     tech_doc = _json(root / "docs" / "technical" / "data" / f"latest_{market}.json") or {}

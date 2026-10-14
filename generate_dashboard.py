@@ -177,10 +177,14 @@ def load_fresh_rows(prefix: str) -> list | None:
     path = OUTPUT_DIR / f"latest_{prefix}_full.csv"
     if not path.exists():
         return None
-    df = pd.read_csv(path)
+    # 종목코드는 문자열로 읽는다. 지정하지 않으면 한국 코드가 전부 숫자(예: 005930)일 때 pandas가 정수로 추론해
+    # 앞자리 0이 사라진다(2026-10-13 수동 실행: 네이버 보완 유니버스에 영숫자 코드가 없어 700종목 전부 숫자로 저장됨).
+    df = pd.read_csv(path, dtype={"종목코드": str})
     df = df.rename(columns=COLUMN_MAP)
     keep = [c for c in COLUMN_MAP.values() if c in df.columns]
     df = df[keep]
+    if prefix == "kr" and "code" in df.columns:
+        df["code"] = df["code"].astype(str).str.strip().str.zfill(6)
     df = df.astype(object).where(pd.notnull(df), None)  # float64 컬럼은 object로 먼저 바꿔야 NaN->None이 실제로 반영됨
     return df.to_dict(orient="records")
 
