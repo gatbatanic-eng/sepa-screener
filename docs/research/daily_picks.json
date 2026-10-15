@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "generatedAt": "2026-10-15T01:30:25.216797+00:00",
+ "generatedAt": "2026-10-15T01:53:30.393344+00:00",
  "latest": {
   "kr": {
    "market": "kr",
@@ -751,7 +751,7 @@
    "regime": "GREEN",
    "gate": "우호적",
    "candidates": 85,
-   "suitable": 12,
+   "suitable": 14,
    "picks": [
     {
      "code": "ZBRA",
@@ -789,7 +789,7 @@
      },
      "funnelRank": 4,
      "entry": {
-      "riskPct": 6.79,
+      "riskPct": 7.05,
       "riskSource": "직접 계산",
       "verdict": null,
       "chase": [],
@@ -809,7 +809,7 @@
      },
      "funnelRank": 7,
      "entry": {
-      "riskPct": 4.16,
+      "riskPct": 4.65,
       "riskSource": "직접 계산",
       "verdict": null,
       "chase": [],
@@ -820,7 +820,7 @@
     }
    ],
    "rejectSummary": {
-    "손절폭 8% 초과": 56,
+    "손절폭 8% 초과": 54,
     "SEPA 진입 NO-GO": 17
    },
    "shortfall": null,
@@ -1014,6 +1014,57 @@
      ]
     },
     {
+     "code": "SD",
+     "name": "SANDRIDGE ENERGY INC",
+     "market": "NYSE",
+     "price": 14.359999656677246,
+     "score": 2,
+     "strategies": {
+      "funnel": 9
+     },
+     "funnelRank": 9,
+     "entry": {
+      "riskPct": 6.42,
+      "riskSource": "직접 계산",
+      "verdict": null,
+      "chase": [],
+      "liquidityOk": null,
+      "zone": null
+     },
+     "v2": {
+      "score": 3,
+      "sector": "Energy",
+      "sectorAdj": 1,
+      "marketAdj": 0
+     },
+     "why": [
+      {
+       "kind": "strategy",
+       "text": "실적 턴어라운드 9위 선정 (v1 점수 2)"
+      },
+      {
+       "kind": "entry",
+       "text": "손절폭 6.42%(직접 계산), 추격·NO-GO·유동성 조건 통과"
+      },
+      {
+       "kind": "sector",
+       "text": "업종 Energy 강세: 50일선 위 81%, 평균 RS 76, 11개 업종 중 1위 (점수 +1)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 미국 GREEN"
+      },
+      {
+       "kind": "consensus",
+       "text": "컨센서스(야후, 10/15): 애널리스트 1명 · 평균 목표가 $14 (현재가 대비 -3%) · 다음 실적 발표 11/04 (D-20) (참고, 점수 아님)"
+      },
+      {
+       "kind": "macro",
+       "text": "매크로 리스크오프 (VIX 16.9, 달러지수 102.2, 미 10년 5.21%) — 참고, 점수 아님"
+      }
+     ]
+    },
+    {
      "code": "CRON",
      "name": "Cronos Group Inc.",
      "market": "Nasdaq",
@@ -1024,7 +1075,7 @@
      },
      "funnelRank": 21,
      "entry": {
-      "riskPct": 4.78,
+      "riskPct": 4.68,
       "riskSource": "직접 계산",
       "verdict": null,
       "chase": [],
@@ -1044,7 +1095,7 @@
       },
       {
        "kind": "entry",
-       "text": "손절폭 4.78%(직접 계산), 추격·NO-GO·유동성 조건 통과"
+       "text": "손절폭 4.68%(직접 계산), 추격·NO-GO·유동성 조건 통과"
       },
       {
        "kind": "sector",
@@ -1057,57 +1108,6 @@
       {
        "kind": "consensus",
        "text": "컨센서스(야후, 10/15): 애널리스트 1명 · 평균 목표가 $2 (현재가 대비 -23%) · 투자의견 적극 매수 · 다음 실적 발표 11/05 (D-21) (참고, 점수 아님)"
-      },
-      {
-       "kind": "macro",
-       "text": "매크로 리스크오프 (VIX 16.9, 달러지수 102.2, 미 10년 5.21%) — 참고, 점수 아님"
-      }
-     ]
-    },
-    {
-     "code": "TWFG",
-     "name": "TWFG, Inc.",
-     "market": "Nasdaq",
-     "price": 24.260000228881836,
-     "score": 2,
-     "strategies": {
-      "funnel": 4
-     },
-     "funnelRank": 4,
-     "entry": {
-      "riskPct": 6.79,
-      "riskSource": "직접 계산",
-      "verdict": null,
-      "chase": [],
-      "liquidityOk": null,
-      "zone": null
-     },
-     "v2": {
-      "score": 2,
-      "sector": "Financial Services",
-      "sectorAdj": 0,
-      "marketAdj": 0
-     },
-     "why": [
-      {
-       "kind": "strategy",
-       "text": "실적 턴어라운드 4위 선정 (v1 점수 2)"
-      },
-      {
-       "kind": "entry",
-       "text": "손절폭 6.79%(직접 계산), 추격·NO-GO·유동성 조건 통과"
-      },
-      {
-       "kind": "sector",
-       "text": "업종 Financial Services 중간: 50일선 위 24%, 평균 RS 47, 11개 업종 중 6위 (점수 +0)"
-      },
-      {
-       "kind": "market",
-       "text": "시장 미국 GREEN"
-      },
-      {
-       "kind": "consensus",
-       "text": "컨센서스(야후, 10/15): 애널리스트 7명 · 평균 목표가 $31 (현재가 대비 +26%) · 투자의견 매수 · 다음 실적 발표 11/11 (D-27) (참고, 점수 아님)"
       },
       {
        "kind": "macro",
