@@ -66,6 +66,11 @@ class CloseReportTest(unittest.TestCase):
         self.assertEqual(len(cr.stop_alerts(data, [{"code": "111111", "stopPrice": 100.0}])), 1)
         self.assertEqual(cr.stop_alerts(data, [{"code": "111111", "stopPrice": 90.0}]), [])
 
+    def test_breached_stop_is_flagged(self):
+        data = {"111111": {"name": "이탈주", "close": 90.0}, "222222": {"name": "근접주", "close": 102.0}}
+        out = {x["name"]: x["breached"] for x in cr.stop_alerts(data, [{"code": "111111", "stopPrice": 100.0}, {"code": "222222", "stopPrice": 100.0}])}
+        self.assertEqual(out, {"이탈주": True, "근접주": False})
+
 
 if __name__ == "__main__":
     unittest.main()
