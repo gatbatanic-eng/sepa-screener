@@ -1,8 +1,8 @@
 {
  "schemaVersion": 1,
  "market": "us",
- "recordedAt": "2026-10-15T10:31:47.267675+00:00",
- "session": "2026-10-14",
+ "recordedAt": "2026-10-16T10:16:45.749836+00:00",
+ "session": "2026-10-15",
  "degraded": null,
  "note": "투자 추천이 아닌 검증·분석용 규칙 판정. 결측은 null.",
  "thresholds": {
@@ -16,16 +16,16 @@
   "P1Cutoff": 3.0
  },
  "stats": {
-  "universe": 2590,
-  "excluded": 917,
-  "noScore": 219,
-  "belowS1Floor": 974,
+  "universe": 2597,
+  "excluded": 920,
+  "noScore": 221,
+  "belowS1Floor": 978,
   "cyclicalInTop": 14,
-  "ranked": 480,
+  "ranked": 478,
   "gateHits": {
-   "G3": 539,
+   "G3": 541,
    "G2": 440,
-   "G1": 12
+   "G1": 13
   }
  },
  "sectorHeat": {
@@ -38,8 +38,8 @@
    "D": false
   },
   "A_share100": 0.10526315789473684,
-  "B_fringeMinusCore": -0.5144319282220314,
-  "C_lossMinusProfit": -0.547828243579366,
+  "B_fringeMinusCore": -0.4415813872186275,
+  "C_lossMinusProfit": -0.5109843974390214,
   "D_shareGrowthMedian": 0.009099852434825362,
   "D_dilutionEventShare": null,
   "n": {
@@ -54,52 +54,52 @@
    {
     "symbol": "DELL",
     "tier": "core",
-    "ret6m": 1.5965071952165428
-   },
-   {
-    "symbol": "HPE",
-    "tier": "core",
-    "ret6m": 1.3999521283482501
+    "ret6m": 1.419940930644989
    },
    {
     "symbol": "SNOW",
     "tier": "core",
-    "ret6m": 1.3272676518643265
+    "ret6m": 1.327198341902228
+   },
+   {
+    "symbol": "HPE",
+    "tier": "core",
+    "ret6m": 1.229586187317698
    },
    {
     "symbol": "DDOG",
     "tier": "core",
-    "ret6m": 1.1272410178809
-   },
-   {
-    "symbol": "AMD",
-    "tier": "core",
-    "ret6m": 1.0504327644261022
+    "ret6m": 1.1029144515953155
    },
    {
     "symbol": "MU",
     "tier": "core",
-    "ret6m": 1.0093929769683498
+    "ret6m": 1.0470032558322062
+   },
+   {
+    "symbol": "AMD",
+    "tier": "core",
+    "ret6m": 1.019576676192059
    },
    {
     "symbol": "MRVL",
     "tier": "core",
-    "ret6m": 0.7567048763740691
+    "ret6m": 0.7277702875711152
    },
    {
     "symbol": "NOW",
     "tier": "core",
-    "ret6m": 0.4481687401633223
-   },
-   {
-    "symbol": "INTC",
-    "tier": "core",
-    "ret6m": 0.4324087992201757
+    "ret6m": 0.537037054577084
    },
    {
     "symbol": "ARM",
     "tier": "core",
-    "ret6m": 0.42751754696724587
+    "ret6m": 0.4681820881597998
+   },
+   {
+    "symbol": "INTC",
+    "tier": "core",
+    "ret6m": 0.39226281381871586
    }
   ],
   "thresholds": {
@@ -120,12 +120,12 @@
    "symbol": "FIVN",
    "name": "Five9, Inc.",
    "exchange": "Nasdaq",
-   "marcap": 2471854542.3028717,
+   "marcap": 2622795824.0809402,
    "marcapEstimated": true,
-   "price": 33.08000183105469,
+   "price": 35.099998474121094,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.9087912209986081,
-   "ret6m": 1.09632461285385,
+   "high52Ratio": 0.9642856319433514,
+   "ret6m": 1.2243345417035805,
    "ret36to6m": -0.7373939142469516,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -149,7 +149,7 @@
     "S1": 75.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 98.4
+    "S4": 98.37
    },
    "reasons": {
     "S1": [
@@ -178,12 +178,12 @@
    "symbol": "CHRD",
    "name": "Chord Energy Corp",
    "exchange": "Nasdaq",
-   "marcap": 7995734528.34082,
+   "marcap": 8113335453.914795,
    "marcapEstimated": true,
-   "price": 146.17999267578125,
+   "price": 148.3300018310547,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.961647246617113,
-   "ret6m": 0.20382938814321205,
+   "high52Ratio": 0.9757911136848587,
+   "ret6m": 0.22153525991484146,
    "ret36to6m": -0.16344127923350105,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -207,7 +207,7 @@
     "S1": 80.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 82.61
+    "S4": 82.46
    },
    "reasons": {
     "S1": [
@@ -223,7 +223,7 @@
      "주식 수 -4.5%"
     ]
    },
-   "composite": 91.38,
+   "composite": 91.36,
    "T1": "ON",
    "inflection": true,
    "meetsS1Floor": true,
@@ -236,12 +236,12 @@
    "symbol": "MDB",
    "name": "MongoDB, Inc.",
    "exchange": "Nasdaq",
-   "marcap": 28701419423.23764,
+   "marcap": 29523092626.406982,
    "marcapEstimated": true,
-   "price": 356.2900085449219,
+   "price": 366.489990234375,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.7739882669776698,
-   "ret6m": 0.35276027769628326,
+   "high52Ratio": 0.7961462449217198,
+   "ret6m": 0.3914875216037752,
    "ret36to6m": -0.23940162350907557,
    "metrics": {
     "latestPeriod": "2026Q3",
@@ -265,7 +265,7 @@
     "S1": 75.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 85.69
+    "S4": 85.57
    },
    "reasons": {
     "S1": [
@@ -281,7 +281,7 @@
      "주식 수 -1.0%"
     ]
    },
-   "composite": 90.58,
+   "composite": 90.56,
    "T1": "NEAR",
    "inflection": true,
    "meetsS1Floor": true,
@@ -294,12 +294,12 @@
    "symbol": "TWFG",
    "name": "TWFG, Inc.",
    "exchange": "Nasdaq",
-   "marcap": 315753970.8934021,
+   "marcap": 327606187.8565979,
    "marcapEstimated": true,
-   "price": 24.110000610351562,
+   "price": 25.014999389648438,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.8033988812551867,
-   "ret6m": 0.2838125521207371,
+   "high52Ratio": 0.8335554548104877,
+   "ret6m": 0.3320020487239199,
    "ret36to6m": -0.16939406547174363,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -323,7 +323,7 @@
     "S1": 65.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 82.93
+    "S4": 82.78
    },
    "reasons": {
     "S1": [
@@ -339,7 +339,7 @@
      "주식 수 -76.7%"
     ]
    },
-   "composite": 87.35,
+   "composite": 87.32,
    "T1": "NEAR",
    "inflection": false,
    "meetsS1Floor": true,
@@ -352,13 +352,13 @@
    "symbol": "DINO",
    "name": "HF Sinclair Corp",
    "exchange": "NYSE",
-   "marcap": 22701220112.8526,
+   "marcap": 22169645427.74675,
    "marcapEstimated": true,
-   "price": 127.69000244140625,
+   "price": 124.69999694824219,
    "priceDate": "2026-10-12",
    "high52Ratio": 1.0,
-   "ret6m": 1.2637728104077977,
-   "ret36to6m": 0.13328611579935434,
+   "ret6m": 1.2107640156002266,
+   "ret36to6m": 0.13328602894029418,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -381,7 +381,7 @@
     "S1": 70.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 68.85
+    "S4": 68.78
    },
    "reasons": {
     "S1": [
@@ -397,7 +397,7 @@
      "주식 수 -5.0%"
     ]
    },
-   "composite": 86.15,
+   "composite": 86.14,
    "T1": "NEAR",
    "inflection": false,
    "meetsS1Floor": true,
@@ -410,12 +410,12 @@
    "symbol": "LFST",
    "name": "LifeStance Health Group, Inc.",
    "exchange": "Nasdaq",
-   "marcap": 4783336399.571178,
+   "marcap": 4726027839.607205,
    "marcapEstimated": true,
-   "price": 12.520000457763672,
+   "price": 12.369999885559082,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.9653045643793018,
-   "ret6m": 0.8171263716075787,
+   "high52Ratio": 0.9537393701529062,
+   "ret6m": 0.7953556059891025,
    "ret36to6m": 0.2854477042648902,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -439,7 +439,7 @@
     "S1": 90.0,
     "S2": 85.0,
     "S6": 100.0,
-    "S4": 60.26
+    "S4": 60.21
    },
    "reasons": {
     "S1": [
@@ -455,7 +455,7 @@
      "주식 수 -1.8%"
     ]
    },
-   "composite": 85.96,
+   "composite": 85.95,
    "T1": "ON",
    "inflection": true,
    "meetsS1Floor": true,
@@ -468,13 +468,13 @@
    "symbol": "XRN",
    "name": "Chiron Real Estate Inc.",
    "exchange": "NYSE",
-   "marcap": 414211712.81959534,
+   "marcap": 414741212.8900337,
    "marcapEstimated": true,
-   "price": 31.290000915527344,
+   "price": 31.329999923706055,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.8348921066147589,
-   "ret6m": -0.110383847384665,
-   "ret36to6m": 0.03495794448175449,
+   "high52Ratio": 0.8359593758772617,
+   "ret6m": -0.10924642940848361,
+   "ret36to6m": 0.03495783615738923,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -497,7 +497,7 @@
     "S1": 65.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 73.49
+    "S4": 73.41
    },
    "reasons": {
     "S1": [
@@ -511,7 +511,7 @@
      "주식 수 -80.2%"
     ]
    },
-   "composite": 85.63,
+   "composite": 85.62,
    "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
@@ -524,13 +524,13 @@
    "symbol": "REPX",
    "name": "Riley Exploration Permian, Inc.",
    "exchange": "NYSE",
-   "marcap": 947173491.9855957,
+   "marcap": 958801504.0,
    "marcapEstimated": true,
-   "price": 46.43000030517578,
+   "price": 47.0,
    "priceDate": "2026-10-12",
    "high52Ratio": 1.0,
-   "ret6m": 0.4201153841576519,
-   "ret36to6m": 0.19949932888601807,
+   "ret6m": 0.43754948560638285,
+   "ret36to6m": 0.19949924494871385,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -553,7 +553,7 @@
     "S1": 70.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 65.33
+    "S4": 65.27
    },
    "reasons": {
     "S1": [
@@ -569,7 +569,7 @@
      "주식 수 -3.6%"
     ]
    },
-   "composite": 85.51,
+   "composite": 85.5,
    "T1": "NEAR",
    "inflection": false,
    "meetsS1Floor": true,
@@ -582,13 +582,13 @@
    "symbol": "SD",
    "name": "SANDRIDGE ENERGY INC",
    "exchange": "NYSE",
-   "marcap": 520537154.4256897,
+   "marcap": 515717361.7027588,
    "marcapEstimated": true,
-   "price": 14.039999961853027,
+   "price": 13.90999984741211,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.8274963262373206,
-   "ret6m": 0.006204950359235184,
-   "ret36to6m": 0.07622042626835568,
+   "high52Ratio": 0.8198343164508125,
+   "ret6m": -0.0031117703710442646,
+   "ret36to6m": 0.07622010961670633,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -611,7 +611,7 @@
     "S1": 80.0,
     "S2": 100.0,
     "S6": 83.33,
-    "S4": 71.41
+    "S4": 71.33
    },
    "reasons": {
     "S1": [
@@ -627,7 +627,7 @@
      "주식 수 +0.9%"
     ]
    },
-   "composite": 84.8,
+   "composite": 84.79,
    "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
@@ -640,13 +640,13 @@
    "symbol": "KWR",
    "name": "QUAKER CHEMICAL CORP",
    "exchange": "NYSE",
-   "marcap": 2726216101.8270264,
+   "marcap": 2728281204.613739,
    "marcapEstimated": true,
-   "price": 158.42999267578125,
+   "price": 158.5500030517578,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.8897948920856096,
-   "ret6m": 0.13691260411155226,
-   "ret36to6m": 0.0030368389987678324,
+   "high52Ratio": 0.8904689097872941,
+   "ret6m": 0.13777381294434643,
+   "ret36to6m": 0.003037059328754088,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -669,7 +669,7 @@
     "S1": 75.0,
     "S2": 85.0,
     "S6": 100.0,
-    "S4": 74.93
+    "S4": 74.84
    },
    "reasons": {
     "S1": [
@@ -685,7 +685,7 @@
      "주식 수 -1.1%"
     ]
    },
-   "composite": 84.53,
+   "composite": 84.52,
    "T1": "NEAR",
    "inflection": true,
    "meetsS1Floor": true,
@@ -698,12 +698,12 @@
    "symbol": "TRC",
    "name": "TEJON RANCH CO",
    "exchange": "NYSE",
-   "marcap": 438017582.50112915,
+   "marcap": 447475098.208992,
    "marcapEstimated": true,
-   "price": 16.209999084472656,
+   "price": 16.559999465942383,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.8040674209902583,
-   "ret6m": -0.18255173238330769,
+   "high52Ratio": 0.8214285511548826,
+   "ret6m": -0.16490168786407833,
    "ret36to6m": 0.2801807757725101,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -727,7 +727,7 @@
     "S1": 85.0,
     "S2": 100.0,
     "S6": 83.33,
-    "S4": 60.54
+    "S4": 60.49
    },
    "reasons": {
     "S1": [
@@ -743,7 +743,7 @@
      "주식 수 +0.5%"
     ]
    },
-   "composite": 84.19,
+   "composite": 84.18,
    "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
@@ -756,12 +756,12 @@
    "symbol": "FRSH",
    "name": "Freshworks Inc.",
    "exchange": "Nasdaq",
-   "marcap": 3737205605.4496765,
+   "marcap": 3890079000.0,
    "marcapEstimated": true,
-   "price": 13.6899995803833,
+   "price": 14.25,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.983476975959049,
-   "ret6m": 0.6030444545122475,
+   "high52Ratio": 1.0,
+   "ret6m": 0.6686182744324047,
    "ret36to6m": -0.5396226246311002,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -785,7 +785,7 @@
     "S1": 45.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 95.2
+    "S4": 95.1
    },
    "reasons": {
     "S1": [
@@ -800,7 +800,7 @@
      "주식 수 -7.3%"
     ]
    },
-   "composite": 84.13,
+   "composite": 84.11,
    "T1": "ON",
    "inflection": true,
    "meetsS1Floor": true,
@@ -813,12 +813,12 @@
    "symbol": "QNST",
    "name": "QUINSTREET, INC",
    "exchange": "Nasdaq",
-   "marcap": 892831456.3590631,
+   "marcap": 929937654.8741684,
    "marcapEstimated": true,
-   "price": 15.640000343322754,
+   "price": 16.290000915527344,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.7419355028428815,
-   "ret6m": 0.22666669359394143,
+   "high52Ratio": 0.772770444709917,
+   "ret6m": 0.27764713062959556,
    "ret36to6m": 0.22596158342954142,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -842,7 +842,7 @@
     "S1": 80.0,
     "S2": 85.0,
     "S6": 100.0,
-    "S4": 63.89
+    "S4": 63.84
    },
    "reasons": {
     "S1": [
@@ -858,8 +858,8 @@
      "주식 수 -2.7%"
     ]
    },
-   "composite": 83.89,
-   "T1": "OFF",
+   "composite": 83.88,
+   "T1": "NEAR",
    "inflection": true,
    "meetsS1Floor": true,
    "cyclical": null,
@@ -871,12 +871,12 @@
    "symbol": "HUBS",
    "name": "HUBSPOT INC",
    "exchange": "NYSE",
-   "marcap": 11281230439.178604,
+   "marcap": 11913534263.525482,
    "marcapEstimated": true,
-   "price": 226.22999572753906,
+   "price": 238.91000366210938,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.459891831094962,
-   "ret6m": 0.0168096999507239,
+   "high52Ratio": 0.48566839555351105,
+   "ret6m": 0.07380105965905881,
    "ret36to6m": -0.4814598976967327,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -900,7 +900,7 @@
     "S1": 45.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 93.72
+    "S4": 93.62
    },
    "reasons": {
     "S1": [
@@ -915,7 +915,7 @@
      "주식 수 -5.4%"
     ]
    },
-   "composite": 83.86,
+   "composite": 83.84,
    "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
@@ -928,13 +928,13 @@
    "symbol": "WTI",
    "name": "W&T OFFSHORE INC",
    "exchange": "NYSE",
-   "marcap": 550941789.1950417,
+   "marcap": 552451217.2755375,
    "marcapEstimated": true,
-   "price": 3.6500000953674316,
+   "price": 3.6600000858306885,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.7721561750563839,
-   "ret6m": 0.2779589866689729,
-   "ret36to6m": -0.274121447643756,
+   "high52Ratio": 0.7742716693536331,
+   "ret6m": 0.2814602407361557,
+   "ret36to6m": -0.2741212717087901,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -962,7 +962,7 @@
     "S1": 90.0,
     "S2": 75.0,
     "S6": 83.33,
-    "S4": 86.89
+    "S4": 86.8
    },
    "reasons": {
     "S1": [
@@ -978,7 +978,7 @@
      "주식 수 +1.8%"
     ]
    },
-   "composite": 83.53,
+   "composite": 83.51,
    "T1": "NEAR",
    "inflection": true,
    "meetsS1Floor": true,
@@ -991,12 +991,12 @@
    "symbol": "WK",
    "name": "WORKIVA INC",
    "exchange": "NYSE",
-   "marcap": 4071912600.0260925,
+   "marcap": 4328088804.539139,
    "marcapEstimated": true,
-   "price": 72.63999938964844,
+   "price": 77.20999908447266,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.7847882595682303,
-   "ret6m": 0.266829424421793,
+   "high52Ratio": 0.834161637003026,
+   "ret6m": 0.3465294537671533,
    "ret36to6m": -0.4156135492506873,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1025,7 +1025,7 @@
     "S1": 45.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 91.68
+    "S4": 91.63
    },
    "reasons": {
     "S1": [
@@ -1040,7 +1040,7 @@
      "주식 수 -0.0%"
     ]
    },
-   "composite": 83.49,
+   "composite": 83.48,
    "T1": "NEAR",
    "inflection": true,
    "meetsS1Floor": true,
@@ -1053,12 +1053,12 @@
    "symbol": "MNTN",
    "name": "MNTN, Inc.",
    "exchange": "NYSE",
-   "marcap": 739249527.9998589,
+   "marcap": 824971031.2999153,
    "marcapEstimated": true,
-   "price": 9.399999618530273,
+   "price": 10.489999771118164,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.5089334037892317,
-   "ret6m": -0.06560643872334682,
+   "high52Ratio": 0.5679480325445116,
+   "ret6m": 0.0427434725214304,
    "ret36to6m": null,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1111,12 +1111,12 @@
    "symbol": "PATH",
    "name": "UiPath, Inc.",
    "exchange": "NYSE",
-   "marcap": 6830549999.464989,
+   "marcap": 7170508249.951363,
    "marcapEstimated": true,
-   "price": 13.0600004196167,
+   "price": 13.710000038146973,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.6995179628413345,
-   "ret6m": 0.25456297896712954,
+   "high52Ratio": 0.734333153836197,
+   "ret6m": 0.3170029048132246,
    "ret36to6m": -0.3296844799481221,
    "metrics": {
     "latestPeriod": "2026Q3",
@@ -1140,7 +1140,7 @@
     "S1": 45.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 88.76
+    "S4": 88.68
    },
    "reasons": {
     "S1": [
@@ -1155,7 +1155,7 @@
      "주식 수 -3.7%"
     ]
    },
-   "composite": 82.96,
+   "composite": 82.94,
    "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
@@ -1168,13 +1168,13 @@
    "symbol": "GNK",
    "name": "GENCO SHIPPING & TRADING LTD",
    "exchange": "NYSE",
-   "marcap": 1122790954.7761822,
+   "marcap": 1086614075.9515762,
    "marcapEstimated": true,
-   "price": 25.760000228881836,
+   "price": 24.93000030517578,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.9213162043051507,
-   "ret6m": 0.10179304090728158,
-   "ret36to6m": 1.0322539036847656,
+   "high52Ratio": 0.8916309413980075,
+   "ret6m": 0.0662927252330765,
+   "ret36to6m": 1.0322540721499718,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -1197,7 +1197,7 @@
     "S1": 100.0,
     "S2": 100.0,
     "S6": 83.33,
-    "S4": 26.83
+    "S4": 26.71
    },
    "reasons": {
     "S1": [
@@ -1213,8 +1213,8 @@
      "주식 수 +1.5%"
     ]
    },
-   "composite": 82.15,
-   "T1": "ON",
+   "composite": 82.13,
+   "T1": "NEAR",
    "inflection": true,
    "meetsS1Floor": true,
    "cyclical": "해운",
@@ -1226,12 +1226,12 @@
    "symbol": "MQ",
    "name": "Marqeta, Inc.",
    "exchange": "Nasdaq",
-   "marcap": 1941569492.591858,
+   "marcap": 2028075005.5561066,
    "marcapEstimated": true,
-   "price": 18.18000030517578,
+   "price": 18.989999771118164,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.8964496888379009,
-   "ret6m": 0.03530756595043694,
+   "high52Ratio": 0.9363904895537397,
+   "ret6m": 0.0814350995823927,
    "ret36to6m": -0.17790267021657336,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1255,7 +1255,7 @@
     "S1": 45.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 83.49
+    "S4": 83.33
    },
    "reasons": {
     "S1": [
@@ -1270,8 +1270,8 @@
      "주식 수 -7.4%"
     ]
    },
-   "composite": 82.0,
-   "T1": "NEAR",
+   "composite": 81.97,
+   "T1": "ON",
    "inflection": true,
    "meetsS1Floor": true,
    "cyclical": null,
@@ -1283,12 +1283,12 @@
    "symbol": "CRON",
    "name": "Cronos Group Inc.",
    "exchange": "Nasdaq",
-   "marcap": 1164184681.8611298,
+   "marcap": 1178921182.3672943,
    "marcapEstimated": true,
-   "price": 3.1600000858306885,
+   "price": 3.200000047683716,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.9349112363427776,
-   "ret6m": 0.17472119651026108,
+   "high52Ratio": 0.9467455441826292,
+   "ret6m": 0.18959107048876156,
    "ret36to6m": 0.554913310729966,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1312,7 +1312,7 @@
     "S1": 85.0,
     "S2": 85.0,
     "S6": 100.0,
-    "S4": 45.5
+    "S4": 45.45
    },
    "reasons": {
     "S1": [
@@ -1328,7 +1328,7 @@
      "주식 수 -3.8%"
     ]
    },
-   "composite": 81.91,
+   "composite": 81.9,
    "T1": "ON",
    "inflection": true,
    "meetsS1Floor": true,
@@ -1341,13 +1341,13 @@
    "symbol": "PSX",
    "name": "Phillips 66",
    "exchange": "NYSE",
-   "marcap": 118624931527.24255,
+   "marcap": 115396853778.06079,
    "marcapEstimated": true,
-   "price": 297.2900085449219,
+   "price": 289.20001220703125,
    "priceDate": "2026-10-12",
    "high52Ratio": 1.0,
-   "ret6m": 0.9251625966733947,
-   "ret36to6m": 0.501495518341019,
+   "ret6m": 0.8727741614442357,
+   "ret36to6m": 0.5014951841872115,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -1370,7 +1370,7 @@
     "S1": 65.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 48.62
+    "S4": 48.56
    },
    "reasons": {
     "S1": [
@@ -1384,7 +1384,7 @@
      "주식 수 -1.3%"
     ]
    },
-   "composite": 81.11,
+   "composite": 81.1,
    "T1": "ON",
    "inflection": true,
    "meetsS1Floor": true,
@@ -1394,15 +1394,71 @@
   },
   {
    "rank": 23,
+   "symbol": "DOC",
+   "name": "HEALTHPEAK PROPERTIES, INC.",
+   "exchange": "NYSE",
+   "marcap": 13073436218.31894,
+   "marcapEstimated": true,
+   "price": 18.959999084472656,
+   "priceDate": "2026-10-12",
+   "high52Ratio": 0.8545919584534452,
+   "ret6m": 0.11885805680789185,
+   "ret36to6m": 0.2381859711218317,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.4541399348359141,
+     0.34525640078696274,
+     0.06704438796133272
+    ],
+    "opTTM": null,
+    "opmTTM": null,
+    "opmTTMPrev": null,
+    "debtToEquity": 1.2862352433731454
+   },
+   "shareGrowth": -0.007765161726380865,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 55.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 63.2
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 45%",
+     "2분기 연속 가속"
+    ],
+    "S2": [
+     "영업현금/순이익 5.06"
+    ],
+    "S6": [
+     "주식 수 -0.8%"
+    ]
+   },
+   "composite": 81.04,
+   "T1": "NEAR",
+   "inflection": true,
+   "meetsS1Floor": true,
+   "cyclical": null,
+   "manual": null,
+   "P1": null
+  },
+  {
+   "rank": 24,
    "symbol": "RGR",
    "name": "STURM RUGER & CO INC",
    "exchange": "NYSE",
-   "marcap": 687065008.0,
+   "marcap": 686106290.6972046,
    "marcapEstimated": true,
-   "price": 43.0,
+   "price": 42.939998626708984,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.9265229358605038,
-   "ret6m": 0.0273181592616778,
+   "high52Ratio": 0.9252300835689398,
+   "ret6m": 0.025884659253247566,
    "ret36to6m": -0.19649240539634671,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1426,7 +1482,7 @@
     "S1": 60.0,
     "S2": null,
     "S6": 100.0,
-    "S4": 84.25
+    "S4": 84.09
    },
    "reasons": {
     "S1": [
@@ -1439,64 +1495,8 @@
      "주식 수 -1.1%"
     ]
    },
-   "composite": 81.06,
+   "composite": 81.02,
    "T1": "ON",
-   "inflection": true,
-   "meetsS1Floor": true,
-   "cyclical": null,
-   "manual": null,
-   "P1": null
-  },
-  {
-   "rank": 24,
-   "symbol": "DOC",
-   "name": "HEALTHPEAK PROPERTIES, INC.",
-   "exchange": "NYSE",
-   "marcap": 12921740694.579735,
-   "marcapEstimated": true,
-   "price": 18.739999771118164,
-   "priceDate": "2026-10-12",
-   "high52Ratio": 0.8446758375074268,
-   "ret6m": 0.10587556650595609,
-   "ret36to6m": 0.23818588484215764,
-   "metrics": {
-    "latestPeriod": "2026Q2",
-    "revYoY": [
-     0.4541399348359141,
-     0.34525640078696274,
-     0.06704438796133272
-    ],
-    "opTTM": null,
-    "opmTTM": null,
-    "opmTTMPrev": null,
-    "debtToEquity": 1.2862352433731454
-   },
-   "shareGrowth": -0.007765161726380865,
-   "gates": {
-    "excluded": false,
-    "hits": [],
-    "flags": []
-   },
-   "scores": {
-    "S1": 55.0,
-    "S2": 100.0,
-    "S6": 100.0,
-    "S4": 63.25
-   },
-   "reasons": {
-    "S1": [
-     "매출 YoY 45%",
-     "2분기 연속 가속"
-    ],
-    "S2": [
-     "영업현금/순이익 5.06"
-    ],
-    "S6": [
-     "주식 수 -0.8%"
-    ]
-   },
-   "composite": 81.05,
-   "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
    "cyclical": null,
@@ -1508,12 +1508,12 @@
    "symbol": "IRWD",
    "name": "IRONWOOD PHARMACEUTICALS INC",
    "exchange": "Nasdaq",
-   "marcap": 594863793.4414907,
+   "marcap": 622954597.0382981,
    "marcapEstimated": true,
-   "price": 3.5999999046325684,
+   "price": 3.7699999809265137,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.6883364993314707,
-   "ret6m": -0.18735890651655585,
+   "high52Ratio": 0.7208412939154029,
+   "ret6m": -0.14898416997447794,
    "ret36to6m": -0.5200433317393987,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1542,7 +1542,7 @@
     "S1": 50.0,
     "S2": 100.0,
     "S6": 83.33,
-    "S4": 94.84
+    "S4": 94.74
    },
    "reasons": {
     "S1": [
@@ -1557,7 +1557,7 @@
      "주식 수 +1.7%"
     ]
    },
-   "composite": 80.88,
+   "composite": 80.86,
    "T1": "OFF",
    "inflection": false,
    "meetsS1Floor": true,
@@ -1570,13 +1570,13 @@
    "symbol": "RDN",
    "name": "RADIAN GROUP INC",
    "exchange": "NYSE",
-   "marcap": 4420187014.192421,
+   "marcap": 4445324082.92421,
    "marcapEstimated": true,
-   "price": 33.40999984741211,
+   "price": 33.599998474121094,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.8543542874177652,
-   "ret6m": -0.04155197074173256,
-   "ret36to6m": 0.5310382774229772,
+   "high52Ratio": 0.8592128968782163,
+   "ret6m": -0.036101498249439645,
+   "ret36to6m": 0.5310381884488009,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -1599,7 +1599,7 @@
     "S1": 65.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 47.02
+    "S4": 46.97
    },
    "reasons": {
     "S1": [
@@ -1613,7 +1613,7 @@
      "주식 수 -2.3%"
     ]
    },
-   "composite": 80.82,
+   "composite": 80.81,
    "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
@@ -1626,12 +1626,12 @@
    "symbol": "ALGM",
    "name": "ALLEGRO MICROSYSTEMS, INC.",
    "exchange": "Nasdaq",
-   "marcap": 6005874149.66156,
+   "marcap": 6031970322.33078,
    "marcapEstimated": true,
-   "price": 32.220001220703125,
+   "price": 32.36000061035156,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.5461017156051378,
-   "ret6m": -0.19449996948242188,
+   "high52Ratio": 0.5484745866161281,
+   "ret6m": -0.19099998474121094,
    "ret36to6m": 0.3864817840935588,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1655,7 +1655,7 @@
     "S1": 75.0,
     "S2": 100.0,
     "S6": 83.33,
-    "S4": 54.9
+    "S4": 54.86
    },
    "reasons": {
     "S1": [
@@ -1671,7 +1671,7 @@
      "주식 수 +0.7%"
     ]
    },
-   "composite": 80.44,
+   "composite": 80.43,
    "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
@@ -1684,12 +1684,12 @@
    "symbol": "FICO",
    "name": "FAIR ISAAC CORP",
    "exchange": "NYSE",
-   "marcap": 15542306180.507202,
+   "marcap": 16628666957.364197,
    "marcapEstimated": true,
-   "price": 719.6300048828125,
+   "price": 769.9299926757812,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.3900475953673913,
-   "ret6m": -0.3296538566676779,
+   "high52Ratio": 0.4173107572040792,
+   "ret6m": -0.2827986635852684,
    "ret36to6m": 0.17710528457373909,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1718,7 +1718,7 @@
     "S1": 50.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 66.45
+    "S4": 66.39
    },
    "reasons": {
     "S1": [
@@ -1733,7 +1733,7 @@
      "주식 수 -10.0%"
     ]
    },
-   "composite": 80.26,
+   "composite": 80.25,
    "T1": "OFF",
    "inflection": false,
    "meetsS1Floor": true,
@@ -1746,12 +1746,12 @@
    "symbol": "HCC",
    "name": "WARRIOR MET COAL, INC.",
    "exchange": "NYSE",
-   "marcap": 4751131965.5131,
+   "marcap": 4723674654.678246,
    "marcapEstimated": true,
-   "price": 89.9800033569336,
+   "price": 89.45999908447266,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.8403848287419323,
-   "ret6m": 0.043633221453051485,
+   "high52Ratio": 0.8355281529789448,
+   "ret6m": 0.03760195101749697,
    "ret36to6m": 0.8914760081361401,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1775,7 +1775,7 @@
     "S1": 90.0,
     "S2": 100.0,
     "S6": 83.33,
-    "S4": 31.27
+    "S4": 31.18
    },
    "reasons": {
     "S1": [
@@ -1791,8 +1791,8 @@
      "주식 수 +0.4%"
     ]
    },
-   "composite": 80.23,
-   "T1": "NEAR",
+   "composite": 80.21,
+   "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
    "cyclical": "광업·석유가스",
@@ -1804,13 +1804,13 @@
    "symbol": "ADI",
    "name": "ANALOG DEVICES INC",
    "exchange": "Nasdaq",
-   "marcap": 195556088259.11346,
+   "marcap": 195740225501.85577,
    "marcapEstimated": true,
-   "price": 403.57000732421875,
+   "price": 403.95001220703125,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.9317304089538454,
-   "ret6m": 0.09276716917784533,
-   "ret36to6m": 1.3240332735755844,
+   "high52Ratio": 0.9326077340732588,
+   "ret6m": 0.09379612785299085,
+   "ret36to6m": 1.324033050417067,
    "metrics": {
     "latestPeriod": "2026Q3",
     "revYoY": [
@@ -1833,7 +1833,7 @@
     "S1": 80.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 20.91
+    "S4": 20.85
    },
    "reasons": {
     "S1": [
@@ -1849,7 +1849,7 @@
      "주식 수 -1.5%"
     ]
    },
-   "composite": 80.17,
+   "composite": 80.15,
    "T1": "ON",
    "inflection": true,
    "meetsS1Floor": true,
@@ -1862,13 +1862,13 @@
    "symbol": "MMI",
    "name": "Marcus & Millichap, Inc.",
    "exchange": "NYSE",
-   "marcap": 1036908030.3573895,
+   "marcap": 1070613272.1459694,
    "marcapEstimated": true,
-   "price": 27.3799991607666,
+   "price": 28.270000457763672,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.8493197279716537,
-   "ret6m": -0.004583767072543932,
-   "ret36to6m": 0.045588885591565376,
+   "high52Ratio": 0.8769273131662912,
+   "ret6m": 0.027772761981950334,
+   "ret36to6m": 0.04558903721046681,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -1891,7 +1891,7 @@
     "S1": 45.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 73.13
+    "S4": 73.05
    },
    "reasons": {
     "S1": [
@@ -1906,7 +1906,7 @@
      "주식 수 -2.9%"
     ]
    },
-   "composite": 80.11,
+   "composite": 80.1,
    "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
@@ -1919,12 +1919,12 @@
    "symbol": "AMD",
    "name": "ADVANCED MICRO DEVICES INC",
    "exchange": "Nasdaq",
-   "marcap": 931849415431.0443,
+   "marcap": 917826410979.3818,
    "marcapEstimated": true,
-   "price": 570.8200073242188,
+   "price": 562.22998046875,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.9004748805144165,
-   "ret6m": 1.0504327644261022,
+   "high52Ratio": 0.8869240180585733,
+   "ret6m": 1.019576676192059,
    "ret36to6m": 1.7344074386036432,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1948,7 +1948,7 @@
     "S1": 100.0,
     "S2": 100.0,
     "S6": 83.33,
-    "S4": 15.35
+    "S4": 15.31
    },
    "reasons": {
     "S1": [
@@ -1965,7 +1965,7 @@
     ]
    },
    "composite": 80.06,
-   "T1": "ON",
+   "T1": "NEAR",
    "inflection": true,
    "meetsS1Floor": true,
    "cyclical": null,
@@ -1977,13 +1977,13 @@
    "symbol": "EOG",
    "name": "EOG RESOURCES INC",
    "exchange": "NYSE",
-   "marcap": 80877154928.02881,
+   "marcap": 80053640279.94238,
    "marcapEstimated": true,
-   "price": 154.19000244140625,
+   "price": 152.6199951171875,
    "priceDate": "2026-10-12",
-   "high52Ratio": 1.0,
-   "ret6m": 0.2094862781303668,
-   "ret36to6m": 0.057600799215013376,
+   "high52Ratio": 0.9971904088468074,
+   "ret6m": 0.1971709380620097,
+   "ret36to6m": 0.057600933092760265,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -2006,7 +2006,7 @@
     "S1": 75.0,
     "S2": 70.0,
     "S6": 100.0,
-    "S4": 72.41
+    "S4": 72.33
    },
    "reasons": {
     "S1": [
@@ -2021,7 +2021,7 @@
      "주식 수 -3.9%"
     ]
    },
-   "composite": 79.98,
+   "composite": 79.97,
    "T1": "ON",
    "inflection": true,
    "meetsS1Floor": true,
@@ -2034,12 +2034,12 @@
    "symbol": "CSGP",
    "name": "COSTAR GROUP, INC.",
    "exchange": "Nasdaq",
-   "marcap": 12200499621.992981,
+   "marcap": 12966322816.0,
    "marcapEstimated": true,
-   "price": 30.110000610351562,
+   "price": 32.0,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.3865708158466512,
-   "ret6m": -0.24194361316742796,
+   "high52Ratio": 0.41083579728789665,
+   "ret6m": -0.19436054842514094,
    "ret36to6m": -0.46208013013780436,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2063,7 +2063,7 @@
     "S1": 45.0,
     "S2": 85.0,
     "S6": 100.0,
-    "S4": 93.12
+    "S4": 93.02
    },
    "reasons": {
     "S1": [
@@ -2078,7 +2078,7 @@
      "주식 수 -4.4%"
     ]
    },
-   "composite": 79.66,
+   "composite": 79.64,
    "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
@@ -2091,12 +2091,12 @@
    "symbol": "CDNA",
    "name": "CareDx, Inc.",
    "exchange": "Nasdaq",
-   "marcap": 3346687012.1742554,
+   "marcap": 3449379476.405319,
    "marcapEstimated": true,
-   "price": 64.69000244140625,
+   "price": 66.67500305175781,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.9633656138708411,
-   "ret6m": 2.0200747997662383,
+   "high52Ratio": 0.992926307322003,
+   "ret6m": 2.112745229424566,
    "ret36to6m": 3.0338983629219323,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2120,7 +2120,7 @@
     "S1": 100.0,
     "S2": 85.0,
     "S6": 100.0,
-    "S4": 7.88
+    "S4": 7.85
    },
    "reasons": {
     "S1": [
@@ -2136,7 +2136,7 @@
      "주식 수 -2.8%"
     ]
    },
-   "composite": 79.16,
+   "composite": 79.15,
    "T1": "ON",
    "inflection": true,
    "meetsS1Floor": true,
@@ -2149,13 +2149,13 @@
    "symbol": "LPG",
    "name": "DORIAN LPG LTD.",
    "exchange": "NYSE",
-   "marcap": 2361604023.8405952,
+   "marcap": 2296574329.136238,
    "marcapEstimated": true,
-   "price": 55.20000076293945,
+   "price": 53.68000030517578,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.9492691197673212,
-   "ret6m": 0.595731724598124,
-   "ret36to6m": 0.5175665540756231,
+   "high52Ratio": 0.9231298176541954,
+   "ret6m": 0.5517912731790433,
+   "ret36to6m": 0.5175664270924034,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -2178,7 +2178,7 @@
     "S1": 90.0,
     "S2": 85.0,
     "S6": 83.33,
-    "S4": 47.7
+    "S4": 47.65
    },
    "reasons": {
     "S1": [
@@ -2194,7 +2194,7 @@
      "주식 수 +0.3%"
     ]
    },
-   "composite": 79.13,
+   "composite": 79.12,
    "T1": "ON",
    "inflection": true,
    "meetsS1Floor": true,
@@ -2207,12 +2207,12 @@
    "symbol": "VEEV",
    "name": "VEEVA SYSTEMS INC",
    "exchange": "NYSE",
-   "marcap": 48143597535.713196,
+   "marcap": 50682327117.85736,
    "marcapEstimated": true,
-   "price": 297.3500061035156,
+   "price": 313.0299987792969,
    "priceDate": "2026-10-12",
    "high52Ratio": 1.0,
-   "ret6m": 0.7704674695239866,
+   "ret6m": 0.8638285469916653,
    "ret36to6m": -0.16188433824149218,
    "metrics": {
     "latestPeriod": "2026Q3",
@@ -2236,7 +2236,7 @@
     "S1": 50.0,
     "S2": 85.0,
     "S6": 100.0,
-    "S4": 82.49
+    "S4": 82.34
    },
    "reasons": {
     "S1": [
@@ -2252,7 +2252,7 @@
      "주식 수 -1.2%"
     ]
    },
-   "composite": 79.09,
+   "composite": 79.06,
    "T1": "NEAR",
    "inflection": false,
    "meetsS1Floor": true,
@@ -2265,13 +2265,13 @@
    "symbol": "DK",
    "name": "Delek US Holdings, Inc.",
    "exchange": "NYSE",
-   "marcap": 4835504855.526306,
+   "marcap": 4707529368.940811,
    "marcapEstimated": true,
-   "price": 78.97000122070312,
+   "price": 76.87999725341797,
    "priceDate": "2026-10-12",
-   "high52Ratio": 1.0,
-   "ret6m": 1.1408559654575887,
-   "ret36to6m": 0.5508443030095702,
+   "high52Ratio": 0.9841269143680578,
+   "ret6m": 1.0841965075365034,
+   "ret36to6m": 0.5508440542832691,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -2294,7 +2294,7 @@
     "S1": 75.0,
     "S2": 100.0,
     "S6": 83.33,
-    "S4": 45.74
+    "S4": 45.69
    },
    "reasons": {
     "S1": [
@@ -2310,7 +2310,7 @@
      "주식 수 +1.8%"
     ]
    },
-   "composite": 78.77,
+   "composite": 78.76,
    "T1": "ON",
    "inflection": true,
    "meetsS1Floor": true,
@@ -2323,12 +2323,12 @@
    "symbol": "DAR",
    "name": "DARLING INGREDIENTS INC.",
    "exchange": "NYSE",
-   "marcap": 9843746068.631699,
+   "marcap": 9605463328.368301,
    "marcapEstimated": true,
-   "price": 62.380001068115234,
+   "price": 60.869998931884766,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.9304892633685392,
-   "ret6m": 0.07644521564888196,
+   "high52Ratio": 0.9079653654626737,
+   "ret6m": 0.05038823348580057,
    "ret36to6m": 0.3896882422707786,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2352,7 +2352,7 @@
     "S1": 50.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 54.62
+    "S4": 54.59
    },
    "reasons": {
     "S1": [
@@ -2381,12 +2381,12 @@
    "symbol": "BETA",
    "name": "BETA Technologies, Inc.",
    "exchange": "NYSE",
-   "marcap": 4101370226.794052,
+   "marcap": 4361185283.01487,
    "marcapEstimated": true,
-   "price": 17.68000030517578,
+   "price": 18.799999237060547,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.5523274361836628,
-   "ret6m": -0.020498556649524824,
+   "high52Ratio": 0.5873164705670647,
+   "ret6m": 0.04155124829368906,
    "ret36to6m": null,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2437,13 +2437,13 @@
    "symbol": "JOE",
    "name": "ST JOE Co",
    "exchange": "NYSE",
-   "marcap": 3752855225.677231,
+   "marcap": 3857038055.25,
    "marcapEstimated": true,
-   "price": 65.91999816894531,
+   "price": 67.75,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.919932753282483,
-   "ret6m": -0.030482857411197384,
-   "ret36to6m": 0.4299888217025045,
+   "high52Ratio": 0.9454709612575434,
+   "ret6m": -0.00356813964028202,
+   "ret36to6m": 0.42998905115550135,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -2466,7 +2466,7 @@
     "S1": 50.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 52.46
+    "S4": 52.43
    },
    "reasons": {
     "S1": [
@@ -2482,7 +2482,7 @@
      "주식 수 -1.7%"
     ]
    },
-   "composite": 77.72,
+   "composite": 77.71,
    "T1": "NEAR",
    "inflection": false,
    "meetsS1Floor": true,
@@ -2495,12 +2495,12 @@
    "symbol": "COP",
    "name": "CONOCOPHILLIPS",
    "exchange": "NYSE",
-   "marcap": 170998372361.43076,
+   "marcap": 170265555766.00256,
    "marcapEstimated": true,
-   "price": 142.33999633789062,
+   "price": 141.72999572753906,
    "priceDate": "2026-10-12",
    "high52Ratio": 1.0,
-   "ret6m": 0.2440043138241741,
+   "ret6m": 0.23867311099829136,
    "ret36to6m": 0.007609527076031686,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2524,7 +2524,7 @@
     "S1": 35.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 74.73
+    "S4": 74.64
    },
    "reasons": {
     "S1": [
@@ -2538,7 +2538,7 @@
      "주식 수 -3.8%"
     ]
    },
-   "composite": 77.68,
+   "composite": 77.66,
    "T1": "NEAR",
    "inflection": false,
    "meetsS1Floor": true,
@@ -2551,13 +2551,13 @@
    "symbol": "VLO",
    "name": "VALERO ENERGY CORP/TX",
    "exchange": "NYSE",
-   "marcap": 132383287667.10605,
+   "marcap": 127857067628.7121,
    "marcapEstimated": true,
-   "price": 459.7799987792969,
+   "price": 444.05999755859375,
    "priceDate": "2026-10-12",
    "high52Ratio": 1.0,
-   "ret6m": 1.0735515520665295,
-   "ret36to6m": 0.8355953970591634,
+   "ret6m": 1.0026562695048287,
+   "ret36to6m": 0.8355957448595761,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -2580,7 +2580,7 @@
     "S1": 60.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 32.83
+    "S4": 32.74
    },
    "reasons": {
     "S1": [
@@ -2596,7 +2596,7 @@
      "주식 수 -7.3%"
     ]
    },
-   "composite": 76.88,
+   "composite": 76.86,
    "T1": "NEAR",
    "inflection": false,
    "meetsS1Floor": true,
@@ -2609,12 +2609,12 @@
    "symbol": "GSHD",
    "name": "Goosehead Insurance, Inc.",
    "exchange": "Nasdaq",
-   "marcap": 943169057.1317978,
+   "marcap": 964316346.1317978,
    "marcapEstimated": true,
-   "price": 44.599998474121094,
+   "price": 45.599998474121094,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.573043780352648,
-   "ret6m": 0.01710376342299358,
+   "high52Ratio": 0.585892296046772,
+   "ret6m": 0.0399087813203185,
    "ret36to6m": -0.34909578501104466,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2643,7 +2643,7 @@
     "S1": 35.0,
     "S2": 85.0,
     "S6": 100.0,
-    "S4": 89.68
+    "S4": 89.59
    },
    "reasons": {
     "S1": [
@@ -2658,7 +2658,7 @@
      "주식 수 -45.1%"
     ]
    },
-   "composite": 76.31,
+   "composite": 76.29,
    "T1": "OFF",
    "inflection": false,
    "meetsS1Floor": true,
@@ -2671,12 +2671,12 @@
    "symbol": "TER",
    "name": "TERADYNE, INC",
    "exchange": "Nasdaq",
-   "marcap": 56195119561.691284,
+   "marcap": 53657707471.580505,
    "marcapEstimated": true,
-   "price": 359.44000244140625,
+   "price": 343.2099914550781,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.800463200609101,
-   "ret6m": -0.054330209344155,
+   "high52Ratio": 0.7643194034474179,
+   "ret6m": -0.09703060715055933,
    "ret36to6m": 3.188178824459891,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2700,7 +2700,7 @@
     "S1": 90.0,
     "S2": 85.0,
     "S6": 100.0,
-    "S4": 7.08
+    "S4": 7.06
    },
    "reasons": {
     "S1": [
@@ -2716,8 +2716,8 @@
      "주식 수 -1.7%"
     ]
    },
-   "composite": 76.29,
-   "T1": "NEAR",
+   "composite": 76.28,
+   "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
    "cyclical": null,
@@ -2729,13 +2729,13 @@
    "symbol": "EQIX",
    "name": "EQUINIX INC",
    "exchange": "Nasdaq",
-   "marcap": 98267134496.37671,
+   "marcap": 98302654857.95068,
    "marcapEstimated": true,
-   "price": 995.9000244140625,
+   "price": 996.260009765625,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.906966087433197,
-   "ret6m": -0.07625451149494267,
-   "ret36to6m": 0.6281001386908092,
+   "high52Ratio": 0.9072939260694416,
+   "ret6m": -0.07592071228282526,
+   "ret36to6m": 0.6281006231639963,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -2758,7 +2758,7 @@
     "S1": 65.0,
     "S2": 100.0,
     "S6": 83.33,
-    "S4": 42.38
+    "S4": 42.3
    },
    "reasons": {
     "S1": [
@@ -2774,7 +2774,7 @@
      "주식 수 +0.8%"
     ]
    },
-   "composite": 75.43,
+   "composite": 75.42,
    "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
@@ -2787,12 +2787,12 @@
    "symbol": "VCEL",
    "name": "Vericel Corp",
    "exchange": "Nasdaq",
-   "marcap": 2061066213.5,
+   "marcap": 2100495329.7205276,
    "marcapEstimated": true,
-   "price": 40.25,
+   "price": 41.02000045776367,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.8563829787234043,
-   "ret6m": 0.12808294999261216,
+   "high52Ratio": 0.8727659671864612,
+   "ret6m": 0.14966368012651787,
    "ret36to6m": 0.07502265084346882,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2816,7 +2816,7 @@
     "S1": 45.0,
     "S2": 100.0,
     "S6": 83.33,
-    "S4": 71.53
+    "S4": 71.45
    },
    "reasons": {
     "S1": [
@@ -2831,7 +2831,7 @@
      "주식 수 +1.5%"
     ]
    },
-   "composite": 75.28,
+   "composite": 75.26,
    "T1": "NEAR",
    "inflection": true,
    "meetsS1Floor": true,
@@ -2844,12 +2844,12 @@
    "symbol": "KEYS",
    "name": "Keysight Technologies, Inc.",
    "exchange": "NYSE",
-   "marcap": 60882924875.62683,
+   "marcap": 58237320083.598785,
    "marcapEstimated": true,
-   "price": 357.6199951171875,
+   "price": 342.0799865722656,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.9297524477375387,
-   "ret6m": 0.06962971536247076,
+   "high52Ratio": 0.8893510127513075,
+   "ret6m": 0.023150057782954647,
    "ret36to6m": 1.7221950591812298,
    "metrics": {
     "latestPeriod": "2026Q3",
@@ -2873,7 +2873,7 @@
     "S1": 80.0,
     "S2": 85.0,
     "S6": 100.0,
-    "S4": 15.55
+    "S4": 15.51
    },
    "reasons": {
     "S1": [
@@ -2889,8 +2889,8 @@
      "주식 수 -0.9%"
     ]
    },
-   "composite": 75.1,
-   "T1": "ON",
+   "composite": 75.09,
+   "T1": "NEAR",
    "inflection": true,
    "meetsS1Floor": true,
    "cyclical": null,
@@ -2902,12 +2902,12 @@
    "symbol": "PLTR",
    "name": "Palantir Technologies Inc.",
    "exchange": "Nasdaq",
-   "marcap": 516230436315.6128,
+   "marcap": 515023147000.0,
    "marcapEstimated": true,
-   "price": 200.97000122070312,
+   "price": 200.5,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.9613489513843528,
-   "ret6m": 0.3728396889037364,
+   "high52Ratio": 0.9591006796128055,
+   "ret6m": 0.3696290787345806,
    "ret36to6m": 8.086902162845655,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2931,7 +2931,7 @@
     "S1": 90.0,
     "S2": 100.0,
     "S6": 83.33,
-    "S4": 2.24
+    "S4": 2.23
    },
    "reasons": {
     "S1": [
@@ -2960,13 +2960,13 @@
    "symbol": "NUE",
    "name": "NUCOR CORP",
    "exchange": "NYSE",
-   "marcap": 58332001732.98584,
+   "marcap": 57782966474.33569,
    "marcapEstimated": true,
-   "price": 257.1099853515625,
+   "price": 254.69000244140625,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.9453138297890246,
-   "ret6m": 0.3190068238608197,
-   "ret36to6m": 0.4381934291818754,
+   "high52Ratio": 0.9364163017148202,
+   "ret6m": 0.30659200470178116,
+   "ret36to6m": 0.4381935910952848,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -2989,7 +2989,7 @@
     "S1": 40.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 52.1
+    "S4": 52.07
    },
    "reasons": {
     "S1": [
@@ -3003,7 +3003,7 @@
      "주식 수 -1.2%"
     ]
    },
-   "composite": 74.93,
+   "composite": 74.92,
    "T1": "ON",
    "inflection": true,
    "meetsS1Floor": true,
@@ -3014,16 +3014,16 @@
  ],
  "manualTracked": [
   {
-   "rank": 108,
+   "rank": 110,
    "symbol": "ALAB",
    "name": "Astera Labs, Inc.",
    "exchange": "Nasdaq",
-   "marcap": 52094106817.34619,
+   "marcap": 52389033611.88428,
    "marcapEstimated": true,
-   "price": 300.2799987792969,
+   "price": 301.9800109863281,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.7199750485674877,
-   "ret6m": 0.7252513272866858,
+   "high52Ratio": 0.724051132143811,
+   "ret6m": 0.7350187054953821,
    "ret36to6m": 1.4864286150251118,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -3047,7 +3047,7 @@
     "S1": 90.0,
     "S2": 85.0,
     "S6": 50.0,
-    "S4": 18.55
+    "S4": 18.5
    },
    "reasons": {
     "S1": [
@@ -3063,7 +3063,7 @@
      "주식 수 +4.4%"
     ]
    },
-   "composite": 64.74,
+   "composite": 64.73,
    "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
@@ -3081,21 +3081,21 @@
    },
    "P1": {
     "value5y": 62999999999.99999,
-    "multipleX": 1.21,
+    "multipleX": 1.2,
     "verdict": "제외(3배 미만)"
    }
   },
   {
-   "rank": 363,
+   "rank": 361,
    "symbol": "CRDO",
    "name": "Credo Technology Group Holding Ltd",
    "exchange": "Nasdaq",
-   "marcap": 33685683650.71747,
+   "marcap": 33549417363.0,
    "marcapEstimated": true,
-   "price": 179.22500610351562,
+   "price": 178.5,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.6593275758996107,
-   "ret6m": 0.11534634003672983,
+   "high52Ratio": 0.6566604451953869,
+   "ret6m": 0.11083450922896065,
    "ret36to6m": 10.244926722908758,
    "metrics": {
     "latestPeriod": "2026Q3",
@@ -3152,22 +3152,22 @@
    },
    "P1": {
     "value5y": 63000000000.0,
-    "multipleX": 1.87,
+    "multipleX": 1.88,
     "verdict": "제외(3배 미만)"
    }
   },
   {
-   "rank": 184,
+   "rank": 183,
    "symbol": "NVT",
    "name": "nVent Electric plc",
    "exchange": "NYSE",
-   "marcap": 24718944641.660492,
+   "marcap": 23587556758.93828,
    "marcapEstimated": true,
-   "price": 152.72000122070312,
+   "price": 145.72999572753906,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.863869861831339,
-   "ret6m": 0.13703701137064495,
-   "ret36to6m": 1.9117822793146972,
+   "high52Ratio": 0.8243304758222105,
+   "ret6m": 0.08499474518492289,
+   "ret36to6m": 1.9117815569147512,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -3190,7 +3190,7 @@
     "S1": 45.0,
     "S2": 70.0,
     "S6": 83.33,
-    "S4": 13.55
+    "S4": 13.52
    },
    "reasons": {
     "S1": [
@@ -3222,21 +3222,21 @@
    },
    "P1": {
     "value5y": 30000000000.0,
-    "multipleX": 1.21,
+    "multipleX": 1.27,
     "verdict": "제외(3배 미만)"
    }
   },
   {
-   "rank": 328,
+   "rank": 326,
    "symbol": "MOD",
    "name": "MODINE MANUFACTURING CO",
    "exchange": "NYSE",
-   "marcap": 8378529687.0,
+   "marcap": 8179887867.323181,
    "marcapEstimated": true,
-   "price": 157.75,
+   "price": 154.00999450683594,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.5304839176455376,
-   "ret6m": -0.3527143094078624,
+   "high52Ratio": 0.5179069745962221,
+   "ret6m": -0.36806043960412926,
    "ret36to6m": 4.986490105494045,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -3260,7 +3260,7 @@
     "S1": 35.0,
     "S2": 50.0,
     "S6": 83.33,
-    "S4": 4.28
+    "S4": 4.27
    },
    "reasons": {
     "S1": [
@@ -3292,7 +3292,7 @@
    },
    "P1": {
     "value5y": 13500000000.0,
-    "multipleX": 1.61,
+    "multipleX": 1.65,
     "verdict": "제외(3배 미만)"
    }
   },
@@ -3301,12 +3301,12 @@
    "symbol": "AAOI",
    "name": "APPLIED OPTOELECTRONICS, INC.",
    "exchange": "Nasdaq",
-   "marcap": 7291559717.373932,
+   "marcap": 7080982497.903313,
    "marcapEstimated": true,
-   "price": 86.22000122070312,
+   "price": 83.7300033569336,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.4529312930461011,
-   "ret6m": -0.45916445733908806,
+   "high52Ratio": 0.4398508252178501,
+   "ret6m": -0.47478356342595907,
    "ret36to6m": 22.07091196661174,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -3368,7 +3368,7 @@
    },
    "P1": {
     "value5y": 4000000000.0,
-    "multipleX": 0.55,
+    "multipleX": 0.56,
     "verdict": "제외(3배 미만)"
    }
   },
@@ -3377,12 +3377,12 @@
    "symbol": "AXTI",
    "name": "AXT INC",
    "exchange": "Nasdaq",
-   "marcap": 4038654137.085678,
+   "marcap": 3797344696.914322,
    "marcapEstimated": true,
-   "price": 61.59000015258789,
+   "price": 57.90999984741211,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.43733579032736025,
-   "ret6m": -0.2539970691147758,
+   "high52Ratio": 0.41120499250495834,
+   "ret6m": -0.2985707175401412,
    "ret36to6m": 35.85714161031101,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -3445,78 +3445,7 @@
    },
    "P1": {
     "value5y": 2625000000.0,
-    "multipleX": 0.65,
-    "verdict": "제외(3배 미만)"
-   }
-  },
-  {
-   "rank": null,
-   "symbol": "NVTS",
-   "name": "Navitas Semiconductor Corp",
-   "exchange": "Nasdaq",
-   "marcap": 1716246568.549736,
-   "marcapEstimated": true,
-   "price": 9.354999542236328,
-   "priceDate": "2026-10-12",
-   "high52Ratio": 0.31982904417901975,
-   "ret6m": -0.24066560276243543,
-   "ret36to6m": 1.2039354845313688,
-   "metrics": {
-    "latestPeriod": "2026Q2",
-    "revYoY": [
-     -0.2733609385783299,
-     -0.3866457411898987,
-     -0.5941706530203582
-    ],
-    "opTTM": -115763000.0,
-    "opmTTM": -3.168550704803613,
-    "opmTTMPrev": -1.6858597268473015,
-    "debtToEquity": 0.03870293931211412
-   },
-   "shareGrowth": -0.07789819859667468,
-   "gates": {
-    "excluded": false,
-    "hits": [],
-    "flags": []
-   },
-   "scores": {
-    "S1": 10.0,
-    "S2": 0.0,
-    "S6": 100.0,
-    "S4": 22.95
-   },
-   "reasons": {
-    "S1": [
-     "매출 YoY -27%",
-     "역성장 회복(가속 아님)"
-    ],
-    "S2": [
-     "영업이익률 -148.3%p",
-     "순손실·영업현금 마이너스"
-    ],
-    "S6": [
-     "주식 수 -7.8%"
-    ]
-   },
-   "composite": 34.17,
-   "T1": "OFF",
-   "inflection": false,
-   "meetsS1Floor": false,
-   "cyclical": null,
-   "manual": {
-    "recordedAt": "2026-09-29",
-    "S3": "",
-    "S5": "",
-    "tam": "10000",
-    "share": "0.05",
-    "margin": "0.20",
-    "multiple": "30",
-    "other": "",
-    "note": "GaN·SiC 전력. 낙관(10%·25%·PER35) 2.8배. 희석 위험. 시총 30.8억$(9/24)"
-   },
-   "P1": {
-    "value5y": 3000000000.0,
-    "multipleX": 1.75,
+    "multipleX": 0.69,
     "verdict": "제외(3배 미만)"
    }
   },
@@ -3525,12 +3454,12 @@
    "symbol": "LEU",
    "name": "CENTRUS ENERGY CORP",
    "exchange": "NYSE",
-   "marcap": 1640188221.6204681,
+   "marcap": 1736726259.5406723,
    "marcapEstimated": true,
-   "price": 119.94999694824219,
+   "price": 127.01000213623047,
    "priceDate": "2026-10-12",
-   "high52Ratio": 0.31318537062204227,
-   "ret6m": -0.4109414424594623,
+   "high52Ratio": 0.33161880453323883,
+   "ret6m": -0.37627069149596226,
    "ret36to6m": 2.944024804767374,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -3554,7 +3483,7 @@
     "S1": 20.0,
     "S2": 0.0,
     "S6": 16.67,
-    "S4": 8.28
+    "S4": 8.25
    },
    "reasons": {
     "S1": [
@@ -3569,7 +3498,7 @@
      "주식 수 +8.0%"
     ]
    },
-   "composite": 11.51,
+   "composite": 11.5,
    "T1": "OFF",
    "inflection": false,
    "meetsS1Floor": false,
@@ -3587,8 +3516,79 @@
    },
    "P1": {
     "value5y": 6750000000.0,
-    "multipleX": 4.12,
+    "multipleX": 3.89,
     "verdict": "보류(3~10배)"
+   }
+  },
+  {
+   "rank": null,
+   "symbol": "NVTS",
+   "name": "Navitas Semiconductor Corp",
+   "exchange": "Nasdaq",
+   "marcap": 1693314357.799736,
+   "marcapEstimated": true,
+   "price": 9.229999542236328,
+   "priceDate": "2026-10-12",
+   "high52Ratio": 0.3155555399055155,
+   "ret6m": -0.250811706909866,
+   "ret36to6m": 1.2039354845313688,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     -0.2733609385783299,
+     -0.3866457411898987,
+     -0.5941706530203582
+    ],
+    "opTTM": -115763000.0,
+    "opmTTM": -3.168550704803613,
+    "opmTTMPrev": -1.6858597268473015,
+    "debtToEquity": 0.03870293931211412
+   },
+   "shareGrowth": -0.07789819859667468,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 10.0,
+    "S2": 0.0,
+    "S6": 100.0,
+    "S4": 22.89
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY -27%",
+     "역성장 회복(가속 아님)"
+    ],
+    "S2": [
+     "영업이익률 -148.3%p",
+     "순손실·영업현금 마이너스"
+    ],
+    "S6": [
+     "주식 수 -7.8%"
+    ]
+   },
+   "composite": 34.16,
+   "T1": "OFF",
+   "inflection": false,
+   "meetsS1Floor": false,
+   "cyclical": null,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "10000",
+    "share": "0.05",
+    "margin": "0.20",
+    "multiple": "30",
+    "other": "",
+    "note": "GaN·SiC 전력. 낙관(10%·25%·PER35) 2.8배. 희석 위험. 시총 30.8억$(9/24)"
+   },
+   "P1": {
+    "value5y": 3000000000.0,
+    "multipleX": 1.77,
+    "verdict": "제외(3배 미만)"
    }
   }
  ],
@@ -3604,22 +3604,22 @@
    ]
   },
   {
-   "symbol": "LLY",
-   "name": "ELI LILLY & Co",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 320%"
-    }
-   ]
-  },
-  {
    "symbol": "AKTX",
    "name": "Akari Therapeutics Plc",
    "hits": [
     {
      "code": "G2",
      "reason": "주식 수 전년 대비 +127.7%"
+    }
+   ]
+  },
+  {
+   "symbol": "LLY",
+   "name": "ELI LILLY & Co",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 320%"
     }
    ]
   },
@@ -3694,22 +3694,22 @@
    ]
   },
   {
-   "symbol": "PANW",
-   "name": "Palo Alto Networks Inc",
-   "hits": [
-    {
-     "code": "G2",
-     "reason": "주식 수 전년 대비 +13.3%"
-    }
-   ]
-  },
-  {
    "symbol": "HD",
    "name": "HOME DEPOT, INC.",
    "hits": [
     {
      "code": "G3",
      "reason": "부채비율 558%"
+    }
+   ]
+  },
+  {
+   "symbol": "PANW",
+   "name": "Palo Alto Networks Inc",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "주식 수 전년 대비 +13.3%"
     }
    ]
   },
@@ -3754,22 +3754,22 @@
    ]
   },
   {
-   "symbol": "PEP",
-   "name": "PEPSICO INC",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 407%"
-    }
-   ]
-  },
-  {
    "symbol": "DE",
    "name": "DEERE & CO",
    "hits": [
     {
      "code": "G3",
      "reason": "부채비율 284%"
+    }
+   ]
+  },
+  {
+   "symbol": "PEP",
+   "name": "PEPSICO INC",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 407%"
     }
    ]
   },
@@ -3784,16 +3784,6 @@
    ]
   },
   {
-   "symbol": "TMUS",
-   "name": "T-Mobile US, Inc.",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 280%"
-    }
-   ]
-  },
-  {
    "symbol": "UNP",
    "name": "UNION PACIFIC CORP",
    "hits": [
@@ -3804,12 +3794,12 @@
    ]
   },
   {
-   "symbol": "ALMU",
-   "name": "Aeluma, Inc.",
+   "symbol": "TMUS",
+   "name": "T-Mobile US, Inc.",
    "hits": [
     {
-     "code": "G2",
-     "reason": "주식 수 전년 대비 +36.8%"
+     "code": "G3",
+     "reason": "부채비율 280%"
     }
    ]
   },
@@ -3824,22 +3814,32 @@
    ]
   },
   {
-   "symbol": "STX",
-   "name": "Seagate Technology Holdings plc",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 360%"
-    }
-   ]
-  },
-  {
    "symbol": "TJX",
    "name": "TJX COMPANIES INC /DE/",
    "hits": [
     {
      "code": "G3",
      "reason": "부채비율 248%"
+    }
+   ]
+  },
+  {
+   "symbol": "ALMU",
+   "name": "Aeluma, Inc.",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "주식 수 전년 대비 +36.8%"
+    }
+   ]
+  },
+  {
+   "symbol": "STX",
+   "name": "Seagate Technology Holdings plc",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 360%"
     }
    ]
   },
@@ -3904,16 +3904,6 @@
    ]
   },
   {
-   "symbol": "SNOW",
-   "name": "Snowflake Inc.",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 304%"
-    }
-   ]
-  },
-  {
    "symbol": "CVS",
    "name": "CVS HEALTH Corp",
    "hits": [
@@ -3924,12 +3914,12 @@
    ]
   },
   {
-   "symbol": "NET",
-   "name": "Cloudflare, Inc.",
+   "symbol": "SNOW",
+   "name": "Snowflake Inc.",
    "hits": [
     {
      "code": "G3",
-     "reason": "부채비율 300%"
+     "reason": "부채비율 304%"
     }
    ]
   },
@@ -3944,12 +3934,32 @@
    ]
   },
   {
+   "symbol": "NET",
+   "name": "Cloudflare, Inc.",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 300%"
+    }
+   ]
+  },
+  {
    "symbol": "HCA",
    "name": "HCA Healthcare, Inc.",
    "hits": [
     {
      "code": "G3",
      "reason": "자본잠식"
+    }
+   ]
+  },
+  {
+   "symbol": "ABNB",
+   "name": "Airbnb, Inc.",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 269%"
     }
    ]
   },
@@ -3968,22 +3978,22 @@
    ]
   },
   {
-   "symbol": "ABNB",
-   "name": "Airbnb, Inc.",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 269%"
-    }
-   ]
-  },
-  {
    "symbol": "MELI",
    "name": "MERCADOLIBRE INC",
    "hits": [
     {
      "code": "G3",
      "reason": "부채비율 556%"
+    }
+   ]
+  },
+  {
+   "symbol": "MRNA",
+   "name": "Moderna, Inc.",
+   "hits": [
+    {
+     "code": "G1",
+     "reason": "영업적자인데 6개월 340% 급등"
     }
    ]
   },
@@ -3998,56 +4008,6 @@
    ]
   },
   {
-   "symbol": "SNPS",
-   "name": "SYNOPSYS INC",
-   "hits": [
-    {
-     "code": "G2",
-     "reason": "주식 수 전년 대비 +18.9%"
-    }
-   ]
-  },
-  {
-   "symbol": "HPE",
-   "name": "Hewlett Packard Enterprise Co",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 215%"
-    }
-   ]
-  },
-  {
-   "symbol": "MRNA",
-   "name": "Moderna, Inc.",
-   "hits": [
-    {
-     "code": "G1",
-     "reason": "영업적자인데 6개월 321% 급등"
-    }
-   ]
-  },
-  {
-   "symbol": "WMB",
-   "name": "WILLIAMS COMPANIES, INC.",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 360%"
-    }
-   ]
-  },
-  {
-   "symbol": "VRT",
-   "name": "Vertiv Holdings Co",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 234%"
-    }
-   ]
-  },
-  {
    "symbol": "WM",
    "name": "WASTE MANAGEMENT INC",
    "hits": [
@@ -4058,12 +4018,12 @@
    ]
   },
   {
-   "symbol": "LITE",
-   "name": "Lumentum Holdings Inc.",
+   "symbol": "SNPS",
+   "name": "SYNOPSYS INC",
    "hits": [
     {
      "code": "G2",
-     "reason": "주식 수 전년 대비 +38.8%"
+     "reason": "주식 수 전년 대비 +18.9%"
     }
    ]
   },
@@ -4078,12 +4038,22 @@
    ]
   },
   {
-   "symbol": "UPS",
-   "name": "UNITED PARCEL SERVICE INC",
+   "symbol": "HPE",
+   "name": "Hewlett Packard Enterprise Co",
    "hits": [
     {
      "code": "G3",
-     "reason": "부채비율 373%"
+     "reason": "부채비율 215%"
+    }
+   ]
+  },
+  {
+   "symbol": "WMB",
+   "name": "WILLIAMS COMPANIES, INC.",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 360%"
     }
    ]
   },
@@ -4094,6 +4064,36 @@
     {
      "code": "G3",
      "reason": "부채비율 380%"
+    }
+   ]
+  },
+  {
+   "symbol": "VRT",
+   "name": "Vertiv Holdings Co",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 234%"
+    }
+   ]
+  },
+  {
+   "symbol": "LITE",
+   "name": "Lumentum Holdings Inc.",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "주식 수 전년 대비 +38.8%"
+    }
+   ]
+  },
+  {
+   "symbol": "UPS",
+   "name": "UNITED PARCEL SERVICE INC",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 373%"
     }
    ]
   },
@@ -4122,16 +4122,6 @@
    ]
   },
   {
-   "symbol": "GM",
-   "name": "General Motors Co",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 353%"
-    }
-   ]
-  },
-  {
    "symbol": "MSI",
    "name": "Motorola Solutions, Inc.",
    "hits": [
@@ -4142,12 +4132,12 @@
    ]
   },
   {
-   "symbol": "CL",
-   "name": "COLGATE PALMOLIVE CO",
+   "symbol": "GM",
+   "name": "General Motors Co",
    "hits": [
     {
      "code": "G3",
-     "reason": "부채비율 6875%"
+     "reason": "부채비율 353%"
     }
    ]
   },
@@ -4158,6 +4148,16 @@
     {
      "code": "G3",
      "reason": "부채비율 334%"
+    }
+   ]
+  },
+  {
+   "symbol": "CL",
+   "name": "COLGATE PALMOLIVE CO",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 6875%"
     }
    ]
   },
@@ -4212,22 +4212,22 @@
    ]
   },
   {
-   "symbol": "URI",
-   "name": "UNITED RENTALS, INC.",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 233%"
-    }
-   ]
-  },
-  {
    "symbol": "COR",
    "name": "Cencora, Inc.",
    "hits": [
     {
      "code": "G3",
      "reason": "부채비율 2647%"
+    }
+   ]
+  },
+  {
+   "symbol": "URI",
+   "name": "UNITED RENTALS, INC.",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 233%"
     }
    ]
   },
@@ -4252,6 +4252,30 @@
    ]
   },
   {
+   "symbol": "TEAM",
+   "name": "Atlassian Corp",
+   "hits": [
+    {
+     "code": "G1",
+     "reason": "영업적자인데 6개월 224% 급등"
+    },
+    {
+     "code": "G3",
+     "reason": "부채비율 477%"
+    }
+   ]
+  },
+  {
+   "symbol": "EBAY",
+   "name": "EBAY INC",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 284%"
+    }
+   ]
+  },
+  {
    "symbol": "D",
    "name": "DOMINION ENERGY, INC",
    "hits": [
@@ -4272,36 +4296,12 @@
    ]
   },
   {
-   "symbol": "TEAM",
-   "name": "Atlassian Corp",
-   "hits": [
-    {
-     "code": "G1",
-     "reason": "영업적자인데 6개월 206% 급등"
-    },
-    {
-     "code": "G3",
-     "reason": "부채비율 477%"
-    }
-   ]
-  },
-  {
-   "symbol": "EBAY",
-   "name": "EBAY INC",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 284%"
-    }
-   ]
-  },
-  {
-   "symbol": "COHR",
-   "name": "COHERENT CORP.",
+   "symbol": "MSTR",
+   "name": "Strategy Inc",
    "hits": [
     {
      "code": "G2",
-     "reason": "주식 수 전년 대비 +26.5%"
+     "reason": "주식 수 전년 대비 +14.9%"
     }
    ]
   },
@@ -4316,12 +4316,12 @@
    ]
   },
   {
-   "symbol": "MSTR",
-   "name": "Strategy Inc",
+   "symbol": "ADSK",
+   "name": "Autodesk, Inc.",
    "hits": [
     {
-     "code": "G2",
-     "reason": "주식 수 전년 대비 +14.9%"
+     "code": "G3",
+     "reason": "부채비율 284%"
     }
    ]
   },
@@ -4346,32 +4346,12 @@
    ]
   },
   {
-   "symbol": "P",
-   "name": "Everpure, Inc.",
+   "symbol": "COHR",
+   "name": "COHERENT CORP.",
    "hits": [
     {
-     "code": "G3",
-     "reason": "부채비율 239%"
-    }
-   ]
-  },
-  {
-   "symbol": "ADSK",
-   "name": "Autodesk, Inc.",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 284%"
-    }
-   ]
-  },
-  {
-   "symbol": "ETR",
-   "name": "ENTERGY CORP /DE/",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 337%"
+     "code": "G2",
+     "reason": "주식 수 전년 대비 +26.5%"
     }
    ]
   },
@@ -4382,6 +4362,16 @@
     {
      "code": "G3",
      "reason": "부채비율 699%"
+    }
+   ]
+  },
+  {
+   "symbol": "ETR",
+   "name": "ENTERGY CORP /DE/",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 337%"
     }
    ]
   },
@@ -4406,6 +4396,16 @@
    ]
   },
   {
+   "symbol": "KDP",
+   "name": "Keurig Dr Pepper Inc.",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 216%"
+    }
+   ]
+  },
+  {
    "symbol": "DVN",
    "name": "DEVON ENERGY CORP/DE",
    "hits": [
@@ -4426,22 +4426,12 @@
    ]
   },
   {
-   "symbol": "KDP",
-   "name": "Keurig Dr Pepper Inc.",
+   "symbol": "P",
+   "name": "Everpure, Inc.",
    "hits": [
     {
      "code": "G3",
-     "reason": "부채비율 216%"
-    }
-   ]
-  },
-  {
-   "symbol": "NTAP",
-   "name": "NetApp, Inc.",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 633%"
+     "reason": "부채비율 239%"
     }
    ]
   },
@@ -4456,12 +4446,12 @@
    ]
   },
   {
-   "symbol": "EXC",
-   "name": "EXELON CORP",
+   "symbol": "CVNA",
+   "name": "CARVANA CO.",
    "hits": [
     {
      "code": "G3",
-     "reason": "부채비율 301%"
+     "reason": "부채비율 234%"
     }
    ]
   },
@@ -4476,12 +4466,22 @@
    ]
   },
   {
-   "symbol": "CVNA",
-   "name": "CARVANA CO.",
+   "symbol": "EXC",
+   "name": "EXELON CORP",
    "hits": [
     {
      "code": "G3",
-     "reason": "부채비율 234%"
+     "reason": "부채비율 301%"
+    }
+   ]
+  },
+  {
+   "symbol": "NTAP",
+   "name": "NetApp, Inc.",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 633%"
     }
    ]
   },
@@ -4506,12 +4506,12 @@
    ]
   },
   {
-   "symbol": "CMG",
-   "name": "CHIPOTLE MEXICAN GRILL INC",
+   "symbol": "PAYX",
+   "name": "PAYCHEX INC",
    "hits": [
     {
      "code": "G3",
-     "reason": "부채비율 303%"
+     "reason": "부채비율 333%"
     }
    ]
   },
@@ -4526,12 +4526,22 @@
    ]
   },
   {
-   "symbol": "PAYX",
-   "name": "PAYCHEX INC",
+   "symbol": "EL",
+   "name": "ESTEE LAUDER COMPANIES INC",
    "hits": [
     {
      "code": "G3",
-     "reason": "부채비율 333%"
+     "reason": "부채비율 395%"
+    }
+   ]
+  },
+  {
+   "symbol": "CMG",
+   "name": "CHIPOTLE MEXICAN GRILL INC",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 303%"
     }
    ]
   },
@@ -4542,46 +4552,6 @@
     {
      "code": "G3",
      "reason": "부채비율 677%"
-    }
-   ]
-  },
-  {
-   "symbol": "CLS",
-   "name": "CELESTICA INC",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 295%"
-    }
-   ]
-  },
-  {
-   "symbol": "FLEX",
-   "name": "FLEX LTD.",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 358%"
-    }
-   ]
-  },
-  {
-   "symbol": "RKLB",
-   "name": "Rocket Lab Corp",
-   "hits": [
-    {
-     "code": "G2",
-     "reason": "주식 수 전년 대비 +22.2%"
-    }
-   ]
-  },
-  {
-   "symbol": "EL",
-   "name": "ESTEE LAUDER COMPANIES INC",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 395%"
     }
    ]
   },
@@ -4600,12 +4570,42 @@
    ]
   },
   {
+   "symbol": "FLEX",
+   "name": "FLEX LTD.",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 358%"
+    }
+   ]
+  },
+  {
    "symbol": "CCL",
    "name": "Carnival Corp Ltd.",
    "hits": [
     {
      "code": "G3",
      "reason": "부채비율 303%"
+    }
+   ]
+  },
+  {
+   "symbol": "RBLX",
+   "name": "Roblox Corp",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 6326%"
+    }
+   ]
+  },
+  {
+   "symbol": "CLS",
+   "name": "CELESTICA INC",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 295%"
     }
    ]
   }
@@ -4615,123 +4615,143 @@
   "snapshots": {
    "2026-09-30": {
     "frozen": {},
-    "ageDays": 14,
+    "ageDays": 15,
     "current": {
      "top": {
-      "avgReturnPct": 0.91,
+      "avgReturnPct": 2.15,
       "n": 50
      },
      "passed": {
-      "avgReturnPct": -1.07,
-      "n": 1657
+      "avgReturnPct": 0.44,
+      "n": 1660
      },
      "excluded": {
-      "avgReturnPct": -4.01,
-      "n": 917
+      "avgReturnPct": -1.97,
+      "n": 920
      },
-     "benchmarkReturnPct": 0.63
+     "benchmarkReturnPct": 0.95
     },
-    "measuredAt": "2026-10-14"
+    "measuredAt": "2026-10-15"
    },
    "2026-10-01": {
     "frozen": {},
-    "ageDays": 13,
+    "ageDays": 14,
     "current": {
      "top": {
-      "avgReturnPct": -0.96,
+      "avgReturnPct": 0.26,
       "n": 50
      },
      "passed": {
-      "avgReturnPct": -1.02,
-      "n": 1658
+      "avgReturnPct": 0.49,
+      "n": 1660
      },
      "excluded": {
-      "avgReturnPct": -3.6,
-      "n": 918
+      "avgReturnPct": -1.51,
+      "n": 919
      },
-     "benchmarkReturnPct": 0.68
+     "benchmarkReturnPct": 1.01
     },
-    "measuredAt": "2026-10-14"
+    "measuredAt": "2026-10-15"
    },
    "2026-10-03": {
     "frozen": {},
-    "ageDays": 11,
+    "ageDays": 12,
     "current": {
      "top": {
-      "avgReturnPct": -1.6,
+      "avgReturnPct": -0.33,
       "n": 50
      },
      "passed": {
-      "avgReturnPct": -1.57,
-      "n": 1656
+      "avgReturnPct": -0.04,
+      "n": 1658
      },
      "excluded": {
-      "avgReturnPct": -4.04,
-      "n": 919
+      "avgReturnPct": -1.95,
+      "n": 920
      },
-     "benchmarkReturnPct": -0.05
+     "benchmarkReturnPct": 0.28
     },
-    "measuredAt": "2026-10-14"
+    "measuredAt": "2026-10-15"
    },
    "2026-10-10": {
     "frozen": {},
-    "ageDays": 4,
+    "ageDays": 5,
     "current": {
      "top": {
-      "avgReturnPct": -1.47,
+      "avgReturnPct": -0.14,
       "n": 50
      },
      "passed": {
-      "avgReturnPct": -1.59,
-      "n": 1663
+      "avgReturnPct": -0.07,
+      "n": 1664
      },
      "excluded": {
-      "avgReturnPct": -3.68,
-      "n": 920
+      "avgReturnPct": -1.56,
+      "n": 922
      },
-     "benchmarkReturnPct": -1.19
+     "benchmarkReturnPct": -0.86
     },
-    "measuredAt": "2026-10-14"
+    "measuredAt": "2026-10-15"
    },
    "2026-10-12": {
+    "frozen": {},
+    "ageDays": 3,
+    "current": {
+     "top": {
+      "avgReturnPct": 0.12,
+      "n": 50
+     },
+     "passed": {
+      "avgReturnPct": 0.03,
+      "n": 1671
+     },
+     "excluded": {
+      "avgReturnPct": -0.7,
+      "n": 919
+     },
+     "benchmarkReturnPct": -0.81
+    },
+    "measuredAt": "2026-10-15"
+   },
+   "2026-10-13": {
     "frozen": {},
     "ageDays": 2,
     "current": {
      "top": {
-      "avgReturnPct": -1.25,
+      "avgReturnPct": -0.28,
       "n": 50
      },
      "passed": {
-      "avgReturnPct": -1.5,
-      "n": 1669
+      "avgReturnPct": 0.17,
+      "n": 1671
      },
      "excluded": {
-      "avgReturnPct": -2.8,
-      "n": 917
+      "avgReturnPct": -0.11,
+      "n": 915
      },
-     "benchmarkReturnPct": -1.13
+     "benchmarkReturnPct": -0.79
     },
-    "measuredAt": "2026-10-14"
+    "measuredAt": "2026-10-15"
    },
-   "2026-10-13": {
+   "2026-10-14": {
     "frozen": {},
     "ageDays": 1,
     "current": {
      "top": {
-      "avgReturnPct": -1.67,
+      "avgReturnPct": 1.41,
       "n": 50
      },
      "passed": {
-      "avgReturnPct": -1.38,
-      "n": 1671
+      "avgReturnPct": 1.55,
+      "n": 1669
      },
      "excluded": {
-      "avgReturnPct": -2.25,
-      "n": 917
+      "avgReturnPct": 2.21,
+      "n": 915
      },
-     "benchmarkReturnPct": -1.11
+     "benchmarkReturnPct": 0.33
     },
-    "measuredAt": "2026-10-14"
+    "measuredAt": "2026-10-15"
    }
   }
  }
