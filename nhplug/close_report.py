@@ -136,7 +136,8 @@ def stop_alerts(data: dict[str, dict], lines: list[dict]) -> list[dict]:
         if d and stop and d["close"]:
             gap = (d["close"] / stop - 1) * 100
             if gap <= 3:
-                out.append({"code": ln["code"], "name": d["name"], "close": d["close"], "stop": stop, "gapPct": round(gap, 2)})
+                out.append({"code": ln["code"], "name": d["name"], "close": d["close"], "stop": stop, "gapPct": round(gap, 2),
+                            "breached": d["close"] <= stop})   # 종가가 손절가 이하 = 이탈(규칙상 그 종가에 청산)
     return out
 
 
@@ -160,7 +161,11 @@ def to_markdown(rep: dict) -> str:
     o += ["| 종목 | 업종 | 등락 | 거래대금 배수 | 뉴스 | 헤드라인 |", "|---|---|---|---|---|---|"]
     o += [f"| {x['name']} | {x['sector']} | {x['chg']:+.1f}% | {x['surge']}배 | {x['news']} | {' / '.join(x['headlines'][:2]) or '–'} |" for x in rep["issues"]]
     if rep.get("stopAlerts"):
-        o += ["", "## 주의: 손절가 근접 (권고 포트폴리오, 종가 기준 -8%)"] + [f"- {x['name']} 종가 {x['close']:,.0f} / 손절 {x['stop']:,.0f} ({x['gapPct']:+.1f}%)" for x in rep["stopAlerts"]]
+        hit = [x for x in rep["stopAlerts"] if x.get("breached", x["gapPct"] <= 0)]
+        near = [x for x in rep["stopAlerts"] if x not in hit]
+        o += ["", "## 주의: 손절가 이탈·근접 (권고 포트폴리오, 종가 기준 -8%)"]
+        o += [f"- **이탈** {x['name']} 종가 {x['close']:,.0f} / 손절 {x['stop']:,.0f} ({x['gapPct']:+.1f}%) — 규칙상 이 종가에 청산" for x in hit]
+        o += [f"- 근접 {x['name']} 종가 {x['close']:,.0f} / 손절 {x['stop']:,.0f} (손절까지 {x['gapPct']:+.1f}%)" for x in near]
     if rep["watch"]:
         o += ["", "## 우리 종목 점검", "| 구분 | 종목 | 등락 | 순매수(억, 잠정) |", "|---|---|---|---|"]
         o += [f"| {x['group']} | {x['name']} | {x['chg']:+.2f}% | {x['netBuyEok'] if x['netBuyEok'] is not None else '–'} |" for x in rep["watch"]]
