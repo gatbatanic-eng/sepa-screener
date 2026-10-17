@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "generatedAt": "2026-10-17T01:20:22.696356+00:00",
+ "generatedAt": "2026-10-17T01:36:17.722095+00:00",
  "latest": {
   "kr": {
    "market": "kr",
@@ -722,8 +722,28 @@
    "regime": "GREEN",
    "gate": "우호적",
    "candidates": 92,
-   "suitable": 11,
+   "suitable": 12,
    "picks": [
+    {
+     "code": "LFST",
+     "name": "LifeStance Health Group, Inc.",
+     "market": "Nasdaq",
+     "price": 12.369999885559082,
+     "score": 2,
+     "strategies": {
+      "funnel": 6
+     },
+     "funnelRank": 6,
+     "entry": {
+      "riskPct": 6.32,
+      "riskSource": "직접 계산",
+      "verdict": null,
+      "chase": [],
+      "liquidityOk": null,
+      "zone": null
+     },
+     "reject": null
+    },
     {
      "code": "XRN",
      "name": "Chiron Real Estate Inc.",
@@ -735,7 +755,7 @@
      },
      "funnelRank": 7,
      "entry": {
-      "riskPct": 4.69,
+      "riskPct": 5.1,
       "riskSource": "직접 계산",
       "verdict": null,
       "chase": [],
@@ -755,27 +775,7 @@
      },
      "funnelRank": 9,
      "entry": {
-      "riskPct": 5.52,
-      "riskSource": "직접 계산",
-      "verdict": null,
-      "chase": [],
-      "liquidityOk": null,
-      "zone": null
-     },
-     "reject": null
-    },
-    {
-     "code": "KWR",
-     "name": "QUAKER CHEMICAL CORP",
-     "market": "NYSE",
-     "price": 158.5500030517578,
-     "score": 2,
-     "strategies": {
-      "funnel": 10
-     },
-     "funnelRank": 10,
-     "entry": {
-      "riskPct": 5.51,
+      "riskPct": 7.94,
       "riskSource": "직접 계산",
       "verdict": null,
       "chase": [],
@@ -786,7 +786,7 @@
     }
    ],
    "rejectSummary": {
-    "손절폭 8% 초과": 65,
+    "손절폭 8% 초과": 64,
     "SEPA 진입 NO-GO": 15,
     "손절폭 0 이하(계산 불가)": 1
    },
@@ -932,6 +932,57 @@
    },
    "picksV2": [
     {
+     "code": "LFST",
+     "name": "LifeStance Health Group, Inc.",
+     "market": "Nasdaq",
+     "price": 12.369999885559082,
+     "score": 2,
+     "strategies": {
+      "funnel": 6
+     },
+     "funnelRank": 6,
+     "entry": {
+      "riskPct": 6.32,
+      "riskSource": "직접 계산",
+      "verdict": null,
+      "chase": [],
+      "liquidityOk": null,
+      "zone": null
+     },
+     "v2": {
+      "score": 3,
+      "sector": "Healthcare",
+      "sectorAdj": 1,
+      "marketAdj": 0
+     },
+     "why": [
+      {
+       "kind": "strategy",
+       "text": "실적 턴어라운드 6위 선정 (v1 점수 2)"
+      },
+      {
+       "kind": "entry",
+       "text": "손절폭 6.32%(직접 계산), 추격·NO-GO·유동성 조건 통과"
+      },
+      {
+       "kind": "sector",
+       "text": "업종 Healthcare 강세: 50일선 위 77%, 평균 RS 69, 11개 업종 중 1위 (점수 +1)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 미국 GREEN"
+      },
+      {
+       "kind": "consensus",
+       "text": "컨센서스(야후, 10/17): 애널리스트 10명 · 평균 목표가 $14 (현재가 대비 +16%) · 투자의견 매수 · 다음 실적 발표 11/05 (D-19) (참고, 점수 아님)"
+      },
+      {
+       "kind": "macro",
+       "text": "매크로 리스크오프 (VIX 16.5, 달러지수 102.0, 미 10년 5.19%) — 참고, 점수 아님"
+      }
+     ]
+    },
+    {
      "code": "SD",
      "name": "SANDRIDGE ENERGY INC",
      "market": "NYSE",
@@ -942,7 +993,7 @@
      },
      "funnelRank": 9,
      "entry": {
-      "riskPct": 5.52,
+      "riskPct": 7.94,
       "riskSource": "직접 계산",
       "verdict": null,
       "chase": [],
@@ -962,7 +1013,7 @@
       },
       {
        "kind": "entry",
-       "text": "손절폭 5.52%(직접 계산), 추격·NO-GO·유동성 조건 통과"
+       "text": "손절폭 7.94%(직접 계산), 추격·NO-GO·유동성 조건 통과"
       },
       {
        "kind": "sector",
@@ -993,7 +1044,7 @@
      },
      "funnelRank": 21,
      "entry": {
-      "riskPct": 4.78,
+      "riskPct": 5.15,
       "riskSource": "직접 계산",
       "verdict": null,
       "chase": [],
@@ -1013,7 +1064,7 @@
       },
       {
        "kind": "entry",
-       "text": "손절폭 4.78%(직접 계산), 추격·NO-GO·유동성 조건 통과"
+       "text": "손절폭 5.15%(직접 계산), 추격·NO-GO·유동성 조건 통과"
       },
       {
        "kind": "sector",
@@ -1026,57 +1077,6 @@
       {
        "kind": "consensus",
        "text": "컨센서스(야후, 10/17): 애널리스트 1명 · 평균 목표가 $2 (현재가 대비 -22%) · 투자의견 적극 매수 · 다음 실적 발표 11/05 (D-19) (참고, 점수 아님)"
-      },
-      {
-       "kind": "macro",
-       "text": "매크로 리스크오프 (VIX 16.5, 달러지수 102.0, 미 10년 5.19%) — 참고, 점수 아님"
-      }
-     ]
-    },
-    {
-     "code": "DAR",
-     "name": "DARLING INGREDIENTS INC.",
-     "market": "NYSE",
-     "price": 60.869998931884766,
-     "score": 2,
-     "strategies": {
-      "funnel": 39
-     },
-     "funnelRank": 39,
-     "entry": {
-      "riskPct": 6.62,
-      "riskSource": "직접 계산",
-      "verdict": null,
-      "chase": [],
-      "liquidityOk": null,
-      "zone": null
-     },
-     "v2": {
-      "score": 3,
-      "sector": "Consumer Defensive",
-      "sectorAdj": 1,
-      "marketAdj": 0
-     },
-     "why": [
-      {
-       "kind": "strategy",
-       "text": "실적 턴어라운드 39위 선정 (v1 점수 2)"
-      },
-      {
-       "kind": "entry",
-       "text": "손절폭 6.62%(직접 계산), 추격·NO-GO·유동성 조건 통과"
-      },
-      {
-       "kind": "sector",
-       "text": "업종 Consumer Defensive 강세: 50일선 위 69%, 평균 RS 50, 11개 업종 중 3위 (점수 +1)"
-      },
-      {
-       "kind": "market",
-       "text": "시장 미국 GREEN"
-      },
-      {
-       "kind": "consensus",
-       "text": "컨센서스(야후, 10/17): 애널리스트 12명 · 평균 목표가 $82 (현재가 대비 +35%) · 투자의견 적극 매수 · 다음 실적 발표 10/29 (D-12, 변동성 주의) (참고, 점수 아님)"
       },
       {
        "kind": "macro",
