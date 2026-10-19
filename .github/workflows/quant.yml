@@ -1,0 +1,65 @@
+name: Quant Multi-Factor (quant)
+
+# 퀀트 멀티팩터 계열(QUANT.md). 다른 워크플로와 별도 그룹으로 돌고, research/quant · docs/research/quant.json · docs/quant 만 커밋한다.
+on:
+  schedule:
+    # 평일 미국 장 마감 뒤 첫 실행(기준일 다음 날 00:27 UTC), 지연 대비 재시도
+    - cron: "27 0 * * 2-6"
+    - cron: "17 9 * * 2-6"
+  workflow_dispatch:
+    inputs:
+      collect:
+        description: "재무 수집 단계를 실행할지"
+        required: false
+        default: "true"
+      budget:
+        description: "DART 호출 예산(일 한도 20,000 중 이 실행에서 쓸 수)"
+        required: false
+        default: "8000"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: quant
+  cancel-in-progress: false
+
+jobs:
+  quant:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: 의존성 설치
+        run: pip install -r requirements.txt
+      - name: 단위·통합 테스트
+        run: python -m unittest tests.test_quant -v
+      - name: 재무 수집 (DART·SEC, 이어받기)
+        id: collect
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.collect != 'false'
+        continue-on-error: true
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+          SEC_USER_AGENT: "GoldenCodeResearch gatbatanic@gmail.com"
+        run: python -m quant.collect --market all --budget ${{ github.event.inputs.budget || 8000 }}
+      - name: 계좌 갱신
+        run: python -m quant.main
+      - name: 커밋 & 푸시
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f research/quant docs/research/quant.json docs/quant
+          git diff --cached --quiet || git commit -m "퀀트 계열 갱신 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+          for i in 1 2 3 4; do
+            git pull --rebase origin master && git push && exit 0
+            sleep $((i * 5))
+          done
+          exit 1
+      - name: 수집 실패 알림
+        if: steps.collect.outcome == 'failure'
+        run: exit 1

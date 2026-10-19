@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>퀀트 멀티팩터</title>
+<style>
+  :root { --bg:#f5f6f8; --panel:#fff; --border:#e3e5e9; --text:#1b1e24; --text-dim:#6b7280; --accent:#2563eb;
+          --y-bg:#fff2e0; --y-text:#b45309; --y-border:#fbd9a8; --up:#d92b2b; --down:#1a56db; --row-hover:#f0f4ff;
+          --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04); --c1:#2563eb; --c2:#16a34a; --c3:#d97706; --c4:#9ca3af; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f1115; --panel:#171a21; --border:#2a2e37; --text:#e7e9ee; --text-dim:#9aa2b1; --accent:#5b8def;
+            --y-bg:#3a2712; --y-text:#f6b96a; --y-border:#6b4a1f; --up:#f0605f; --down:#6ea8fe; --row-hover:#1d2230;
+            --shadow:0 1px 3px rgba(0,0,0,.4); --c1:#5b8def; --c2:#4ade80; --c3:#fbbf24; --c4:#6b7280; color-scheme: dark; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif; }
+  .wrap { max-width:1200px; margin:0 auto; padding:24px 16px 60px; }
+  h1 { font-size:20px; margin:0 0 4px; } .subtitle { color:var(--text-dim); font-size:13px; max-width:78ch; }
+  .nav { display:flex; gap:10px; margin:10px 0 4px; flex-wrap:wrap; }
+  .nav a { font-size:12px; color:var(--text-dim); text-decoration:none; border:1px solid var(--border); border-radius:999px; padding:4px 12px; background:var(--panel); }
+  .nav a:hover { color:var(--accent); border-color:var(--accent); } .nav a.here { color:#fff; background:var(--accent); border-color:var(--accent); }
+  .tabs { display:flex; gap:8px; margin:16px 0; flex-wrap:wrap; align-items:center; }
+  .tab-btn { padding:8px 16px; border-radius:8px; border:1px solid var(--border); background:var(--panel); color:var(--text); cursor:pointer; font-size:13px; font-weight:600; }
+  .tab-btn[aria-pressed="true"] { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .tab-btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .asof { color:var(--text-dim); font-size:12px; margin-left:auto; }
+  .banner { border:1px solid var(--y-border); background:var(--y-bg); color:var(--y-text); border-radius:8px; padding:10px 14px; margin-bottom:16px; font-size:13px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px; margin-bottom:18px; }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:14px 16px; box-shadow:var(--shadow); }
+  .card .label { color:var(--text-dim); font-size:12px; margin-bottom:6px; } .card .value { font-size:22px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .card .sub { font-size:12px; color:var(--text-dim); margin-top:2px; }
+  .panel { background:var(--panel); border:1px solid var(--border); border-radius:10px; box-shadow:var(--shadow); padding:16px; margin-bottom:18px; min-width:0; }
+  .panel h2 { font-size:14px; margin:0 0 4px; } .panel .desc { color:var(--text-dim); font-size:12px; margin:0 0 12px; max-width:80ch; }
+  .table-scroll { overflow-x:auto; } table { border-collapse:collapse; width:100%; font-size:13px; }
+  th,td { padding:7px 8px; border-bottom:1px solid var(--border); text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  th { color:var(--text-dim); font-weight:600; font-size:12px; } th.l,td.l { text-align:left; } tbody tr:hover { background:var(--row-hover); }
+  .pos { color:var(--up); } .neg { color:var(--down); } .muted { color:var(--text-dim); } .sym { color:var(--text-dim); font-size:11px; margin-left:4px; }
+  .chart { width:100%; height:300px; display:block; } .legend { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; margin-top:8px; }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:5px; }
+  .grid2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(380px,1fr)); gap:18px; }
+  footer { color:var(--text-dim); font-size:12px; margin-top:24px; max-width:80ch; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>퀀트 멀티팩터</h1>
+    <div class="subtitle">한국·미국 전 유니버스를 가치(40)·모멘텀(30)·퀄리티(30) 점수로 줄 세워 시장별 15종목씩, 월 1회 갈아타는 가상 계좌입니다. 손절은 없고 낙폭 규칙으로 도태를 판단합니다. 실제 주문은 없으며 투자 추천이 아닙니다.</div>
+    <div class="nav">
+      <a href="../">SEPA 추세템플릿</a><a href="../picks/">오늘의 추천</a><a href="../performance/">전략 현황</a>
+      <a href="../agents/">에이전트 리그</a><a href="../accumulation/">매집 필터</a><a class="here" href="./">퀀트 멀티팩터</a>
+    </div>
+  </header>
+  <div class="tabs" id="tabs"></div>
+  <div id="root"><p class="muted">불러오는 중…</p></div>
+  <footer>규칙은 QUANT.md에 2026-10-19 고정했고 결과를 본 뒤 바꾸지 않습니다. 순위는 같은 시장 적격 종목끼리의 백분위이며, 재무는 공시일 이후에만 사용합니다. 사후 적용 계열은 결과를 아는 상태에서 만든 규칙의 소급 적용이고 현재 상장 종목만 쓴 생존편향이 있어 참고용입니다. 시총·주식 수는 근사값입니다. 이 통계는 전략이 효과가 있었는지 보는 것이지 앞으로의 수익을 보장하지 않습니다.</footer>
+</div>
+<script>
+"use strict";
+const COLORS = {multifactor:"var(--c1)", vq:"var(--c2)", m:"var(--c3)", control:"var(--c4)"};
+const $ = (t, a = {}, ...kids) => { const e = document.createElement(t); for (const [k, v] of Object.entries(a)) k === "class" ? e.className = v : e.setAttribute(k, v);
+  for (const c of kids) e.append(c instanceof Node ? c : document.createTextNode(c ?? "")); return e; };
+const pct = (v, d = 2) => v == null ? "—" : (v > 0 ? "+" : "") + v.toFixed(d) + "%";
+const cls = v => v == null ? "muted" : v > 0 ? "pos" : v < 0 ? "neg" : "";
+const strip = s => String(s).replace(/^(kr|us):/, "");
+let DATA = null, SERIES = "live";
+
+function chart(variants) {
+  const NS = "http://www.w3.org/2000/svg", W = 900, H = 300, P = {l: 52, r: 12, t: 12, b: 24};
+  const svg = document.createElementNS(NS, "svg"); svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("class", "chart");
+  svg.setAttribute("role", "img"); svg.setAttribute("aria-label", "가상 계좌 평가금액 추이");
+  const all = Object.values(variants).flatMap(v => v.curve); if (!all.length) return null;
+  const dates = [...new Set(all.map(p => p[0]))].sort(), xi = Object.fromEntries(dates.map((d, i) => [d, i]));
+  let lo = Math.min(...all.map(p => p[1])), hi = Math.max(...all.map(p => p[1])); const pad = (hi - lo) * 0.08 || 1; lo -= pad; hi += pad;
+  const x = d => P.l + xi[d] / Math.max(1, dates.length - 1) * (W - P.l - P.r), y = v => H - P.b - (v - lo) / (hi - lo) * (H - P.t - P.b);
+  for (let i = 0; i <= 4; i++) { const v = lo + (hi - lo) * i / 4, g = document.createElementNS(NS, "line");
+    g.setAttribute("x1", P.l); g.setAttribute("x2", W - P.r); g.setAttribute("y1", y(v)); g.setAttribute("y2", y(v)); g.setAttribute("stroke", "var(--border)"); svg.append(g);
+    const t = document.createElementNS(NS, "text"); t.setAttribute("x", P.l - 6); t.setAttribute("y", y(v) + 4); t.setAttribute("text-anchor", "end"); t.setAttribute("font-size", 11);
+    t.setAttribute("fill", "var(--text-dim)"); t.textContent = Math.round(v).toLocaleString(); svg.append(t); }
+  [dates[0], dates[dates.length - 1]].forEach((d, i) => { const t = document.createElementNS(NS, "text"); t.setAttribute("x", i ? W - P.r : P.l); t.setAttribute("y", H - 6);
+    t.setAttribute("text-anchor", i ? "end" : "start"); t.setAttribute("font-size", 11); t.setAttribute("fill", "var(--text-dim)"); t.textContent = d; svg.append(t); });
+  for (const [k, v] of Object.entries(variants)) { if (!v.curve.length) continue; const p = document.createElementNS(NS, "polyline");
+    p.setAttribute("points", v.curve.map(([d, val]) => `${x(d).toFixed(1)},${y(val).toFixed(1)}`).join(" ")); p.setAttribute("fill", "none");
+    p.setAttribute("stroke", COLORS[k]); p.setAttribute("stroke-width", k === "multifactor" ? 2.4 : 1.6); svg.append(p); }
+  return svg;
+}
+
+function ci(c) { return c ? `${pct(c[0])}p (95% ${c[1].toFixed(2)}~${c[2].toFixed(2)})` : "—"; }
+
+function render() {
+  const root = document.getElementById("root"); root.replaceChildren();
+  const s = DATA.series[SERIES]; if (!s) { root.append($("p", {class: "muted"}, "아직 데이터가 없습니다.")); return; }
+  const v = s.variants, mf = v.multifactor;
+  if (SERIES === "preview") root.append($("div", {class: "banner"}, `사후 적용(참고): 규칙을 정한 뒤 ${DATA.previewStartSignal} 신호부터 소급 적용한 결과입니다. 결과를 아는 상태에서 만든 규칙이라 검증 근거가 아닙니다.`));
+  else root.append($("div", {class: "banner"}, `실전 계열: 신호일 ${DATA.inceptionSignal} 이후 월말 리밸런싱만 셉니다. 월간 리밸런싱 ${DATA.minPeriods ?? 12}회 미만은 '표본 부족'이며 순위·도태 판단을 하지 않습니다(낙폭 규칙만 적용).`));
+  if (!mf) { root.append($("p", {class: "muted"}, SERIES === "live" ? `첫 리밸런싱(신호 ${DATA.inceptionSignal}, 체결 다음 거래일) 전입니다.` : "데이터 없음")); }
+  else {
+    const cards = $("div", {class: "cards"});
+    for (const k of ["multifactor", "vq", "m", "control"]) { const x = v[k]; if (!x) continue; const sm = x.summary;
+      cards.append($("div", {class: "card"}, $("div", {class: "label"}, x.label), $("div", {class: "value " + cls(sm.totalReturnPct)}, pct(sm.totalReturnPct)),
+        $("div", {class: "sub"}, `최대 낙폭 ${pct(sm.mddPct)} · 리밸런싱 ${sm.periods}회${sm.sampleSufficient ? "" : " (표본 부족)"}`),
+        $("div", {class: "sub"}, "대조군 대비 월 초과: " + (sm.excessVsControl !== undefined ? ci(sm.excessVsControl) : "—")),
+        $("div", {class: "sub"}, "전종목(ALL) 대비 월 초과: " + ci(sm.excessVsAll)))); }
+    root.append(cards);
+    if (s.stage) root.append($("div", {class: "sub muted"}, `멀티팩터 도태 단계: ${s.stage.current}${s.stage.since ? " (" + s.stage.since + "~)" : ""}`));
+    const cp = $("div", {class: "panel"}, $("h2", {}, "평가금액 추이"), $("p", {class: "desc"}, "가상 자본 8,000에서 시작(비용 반영, 환율 미반영). 위: 멀티팩터 / 가치+퀄리티 / 모멘텀만 / 무작위 대조군."));
+    const svg = chart(v); if (svg) cp.append(svg);
+    const lg = $("div", {class: "legend"}); for (const k of Object.keys(v)) lg.append($("span", {}, (() => { const i = $("i"); i.style.background = COLORS[k]; return i; })(), v[k].label)); cp.append(lg);
+    root.append(cp);
+    const hp = $("div", {class: "panel"}, $("h2", {}, "보유 종목 (멀티팩터)"), $("p", {class: "desc"}, "시장별 15종목, 순위 30위 밖·적격 탈락 시 다음 리밸런싱에서 교체합니다."));
+    const tb = $("tbody"); for (const h of mf.holdings) tb.append($("tr", {}, $("td", {class: "l"}, strip(h.symbol)), $("td", {}, h.market.toUpperCase()), $("td", {}, h.entryDate),
+      $("td", {class: cls(h.returnPct)}, pct(h.returnPct)), $("td", {}, h.weightPct == null ? "—" : h.weightPct.toFixed(2) + "%")));
+    hp.append($("div", {class: "table-scroll"}, $("table", {}, $("thead", {}, $("tr", {}, ...["종목", "시장", "편입일", "수익률", "비중"].map((t, i) => $("th", {class: i ? "" : "l"}, t)))), tb)));
+    if (!mf.holdings.length) hp.append($("p", {class: "muted"}, "보유 없음"));
+    root.append(hp);
+  }
+  const ev = s.events.filter(e => e.market); const evp = $("div", {class: "panel"}, $("h2", {}, "리밸런싱 이력"), $("p", {class: "desc"}, "적격 종목이 30개 미만인 시장은 데이터 이상으로 보고 그 달 매매하지 않습니다(건너뜀)."));
+  const eb = $("tbody"); for (const e of ev.slice().sort((a, b) => (b.signal + b.market).localeCompare(a.signal + a.market)).slice(0, 24)) eb.append($("tr", {}, $("td", {class: "l"}, e.signal), $("td", {}, e.exec), $("td", {}, e.market.toUpperCase()), $("td", {}, `${e.eligible} / ${e.universe}`), $("td", {class: e.skipped ? "neg" : ""}, e.skipped ? "건너뜀" : "실행")));
+  evp.append($("div", {class: "table-scroll"}, $("table", {}, $("thead", {}, $("tr", {}, ...["신호일", "체결일", "시장", "적격/유니버스", "상태"].map((t, i) => $("th", {class: i ? "" : "l"}, t)))), eb)));
+  root.append(evp);
+  const cur = $("div", {class: "grid2"});
+  for (const m of ["kr", "us"]) { const c = DATA.current?.[m]; if (!c) continue;
+    const p = $("div", {class: "panel"}, $("h2", {}, `현재 순위 상위 15 — ${m === "kr" ? "한국" : "미국"}`),
+      $("p", {class: "desc"}, `${c.signal} 기준(참고, 기록 아님). 적격 ${c.eligible} / 유니버스 ${c.universe}.`));
+    const b = $("tbody"); for (const r of c.ranking.slice(0, 15)) b.append($("tr", {}, $("td", {}, r.rank), $("td", {class: "l"}, r.name || r.symbol, $("span", {class: "sym"}, strip(r.symbol))),
+      $("td", {}, r.composite.toFixed(1)), $("td", {}, r.value.toFixed(0)), $("td", {}, r.momentum.toFixed(0)), $("td", {}, r.quality.toFixed(0))));
+    p.append($("div", {class: "table-scroll"}, $("table", {}, $("thead", {}, $("tr", {}, ...["#", "종목", "종합", "가치", "모멘텀", "퀄리티"].map((t, i) => $("th", {class: i === 1 ? "l" : ""}, t)))), b)));
+    cur.append(p); }
+  root.append(cur);
+  const h = DATA.dataHealth; root.append($("div", {class: "panel"}, $("h2", {}, "데이터 상태"),
+    $("p", {class: "desc"}, `재무 보유: 한국 ${h.finKr} · 미국 ${h.finUs} / 유니버스: 한국 ${h.universeKr} · 미국 ${h.universeUs} / 선정 기록과 재계산 불일치: ${h.drift.length}건 / 시세 기준: 한국 ${DATA.asof.kr}, 미국 ${DATA.asof.us}`)));
+}
+
+function tabs() {
+  const t = document.getElementById("tabs"); t.replaceChildren();
+  for (const [k, l] of [["live", "실전"], ["preview", "사후 적용(참고)"]]) { const b = $("button", {class: "tab-btn", "aria-pressed": String(SERIES === k)}, l);
+    b.onclick = () => { SERIES = k; tabs(); render(); }; t.append(b); }
+  t.append($("span", {class: "asof"}, `갱신 ${DATA.generatedAt.slice(0, 16).replace("T", " ")} UTC`));
+}
+
+fetch("../research/quant.json", {cache: "no-store"}).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then(d => { DATA = d; tabs(); render(); })
+  .catch(() => { document.getElementById("root").replaceChildren($("p", {class: "muted"}, "아직 퀀트 데이터가 없습니다. 첫 실행 뒤 표시됩니다.")); });
+</script>
+</body>
+</html>
