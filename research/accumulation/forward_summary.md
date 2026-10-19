@@ -19,24 +19,24 @@ v1 규칙 {"days": 20, "net_pct": 0.05, "min_pos_days": 12} · v2 규칙 {"days"
 
 | 계열 | 그룹 | 보유 | 사례 | 날짜 | 평균% | 승률% | ALL 평균% | ALL 대비 %p | 95% 구간 | 판정 |
 |---|---|---|---|---|---|---|---|---|---|---|
-| v1 | FLOW | 5일 | 21 | 5 | -0.38 | 38.1 | -4.93 | 4.43 | None | 표본 부족 |
+| v1 | FLOW | 5일 | 24 | 6 | -0.61 | 37.5 | -4.44 | 3.66 | None | 표본 부족 |
 | v1 | FLOW | 20일 | 0 | 0 | None | None | None | None | None | 표본 부족 |
 | v1 | FLOW | 40일 | 0 | 0 | None | None | None | None | None | 표본 부족 |
-| v1 | FLOW_ACC | 5일 | 3 | 2 | -3.35 | 33.3 | -5.2 | 0.29 | None | 표본 부족 |
+| v1 | FLOW_ACC | 5일 | 4 | 3 | -5.91 | 25.0 | -4.14 | -3.66 | None | 표본 부족 |
 | v1 | FLOW_ACC | 20일 | 0 | 0 | None | None | None | None | None | 표본 부족 |
 | v1 | FLOW_ACC | 40일 | 0 | 0 | None | None | None | None | None | 표본 부족 |
-| v2 | V2 | 5일 | 48 | 6 | -2.33 | 31.2 | -4.87 | 3.22 | None |  |
+| v2 | V2 | 5일 | 50 | 7 | -2.5 | 30.0 | -4.47 | 2.11 | None |  |
 | v2 | V2 | 20일 | 0 | 0 | None | None | None | None | None | 표본 부족 |
 | v2 | V2 | 40일 | 0 | 0 | None | None | None | None | None | 표본 부족 |
-| v2 | V2_FRG | 5일 | 3 | 2 | -4.76 | 0.0 | -0.03 | -4.97 | None | 표본 부족 |
+| v2 | V2_FRG | 5일 | 5 | 3 | -2.37 | 20.0 | -0.7 | -2.23 | None | 표본 부족 |
 | v2 | V2_FRG | 20일 | 0 | 0 | None | None | None | None | None | 표본 부족 |
 | v2 | V2_FRG | 40일 | 0 | 0 | None | None | None | None | None | 표본 부족 |
-| v2 | V2_INST | 5일 | 45 | 6 | -2.17 | 33.3 | -4.87 | 3.62 | None |  |
+| v2 | V2_INST | 5일 | 46 | 7 | -2.38 | 32.6 | -4.47 | 1.65 | None |  |
 | v2 | V2_INST | 20일 | 0 | 0 | None | None | None | None | None | 표본 부족 |
 | v2 | V2_INST | 40일 | 0 | 0 | None | None | None | None | None | 표본 부족 |
-| 비교군 | C_ONLY | 5일 | 125 | 6 | -1.38 | 43.2 | -4.87 | -1.95 | None |  |
+| 비교군 | C_ONLY | 5일 | 129 | 7 | -1.47 | 42.6 | -4.47 | -1.97 | None |  |
 | 비교군 | C_ONLY | 20일 | 0 | 0 | None | None | None | None | None | 표본 부족 |
 | 비교군 | C_ONLY | 40일 | 0 | 0 | None | None | None | None | None | 표본 부족 |
-| 비교군 | D_ONLY | 5일 | 46 | 5 | -0.98 | 39.1 | -4.57 | 1.46 | None |  |
+| 비교군 | D_ONLY | 5일 | 48 | 6 | -0.8 | 39.6 | -4.15 | 2.14 | None |  |
 | 비교군 | D_ONLY | 20일 | 0 | 0 | None | None | None | None | None | 표본 부족 |
 | 비교군 | D_ONLY | 40일 | 0 | 0 | None | None | None | None | None | 표본 부족 |
