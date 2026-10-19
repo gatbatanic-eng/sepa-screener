@@ -15,6 +15,9 @@ def number(v):
 def parse_annual(payload,ticker,observed_date):
     if payload.get('itemCode')!=ticker or payload.get('financePeriodType')!='annual':
         raise ValueError('Provider symbol or period mismatch')
+    # Explicit null means this issuer has no consensus dataset, not zero estimates.
+    if 'financeInfo' in payload and payload['financeInfo'] is None:
+        return []
     fin=payload['financeInfo']
     rows={r['title']:r.get('columns',{}) for r in fin['rowList']}
     def cell(name,key):
