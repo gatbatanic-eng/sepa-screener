@@ -1,0 +1,40 @@
+name: NHPLUG Intraday One Day
+
+on:
+  push:
+    branches: [master]
+    paths: [nhplug/live.py, .github/workflows/nhplug_intraday.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nhplug-intraday-one-day
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Prepare isolated public-data worktree
+        run: |
+          if git ls-remote --exit-code --heads origin nhplug-live-data >/dev/null 2>&1; then
+            git fetch origin nhplug-live-data
+            git worktree add --detach "$RUNNER_TEMP/nhplug-live-data" FETCH_HEAD
+          else
+            git worktree add --detach "$RUNNER_TEMP/nhplug-live-data" HEAD
+          fi
+      - name: Collect public quotes only until 15:26 KST on 2026-10-20
+        env:
+          NHPLUG_APPKEY: ${{ secrets.NHPLUG_APPKEY }}
+          NHPLUG_APPSECRET: ${{ secrets.NHPLUG_APPSECRET }}
+        run: python -m nhplug.live --watch --date 2026-10-20 --output "$RUNNER_TEMP/nhplug-live-data"
+
