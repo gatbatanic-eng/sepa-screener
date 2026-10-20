@@ -128,6 +128,10 @@ def normalize(code, data, now=None):
             ret = abs(ret)
         elif direction in ("0", "3"):
             ret = 0.0
+        elif prev and abs(abs((price / prev - 1) * 100) - abs(ret)) <= .25:
+            # Some quote responses omit the direction field. Only infer a sign
+            # when the raw magnitude agrees with this same response's base.
+            ret = math.copysign(abs(ret), price - prev) if price != prev else 0.0
     flags = []
     if prev and ret is not None and abs((price / prev - 1) * 100 - ret) > 0.25:
         flags.append("return_base_mismatch")
@@ -168,6 +172,7 @@ def normalize(code, data, now=None):
         "quoteDateVerified": False, "quoteAgeSeconds": age,
         "price": price, "previousClose": prev, "changePct": ret,
         "changePctRaw": raw_ret, "directionCode": direction,
+        "directionMethod": "API code" if direction else "same-response price/base consistency",
         "open": number(x.get("stck_oprc")), "high": hi, "low": lo,
         "volume": volume, "turnoverKRW": amount, "turnoverRaw": raw_amount,
         "turnoverMultiplier": multiplier, "turnoverUnitMethod": "inferred by OHLC/VWAP consistency",

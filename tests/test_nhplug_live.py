@@ -63,6 +63,12 @@ class LiveTest(unittest.TestCase):
             'acml_vol': 218282, 'acml_tr_pbmn': 27198}}, now)
         self.assertEqual(q['changePct'], -2.84)
         self.assertNotIn('return_base_mismatch', q['warnings'])
+        q2 = live.normalize('222800', {'Output_0': {'stck_prpr': 123100,
+            'stck_prdy_clpr': 126700, 'prdy_ctrt': 2.84, 'hoga_bsop_hour': '100000',
+            'stck_hgpr': 127900, 'stck_lwpr': 122000,
+            'acml_vol': 218282, 'acml_tr_pbmn': 27198}}, now)
+        self.assertEqual(q2['changePct'], -2.84)
+        self.assertNotIn('return_base_mismatch', q2['warnings'])
 
     def test_stale_and_unknown_time_excluded_from_candidates(self):
         now = dt.datetime(2026, 10, 20, 10, 0, tzinfo=live.KST)
