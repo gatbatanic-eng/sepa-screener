@@ -24,7 +24,7 @@ ALLOWED = {"/krstock/quote/v1/currentPrice", "/krstock/quote/v1/currentExecution
            "/krstock/quote/v1/currentInvestor", "/krstock/quote/v1/period"}
 ROOT = Path(__file__).resolve().parent.parent
 DATA_BRANCH = "nhplug-live-data"
-PRIORITY = ["007810", "353200", "222800", "35320K", "042510", "053800", "263860",
+PRIORITY = ["007810", "353200", "222800", "396300", "126340", "014950", "042510", "053800", "263860",
             "090460", "009150", "007660", "005930", "000660", "373220", "006400",
             "012450", "064350", "010120", "267260", "207940", "068270", "010950",
             "034020", "277810", "005380", "035420", "069500", "229200"]
@@ -140,12 +140,27 @@ def normalize(code, data, now=None):
     if hi and lo and not lo <= price <= hi:
         flags.append("ohlc_mismatch")
     volume, amount = number(x.get("acml_vol")), number(x.get("acml_tr_pbmn"))
+    raw_amount, multiplier = amount, None
+    if amount and volume and lo and hi:
+        # Endpoint units differ: currentPrice can use KRW million while period
+        # bars use KRW. Accept a conversion only if its implied VWAP fits OHLC.
+        scales = [s for s in (1, 1000, 1000000, 100000000) if lo * .999 <= amount * s / volume <= hi * 1.001]
+        if len(scales) == 1:
+            multiplier = scales[0]
+            amount *= multiplier
+        else:
+            amount = None
+            flags.append("turnover_unit_unverified")
+    else:
+        amount = None
+        flags.append("turnover_unit_unverified")
     return {"code": code, "name": str(x.get("iem_nm") or code).strip(), "market": "KRX",
         "observedAt": now.isoformat(), "quoteTime": qts.isoformat() if qts else None,
         "quoteDateVerified": False, "quoteAgeSeconds": age,
         "price": price, "previousClose": prev, "changePct": ret,
         "open": number(x.get("stck_oprc")), "high": hi, "low": lo,
-        "volume": volume, "turnoverKRW": amount,
+        "volume": volume, "turnoverKRW": amount, "turnoverRaw": raw_amount,
+        "turnoverMultiplier": multiplier, "turnoverUnitMethod": "inferred by OHLC/VWAP consistency",
         "vwap": amount / volume if amount and volume else None,
         "distanceFromHighPct": (price / hi - 1) * 100 if hi else None,
         "rangePosition": (price - lo) / (hi - lo) if hi and lo and hi > lo else None,
@@ -165,7 +180,7 @@ def period_body(code, market="1", minutes=True):
 def load_universe():
     p = ROOT / "docs/data/latest_kr.json"
     items = json.loads(p.read_text(encoding="utf-8")) if p.exists() else []
-    return {x["code"]: x for x in items if re.fullmatch(r"\d{6}", str(x.get("code", "")))}
+    return {x["code"]: x for x in items if re.fullmatch(r"[0-9A-Z]{6}", str(x.get("code", "")))}
 
 
 def summarize(quotes):
@@ -184,7 +199,7 @@ def summarize(quotes):
         "declining": sum(q["changePct"] < 0 for q in usable),
         "sectors": sorted(sectors, key=lambda x: x["meanChangePct"], reverse=True),
         "observationCandidates": [q["code"] for q in candidates[:15]],
-        "note": "���� ���Ϲ��� ǥ��. �ĺ��� ���� �� �������̸� �ż� ��ȣ�� �ƴ�. ���������� ���� ���� Ȯ��."}
+        "note": "감시 유니버스 표본. 후보는 검증 전 관찰용이며 매수 신호가 아님. 뉴스·익일 위험 별도 확인."}
 
 
 def collect(client, codes, universe, with_details=True):
@@ -212,7 +227,10 @@ def collect(client, codes, universe, with_details=True):
                 bars = block(p, "Output_1")
                 keys = ("bsop_date", "bsop_time", "stck_oprc", "stck_hgpr", "stck_lwpr", "stck_prpr", "vol", "tr_pbmn")
                 details[code] = {"queryDate": meta.get("qry_date"), "queryTime": meta.get("qry_time"),
-                    "bars5m": [{k: b.get(k) for k in keys} for b in bars if isinstance(b, dict)]}
+                    "barTimeNote": "API labels may be interval end; latest bar is not necessarily complete",
+                    "bars5m": [{**{k: b.get(k) for k in keys},
+                        "completeByQueryTime": str(b.get("bsop_time", "999999")) <= str(meta.get("qry_time", "000000"))}
+                        for b in bars if isinstance(b, dict)]}
                 inv = client.call("/krstock/quote/v1/currentInvestor", {"market_cd": "KRX", "iem_cd": code, "array_cnt": "030"})
                 inv_keys = ("bsop_date1", "invest", "gigwan", "person", "program", "stck_prpr", "acml_vol")
                 details[code]["investor"] = {"message": message(inv), "responseKeys": list(inv),
@@ -279,16 +297,21 @@ def main():
     # Continuous one-day worker avoids GitHub's delayed cron for today's session.
     # Every sixth sweep covers the whole screener universe; other sweeps retain
     # priority stocks plus liquid leaders discovered in the last broad sweep.
-    cycle, active = 0, codes
+    cycle, active, cursor = 0, codes, 0
+    all_codes = list(universe)
     while dt.datetime.now(KST).date().isoformat() == args.date and dt.datetime.now(KST).time() < dt.time(15, 26):
         begin = time.monotonic()
-        sweep = list(dict.fromkeys(codes + list(universe))) if cycle % 6 == 0 else active
+        # Rotate through 100 additional names per cycle so full-universe calls
+        # cannot starve the priority stocks of fresh updates for 10+ minutes.
+        scan = all_codes[cursor:cursor + 100]
+        cursor = (cursor + 100) % max(1, len(all_codes))
+        sweep = list(dict.fromkeys(codes + active + scan))
         snap = collect(client, sweep, universe)
         if args.output:
             publish(snap, args.output)
         if snap["status"] == "failed":
             raise DataError("API unavailable; failed snapshot published, old data not reused")
-        liquid = sorted(snap["quotes"], key=lambda q: q["turnoverKRW"] or 0, reverse=True)[:70]
+        liquid = sorted(snap["quotes"], key=lambda q: q["turnoverKRW"] or 0, reverse=True)[:50]
         active = list(dict.fromkeys(codes + [q["code"] for q in liquid] + snap["summary"]["observationCandidates"]))
         print("Snapshot:", snap["generatedAt"], snap["status"], snap["receivedCount"], flush=True)
         cycle += 1

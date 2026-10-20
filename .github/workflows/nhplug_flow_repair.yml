@@ -1,0 +1,39 @@
+name: NHPLUG Flow Repair Once
+on:
+  push:
+    branches: [master]
+    paths: [.github/workflows/nhplug_flow_repair.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: nhplug-daily
+  cancel-in-progress: false
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install requests
+      - name: Validate completed-day flow and preserve history
+        env:
+          NHPLUG_APPKEY: ${{ secrets.NHPLUG_APPKEY }}
+          NHPLUG_APPSECRET: ${{ secrets.NHPLUG_APPSECRET }}
+        run: python -m nhplug.kr_extra --mode flow
+      - name: Save validated generation or diagnostic status
+        if: always()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -f research/nhplug/kr_flow.json research/nhplug/flow_status.json research/nhplug/flow_history research/nhplug/kr_sector_extra.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'Restore validated NHPLUG flow generation'
+          for i in 1 2 3; do
+            git pull --rebase origin master && git push origin HEAD:master && exit 0
+            sleep 3
+          done
+          exit 1

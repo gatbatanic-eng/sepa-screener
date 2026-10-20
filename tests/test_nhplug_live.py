@@ -46,6 +46,15 @@ class LiveTest(unittest.TestCase):
         raw['Output_0']['prdy_ctrt'] = 20
         self.assertIn('return_base_mismatch', live.normalize('007810', raw, now)['warnings'])
 
+    def test_million_krw_turnover_is_normalized_by_price_volume_consistency(self):
+        now = dt.datetime(2026, 10, 20, 9, 51, 13, tzinfo=live.KST)
+        q = live.normalize('007810', {'Output_0': {'stck_prpr': 73500, 'prdy_ctrt': 13.95,
+            'hoga_bsop_hour': '095113', 'stck_hgpr': 74000, 'stck_lwpr': 66700,
+            'acml_vol': 693648, 'acml_tr_pbmn': 49082}}, now)
+        self.assertEqual(q['turnoverMultiplier'], 1000000)
+        self.assertEqual(q['turnoverKRW'], 49082000000)
+        self.assertTrue(66700 <= q['vwap'] <= 74000)
+
     def test_stale_and_unknown_time_excluded_from_candidates(self):
         now = dt.datetime(2026, 10, 20, 10, 0, tzinfo=live.KST)
         raw = {'Output_0': {'stck_prpr': 110, 'prdy_ctrt': 10, 'hoga_bsop_hour': '090000',
