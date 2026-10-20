@@ -1,8 +1,8 @@
-"""한국 종목 보조 데이터 수집(조회 전용: nhplug.probe의 허용 목록을 그대로 쓴다). (python -m nhplug.kr_extra --mode auto|full|flow)
-full: 전종목 업종·시가총액·PER/PBR → research/nhplug/kr_extra.json (주 1회, 약 10분)
-flow: 한국 전종목의 외국인·기관·개인 순매수 → 일별 원본을 research/nhplug/flow_history/에 누적하고, 5·20거래일 합계를 research/nhplug/kr_flow.json에 쓴다 (매일, 약 12분)
-수급 필드 대조(2026-10-06, 네이버 동향과 5종목×10일): 기관(gigwan)·개인(person)은 완전 일치, 외국인은 invest가 근접(소폭 차이), frgn_ntby_qty는 다른 값.
-그래서 외국인은 invest를 방향·대략의 크기로만 쓴다."""
+"""�ѱ� ���� ���� ������ ����(��ȸ ����: nhplug.probe�� ��� ����� �״�� ����). (python -m nhplug.kr_extra --mode auto|full|flow)
+full: ������ �������ð��Ѿס�PER/PBR �� research/nhplug/kr_extra.json (�� 1ȸ, �� 10��)
+flow: �ѱ� �������� �ܱ��Ρ���������� ���ż� �� �Ϻ� ������ research/nhplug/flow_history/�� �����ϰ�, 5��20�ŷ��� �հ踦 research/nhplug/kr_flow.json�� ���� (����, �� 12��)
+���� �ʵ� ����(2026-10-06, ���̹� ����� 5����10��): ���(gigwan)������(person)�� ���� ��ġ, �ܱ����� invest�� ����(���� ����), frgn_ntby_qty�� �ٸ� ��.
+�׷��� �ܱ����� invest�� ���⡤�뷫�� ũ��θ� ����."""
 from __future__ import annotations
 
 import datetime as dt
@@ -42,12 +42,18 @@ def universe() -> list[tuple[str, str]]:
 
 def investor(tok: str, code: str) -> list[dict]:
     r = call(tok, "/krstock/quote/v1/currentInvestor", {"market_cd": "KRX", "iem_cd": code, "array_cnt": "030"})
-    return rows(r, "Output_0")
+    got = rows(r, "Output_0")
+    if not got:
+        raise RuntimeError("NHPLUG investor output empty")
+    if not any(len(str(x.get("bsop_date1") or "")) == 8 and
+               all(_i(x.get(k)) is not None for k in ("invest", "gigwan", "person")) for x in got):
+        raise RuntimeError("NHPLUG investor dates/flow fields missing")
+    return got
 
 
 def summarize_flow(inv: list[dict], kst_today: str | None = None) -> dict:
-    """최근순 정렬 가정(첫 행이 최신). 오늘(KST) 날짜 행은 장 마감 직후 집계 전일 수 있어 뺀다.
-    frgn=invest(외국인, 근사), inst=gigwan(기관), indiv=person(개인). 5·20거래일 순매수 수량 합계."""
+    """�ֱټ� ���� ����(ù ���� �ֽ�). ����(KST) ��¥ ���� �� ���� ���� ���� ���� �� �־� ����.
+    frgn=invest(�ܱ���, �ٻ�), inst=gigwan(���), indiv=person(����). 5��20�ŷ��� ���ż� ���� �հ�."""
     if kst_today:
         inv = [x for x in inv if str(x.get("bsop_date1")) != kst_today]
     out = {"days": len(inv), "asOf": str(inv[0].get("bsop_date1")) if inv else None}
@@ -60,14 +66,14 @@ def summarize_flow(inv: list[dict], kst_today: str | None = None) -> dict:
 
 
 def naver_trend(code: str) -> dict[str, dict]:
-    """네이버 모바일 투자자 동향(일자→외국인/기관/개인 순매매량). 대조용이라 실패하면 빈 값."""
+    """���̹� ����� ������ ����(���ڡ�ܱ���/���/���� ���Ÿŷ�). �������̶� �����ϸ� �� ��."""
     try:
         r = requests.get(f"https://m.stock.naver.com/api/stock/{code}/trend", timeout=20,
                          headers={"User-Agent": "Mozilla/5.0", "Referer": "https://m.stock.naver.com/"})
         r.raise_for_status()
         return {x["bizdate"]: {"foreign": _i(x.get("foreignerPureBuyQuant")), "organ": _i(x.get("organPureBuyQuant")),
                                "person": _i(x.get("individualPureBuyQuant"))} for x in r.json()}
-    except Exception as e:  # noqa: BLE001 - 대조용
+    except Exception as e:  # noqa: BLE001 - ������
         return {"error": repr(e)[:200]}
 
 
@@ -107,14 +113,14 @@ def run_full(tok: str) -> int:
                 o0 = o0[0] if o0 else {}
             stocks[code] = {"name": str(o0.get("iem_nm") or "").lstrip("*#"), "sector": o0.get("bstp_kor_isnm"), "sectorCode": o0.get("bstp_cls_code"),
                             "marcapEok": _i(o0.get("hts_avls")), "per": _f(o0.get("per")), "pbr": _f(o0.get("pbr")), "asOf": str(o0.get("bsop_date") or "")}
-        except Exception as e:  # noqa: BLE001 - 종목 하나 실패가 전체를 막지 않게
+        except Exception as e:  # noqa: BLE001 - ���� �ϳ� ���а� ��ü�� ���� �ʰ�
             errors += 1
             stocks[code] = {"error": repr(e)[:120]}
         if i % 100 == 0:
-            print(f"full {i}/{len(uni)} 오류 {errors}", flush=True)
+            print(f"full {i}/{len(uni)} ���� {errors}", flush=True)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps({"schemaVersion": 2, "generatedAt": dt.datetime.now(dt.timezone.utc).isoformat(), "stocks": stocks}, ensure_ascii=False), encoding="utf-8")
-    print("저장:", OUT, "종목", len(stocks), "오류", errors)
+    print("����:", OUT, "����", len(stocks), "����", errors)
     return 0 if errors < len(stocks) * 0.2 else 1
 
 
@@ -123,7 +129,7 @@ SECTOR_REFRESH_DAYS = 30
 
 
 def sector_topup_codes(root: Path = ROOT) -> list[tuple[str, str]]:
-    """세파 유니버스 밖이지만 실적 턴어라운드(깔때기) 상위에 오른 종목 중 업종을 아직 모르는 종목(또는 30일 넘게 묵은 종목)."""
+    """���� ���Ϲ��� �������� ���� �Ͼ����(�򶧱�) ������ ���� ���� �� ������ ���� �𸣴� ����(�Ǵ� 30�� �Ѱ� ���� ����)."""
     try:
         base = {c for c, _ in universe()}
         top = json.loads((root / "docs" / "research" / "funnel_kr.json").read_text(encoding="utf-8")).get("top") or []
@@ -148,7 +154,7 @@ def sector_topup_codes(root: Path = ROOT) -> list[tuple[str, str]]:
 
 
 def run_sector_topup(tok: str) -> int:
-    """깔때기 상위 후보 중 업종 파일에 없는 종목만 받아 kr_sector_extra.json에 더한다(호출 수십 건). kr_extra.json은 건드리지 않는다."""
+    """�򶧱� ���� �ĺ� �� ���� ���Ͽ� ���� ���� �޾� kr_sector_extra.json�� ���Ѵ�(ȣ�� ���� ��). kr_extra.json�� �ǵ帮�� �ʴ´�."""
     todo = sector_topup_codes()
     if not todo:
         return 0
@@ -168,10 +174,10 @@ def run_sector_topup(tok: str) -> int:
                             "fetchedAt": today.date().isoformat()}
         except Exception as e:  # noqa: BLE001
             errors += 1
-            print("업종 보완 실패", code, repr(e)[:80])
+            print("���� ���� ����", code, repr(e)[:80])
     SECTOR_EXTRA.parent.mkdir(parents=True, exist_ok=True)
     SECTOR_EXTRA.write_text(json.dumps({"schemaVersion": 1, "generatedAt": today.isoformat(), "stocks": stocks}, ensure_ascii=False), encoding="utf-8")
-    print("업종 보완 저장:", SECTOR_EXTRA, "종목", len(stocks), "이번 요청", len(todo), "오류", errors)
+    print("���� ���� ����:", SECTOR_EXTRA, "����", len(stocks), "�̹� ��û", len(todo), "����", errors)
     return 0
 
 
@@ -180,29 +186,46 @@ def run_flow(tok: str) -> int:
     kst_today = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=9)).strftime("%Y%m%d")
     codes = [c for c, _ in universe()]
     store = FlowStore()
-    stocks, errors, added = {}, 0, 0
+    stocks, errors, added, error_samples = {}, 0, 0, []
     for i, code in enumerate(codes):
         try:
             inv = investor(tok, code)
             added += store.merge(code, inv, exclude_date=kst_today)
-            stocks[code] = {**summarize_flow(inv, kst_today), "forRate": _f(inv[0].get("for_rate")) if inv else None}
+            summary = summarize_flow(inv, kst_today)
+            if not summary.get("asOf") or summary.get("days", 0) < 1:
+                raise RuntimeError("No completed-day investor rows")
+            stocks[code] = {**summary, "forRate": _f(inv[0].get("for_rate")) if inv else None}
         except Exception as e:  # noqa: BLE001
             errors += 1
+            if len(error_samples) < 10:
+                error_samples.append({"code": code, "type": type(e).__name__, "message": str(e)[:160]})
         if i % 100 == 0:
-            print(f"flow {i}/{len(codes)} 오류 {errors}", flush=True)
+            print(f"flow {i}/{len(codes)} ���� {errors}", flush=True)
+    # Publish only a sufficiently complete generation. Preserve the last known
+    # generation and history if the service returns HTTP 200 with no outputs.
+    good = sum(bool(v.get("asOf")) for v in stocks.values())
+    status = {"generatedAt": dt.datetime.now(dt.timezone.utc).isoformat(), "kstToday": kst_today,
+              "requested": len(codes), "received": good, "errors": errors,
+              "status": "ok" if codes and good >= len(codes) * .8 else "failed",
+              "previousRetained": not (codes and good >= len(codes) * .8), "errorSamples": error_samples}
+    FLOW_OUT.parent.mkdir(parents=True, exist_ok=True)
+    (FLOW_OUT.parent / "flow_status.json").write_text(json.dumps(status, ensure_ascii=False, indent=2), encoding="utf-8")
+    if status["status"] != "ok":
+        print("���� ���� �ҿ���: ���� ���롤���� �̷� ����", good, "/", len(codes), flush=True)
+        return 1
     store.save()
-    print("누적 이력 새 행", added, "개장일", len(store.sessions()))
-    kr_bars: list[str] = []  # 한국 장이 열린 최근 날짜들(대표 종목 일봉 20개). 휴장일 판정에 쓴다(agents/freshness.py)
+    print("���� �̷� �� ��", added, "������", len(store.sessions()))
+    kr_bars: list[str] = []  # �ѱ� ���� ���� �ֱ� ��¥��(��ǥ ���� �Ϻ� 20��). ������ ������ ����(agents/freshness.py)
     try:
         bars = rows(kr_period(tok, "005930", "1", dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d"), 20))
         kr_bars = [str(b.get("bsop_date")) for b in bars if b.get("bsop_date")]
     except Exception as e:  # noqa: BLE001
-        print("마지막 봉 조회 실패:", repr(e)[:120])
+        print("������ �� ��ȸ ����:", repr(e)[:120])
     FLOW_OUT.parent.mkdir(parents=True, exist_ok=True)
     FLOW_OUT.write_text(json.dumps({"schemaVersion": 1, "krBars": kr_bars, "generatedAt": dt.datetime.now(dt.timezone.utc).isoformat(), "kstToday": kst_today,
-                                    "note": "frgn=invest(외국인, 네이버와 근접·소폭 차이), inst=기관, indiv=개인. 순매수 수량 합계. 오늘(KST) 행 제외",
+                                    "note": "frgn=invest(�ܱ���, ���̹��� ���������� ����), inst=���, indiv=����. ���ż� ���� �հ�. ����(KST) �� ����",
                                     "stocks": stocks}, ensure_ascii=False), encoding="utf-8")
-    print("저장:", FLOW_OUT, "종목", len(stocks), "/", len(codes), "오류", errors)
+    print("����:", FLOW_OUT, "����", len(stocks), "/", len(codes), "����", errors)
     return 0 if errors < max(1, len(codes)) * 0.2 else 1
 
 
@@ -211,7 +234,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", choices=["auto", "full", "flow"], default="auto")
     mode = ap.parse_args().mode
-    if mode == "auto":  # 토요일(UTC)이거나 업종 파일이 없거나 8일 넘게 묵었으면 전종목, 아니면 수급만
+    if mode == "auto":  # �����(UTC)�̰ų� ���� ������ ���ų� 8�� �Ѱ� �������� ������, �ƴϸ� ���޸�
         stale = True
         if OUT.exists():
             try:
@@ -223,13 +246,15 @@ def main() -> None:
     print("mode:", mode)
     tok = token()
     rc = run_full(tok) if mode == "full" else 0
-    rc = max(rc, run_flow(tok))  # 전종목 갱신 날에도 수급은 같이 받는다
+    rc = max(rc, run_flow(tok))  # ������ ���� ������ ������ ���� �޴´�
     try:
-        run_sector_topup(tok)  # 실패해도 수급 수집 결과(종료 코드)에는 영향 없음
+        run_sector_topup(tok)  # �����ص� ���� ���� ���(���� �ڵ�)���� ���� ����
     except Exception as e:  # noqa: BLE001
-        print("업종 보완 건너뜀:", repr(e)[:120])
+        print("���� ���� �ǳʶ�:", repr(e)[:120])
     sys.exit(rc)
 
 
 if __name__ == "__main__":
     main()
+
+
