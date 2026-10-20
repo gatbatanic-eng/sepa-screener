@@ -119,6 +119,15 @@ def normalize(code, data, now=None):
     if price is None or price <= 0:
         raise DataError("Missing/invalid current price: " + json.dumps(message(data), ensure_ascii=False))
     prev, ret = number(x.get("stck_prdy_clpr")), number(x.get("prdy_ctrt"))
+    raw_ret, direction = ret, str(x.get("prdy_vrss_sign") or "")
+    # NHPLUG carries direction separately; a positive numeric rate can be a fall.
+    if ret is not None:
+        if direction in ("4", "5", "8", "9"):
+            ret = -abs(ret)
+        elif direction in ("1", "2", "6", "7"):
+            ret = abs(ret)
+        elif direction in ("0", "3"):
+            ret = 0.0
     flags = []
     if prev and ret is not None and abs((price / prev - 1) * 100 - ret) > 0.25:
         flags.append("return_base_mismatch")
@@ -154,10 +163,11 @@ def normalize(code, data, now=None):
     else:
         amount = None
         flags.append("turnover_unit_unverified")
-    return {"code": code, "name": str(x.get("iem_nm") or code).strip(), "market": "KRX",
+    return {"code": code, "name": str(x.get("iem_nm") or code).strip().lstrip("*#"), "market": "KRX",
         "observedAt": now.isoformat(), "quoteTime": qts.isoformat() if qts else None,
         "quoteDateVerified": False, "quoteAgeSeconds": age,
         "price": price, "previousClose": prev, "changePct": ret,
+        "changePctRaw": raw_ret, "directionCode": direction,
         "open": number(x.get("stck_oprc")), "high": hi, "low": lo,
         "volume": volume, "turnoverKRW": amount, "turnoverRaw": raw_amount,
         "turnoverMultiplier": multiplier, "turnoverUnitMethod": "inferred by OHLC/VWAP consistency",

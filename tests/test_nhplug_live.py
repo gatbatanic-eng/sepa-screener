@@ -55,6 +55,15 @@ class LiveTest(unittest.TestCase):
         self.assertEqual(q['turnoverKRW'], 49082000000)
         self.assertTrue(66700 <= q['vwap'] <= 74000)
 
+    def test_falling_quote_uses_separate_direction_code(self):
+        now = dt.datetime(2026, 10, 20, 10, 0, tzinfo=live.KST)
+        q = live.normalize('222800', {'Output_0': {'stck_prpr': 123100,
+            'stck_prdy_clpr': 126700, 'prdy_ctrt': 2.84, 'prdy_vrss_sign': '5',
+            'hoga_bsop_hour': '100000', 'stck_hgpr': 127900, 'stck_lwpr': 122000,
+            'acml_vol': 218282, 'acml_tr_pbmn': 27198}}, now)
+        self.assertEqual(q['changePct'], -2.84)
+        self.assertNotIn('return_base_mismatch', q['warnings'])
+
     def test_stale_and_unknown_time_excluded_from_candidates(self):
         now = dt.datetime(2026, 10, 20, 10, 0, tzinfo=live.KST)
         raw = {'Output_0': {'stck_prpr': 110, 'prdy_ctrt': 10, 'hoga_bsop_hour': '090000',
