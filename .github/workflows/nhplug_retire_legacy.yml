@@ -1,0 +1,15 @@
+name: Retire Superseded NHPLUG Worker
+on:
+  push:
+    branches: [master]
+    paths: [.github/workflows/nhplug_retire_legacy.yml]
+permissions:
+  contents: read
+concurrency:
+  group: nhplug-intraday-one-day
+  cancel-in-progress: true
+jobs:
+  retire:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'Superseded intraday worker retired; v2 collector is independent.'
