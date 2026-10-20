@@ -83,13 +83,13 @@ class Client:
     def call(self, path, body):
         if path not in ALLOWED:
             raise ValueError("Read-only endpoint not allowed")
-        for attempt in range(3):
+        for attempt in range(2):
             time.sleep(0.35)
             req = urllib.request.Request(HOST + path,
                 data=json.dumps({"Input_0": body}).encode(), method="POST",
                 headers={"Authorization": "Bearer " + self.token(), "Content-Type": "application/json"})
             try:
-                with urllib.request.urlopen(req, timeout=25) as response:
+                with urllib.request.urlopen(req, timeout=12) as response:
                     data = json.load(response)
                 if not isinstance(data, dict):
                     raise DataError("API response is not an object")
@@ -99,12 +99,12 @@ class Client:
                     self.access_token = None
                     self.expires_at = 0
                     continue
-                if exc.code == 429 and attempt < 2:
+                if exc.code == 429 and attempt < 1:
                     time.sleep(2 ** (attempt + 1))
                     continue
                 raise DataError("API HTTP " + str(exc.code)) from None
             except (urllib.error.URLError, TimeoutError, json.JSONDecodeError):
-                if attempt == 2:
+                if attempt == 1:
                     raise DataError("API network/JSON failure") from None
         raise DataError("API retries exhausted")
 
@@ -261,7 +261,8 @@ def main():
         return
     client, universe = Client(), load_universe()
     codes = list(dict.fromkeys(PRIORITY))
-    snap = collect(client, codes, universe)
+    # Publish a small authenticated health check before the broader sweep.
+    snap = collect(client, ["007810", "353200"], universe, with_details=False)
     if args.output:
         publish(snap, args.output)
     else:

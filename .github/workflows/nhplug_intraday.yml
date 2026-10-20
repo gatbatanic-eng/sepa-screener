@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: nhplug-intraday-one-day
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   collect:
