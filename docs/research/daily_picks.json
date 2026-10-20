@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "generatedAt": "2026-10-20T13:01:50.896175+00:00",
+ "generatedAt": "2026-10-20T22:15:42.578346+00:00",
  "latest": {
   "kr": {
    "market": "kr",
@@ -13,17 +13,18 @@
      "code": "005930",
      "name": "삼성전자",
      "market": "KOSPI",
-     "price": 215500.0,
+     "price": 211500.0,
      "score": 3,
      "strategies": {
-      "funnel": 32,
+      "funnel": 27,
       "multifactor": [
-       "WATCH"
+       "WATCH",
+       "CONTROL"
       ]
      },
-     "funnelRank": 32,
+     "funnelRank": 27,
      "entry": {
-      "riskPct": 5.78,
+      "riskPct": 5.56,
       "riskSource": "SEPA",
       "verdict": null,
       "chase": [],
@@ -36,7 +37,7 @@
      "code": "005950",
      "name": "이수화학",
      "market": "KOSPI",
-     "price": 9950.0,
+     "price": 9760.0,
      "score": 2,
      "strategies": {
       "funnel": 3
@@ -53,108 +54,106 @@
      "reject": null
     },
     {
-     "code": "067310",
-     "name": "하나마이크론",
-     "market": "KOSDAQ",
-     "price": 40850.0,
+     "code": "123890",
+     "name": "한국자산신탁",
+     "market": "KOSPI",
+     "price": 2335.0,
      "score": 2,
      "strategies": {
-      "funnel": 23
+      "funnel": 20
      },
-     "funnelRank": 23,
+     "funnelRank": 20,
      "entry": {
-      "riskPct": 5.35,
-      "riskSource": "SEPA",
+      "riskPct": 4.3,
+      "riskSource": "기술적",
       "verdict": null,
       "chase": [],
-      "liquidityOk": true,
-      "zone": "SETUP"
+      "liquidityOk": null,
+      "zone": null
      },
      "reject": null
     }
    ],
    "rejectSummary": {
     "손절폭 8% 초과": 56,
-    "손절폭 0 이하(계산 불가)": 5,
-    "SEPA 진입 NO-GO": 2,
+    "손절폭 0 이하(계산 불가)": 4,
+    "SEPA 진입 NO-GO": 3,
     "손절폭 미확인": 1
    },
    "shortfall": null,
-   "session": "2026-10-16",
+   "session": "2026-10-19",
    "poolPrices": {
-    "396300": 9010.0,
-    "355150": 17880.0,
-    "020120": 6110.0,
-    "323350": 11700.0,
-    "005930": 215500.0,
-    "136150": 9300.0,
-    "089860": 50500.0,
-    "032580": 5830.0,
-    "049550": 3410.0,
-    "005950": 9950.0,
-    "044990": 10820.0,
-    "420570": 8700.0,
-    "150900": 4360.0,
-    "049950": 10230.0,
-    "396470": 6230.0,
-    "413390": 6290.0,
-    "228670": 4600.0,
-    "107600": 11400.0,
-    "009160": 4780.0,
-    "003720": 5870.0,
-    "086980": 1827.0,
-    "172670": 12670.0,
-    "302550": 2390.0,
-    "004000": 40550.0,
-    "108230": 2815.0,
-    "126880": 2600.0,
-    "067310": 40850.0,
-    "123890": 2340.0,
-    "052790": 4795.0,
-    "009520": 11620.0,
-    "192440": 27800.0,
-    "008060": 13910.0,
-    "102370": 2800.0,
-    "126730": 20900.0,
-    "031330": 7380.0,
-    "253450": 23200.0,
-    "054450": 8550.0,
-    "263750": 33350.0,
-    "068270": 194000.0,
-    "122870": 42050.0,
-    "048910": 8570.0,
-    "382800": 5800.0,
-    "311320": 7790.0,
-    "424980": 10340.0,
-    "243840": 6250.0,
-    "093190": 8120.0,
-    "451250": 6880.0,
-    "146320": 9900.0,
-    "039200": 36700.0,
-    "234920": 5310.0,
-    "001290": 3780.0,
-    "141000": 13470.0,
-    "096530": 36700.0,
-    "003350": 15180.0,
-    "006400": 552000.0,
-    "080580": 25300.0,
+    "396300": 9770.0,
+    "020120": 4645.0,
+    "355150": 16600.0,
+    "323350": 11750.0,
+    "005930": 211500.0,
+    "136150": 9000.0,
+    "089860": 50300.0,
+    "032580": 5910.0,
+    "049550": 3420.0,
+    "005950": 9760.0,
+    "420570": 8840.0,
+    "044990": 10770.0,
+    "396470": 6070.0,
+    "228670": 4560.0,
+    "049950": 10110.0,
+    "107600": 11310.0,
+    "413390": 6260.0,
+    "086980": 1769.0,
+    "009160": 4720.0,
+    "302550": 2510.0,
+    "102370": 2770.0,
+    "003720": 5650.0,
+    "126880": 2645.0,
+    "108230": 2780.0,
+    "123890": 2335.0,
+    "004000": 38900.0,
+    "172670": 11460.0,
+    "052790": 4690.0,
+    "067310": 37750.0,
+    "192440": 27300.0,
+    "253450": 23850.0,
+    "008060": 14060.0,
+    "031330": 6950.0,
+    "126730": 20350.0,
+    "068270": 197400.0,
+    "009520": 11970.0,
+    "054450": 8300.0,
+    "048910": 9000.0,
+    "122870": 42850.0,
+    "263750": 34000.0,
+    "093190": 8070.0,
+    "243840": 6500.0,
+    "134380": 10900.0,
+    "311320": 7930.0,
+    "146320": 9600.0,
+    "451250": 6870.0,
+    "049960": 15260.0,
+    "424980": 10390.0,
+    "039200": 37500.0,
+    "019550": 870.0,
+    "107590": 57700.0,
+    "141000": 13270.0,
+    "096530": 36500.0,
+    "003350": 15300.0,
+    "006400": 555000.0,
+    "080580": 25000.0,
     "077500": 10120.0,
-    "005160": 4495.0,
-    "159010": 27900.0,
-    "064290": 54300.0,
-    "051160": 14870.0,
-    "091580": 25300.0,
+    "005160": 4465.0,
+    "159010": 28500.0,
+    "064290": 54100.0,
+    "051160": 14840.0,
+    "071200": 10750.0,
+    "091580": 25200.0,
     "144960": 12760.0,
-    "071200": 10940.0,
-    "006110": 81400.0,
+    "006110": 82400.0,
     "092870": 49900.0,
-    "217190": 8610.0,
-    "042510": 17550.0,
-    "351320": 4960.0
+    "217190": 8720.0,
+    "042510": 17520.0,
+    "351320": 4745.0
    },
-   "directComputed": [
-    "234920"
-   ],
+   "directComputed": [],
    "entryUnknown": 1,
    "rules": {
     "maxRiskPct": 8.0,
@@ -167,17 +166,18 @@
      "code": "005930",
      "name": "삼성전자",
      "market": "KOSPI",
-     "price": 215500.0,
+     "price": 211500.0,
      "score": 3,
      "strategies": {
-      "funnel": 32,
+      "funnel": 27,
       "multifactor": [
-       "WATCH"
+       "WATCH",
+       "CONTROL"
       ]
      },
-     "funnelRank": 32,
+     "funnelRank": 27,
      "entry": {
-      "riskPct": 5.78,
+      "riskPct": 5.56,
       "riskSource": "SEPA",
       "verdict": null,
       "chase": [],
@@ -193,15 +193,15 @@
      "why": [
       {
        "kind": "strategy",
-       "text": "실적 턴어라운드 32위, 멀티팩터 선정 (v1 점수 3)"
+       "text": "실적 턴어라운드 27위, 멀티팩터 선정 (v1 점수 3)"
       },
       {
        "kind": "entry",
-       "text": "손절폭 5.78%(SEPA), 추격·NO-GO·유동성 조건 통과"
+       "text": "손절폭 5.56%(SEPA), 추격·NO-GO·유동성 조건 통과"
       },
       {
        "kind": "sector",
-       "text": "업종 전기·전자 강세: 50일선 위 36%, 평균 RS 62, 18개 업종 중 4위 (점수 +1)"
+       "text": "업종 전기·전자 강세: 50일선 위 34%, 평균 RS 62, 18개 업종 중 4위 (점수 +1)"
       },
       {
        "kind": "market",
@@ -209,7 +209,7 @@
       },
       {
        "kind": "consensus",
-       "text": "컨센서스(네이버, 10/20): 2026년 EPS 추정 45,521원 · 평균 목표가 495,227원 (현재가 대비 +130%) · 투자의견 평균 4.0/5 (참고, 점수 아님)"
+       "text": "컨센서스(네이버, 10/20): 2026년 EPS 추정 45,521원 · 평균 목표가 495,227원 (현재가 대비 +134%) · 투자의견 평균 4.0/5 (참고, 점수 아님)"
       },
       {
        "kind": "macro",
@@ -218,68 +218,17 @@
      ]
     },
     {
-     "code": "067310",
-     "name": "하나마이크론",
+     "code": "049960",
+     "name": "쎌바이오텍",
      "market": "KOSDAQ",
-     "price": 40850.0,
+     "price": 15260.0,
      "score": 2,
      "strategies": {
-      "funnel": 23
+      "funnel": 46
      },
-     "funnelRank": 23,
+     "funnelRank": 46,
      "entry": {
-      "riskPct": 5.35,
-      "riskSource": "SEPA",
-      "verdict": null,
-      "chase": [],
-      "liquidityOk": true,
-      "zone": "SETUP"
-     },
-     "v2": {
-      "score": 2,
-      "sector": "전기·전자",
-      "sectorAdj": 1,
-      "marketAdj": -1
-     },
-     "why": [
-      {
-       "kind": "strategy",
-       "text": "실적 턴어라운드 23위 선정 (v1 점수 2)"
-      },
-      {
-       "kind": "entry",
-       "text": "손절폭 5.35%(SEPA), 추격·NO-GO·유동성 조건 통과"
-      },
-      {
-       "kind": "sector",
-       "text": "업종 전기·전자 강세: 50일선 위 36%, 평균 RS 62, 18개 업종 중 4위 (점수 +1)"
-      },
-      {
-       "kind": "market",
-       "text": "시장 KOSDAQ RED (점수 -1)"
-      },
-      {
-       "kind": "consensus",
-       "text": "컨센서스(네이버, 10/20): 2026년 EPS 추정 3,580원 · 평균 목표가 68,000원 (현재가 대비 +66%) · 투자의견 평균 4.0/5 (참고, 점수 아님)"
-      },
-      {
-       "kind": "macro",
-       "text": "매크로 리스크오프 (VIX 18.4, 달러지수 101.9, 원/달러 1,328, 미 10년 5.09%) — 참고, 점수 아님"
-      }
-     ]
-    },
-    {
-     "code": "192440",
-     "name": "슈피겐코리아",
-     "market": "KOSDAQ",
-     "price": 27800.0,
-     "score": 2,
-     "strategies": {
-      "funnel": 27
-     },
-     "funnelRank": 27,
-     "entry": {
-      "riskPct": 5.76,
+      "riskPct": 6.55,
       "riskSource": "기술적",
       "verdict": null,
       "chase": [],
@@ -288,26 +237,73 @@
      },
      "v2": {
       "score": 1,
-      "sector": "기타제조",
+      "sector": null,
       "sectorAdj": 0,
       "marketAdj": -1
      },
      "why": [
       {
        "kind": "strategy",
-       "text": "실적 턴어라운드 27위 선정 (v1 점수 2)"
+       "text": "실적 턴어라운드 46위 선정 (v1 점수 2)"
       },
       {
        "kind": "entry",
-       "text": "손절폭 5.76%(기술적), 추격·NO-GO·유동성 조건 통과"
+       "text": "손절폭 6.55%(기술적), 추격·NO-GO·유동성 조건 통과"
       },
       {
        "kind": "sector",
-       "text": "업종 기타제조: 세파 유니버스 종목이 5개 미만이라 강도를 계산하지 않음 (점수 0)"
+       "text": "업종을 알 수 없어 섹터 점수 0"
       },
       {
        "kind": "market",
        "text": "시장 KOSDAQ RED (점수 -1)"
+      },
+      {
+       "kind": "macro",
+       "text": "매크로 리스크오프 (VIX 18.4, 달러지수 101.9, 원/달러 1,328, 미 10년 5.09%) — 참고, 점수 아님"
+      }
+     ]
+    },
+    {
+     "code": "005950",
+     "name": "이수화학",
+     "market": "KOSPI",
+     "price": 9760.0,
+     "score": 2,
+     "strategies": {
+      "funnel": 3
+     },
+     "funnelRank": 3,
+     "entry": {
+      "riskPct": 7.12,
+      "riskSource": "SEPA",
+      "verdict": null,
+      "chase": [],
+      "liquidityOk": true,
+      "zone": "SETUP"
+     },
+     "v2": {
+      "score": 0,
+      "sector": "화학",
+      "sectorAdj": -1,
+      "marketAdj": -1
+     },
+     "why": [
+      {
+       "kind": "strategy",
+       "text": "실적 턴어라운드 3위 선정 (v1 점수 2)"
+      },
+      {
+       "kind": "entry",
+       "text": "손절폭 7.12%(SEPA), 추격·NO-GO·유동성 조건 통과"
+      },
+      {
+       "kind": "sector",
+       "text": "업종 화학 약세: 50일선 위 27%, 평균 RS 49, 18개 업종 중 14위 (점수 -1)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 KOSPI RED (점수 -1)"
       },
       {
        "kind": "macro",
@@ -321,17 +317,17 @@
      "code": "396300",
      "name": "HT로보틱스",
      "market": "KOSDAQ",
-     "price": 9010.0,
+     "price": 9770.0,
      "score": 4,
      "strategies": {
       "sepa": [
        "TREND"
       ],
-      "funnel": 36
+      "funnel": 43
      },
-     "funnelRank": 36,
+     "funnelRank": 43,
      "entry": {
-      "riskPct": 58.84,
+      "riskPct": 59.0,
       "riskSource": "SEPA",
       "verdict": "NO-GO",
       "chase": [
@@ -342,19 +338,19 @@
       "zone": "EXTENDED"
      },
      "v2": {
-      "score": 3,
+      "score": 2,
       "sector": "금속",
-      "sectorAdj": 0,
+      "sectorAdj": -1,
       "marketAdj": -1
      },
      "why": [
       {
        "kind": "strategy",
-       "text": "SEPA, 실적 턴어라운드 36위 선정 (v1 점수 4)"
+       "text": "SEPA, 실적 턴어라운드 43위 선정 (v1 점수 4)"
       },
       {
        "kind": "entry",
-       "text": "손절폭 58.84%(SEPA) → 권고 비중 14% (8% 초과분은 8%÷손절폭으로 축소)"
+       "text": "손절폭 59.00%(SEPA) → 권고 비중 14% (8% 초과분은 8%÷손절폭으로 축소)"
       },
       {
        "kind": "entry",
@@ -362,7 +358,7 @@
       },
       {
        "kind": "sector",
-       "text": "업종 금속 중간: 50일선 위 32%, 평균 RS 47, 18개 업종 중 12위 (점수 +0)"
+       "text": "업종 금속 약세: 50일선 위 31%, 평균 RS 48, 18개 업종 중 13위 (점수 -1)"
       },
       {
        "kind": "market",
@@ -379,7 +375,7 @@
      "code": "051160",
      "name": "지어소프트",
      "market": "KOSDAQ",
-     "price": 14870.0,
+     "price": 14840.0,
      "score": 2,
      "strategies": {
       "sepa": [
@@ -388,7 +384,7 @@
      },
      "funnelRank": null,
      "entry": {
-      "riskPct": 24.78,
+      "riskPct": 24.63,
       "riskSource": "SEPA",
       "verdict": "NO-GO",
       "chase": [],
@@ -408,7 +404,7 @@
       },
       {
        "kind": "entry",
-       "text": "손절폭 24.78%(SEPA) → 권고 비중 32% (8% 초과분은 8%÷손절폭으로 축소)"
+       "text": "손절폭 24.63%(SEPA) → 권고 비중 32% (8% 초과분은 8%÷손절폭으로 축소)"
       },
       {
        "kind": "entry",
@@ -416,7 +412,7 @@
       },
       {
        "kind": "sector",
-       "text": "업종 IT 서비스 강세: 50일선 위 44%, 평균 RS 54, 18개 업종 중 5위 (점수 +1)"
+       "text": "업종 IT 서비스 강세: 50일선 위 41%, 평균 RS 54, 18개 업종 중 5위 (점수 +1)"
       },
       {
        "kind": "market",
@@ -433,7 +429,7 @@
      "code": "080580",
      "name": "오킨스전자",
      "market": "KOSDAQ",
-     "price": 25300.0,
+     "price": 25000.0,
      "score": 2,
      "strategies": {
       "sepa": [
@@ -442,7 +438,7 @@
      },
      "funnelRank": null,
      "entry": {
-      "riskPct": 12.31,
+      "riskPct": 11.31,
       "riskSource": "SEPA",
       "verdict": "NO-GO",
       "chase": [],
@@ -462,7 +458,7 @@
       },
       {
        "kind": "entry",
-       "text": "손절폭 12.31%(SEPA) → 권고 비중 65% (8% 초과분은 8%÷손절폭으로 축소)"
+       "text": "손절폭 11.31%(SEPA) → 권고 비중 71% (8% 초과분은 8%÷손절폭으로 축소)"
       },
       {
        "kind": "entry",
@@ -470,7 +466,7 @@
       },
       {
        "kind": "sector",
-       "text": "업종 전기·전자 강세: 50일선 위 36%, 평균 RS 62, 18개 업종 중 4위 (점수 +1)"
+       "text": "업종 전기·전자 강세: 50일선 위 34%, 평균 RS 62, 18개 업종 중 4위 (점수 +1)"
       },
       {
        "kind": "market",
@@ -478,14 +474,14 @@
       },
       {
        "kind": "consensus",
-       "text": "컨센서스(네이버, 10/20): 2026년 EPS 추정 1,327원 · 평균 목표가 36,000원 (현재가 대비 +42%) · 투자의견 평균 4.0/5 (참고, 점수 아님)"
+       "text": "컨센서스(네이버, 10/20): 2026년 EPS 추정 1,327원 · 평균 목표가 36,000원 (현재가 대비 +44%) · 투자의견 평균 4.0/5 (참고, 점수 아님)"
       },
       {
        "kind": "macro",
        "text": "매크로 리스크오프 (VIX 18.4, 달러지수 101.9, 원/달러 1,328, 미 10년 5.09%) — 참고, 점수 아님"
       }
      ],
-     "weight": 0.65
+     "weight": 0.71
     }
    ],
    "v3": {
@@ -523,7 +519,7 @@
      "candidates": 69
     },
     "sectorCoverage": {
-     "known": 68,
+     "known": 65,
      "candidates": 69
     },
     "sectors": [
@@ -531,8 +527,8 @@
       "sector": "비금속",
       "n": 5,
       "above50Pct": 40.0,
-      "avgRs": 71.2,
-      "strength": 55.6,
+      "avgRs": 70.2,
+      "strength": 55.1,
       "rank": 1,
       "of": 18,
       "adj": 1
@@ -541,8 +537,8 @@
       "sector": "운송·창고",
       "n": 10,
       "above50Pct": 50.0,
-      "avgRs": 55.3,
-      "strength": 52.7,
+      "avgRs": 55.1,
+      "strength": 52.6,
       "rank": 2,
       "of": 18,
       "adj": 1
@@ -551,8 +547,8 @@
       "sector": "오락·문화",
       "n": 9,
       "above50Pct": 66.7,
-      "avgRs": 35.5,
-      "strength": 51.1,
+      "avgRs": 35.8,
+      "strength": 51.2,
       "rank": 3,
       "of": 18,
       "adj": 1
@@ -560,9 +556,9 @@
      {
       "sector": "전기·전자",
       "n": 125,
-      "above50Pct": 36.0,
-      "avgRs": 62.5,
-      "strength": 49.3,
+      "above50Pct": 33.6,
+      "avgRs": 62.4,
+      "strength": 48.0,
       "rank": 4,
       "of": 18,
       "adj": 1
@@ -570,39 +566,39 @@
      {
       "sector": "IT 서비스",
       "n": 39,
-      "above50Pct": 43.6,
-      "avgRs": 54.0,
-      "strength": 48.8,
+      "above50Pct": 41.0,
+      "avgRs": 53.9,
+      "strength": 47.5,
       "rank": 5,
       "of": 18,
       "adj": 1
      },
      {
       "sector": "음식료·담배",
-      "n": 11,
-      "above50Pct": 54.5,
-      "avgRs": 41.4,
-      "strength": 48.0,
+      "n": 10,
+      "above50Pct": 50.0,
+      "avgRs": 43.4,
+      "strength": 46.7,
       "rank": 6,
       "of": 18,
       "adj": 1
      },
      {
-      "sector": "유통",
-      "n": 26,
-      "above50Pct": 38.5,
-      "avgRs": 51.6,
-      "strength": 45.0,
+      "sector": "기계·장비",
+      "n": 71,
+      "above50Pct": 32.4,
+      "avgRs": 58.0,
+      "strength": 45.2,
       "rank": 7,
       "of": 18,
       "adj": 0
      },
      {
-      "sector": "기계·장비",
-      "n": 71,
-      "above50Pct": 31.0,
-      "avgRs": 58.2,
-      "strength": 44.6,
+      "sector": "유통",
+      "n": 26,
+      "above50Pct": 38.5,
+      "avgRs": 51.5,
+      "strength": 45.0,
       "rank": 8,
       "of": 18,
       "adj": 0
@@ -611,8 +607,8 @@
       "sector": "의료·정밀기기",
       "n": 12,
       "above50Pct": 33.3,
-      "avgRs": 55.2,
-      "strength": 44.3,
+      "avgRs": 55.0,
+      "strength": 44.2,
       "rank": 9,
       "of": 18,
       "adj": 0
@@ -631,28 +627,28 @@
       "sector": "보험",
       "n": 10,
       "above50Pct": 20.0,
-      "avgRs": 63.9,
-      "strength": 42.0,
+      "avgRs": 63.5,
+      "strength": 41.7,
       "rank": 11,
       "of": 18,
       "adj": 0
      },
      {
-      "sector": "금속",
-      "n": 34,
-      "above50Pct": 32.4,
-      "avgRs": 47.0,
-      "strength": 39.7,
+      "sector": "일반서비스",
+      "n": 41,
+      "above50Pct": 34.1,
+      "avgRs": 45.9,
+      "strength": 40.0,
       "rank": 12,
       "of": 18,
       "adj": 0
      },
      {
-      "sector": "일반서비스",
-      "n": 42,
-      "above50Pct": 33.3,
-      "avgRs": 45.0,
-      "strength": 39.2,
+      "sector": "금속",
+      "n": 35,
+      "above50Pct": 31.4,
+      "avgRs": 47.8,
+      "strength": 39.6,
       "rank": 13,
       "of": 18,
       "adj": -1
@@ -660,9 +656,9 @@
      {
       "sector": "화학",
       "n": 60,
-      "above50Pct": 25.0,
-      "avgRs": 49.0,
-      "strength": 37.0,
+      "above50Pct": 26.7,
+      "avgRs": 48.8,
+      "strength": 37.8,
       "rank": 14,
       "of": 18,
       "adj": -1
@@ -671,8 +667,8 @@
       "sector": "운송장비·부품",
       "n": 26,
       "above50Pct": 26.9,
-      "avgRs": 34.9,
-      "strength": 30.9,
+      "avgRs": 34.7,
+      "strength": 30.8,
       "rank": 15,
       "of": 18,
       "adj": -1
@@ -681,7 +677,7 @@
       "sector": "금융",
       "n": 42,
       "above50Pct": 14.3,
-      "avgRs": 45.6,
+      "avgRs": 45.5,
       "strength": 29.9,
       "rank": 16,
       "of": 18,
@@ -691,8 +687,8 @@
       "sector": "건설",
       "n": 10,
       "above50Pct": 0.0,
-      "avgRs": 49.9,
-      "strength": 24.9,
+      "avgRs": 50.0,
+      "strength": 25.0,
       "rank": 17,
       "of": 18,
       "adj": -1
@@ -701,8 +697,8 @@
       "sector": "증권",
       "n": 7,
       "above50Pct": 0.0,
-      "avgRs": 14.8,
-      "strength": 7.4,
+      "avgRs": 14.6,
+      "strength": 7.3,
       "rank": 18,
       "of": 18,
       "adj": -1
@@ -728,7 +724,7 @@
      },
      "funnelRank": 5,
      "entry": {
-      "riskPct": 6.09,
+      "riskPct": 7.86,
       "riskSource": "직접 계산",
       "verdict": null,
       "chase": [],
@@ -748,7 +744,7 @@
      },
      "funnelRank": 6,
      "entry": {
-      "riskPct": 5.23,
+      "riskPct": 5.08,
       "riskSource": "직접 계산",
       "verdict": null,
       "chase": [],
@@ -768,7 +764,7 @@
      },
      "funnelRank": 9,
      "entry": {
-      "riskPct": 4.63,
+      "riskPct": 5.12,
       "riskSource": "직접 계산",
       "verdict": null,
       "chase": [],
@@ -931,7 +927,7 @@
      },
      "funnelRank": 5,
      "entry": {
-      "riskPct": 6.09,
+      "riskPct": 7.86,
       "riskSource": "직접 계산",
       "verdict": null,
       "chase": [],
@@ -951,7 +947,7 @@
       },
       {
        "kind": "entry",
-       "text": "손절폭 6.09%(직접 계산), 추격·NO-GO·유동성 조건 통과"
+       "text": "손절폭 7.86%(직접 계산), 추격·NO-GO·유동성 조건 통과"
       },
       {
        "kind": "sector",
@@ -972,6 +968,57 @@
      ]
     },
     {
+     "code": "SD",
+     "name": "SANDRIDGE ENERGY INC",
+     "market": "NYSE",
+     "price": 14.350000381469727,
+     "score": 2,
+     "strategies": {
+      "funnel": 11
+     },
+     "funnelRank": 11,
+     "entry": {
+      "riskPct": 7.98,
+      "riskSource": "직접 계산",
+      "verdict": null,
+      "chase": [],
+      "liquidityOk": null,
+      "zone": null
+     },
+     "v2": {
+      "score": 3,
+      "sector": "Energy",
+      "sectorAdj": 1,
+      "marketAdj": 0
+     },
+     "why": [
+      {
+       "kind": "strategy",
+       "text": "실적 턴어라운드 11위 선정 (v1 점수 2)"
+      },
+      {
+       "kind": "entry",
+       "text": "손절폭 7.98%(직접 계산), 추격·NO-GO·유동성 조건 통과"
+      },
+      {
+       "kind": "sector",
+       "text": "업종 Energy 강세: 50일선 위 71%, 평균 RS 76, 11개 업종 중 1위 (점수 +1)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 미국 GREEN"
+      },
+      {
+       "kind": "consensus",
+       "text": "컨센서스(야후, 10/20): 애널리스트 1명 · 평균 목표가 $14 (현재가 대비 -2%) · 다음 실적 발표 11/04 (D-15) (참고, 점수 아님)"
+      },
+      {
+       "kind": "macro",
+       "text": "매크로 리스크오프 (VIX 18.4, 달러지수 101.9, 미 10년 5.09%) — 참고, 점수 아님"
+      }
+     ]
+    },
+    {
      "code": "CRON",
      "name": "Cronos Group Inc.",
      "market": "Nasdaq",
@@ -982,7 +1029,7 @@
      },
      "funnelRank": 18,
      "entry": {
-      "riskPct": 6.29,
+      "riskPct": 7.12,
       "riskSource": "직접 계산",
       "verdict": null,
       "chase": [],
@@ -1002,7 +1049,7 @@
       },
       {
        "kind": "entry",
-       "text": "손절폭 6.29%(직접 계산), 추격·NO-GO·유동성 조건 통과"
+       "text": "손절폭 7.12%(직접 계산), 추격·NO-GO·유동성 조건 통과"
       },
       {
        "kind": "sector",
@@ -1015,57 +1062,6 @@
       {
        "kind": "consensus",
        "text": "컨센서스(야후, 10/20): 애널리스트 1명 · 평균 목표가 $2 (현재가 대비 -23%) · 투자의견 적극 매수 · 다음 실적 발표 11/05 (D-16) (참고, 점수 아님)"
-      },
-      {
-       "kind": "macro",
-       "text": "매크로 리스크오프 (VIX 18.4, 달러지수 101.9, 미 10년 5.09%) — 참고, 점수 아님"
-      }
-     ]
-    },
-    {
-     "code": "DAR",
-     "name": "DARLING INGREDIENTS INC.",
-     "market": "NYSE",
-     "price": 59.689998626708984,
-     "score": 2,
-     "strategies": {
-      "funnel": 38
-     },
-     "funnelRank": 38,
-     "entry": {
-      "riskPct": 6.71,
-      "riskSource": "직접 계산",
-      "verdict": null,
-      "chase": [],
-      "liquidityOk": null,
-      "zone": null
-     },
-     "v2": {
-      "score": 3,
-      "sector": "Consumer Defensive",
-      "sectorAdj": 1,
-      "marketAdj": 0
-     },
-     "why": [
-      {
-       "kind": "strategy",
-       "text": "실적 턴어라운드 38위 선정 (v1 점수 2)"
-      },
-      {
-       "kind": "entry",
-       "text": "손절폭 6.71%(직접 계산), 추격·NO-GO·유동성 조건 통과"
-      },
-      {
-       "kind": "sector",
-       "text": "업종 Consumer Defensive 강세: 50일선 위 69%, 평균 RS 51, 11개 업종 중 3위 (점수 +1)"
-      },
-      {
-       "kind": "market",
-       "text": "시장 미국 GREEN"
-      },
-      {
-       "kind": "consensus",
-       "text": "컨센서스(야후, 10/20): 애널리스트 12명 · 평균 목표가 $82 (현재가 대비 +38%) · 투자의견 적극 매수 · 다음 실적 발표 10/29 (D-9, 변동성 주의) (참고, 점수 아님)"
       },
       {
        "kind": "macro",
@@ -1624,6 +1620,33 @@
    ],
    "suitable": 14,
    "candidates": 86
+  },
+  {
+   "market": "kr",
+   "session": "2026-10-19",
+   "recordedAt": "2026-10-20T22:15:42.578346+00:00",
+   "picks": [
+    {
+     "code": "005930",
+     "name": "삼성전자",
+     "score": 3,
+     "riskPct": 5.56
+    },
+    {
+     "code": "049960",
+     "name": "쎌바이오텍",
+     "score": 1,
+     "riskPct": 6.55
+    },
+    {
+     "code": "005950",
+     "name": "이수화학",
+     "score": 0,
+     "riskPct": 7.12
+    }
+   ],
+   "suitable": 5,
+   "candidates": 69
   },
   {
    "market": "us",
