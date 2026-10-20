@@ -213,6 +213,10 @@ def collect(client, codes, universe, with_details=True):
                 keys = ("bsop_date", "bsop_time", "stck_oprc", "stck_hgpr", "stck_lwpr", "stck_prpr", "vol", "tr_pbmn")
                 details[code] = {"queryDate": meta.get("qry_date"), "queryTime": meta.get("qry_time"),
                     "bars5m": [{k: b.get(k) for k in keys} for b in bars if isinstance(b, dict)]}
+                inv = client.call("/krstock/quote/v1/currentInvestor", {"market_cd": "KRX", "iem_cd": code, "array_cnt": "030"})
+                inv_keys = ("bsop_date1", "invest", "gigwan", "person", "program", "stck_prpr", "acml_vol")
+                details[code]["investor"] = {"message": message(inv), "responseKeys": list(inv),
+                    "rows": [{k: b.get(k) for k in inv_keys} for b in block(inv, "Output_0") if isinstance(b, dict)]}
                 for q in quotes:
                     if q["code"] == code:
                         q["quoteDateVerified"] = bool(bars and str(bars[0].get("bsop_date")) == started.strftime("%Y%m%d"))
@@ -241,7 +245,7 @@ def publish(snapshot, output):
     p = folder / (stamp + ".json")
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(encoded, encoding="utf-8")
-    git("add", "--", str(rel), cwd=output)
+    git("add", "-f", "--", str(rel), cwd=output)
     if not git("status", "--porcelain", cwd=output):
         return
     git("-c", "user.name=github-actions[bot]", "-c", "user.email=github-actions[bot]@users.noreply.github.com",
@@ -262,7 +266,7 @@ def main():
     client, universe = Client(), load_universe()
     codes = list(dict.fromkeys(PRIORITY))
     # Publish a small authenticated health check before the broader sweep.
-    snap = collect(client, ["007810", "353200"], universe, with_details=False)
+    snap = collect(client, ["007810", "353200"], universe, with_details=True)
     if args.output:
         publish(snap, args.output)
     else:

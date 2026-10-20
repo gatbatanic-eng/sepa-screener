@@ -1,9 +1,31 @@
 import datetime as dt
 import unittest
+import json
+from pathlib import Path
+import subprocess
+import tempfile
+from unittest.mock import patch
 from nhplug import live
 
 
 class LiveTest(unittest.TestCase):
+    def test_snapshot_is_committed_even_when_json_is_gitignored(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as tmp:
+            root = Path(tmp)
+            checkout = root / 'checkout'
+            subprocess.run(['git', 'init', str(checkout)], check=True, capture_output=True)
+            (checkout / '.gitignore').write_text('*.json\n')
+            live.git('add', '.gitignore', cwd=checkout)
+            live.git('-c', 'user.name=test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'init', cwd=checkout)
+            snapshot = {'generatedAt': '2026-10-20T10:00:00+09:00', 'quotes': [], 'status': 'failed'}
+            real_git = live.git
+            # Exercise real ignore rules, staging, and commit creation. Transport
+            # is validated by the GitHub run; local Windows sandbox blocks MSYS sh.
+            with patch.object(live, 'git', side_effect=lambda *a, **kw: '' if a[0] == 'push' else real_git(*a, **kw)):
+                live.publish(snapshot, checkout)
+            data = live.git('show', 'HEAD:research/nhplug/intraday/latest.json', cwd=checkout)
+            self.assertEqual(json.loads(data), snapshot)
+
     def test_order_path_refused_before_auth(self):
         with self.assertRaises(ValueError):
             live.Client().call('/krstock/order/v1/cashBuy', {})
