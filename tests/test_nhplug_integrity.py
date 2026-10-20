@@ -14,6 +14,15 @@ from nhplug import kr_extra, probe
 
 
 class IntegrityTest(unittest.TestCase):
+    def test_failed_sector_collection_preserves_previous_generation(self):
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as tmp:
+            out = Path(tmp) / 'kr_extra.json'
+            out.write_text('last good metadata')
+            with patch.object(kr_extra, 'OUT', out), patch.object(kr_extra, 'universe', return_value=[('007810', '1')]), \
+                 patch.object(kr_extra, 'kr_period', return_value={'http': 200, 'data': {}}):
+                self.assertEqual(kr_extra.run_full('token'), 1)
+            self.assertEqual(out.read_text(), 'last good metadata')
+
     def test_http_200_business_error_does_not_become_empty_rows(self):
         with self.assertRaisesRegex(RuntimeError, 'missing Output_0'):
             probe.rows({'http': 200, 'data': {'message': {'msg_code': 'FAIL'}}}, 'Output_0')

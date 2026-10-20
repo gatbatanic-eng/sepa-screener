@@ -108,9 +108,10 @@ def run_full(tok: str) -> int:
     for i, (code, mk) in enumerate(uni):
         try:
             p = kr_period(tok, code, mk, dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d"), 1)
-            o0 = ((p["data"] or {}).get("Output_0")) or {}
-            if isinstance(o0, list):
-                o0 = o0[0] if o0 else {}
+            meta = rows(p, "Output_0")
+            o0 = meta[0] if meta else {}
+            if not o0.get("iem_nm") or len(str(o0.get("bsop_date") or "")) != 8:
+                raise RuntimeError("NHPLUG sector metadata missing name/date")
             stocks[code] = {"name": str(o0.get("iem_nm") or "").lstrip("*#"), "sector": o0.get("bstp_kor_isnm"), "sectorCode": o0.get("bstp_cls_code"),
                             "marcapEok": _i(o0.get("hts_avls")), "per": _f(o0.get("per")), "pbr": _f(o0.get("pbr")), "asOf": str(o0.get("bsop_date") or "")}
         except Exception as e:  # noqa: BLE001 - 종목 하나 실패가 전체를 막지 않게
@@ -118,6 +119,9 @@ def run_full(tok: str) -> int:
             stocks[code] = {"error": repr(e)[:120]}
         if i % 100 == 0:
             print(f"full {i}/{len(uni)} 오류 {errors}", flush=True)
+    if not stocks or errors >= len(stocks) * .2:
+        print("업종 수집 불완전: 이전 세대 보존", len(stocks) - errors, "/", len(stocks))
+        return 1
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps({"schemaVersion": 2, "generatedAt": dt.datetime.now(dt.timezone.utc).isoformat(), "stocks": stocks}, ensure_ascii=False), encoding="utf-8")
     print("저장:", OUT, "종목", len(stocks), "오류", errors)
@@ -167,9 +171,10 @@ def run_sector_topup(tok: str) -> int:
     for code, mk in todo:
         try:
             p = kr_period(tok, code, mk, today.strftime("%Y%m%d"), 1)
-            o0 = ((p["data"] or {}).get("Output_0")) or {}
-            if isinstance(o0, list):
-                o0 = o0[0] if o0 else {}
+            meta = rows(p, "Output_0")
+            o0 = meta[0] if meta else {}
+            if not o0.get("iem_nm") or not o0.get("bstp_kor_isnm"):
+                raise RuntimeError("NHPLUG sector metadata missing name/sector")
             stocks[code] = {"name": str(o0.get("iem_nm") or "").lstrip("*#"), "sector": o0.get("bstp_kor_isnm"), "sectorCode": o0.get("bstp_cls_code"),
                             "fetchedAt": today.date().isoformat()}
         except Exception as e:  # noqa: BLE001
