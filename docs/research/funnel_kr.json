@@ -1,8 +1,8 @@
 {
  "schemaVersion": 1,
  "market": "kr",
- "recordedAt": "2026-10-20T16:05:39.873083+00:00",
- "session": "2026-10-19",
+ "recordedAt": "2026-10-21T14:49:17.292257+00:00",
+ "session": "2026-10-21",
  "degraded": null,
  "note": "투자 추천이 아닌 검증·분석용 규칙 판정. 결측은 null.",
  "thresholds": {
@@ -16,15 +16,15 @@
   "P1Cutoff": 3.0
  },
  "stats": {
-  "universe": 1853,
-  "excluded": 280,
-  "noScore": 114,
-  "belowS1Floor": 836,
+  "universe": 1856,
+  "excluded": 279,
+  "noScore": 116,
+  "belowS1Floor": 839,
   "cyclicalInTop": 5,
-  "ranked": 623,
+  "ranked": 622,
   "gateHits": {
-   "G3": 175,
-   "G2": 128,
+   "G2": 127,
+   "G3": 174,
    "G1": 5
   }
  },
@@ -38,8 +38,8 @@
    "D": false
   },
   "A_share100": 0.0,
-  "B_fringeMinusCore": -0.028363208202775714,
-  "C_lossMinusProfit": -0.20006048974602192,
+  "B_fringeMinusCore": -0.007396919491225673,
+  "C_lossMinusProfit": -0.2011460209089861,
   "D_shareGrowthMedian": 0.005348564251017263,
   "D_dilutionEventShare": 0.1590909090909091,
   "n": {
@@ -54,52 +54,52 @@
    {
     "symbol": "036930",
     "tier": "core",
-    "ret6m": 0.5988700564971752
+    "ret6m": 0.6545601291364003
    },
    {
     "symbol": "009150",
     "tier": "core",
-    "ret6m": 0.4657360406091371
+    "ret6m": 0.48223350253807107
    },
    {
     "symbol": "222800",
     "tier": "fringe",
-    "ret6m": 0.39482564679415066
+    "ret6m": 0.4173228346456692
    },
    {
     "symbol": "319660",
     "tier": "core",
-    "ret6m": 0.30537634408602155
+    "ret6m": 0.34731182795698934
    },
    {
     "symbol": "018260",
     "tier": "core",
-    "ret6m": 0.17078916372202602
-   },
-   {
-    "symbol": "353200",
-    "tier": "core",
-    "ret6m": 0.1484375
+    "ret6m": 0.18669022379269729
    },
    {
     "symbol": "072950",
     "tier": "fringe",
-    "ret6m": 0.10423197492163006
+    "ret6m": 0.1637931034482758
+   },
+   {
+    "symbol": "353200",
+    "tier": "core",
+    "ret6m": 0.14583333333333326
    },
    {
     "symbol": "064400",
     "tier": "core",
-    "ret6m": 0.039030745999889094
+    "ret6m": 0.09507176291241937
    },
    {
-    "symbol": "356860",
+    "symbol": "010170",
     "tier": "fringe",
-    "ret6m": 0.026077707544771567
+    "ret6m": 0.07110778443113763
    },
    {
     "symbol": "000660",
     "tier": "core",
-    "ret6m": 0.0012026916634424456
+    "ret6m": 0.05932647834218674
    }
   ],
   "thresholds": {
@@ -117,12 +117,12 @@
    "symbol": "032580",
    "name": "피델릭스",
    "exchange": "KOSDAQ",
-   "marcap": 195810498240.0,
+   "marcap": 216352377920.0,
    "marcapEstimated": false,
-   "price": 5910.0,
+   "price": 6530.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.6985815602836879,
-   "ret6m": 3.9538977367979884,
+   "high52Ratio": 0.7718676122931442,
+   "ret6m": 4.473595976529757,
    "ret36to6m": -0.07876447876447878,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -146,7 +146,7 @@
     "S1": 100.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 75.3
+    "S4": 75.34
    },
    "reasons": {
     "S1": [
@@ -162,8 +162,8 @@
      "증자·CB 공시 0건"
     ]
    },
-   "composite": 95.51,
-   "T1": "OFF",
+   "composite": 95.52,
+   "T1": "NEAR",
    "inflection": true,
    "meetsS1Floor": true,
    "cyclical": null,
@@ -175,12 +175,12 @@
    "symbol": "049550",
    "name": "잉크테크",
    "exchange": "KOSDAQ",
-   "marcap": 67053467340.0,
+   "marcap": 65877090720.0,
    "marcapEstimated": false,
-   "price": 3420.0,
+   "price": 3360.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.8571428571428571,
-   "ret6m": -0.008695652173912993,
+   "high52Ratio": 0.8421052631578947,
+   "ret6m": -0.02608695652173909,
    "ret36to6m": -0.10389610389610393,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -204,7 +204,7 @@
     "S1": 90.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 76.66
+    "S4": 76.71
    },
    "reasons": {
     "S1": [
@@ -221,7 +221,7 @@
      "증자·CB 공시 0건"
     ]
    },
-   "composite": 93.03,
+   "composite": 93.04,
    "T1": "NEAR",
    "inflection": true,
    "meetsS1Floor": true,
@@ -234,12 +234,12 @@
    "symbol": "005950",
    "name": "이수화학",
    "exchange": "KOSPI",
-   "marcap": 256631089440.0,
+   "marcap": 259786389720.0,
    "marcapEstimated": false,
-   "price": 9760.0,
+   "price": 9880.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.5844311377245509,
-   "ret6m": 0.044967880085653,
+   "high52Ratio": 0.5916167664670658,
+   "ret6m": 0.05781584582441113,
    "ret36to6m": -0.23755102040816323,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -263,7 +263,7 @@
     "S1": 65.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 85.2
+    "S4": 85.19
    },
    "reasons": {
     "S1": [
@@ -291,13 +291,13 @@
    "symbol": "420570",
    "name": "제이투케이바이오",
    "exchange": "KOSDAQ",
-   "marcap": 51691749720.0,
+   "marcap": 51574800060.0,
    "marcapEstimated": false,
-   "price": 8840.0,
+   "price": 8820.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.8331762488218661,
-   "ret6m": 0.031505250875145885,
-   "ret36to6m": -0.49599451500740244,
+   "high52Ratio": 0.8312912346842601,
+   "ret6m": 0.029171528588098017,
+   "ret36to6m": -0.49599445711523726,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -320,7 +320,7 @@
     "S1": 90.0,
     "S2": 65.0,
     "S6": 100.0,
-    "S4": 94.48
+    "S4": 94.53
    },
    "reasons": {
     "S1": [
@@ -337,7 +337,7 @@
      "증자·CB 공시 0건"
     ]
    },
-   "composite": 86.72,
+   "composite": 86.73,
    "T1": "NEAR",
    "inflection": true,
    "meetsS1Floor": true,
@@ -350,13 +350,13 @@
    "symbol": "044990",
    "name": "에이치엔에스하이텍",
    "exchange": "KOSDAQ",
-   "marcap": 82772027250.0,
+   "marcap": 80235837000.0,
    "marcapEstimated": false,
-   "price": 10770.0,
+   "price": 10440.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.4628272866525379,
-   "ret6m": -0.38280802292263605,
-   "ret36to6m": 0.12570325741938349,
+   "high52Ratio": 0.44864594917850475,
+   "ret6m": -0.40171919770773634,
+   "ret36to6m": 0.1257031865020446,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -379,7 +379,7 @@
     "S1": 75.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 61.3
+    "S4": 61.33
    },
    "reasons": {
     "S1": [
@@ -437,7 +437,7 @@
     "S1": 80.0,
     "S2": 85.0,
     "S6": 100.0,
-    "S4": 74.62
+    "S4": 74.66
    },
    "reasons": {
     "S1": [
@@ -454,7 +454,7 @@
      "증자·CB 공시 0건"
     ]
    },
-   "composite": 85.84,
+   "composite": 85.85,
    "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
@@ -467,12 +467,12 @@
    "symbol": "228670",
    "name": "레이",
    "exchange": "KOSDAQ",
-   "marcap": 71318495760.0,
+   "marcap": 70145494185.0,
    "marcapEstimated": false,
-   "price": 4560.0,
+   "price": 4485.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.418732782369146,
-   "ret6m": -0.45192307692307687,
+   "high52Ratio": 0.4118457300275482,
+   "ret6m": -0.4609375,
    "ret36to6m": -0.5951338199513382,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -526,12 +526,12 @@
    "symbol": "049950",
    "name": "미래컴퍼니",
    "exchange": "KOSDAQ",
-   "marcap": 89148807240.0,
+   "marcap": 88707913040.0,
    "marcapEstimated": false,
-   "price": 10110.0,
+   "price": 10060.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.5251948051948052,
-   "ret6m": -0.4056437389770723,
+   "high52Ratio": 0.5225974025974026,
+   "ret6m": -0.40858318636096413,
    "ret36to6m": -0.33232801876110185,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -555,7 +555,7 @@
     "S1": 80.0,
     "S2": 75.0,
     "S6": 100.0,
-    "S4": 89.47
+    "S4": 89.46
    },
    "reasons": {
     "S1": [
@@ -585,12 +585,12 @@
    "symbol": "020120",
    "name": "키다리스튜디오",
    "exchange": "KOSPI",
-   "marcap": 172196030570.0,
+   "marcap": 173864237540.0,
    "marcapEstimated": false,
-   "price": 4645.0,
+   "price": 4690.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.5516627078384798,
-   "ret6m": 0.1879795396419437,
+   "high52Ratio": 0.5570071258907363,
+   "ret6m": 0.19948849104859345,
    "ret36to6m": -0.06347305389221558,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -614,7 +614,7 @@
     "S1": 65.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 74.22
+    "S4": 74.26
    },
    "reasons": {
     "S1": [
@@ -644,12 +644,12 @@
    "symbol": "107600",
    "name": "새빗켐",
    "exchange": "KOSDAQ",
-   "marcap": 63902110740.0,
+   "marcap": 63450106420.0,
    "marcapEstimated": false,
-   "price": 11310.0,
+   "price": 11230.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.30567567567567566,
-   "ret6m": -0.6471138845553822,
+   "high52Ratio": 0.3035135135135135,
+   "ret6m": -0.6496099843993759,
    "ret36to6m": -0.4330890201832829,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -673,7 +673,7 @@
     "S1": 85.0,
     "S2": 75.0,
     "S6": 90.0,
-    "S4": 92.49
+    "S4": 92.54
    },
    "reasons": {
     "S1": [
@@ -690,7 +690,7 @@
      "증자·CB 공시 0건"
     ]
    },
-   "composite": 85.0,
+   "composite": 85.01,
    "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
@@ -703,12 +703,12 @@
    "symbol": "413390",
    "name": "엠오티",
    "exchange": "KOSDAQ",
-   "marcap": 70647355200.0,
+   "marcap": 70760210400.0,
    "marcapEstimated": false,
-   "price": 6260.0,
+   "price": 6270.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.6266266266266266,
-   "ret6m": -0.35530381050463444,
+   "high52Ratio": 0.6276276276276276,
+   "ret6m": -0.3542739443872297,
    "ret36to6m": 0.37260896187322334,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -732,7 +732,7 @@
     "S1": 80.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 47.24
+    "S4": 47.27
    },
    "reasons": {
     "S1": [
@@ -748,7 +748,7 @@
      "증자·CB 공시 0건"
     ]
    },
-   "composite": 84.95,
+   "composite": 84.96,
    "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
@@ -761,12 +761,12 @@
    "symbol": "086980",
    "name": "쇼박스",
    "exchange": "KOSDAQ",
-   "marcap": 110452822000.0,
+   "marcap": 107393360000.0,
    "marcapEstimated": false,
-   "price": 1769.0,
+   "price": 1720.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.5916387959866221,
-   "ret6m": -0.40737018425460636,
+   "high52Ratio": 0.5752508361204013,
+   "ret6m": -0.423785594639866,
    "ret36to6m": 0.16284428995515365,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -790,7 +790,7 @@
     "S1": 70.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 58.17
+    "S4": 58.2
    },
    "reasons": {
     "S1": [
@@ -805,7 +805,7 @@
      "증자·CB 공시 0건"
     ]
    },
-   "composite": 84.21,
+   "composite": 84.22,
    "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
@@ -818,12 +818,12 @@
    "symbol": "009160",
    "name": "SIMPAC",
    "exchange": "KOSPI",
-   "marcap": 308550968960.0,
+   "marcap": 309204678640.0,
    "marcapEstimated": false,
-   "price": 4720.0,
+   "price": 4730.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.4724836959555373,
-   "ret6m": -0.18900343642611683,
+   "high52Ratio": 0.4734847207351041,
+   "ret6m": -0.1872852233676976,
    "ret36to6m": -0.05388478936534802,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -847,7 +847,7 @@
     "S1": 75.0,
     "S2": 85.0,
     "S6": 100.0,
-    "S4": 72.97
+    "S4": 73.01
    },
    "reasons": {
     "S1": [
@@ -877,12 +877,12 @@
    "symbol": "302550",
    "name": "리메드",
    "exchange": "KOSDAQ",
-   "marcap": 75990282630.0,
+   "marcap": 71751780810.0,
    "marcapEstimated": false,
-   "price": 2510.0,
+   "price": 2370.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.7382352941176471,
-   "ret6m": -0.19292604501607713,
+   "high52Ratio": 0.6970588235294117,
+   "ret6m": -0.23794212218649513,
    "ret36to6m": -0.02933832709113604,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -906,7 +906,7 @@
     "S1": 80.0,
     "S2": 100.0,
     "S6": 80.0,
-    "S4": 71.6
+    "S4": 71.64
    },
    "reasons": {
     "S1": [
@@ -936,12 +936,12 @@
    "symbol": "102370",
    "name": "케이옥션",
    "exchange": "KOSDAQ",
-   "marcap": 71710563300.0,
+   "marcap": 71451680400.0,
    "marcapEstimated": false,
-   "price": 2770.0,
+   "price": 2760.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.6367816091954023,
-   "ret6m": -0.14769230769230768,
+   "high52Ratio": 0.6344827586206897,
+   "ret6m": -0.15076923076923077,
    "ret36to6m": -0.12868632707774796,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -965,7 +965,7 @@
     "S1": 80.0,
     "S2": 75.0,
     "S6": 100.0,
-    "S4": 78.37
+    "S4": 78.42
    },
    "reasons": {
     "S1": [
@@ -982,7 +982,7 @@
      "증자·CB 공시 0건"
     ]
    },
-   "composite": 83.79,
+   "composite": 83.8,
    "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
@@ -995,12 +995,12 @@
    "symbol": "355150",
    "name": "코스텍시스",
    "exchange": "KOSDAQ",
-   "marcap": 129436010000.0,
+   "marcap": 144173001500.0,
    "marcapEstimated": false,
-   "price": 16600.0,
+   "price": 18490.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.30127041742286753,
-   "ret6m": -0.5452054794520548,
+   "high52Ratio": 0.3355716878402904,
+   "ret6m": -0.4934246575342466,
    "ret36to6m": 3.091928251121076,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1054,12 +1054,12 @@
    "symbol": "003720",
    "name": "삼영",
    "exchange": "KOSPI",
-   "marcap": 192100000000.0,
+   "marcap": 190400000000.0,
    "marcapEstimated": false,
-   "price": 5650.0,
+   "price": 5600.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.4286798179059181,
-   "ret6m": -0.4905320108205591,
+   "high52Ratio": 0.424886191198786,
+   "ret6m": -0.4950405770964833,
    "ret36to6m": 1.2066964988812678,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1083,7 +1083,7 @@
     "S1": 90.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 21.86
+    "S4": 21.87
    },
    "reasons": {
     "S1": [
@@ -1113,12 +1113,12 @@
    "symbol": "126880",
    "name": "제이엔케이글로벌",
    "exchange": "KOSDAQ",
-   "marcap": 61279685335.0,
+   "marcap": 61627207180.0,
    "marcapEstimated": false,
-   "price": 2645.0,
+   "price": 2660.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.6041276374877295,
-   "ret6m": -0.34039900249376553,
+   "high52Ratio": 0.6075536921426693,
+   "ret6m": -0.33665835411471323,
    "ret36to6m": -0.1834542420562706,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1142,7 +1142,7 @@
     "S1": 50.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 81.79
+    "S4": 81.78
    },
    "reasons": {
     "S1": [
@@ -1199,7 +1199,7 @@
     "S1": 45.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 88.79
+    "S4": 88.78
    },
    "reasons": {
     "S1": [
@@ -1228,12 +1228,12 @@
    "symbol": "123890",
    "name": "한국자산신탁",
    "exchange": "KOSPI",
-   "marcap": 285743117210.0,
+   "marcap": 282071899430.0,
    "marcapEstimated": false,
-   "price": 2335.0,
+   "price": 2305.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.8272498674900046,
-   "ret6m": -0.13837638376383765,
+   "high52Ratio": 0.816621389535101,
+   "ret6m": -0.14944649446494462,
    "ret36to6m": -0.014022354189331954,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1257,7 +1257,7 @@
     "S1": 70.0,
     "S2": 85.0,
     "S6": 100.0,
-    "S4": 70.57
+    "S4": 70.62
    },
    "reasons": {
     "S1": [
@@ -1274,7 +1274,7 @@
      "증자·CB 공시 0건"
     ]
    },
-   "composite": 82.38,
+   "composite": 82.39,
    "T1": "OFF",
    "inflection": false,
    "meetsS1Floor": true,
@@ -1287,13 +1287,13 @@
    "symbol": "004000",
    "name": "롯데정밀화학",
    "exchange": "KOSPI",
-   "marcap": 1003620000000.0,
+   "marcap": 976530000000.0,
    "marcapEstimated": false,
-   "price": 38900.0,
+   "price": 37850.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.5605187319884726,
-   "ret6m": -0.3674796747967479,
-   "ret36to6m": 0.22325185469035969,
+   "high52Ratio": 0.5453890489913544,
+   "ret6m": -0.38455284552845526,
+   "ret36to6m": 0.22325194973261175,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -1316,7 +1316,7 @@
     "S1": 80.0,
     "S2": 85.0,
     "S6": 100.0,
-    "S4": 54.75
+    "S4": 54.78
    },
    "reasons": {
     "S1": [
@@ -1346,12 +1346,12 @@
    "symbol": "172670",
    "name": "에이엘티",
    "exchange": "KOSDAQ",
-   "marcap": 102684568140.0,
+   "marcap": 101698939650.0,
    "marcapEstimated": false,
-   "price": 11460.0,
+   "price": 11350.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.5861892583120205,
-   "ret6m": -0.2796983029541169,
+   "high52Ratio": 0.5805626598465473,
+   "ret6m": -0.28661219358893775,
    "ret36to6m": -0.09177874415827159,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1375,7 +1375,7 @@
     "S1": 75.0,
     "S2": 75.0,
     "S6": 100.0,
-    "S4": 76.1
+    "S4": 76.14
    },
    "reasons": {
     "S1": [
@@ -1392,7 +1392,7 @@
      "증자·CB 공시 0건"
     ]
    },
-   "composite": 82.02,
+   "composite": 82.03,
    "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
@@ -1405,12 +1405,12 @@
    "symbol": "052790",
    "name": "액토즈소프트",
    "exchange": "KOSDAQ",
-   "marcap": 51236125430.0,
+   "marcap": 51126879960.0,
    "marcapEstimated": false,
-   "price": 4690.0,
+   "price": 4680.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.7456279809220986,
-   "ret6m": -0.18292682926829273,
+   "high52Ratio": 0.7440381558028617,
+   "ret6m": -0.18466898954703836,
    "ret36to6m": -0.20827586206896553,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1434,7 +1434,7 @@
     "S1": 80.0,
     "S2": 65.0,
     "S6": 100.0,
-    "S4": 83.55
+    "S4": 83.54
    },
    "reasons": {
     "S1": [
@@ -1464,12 +1464,12 @@
    "symbol": "323350",
    "name": "다원넥스뷰",
    "exchange": "KOSDAQ",
-   "marcap": 94126571000.0,
+   "marcap": 103178743360.0,
    "marcapEstimated": false,
-   "price": 11750.0,
+   "price": 12880.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.45542635658914726,
-   "ret6m": -0.06374501992031878,
+   "high52Ratio": 0.4992248062015504,
+   "ret6m": 0.026294820717131406,
    "ret36to6m": 0.2549999999999999,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1493,7 +1493,7 @@
     "S1": 65.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 52.48
+    "S4": 52.51
    },
    "reasons": {
     "S1": [
@@ -1510,7 +1510,7 @@
      "증자·CB 공시 0건"
     ]
    },
-   "composite": 81.81,
+   "composite": 81.82,
    "T1": "OFF",
    "inflection": false,
    "meetsS1Floor": true,
@@ -1523,12 +1523,12 @@
    "symbol": "067310",
    "name": "하나마이크론",
    "exchange": "KOSDAQ",
-   "marcap": 2510030304750.0,
+   "marcap": 2579845717200.0,
    "marcapEstimated": false,
-   "price": 37750.0,
+   "price": 38800.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.7136105860113422,
-   "ret6m": -0.06327543424317617,
+   "high52Ratio": 0.7334593572778828,
+   "ret6m": -0.037220843672456594,
    "ret36to6m": 0.8446034915121474,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1552,7 +1552,7 @@
     "S1": 90.0,
     "S2": 100.0,
     "S6": 90.0,
-    "S4": 29.65
+    "S4": 29.61
    },
    "reasons": {
     "S1": [
@@ -1582,12 +1582,12 @@
    "symbol": "192440",
    "name": "슈피겐코리아",
    "exchange": "KOSDAQ",
-   "marcap": 169706709900.0,
+   "marcap": 174368982150.0,
    "marcapEstimated": false,
-   "price": 27300.0,
+   "price": 28050.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.8425925925925926,
-   "ret6m": 0.011111111111111072,
+   "high52Ratio": 0.8657407407407407,
+   "ret6m": 0.03888888888888897,
    "ret36to6m": -0.060636447346613886,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1611,7 +1611,7 @@
     "S1": 65.0,
     "S2": 85.0,
     "S6": 100.0,
-    "S4": 74.05
+    "S4": 74.09
    },
    "reasons": {
     "S1": [
@@ -1629,7 +1629,7 @@
     ]
    },
    "composite": 81.65,
-   "T1": "OFF",
+   "T1": "NEAR",
    "inflection": true,
    "meetsS1Floor": true,
    "cyclical": null,
@@ -1641,13 +1641,13 @@
    "symbol": "005930",
    "name": "삼성전자",
    "exchange": "KOSPI",
-   "marcap": 1236487925592000.0,
+   "marcap": 1306643268888000.0,
    "marcapEstimated": false,
-   "price": 211500.0,
+   "price": 223500.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.5981165162434854,
-   "ret6m": -0.03538386712298747,
-   "ret36to6m": 2.4270452182333377,
+   "high52Ratio": 0.632052205108364,
+   "ret6m": 0.019346126231736704,
+   "ret36to6m": 2.4270445905146927,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -1670,7 +1670,7 @@
     "S1": 90.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 11.04
+    "S4": 11.05
    },
    "reasons": {
     "S1": [
@@ -1699,12 +1699,12 @@
    "symbol": "253450",
    "name": "스튜디오드래곤",
    "exchange": "KOSDAQ",
-   "marcap": 716895177300.0,
+   "marcap": 704871778100.0,
    "marcapEstimated": false,
-   "price": 23850.0,
+   "price": 23450.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.48377281947261663,
-   "ret6m": -0.33193277310924374,
+   "high52Ratio": 0.47565922920892495,
+   "ret6m": -0.3431372549019608,
    "ret36to6m": -0.25469728601252606,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1728,7 +1728,7 @@
     "S1": 90.0,
     "S2": 50.0,
     "S6": 100.0,
-    "S4": 86.06
+    "S4": 86.05
    },
    "reasons": {
     "S1": [
@@ -1758,13 +1758,13 @@
    "symbol": "008060",
    "name": "대덕",
    "exchange": "KOSPI",
-   "marcap": 439896597880.0,
+   "marcap": 441773823760.0,
    "marcapEstimated": false,
-   "price": 14060.0,
+   "price": 14120.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.6276785714285714,
-   "ret6m": -0.18728323699421967,
-   "ret36to6m": 2.517588837723535,
+   "high52Ratio": 0.6303571428571428,
+   "ret6m": -0.18381502890173407,
+   "ret36to6m": 2.51758918695562,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -1787,7 +1787,7 @@
     "S1": 90.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 10.47
+    "S4": 10.48
    },
    "reasons": {
     "S1": [
@@ -1804,7 +1804,7 @@
      "증자·CB 공시 0건"
     ]
    },
-   "composite": 80.99,
+   "composite": 81.0,
    "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
@@ -1817,12 +1817,12 @@
    "symbol": "031330",
    "name": "에스에이엠티",
    "exchange": "KOSDAQ",
-   "marcap": 694965715650.0,
+   "marcap": 709964975700.0,
    "marcapEstimated": false,
-   "price": 6950.0,
+   "price": 7100.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.4217233009708738,
-   "ret6m": -0.060810810810810856,
+   "high52Ratio": 0.4308252427184466,
+   "ret6m": -0.04054054054054057,
    "ret36to6m": 2.5573586884023776,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1846,7 +1846,7 @@
     "S1": 90.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 10.13
+    "S4": 10.14
    },
    "reasons": {
     "S1": [
@@ -1875,12 +1875,12 @@
    "symbol": "126730",
    "name": "코칩",
    "exchange": "KOSDAQ",
-   "marcap": 178472064100.0,
+   "marcap": 181103101900.0,
    "marcapEstimated": false,
-   "price": 20350.0,
+   "price": 20650.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.6749585406301825,
-   "ret6m": 0.03404471544715437,
+   "high52Ratio": 0.6849087893864013,
+   "ret6m": 0.04928861788617889,
    "ret36to6m": -0.11593399265805193,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1904,7 +1904,7 @@
     "S1": 90.0,
     "S2": 85.0,
     "S6": 70.0,
-    "S4": 77.58
+    "S4": 77.62
    },
    "reasons": {
     "S1": [
@@ -1921,7 +1921,7 @@
      "증자·CB 공시 0건"
     ]
    },
-   "composite": 80.92,
+   "composite": 80.93,
    "T1": "OFF",
    "inflection": true,
    "meetsS1Floor": true,
@@ -1934,12 +1934,12 @@
    "symbol": "068270",
    "name": "셀트리온",
    "exchange": "KOSPI",
-   "marcap": 45811185919800.0,
+   "marcap": 45857600495200.0,
    "marcapEstimated": false,
-   "price": 197400.0,
+   "price": 197600.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.8564876143658008,
-   "ret6m": -0.008277541618494588,
+   "high52Ratio": 0.8573553829720478,
+   "ret6m": -0.007272756959546767,
    "ret36to6m": 0.5431104478443596,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -1963,7 +1963,7 @@
     "S1": 80.0,
     "S2": 100.0,
     "S6": 90.0,
-    "S4": 39.5
+    "S4": 39.52
    },
    "reasons": {
     "S1": [
@@ -1992,12 +1992,12 @@
    "symbol": "009520",
    "name": "포스코엠텍",
    "exchange": "KOSDAQ",
-   "marcap": 498463154910.0,
+   "marcap": 493049603520.0,
    "marcapEstimated": false,
-   "price": 11970.0,
+   "price": 11840.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.5727272727272728,
-   "ret6m": -0.40299251870324193,
+   "high52Ratio": 0.5665071770334928,
+   "ret6m": -0.4094763092269327,
    "ret36to6m": -0.0997057310444539,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2021,7 +2021,7 @@
     "S1": 45.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 76.49
+    "S4": 76.54
    },
    "reasons": {
     "S1": [
@@ -2050,12 +2050,12 @@
    "symbol": "054450",
    "name": "텔레칩스",
    "exchange": "KOSDAQ",
-   "marcap": 125697133900.0,
+   "marcap": 128423095840.0,
    "marcapEstimated": false,
-   "price": 8300.0,
+   "price": 8480.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.472127417519909,
-   "ret6m": -0.429553264604811,
+   "high52Ratio": 0.48236632536973834,
+   "ret6m": -0.4171821305841924,
    "ret36to6m": -0.30760554818975605,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2079,7 +2079,7 @@
     "S1": 60.0,
     "S2": 75.0,
     "S6": 100.0,
-    "S4": 88.56
+    "S4": 88.55
    },
    "reasons": {
     "S1": [
@@ -2108,12 +2108,12 @@
    "symbol": "048910",
    "name": "대원미디어",
    "exchange": "KOSDAQ",
-   "marcap": 113210514000.0,
+   "marcap": 110568935340.0,
    "marcapEstimated": false,
-   "price": 9000.0,
+   "price": 8790.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 1.0,
-   "ret6m": 0.17340286831812257,
+   "high52Ratio": 0.9766666666666667,
+   "ret6m": 0.14602346805736643,
    "ret36to6m": -0.30701456639838387,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2137,7 +2137,7 @@
     "S1": 50.0,
     "S2": 85.0,
     "S6": 100.0,
-    "S4": 88.45
+    "S4": 88.44
    },
    "reasons": {
     "S1": [
@@ -2166,13 +2166,13 @@
    "symbol": "122870",
    "name": "와이지엔터테인먼트",
    "exchange": "KOSDAQ",
-   "marcap": 800911449650.0,
+   "marcap": 792500477600.0,
    "marcapEstimated": false,
-   "price": 42850.0,
+   "price": 42400.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.4704943802393733,
-   "ret6m": -0.21520146520146521,
-   "ret36to6m": 0.054952300496569295,
+   "high52Ratio": 0.46555336574444406,
+   "ret6m": -0.22344322344322343,
+   "ret36to6m": 0.05495222087458318,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -2195,7 +2195,7 @@
     "S1": 50.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 65.85
+    "S4": 65.89
    },
    "reasons": {
     "S1": [
@@ -2211,7 +2211,7 @@
      "증자·CB 공시 0건"
     ]
    },
-   "composite": 80.15,
+   "composite": 80.16,
    "T1": "OFF",
    "inflection": false,
    "meetsS1Floor": true,
@@ -2224,12 +2224,12 @@
    "symbol": "263750",
    "name": "펄어비스",
    "exchange": "KOSDAQ",
-   "marcap": 2136692940000.0,
+   "marcap": 2186968068000.0,
    "marcapEstimated": false,
-   "price": 34000.0,
+   "price": 34800.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.5167173252279635,
-   "ret6m": -0.4035087719298246,
+   "high52Ratio": 0.5288753799392097,
+   "ret6m": -0.3894736842105263,
    "ret36to6m": 0.17525773195876293,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2253,7 +2253,7 @@
     "S1": 70.0,
     "S2": 85.0,
     "S6": 100.0,
-    "S4": 57.71
+    "S4": 57.74
    },
    "reasons": {
     "S1": [
@@ -2282,12 +2282,12 @@
    "symbol": "136150",
    "name": "원일티엔아이",
    "exchange": "KOSDAQ",
-   "marcap": 75429270000.0,
+   "marcap": 73920684600.0,
    "marcapEstimated": false,
-   "price": 9000.0,
+   "price": 8820.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.34615384615384615,
-   "ret6m": -0.5240613432046537,
+   "high52Ratio": 0.3392307692307692,
+   "ret6m": -0.5335801163405606,
    "ret36to6m": null,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2337,12 +2337,12 @@
    "symbol": "093190",
    "name": "빅솔론",
    "exchange": "KOSDAQ",
-   "marcap": 155257963350.0,
+   "marcap": 155450352400.0,
    "marcapEstimated": false,
-   "price": 8070.0,
+   "price": 8080.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.8946784922394678,
-   "ret6m": 0.02281368821292773,
+   "high52Ratio": 0.8957871396895787,
+   "ret6m": 0.02408111533586821,
    "ret36to6m": 0.5685179718737403,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2366,7 +2366,7 @@
     "S1": 65.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 38.76
+    "S4": 38.78
    },
    "reasons": {
     "S1": [
@@ -2396,12 +2396,12 @@
    "symbol": "243840",
    "name": "신흥에스이씨",
    "exchange": "KOSDAQ",
-   "marcap": 250628527500.0,
+   "marcap": 245615956950.0,
    "marcapEstimated": false,
-   "price": 6500.0,
+   "price": 6370.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.6161137440758294,
-   "ret6m": -0.3689320388349514,
+   "high52Ratio": 0.6037914691943128,
+   "ret6m": -0.3815533980582524,
    "ret36to6m": -0.7284574026303836,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2454,12 +2454,12 @@
    "symbol": "134380",
    "name": "미원화학",
    "exchange": "KOSPI",
-   "marcap": 239720212000.0,
+   "marcap": 246537942800.0,
    "marcapEstimated": false,
-   "price": 10900.0,
+   "price": 11210.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.8249073904432805,
-   "ret6m": -0.11570449274185401,
+   "high52Ratio": 0.8483680593457958,
+   "ret6m": -0.09055480400331961,
    "ret36to6m": 1.1755892884413388,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2483,7 +2483,7 @@
     "S1": 90.0,
     "S2": 85.0,
     "S6": 100.0,
-    "S4": 22.37
+    "S4": 22.38
    },
    "reasons": {
     "S1": [
@@ -2513,12 +2513,12 @@
    "symbol": "311320",
    "name": "지오엘리먼트",
    "exchange": "KOSDAQ",
-   "marcap": 100033460800.0,
+   "marcap": 102430227200.0,
    "marcapEstimated": false,
-   "price": 7930.0,
+   "price": 8120.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.699294532627866,
-   "ret6m": -0.09071862982520207,
+   "high52Ratio": 0.7160493827160493,
+   "ret6m": -0.06893256925354863,
    "ret36to6m": -0.18277636090605365,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2542,7 +2542,7 @@
     "S1": 65.0,
     "S2": 70.0,
     "S6": 100.0,
-    "S4": 81.67
+    "S4": 81.72
    },
    "reasons": {
     "S1": [
@@ -2559,7 +2559,7 @@
      "증자·CB 공시 0건"
     ]
    },
-   "composite": 78.94,
+   "composite": 78.95,
    "T1": "OFF",
    "inflection": false,
    "meetsS1Floor": true,
@@ -2572,12 +2572,12 @@
    "symbol": "396300",
    "name": "HT로보틱스",
    "exchange": "KOSDAQ",
-   "marcap": 258802415000.0,
+   "marcap": 295093030000.0,
    "marcapEstimated": false,
-   "price": 9770.0,
+   "price": 11140.0,
    "priceDate": "2026-10-19",
    "high52Ratio": 1.0,
-   "ret6m": 1.2934272300469485,
+   "ret6m": 1.615023474178404,
    "ret36to6m": 0.15918367346938767,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2601,7 +2601,7 @@
     "S1": 100.0,
     "S2": 50.0,
     "S6": 100.0,
-    "S4": 58.57
+    "S4": 58.6
    },
    "reasons": {
     "S1": [
@@ -2618,7 +2618,7 @@
      "증자·CB 공시 0건"
     ]
    },
-   "composite": 78.83,
+   "composite": 78.84,
    "T1": "ON",
    "inflection": true,
    "meetsS1Floor": true,
@@ -2631,12 +2631,12 @@
    "symbol": "146320",
    "name": "비씨엔씨",
    "exchange": "KOSDAQ",
-   "marcap": 122860060800.0,
+   "marcap": 125803583090.0,
    "marcapEstimated": false,
-   "price": 9600.0,
+   "price": 9830.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.5351170568561873,
-   "ret6m": -0.45915492957746484,
+   "high52Ratio": 0.5479375696767002,
+   "ret6m": -0.4461971830985916,
    "ret36to6m": -0.045698924731182755,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2660,7 +2660,7 @@
     "S1": 40.0,
     "S2": 100.0,
     "S6": 100.0,
-    "S4": 72.45
+    "S4": 72.49
    },
    "reasons": {
     "S1": [
@@ -2688,12 +2688,12 @@
    "symbol": "451250",
    "name": "삐아",
    "exchange": "KOSDAQ",
-   "marcap": 70251774990.0,
+   "marcap": 70865327610.0,
    "marcapEstimated": false,
-   "price": 6870.0,
+   "price": 6930.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.661220286640829,
-   "ret6m": -0.23835920177383596,
+   "high52Ratio": 0.6669951363058144,
+   "ret6m": -0.23170731707317072,
    "ret36to6m": -0.4989250450135705,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2717,7 +2717,7 @@
     "S1": 50.0,
     "S2": 85.0,
     "S6": 90.0,
-    "S4": 94.59
+    "S4": 94.65
    },
    "reasons": {
     "S1": [
@@ -2733,7 +2733,7 @@
      "증자·CB 공시 0건"
     ]
    },
-   "composite": 78.56,
+   "composite": 78.57,
    "T1": "OFF",
    "inflection": false,
    "meetsS1Floor": true,
@@ -2743,74 +2743,15 @@
   },
   {
    "rank": 46,
-   "symbol": "049960",
-   "name": "쎌바이오텍",
-   "exchange": "KOSDAQ",
-   "marcap": 143444000000.0,
-   "marcapEstimated": false,
-   "price": 15260.0,
-   "priceDate": "2026-10-19",
-   "high52Ratio": 0.8440265486725663,
-   "ret6m": -0.05569306930693074,
-   "ret36to6m": 0.6832282000615604,
-   "metrics": {
-    "latestPeriod": "2026Q2",
-    "revYoY": [
-     0.3278358756790505,
-     0.2999760028214127,
-     0.20376956512720956
-    ],
-    "opTTM": 10097014999.0,
-    "opmTTM": 0.1671732150165499,
-    "opmTTMPrev": 0.12346620195448042,
-    "debtToEquity": 0.05984831764032085
-   },
-   "shareGrowth": -0.999,
-   "gates": {
-    "excluded": false,
-    "hits": [],
-    "flags": []
-   },
-   "scores": {
-    "S1": 80.0,
-    "S2": 85.0,
-    "S6": 100.0,
-    "S4": 34.21
-   },
-   "reasons": {
-    "S1": [
-     "매출 YoY 33%",
-     "2분기 연속 가속",
-     "영업레버리지(TTM 영업이익 72%)"
-    ],
-    "S2": [
-     "영업이익률 +4.4%p",
-     "영업현금/순이익 1.09"
-    ],
-    "S6": [
-     "주식 수 -99.9%",
-     "증자·CB 공시 0건"
-    ]
-   },
-   "composite": 78.49,
-   "T1": "OFF",
-   "inflection": true,
-   "meetsS1Floor": true,
-   "cyclical": null,
-   "manual": null,
-   "P1": null
-  },
-  {
-   "rank": 47,
    "symbol": "424980",
    "name": "마이크로투나노",
    "exchange": "KOSDAQ",
-   "marcap": 61497267100.0,
+   "marcap": 59425655600.0,
    "marcapEstimated": false,
-   "price": 10390.0,
+   "price": 10040.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.6768729641693811,
-   "ret6m": -0.31009296148738374,
+   "high52Ratio": 0.654071661237785,
+   "ret6m": -0.33333333333333337,
    "ret36to6m": 0.22240259740259738,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2834,7 +2775,7 @@
     "S1": 100.0,
     "S2": 50.0,
     "S6": 100.0,
-    "S4": 54.92
+    "S4": 54.95
    },
    "reasons": {
     "S1": [
@@ -2860,16 +2801,74 @@
    "P1": null
   },
   {
+   "rank": 47,
+   "symbol": "019550",
+   "name": "SBI인베스트먼트",
+   "exchange": "KOSDAQ",
+   "marcap": 70734291172.0,
+   "marcapEstimated": false,
+   "price": 878.0,
+   "priceDate": "2026-10-19",
+   "high52Ratio": 0.4720430107526882,
+   "ret6m": -0.31191222570532917,
+   "ret36to6m": -0.10267229254571031,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.2109497740430728,
+     1.2719688011678443,
+     0.6649892802365445
+    ],
+    "opTTM": 14879786232.0,
+    "opmTTM": 0.3899752015279493,
+    "opmTTMPrev": 0.32663911282215663,
+    "debtToEquity": 0.0401654267633477
+   },
+   "shareGrowth": -0.5000000030851519,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 35.0,
+    "S2": 100.0,
+    "S6": 100.0,
+    "S4": 76.65
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 21%",
+     "영업레버리지(TTM 영업이익 89%)"
+    ],
+    "S2": [
+     "영업이익률 +6.3%p",
+     "영업현금/순이익 2.43"
+    ],
+    "S6": [
+     "주식 수 -50.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 78.03,
+   "T1": "OFF",
+   "inflection": false,
+   "meetsS1Floor": true,
+   "cyclical": null,
+   "manual": null,
+   "P1": null
+  },
+  {
    "rank": 48,
    "symbol": "039200",
    "name": "오스코텍",
    "exchange": "KOSDAQ",
-   "marcap": 1434681600000.0,
+   "marcap": 1446159052800.0,
    "marcapEstimated": false,
-   "price": 37500.0,
+   "price": 37800.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.6048387096774194,
-   "ret6m": -0.2632612966601179,
+   "high52Ratio": 0.6096774193548387,
+   "ret6m": -0.2573673870333988,
    "ret36to6m": 1.6705141657922349,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -2893,7 +2892,7 @@
     "S1": 85.0,
     "S2": 100.0,
     "S6": 90.0,
-    "S4": 16.62
+    "S4": 16.63
    },
    "reasons": {
     "S1": [
@@ -2920,73 +2919,15 @@
   },
   {
    "rank": 49,
-   "symbol": "019550",
-   "name": "SBI인베스트먼트",
-   "exchange": "KOSDAQ",
-   "marcap": 70089787380.0,
-   "marcapEstimated": false,
-   "price": 870.0,
-   "priceDate": "2026-10-19",
-   "high52Ratio": 0.46774193548387094,
-   "ret6m": -0.31818181818181823,
-   "ret36to6m": -0.10267229254571031,
-   "metrics": {
-    "latestPeriod": "2026Q2",
-    "revYoY": [
-     0.2109497740430728,
-     1.2719688011678443,
-     0.6649892802365445
-    ],
-    "opTTM": 14879786232.0,
-    "opmTTM": 0.3899752015279493,
-    "opmTTMPrev": 0.32663911282215663,
-    "debtToEquity": 0.0401654267633477
-   },
-   "shareGrowth": -0.5000000030851519,
-   "gates": {
-    "excluded": false,
-    "hits": [],
-    "flags": []
-   },
-   "scores": {
-    "S1": 35.0,
-    "S2": 100.0,
-    "S6": 100.0,
-    "S4": 76.61
-   },
-   "reasons": {
-    "S1": [
-     "매출 YoY 21%",
-     "영업레버리지(TTM 영업이익 89%)"
-    ],
-    "S2": [
-     "영업이익률 +6.3%p",
-     "영업현금/순이익 2.43"
-    ],
-    "S6": [
-     "주식 수 -50.0%",
-     "증자·CB 공시 0건"
-    ]
-   },
-   "composite": 78.02,
-   "T1": "OFF",
-   "inflection": false,
-   "meetsS1Floor": true,
-   "cyclical": null,
-   "manual": null,
-   "P1": null
-  },
-  {
-   "rank": 50,
    "symbol": "107590",
    "name": "미원홀딩스",
    "exchange": "KOSPI",
-   "marcap": 133864000000.0,
+   "marcap": 132704000000.0,
    "marcapEstimated": false,
-   "price": 57700.0,
+   "price": 57200.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.8242857142857143,
-   "ret6m": -0.10264385692068434,
+   "high52Ratio": 0.8171428571428572,
+   "ret6m": -0.11041990668740276,
    "ret36to6m": -0.2090942628295156,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -3010,7 +2951,7 @@
     "S1": 80.0,
     "S2": 50.0,
     "S6": 100.0,
-    "S4": 83.67
+    "S4": 83.66
    },
    "reasons": {
     "S1": [
@@ -3034,21 +2975,79 @@
    "cyclical": null,
    "manual": null,
    "P1": null
+  },
+  {
+   "rank": 50,
+   "symbol": "002420",
+   "name": "우양피앤엘",
+   "exchange": "KOSPI",
+   "marcap": 168929931280.0,
+   "marcapEstimated": false,
+   "price": 5420.0,
+   "priceDate": "2026-10-19",
+   "high52Ratio": 0.8138138138138138,
+   "ret6m": -0.05902777777777779,
+   "ret36to6m": -0.20770288858321873,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.25761110584444613,
+     0.035338325973020224,
+     0.00871830540230345
+    ],
+    "opTTM": 227810127.0,
+    "opmTTM": 0.007264505601673155,
+    "opmTTMPrev": -0.07036397546925371,
+    "debtToEquity": 1.03838104481145
+   },
+   "shareGrowth": 0.0,
+   "gates": {
+    "excluded": false,
+    "hits": [],
+    "flags": []
+   },
+   "scores": {
+    "S1": 55.0,
+    "S2": 75.0,
+    "S6": 100.0,
+    "S4": 83.43
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 26%",
+     "2분기 연속 가속"
+    ],
+    "S2": [
+     "영업이익률 +7.8%p",
+     "순손실·영업현금 플러스"
+    ],
+    "S6": [
+     "주식 수 +0.0%",
+     "증자·CB 공시 0건"
+    ]
+   },
+   "composite": 77.9,
+   "T1": "OFF",
+   "inflection": true,
+   "meetsS1Floor": true,
+   "cyclical": null,
+   "manual": null,
+   "P1": null
   }
  ],
  "manualTracked": [
   {
-   "rank": 507,
+   "rank": 506,
    "symbol": "010120",
    "name": "LS ELECTRIC",
    "exchange": "KOSPI",
-   "marcap": 23280000000000.0,
+   "marcap": 24915000000000.0,
    "marcapEstimated": false,
-   "price": 155200.0,
+   "price": 166100.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.49584664536741213,
-   "ret6m": -0.3147902869757174,
-   "ret36to6m": 15.971255492118555,
+   "high52Ratio": 0.5306709265175719,
+   "ret6m": -0.2666666666666667,
+   "ret36to6m": 15.971254250295413,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -3105,7 +3104,7 @@
    },
    "P1": {
     "value5y": 24937500000000.0,
-    "multipleX": 1.07,
+    "multipleX": 1.0,
     "verdict": "제외(3배 미만)"
    }
   },
@@ -3114,13 +3113,13 @@
    "symbol": "000150",
    "name": "두산",
    "exchange": "KOSPI",
-   "marcap": 14379785110000.0,
+   "marcap": 15034706016000.0,
    "marcapEstimated": false,
-   "price": 1010000.0,
+   "price": 1056000.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.5125771720457666,
-   "ret6m": -0.3436793191160302,
-   "ret36to6m": 20.548475813372672,
+   "high52Ratio": 0.5359222709706233,
+   "ret6m": -0.313787430385733,
+   "ret36to6m": 20.548474063037236,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -3176,7 +3175,7 @@
    },
    "P1": {
     "value5y": 10999800000000.0,
-    "multipleX": 0.76,
+    "multipleX": 0.73,
     "verdict": "제외(3배 미만)"
    }
   },
@@ -3191,7 +3190,7 @@
    "priceDate": "2026-10-19",
    "high52Ratio": 0.6251629726205997,
    "ret6m": -0.3748370273794003,
-   "ret36to6m": 5.880383895930829,
+   "ret36to6m": 5.880383293190873,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -3258,12 +3257,12 @@
    "symbol": "020150",
    "name": "롯데에너지머티리얼즈",
    "exchange": "KOSPI",
-   "marcap": 2958648659500.0,
+   "marcap": 2880100465000.0,
    "marcapEstimated": false,
-   "price": 56500.0,
+   "price": 55000.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.7913165266106442,
-   "ret6m": -0.17033773861967694,
+   "high52Ratio": 0.7703081232492998,
+   "ret6m": -0.19236417033773867,
    "ret36to6m": 0.8009989916281688,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -3287,7 +3286,7 @@
     "S1": 0.0,
     "S2": 50.0,
     "S6": 100.0,
-    "S4": 30.45
+    "S4": 30.41
    },
    "reasons": {
     "S1": [
@@ -3302,7 +3301,7 @@
      "증자·CB 공시 0건"
     ]
    },
-   "composite": 46.45,
+   "composite": 46.44,
    "T1": "NEAR",
    "inflection": false,
    "meetsS1Floor": false,
@@ -3320,21 +3319,21 @@
    },
    "P1": {
     "value5y": 2895000000000.0,
-    "multipleX": 0.98,
+    "multipleX": 1.01,
     "verdict": "제외(3배 미만)"
    }
   },
   {
-   "rank": 436,
+   "rank": 435,
    "symbol": "214450",
    "name": "파마리서치",
    "exchange": "KOSDAQ",
-   "marcap": 2763646368000.0,
+   "marcap": 2742867072000.0,
    "marcapEstimated": false,
-   "price": 266000.0,
+   "price": 264000.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.496535915320093,
-   "ret6m": -0.17647058823529416,
+   "high52Ratio": 0.4928025625733254,
+   "ret6m": -0.1826625386996904,
    "ret36to6m": 1.8341343181145766,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -3358,7 +3357,7 @@
     "S1": 50.0,
     "S2": 35.0,
     "S6": 100.0,
-    "S4": 15.25
+    "S4": 15.26
    },
    "reasons": {
     "S1": [
@@ -3392,21 +3391,98 @@
    },
    "P1": {
     "value5y": 6440000000000.001,
-    "multipleX": 2.33,
+    "multipleX": 2.35,
     "verdict": "제외(3배 미만)"
    }
   },
   {
-   "rank": 585,
+   "rank": null,
+   "symbol": "010170",
+   "name": "대한광통신",
+   "exchange": "KOSDAQ",
+   "marcap": 2224999794600.0,
+   "marcapEstimated": false,
+   "price": 14310.0,
+   "priceDate": "2026-10-19",
+   "high52Ratio": 0.5888888888888889,
+   "ret6m": 0.07110778443113763,
+   "ret36to6m": 9.167427701674278,
+   "metrics": {
+    "latestPeriod": "2026Q2",
+    "revYoY": [
+     0.1780933348431053,
+     0.34871089655950716,
+     -0.1865093866062687
+    ],
+    "opTTM": -14721567041.0,
+    "opmTTM": -0.09454037592970312,
+    "opmTTMPrev": -0.18981183523436826,
+    "debtToEquity": 1.552181476415858
+   },
+   "shareGrowth": 0.4198155830063941,
+   "gates": {
+    "excluded": true,
+    "hits": [
+     {
+      "code": "G2",
+      "reason": "주식 수 전년 대비 +42.0%"
+     }
+    ],
+    "flags": []
+   },
+   "scores": {
+    "S1": 45.0,
+    "S2": 50.0,
+    "S6": 20.0,
+    "S4": 1.77
+   },
+   "reasons": {
+    "S1": [
+     "매출 YoY 18%",
+     "영업 흑자전환"
+    ],
+    "S2": [
+     "영업이익률 +9.5%p",
+     "순손실·영업현금 마이너스"
+    ],
+    "S6": [
+     "주식 수 +42.0%",
+     "증자·CB 공시 1건"
+    ]
+   },
+   "composite": 31.69,
+   "T1": "OFF",
+   "inflection": true,
+   "meetsS1Floor": true,
+   "cyclical": null,
+   "manual": {
+    "recordedAt": "2026-09-29",
+    "S3": "",
+    "S5": "",
+    "tam": "271000",
+    "share": "0.02",
+    "margin": "0.06",
+    "multiple": "15",
+    "other": "",
+    "note": "광케이블 200억$. 시총 2.69조(9/28)"
+   },
+   "P1": {
+    "value5y": 487800000000.0,
+    "multipleX": 0.22,
+    "verdict": "제외(3배 미만)"
+   }
+  },
+  {
+   "rank": 584,
    "symbol": "257720",
    "name": "실리콘투",
    "exchange": "KOSDAQ",
-   "marcap": 2150901065600.0,
+   "marcap": 2118112939600.0,
    "marcapEstimated": false,
-   "price": 32800.0,
+   "price": 32300.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.6153846153846154,
-   "ret6m": -0.3278688524590164,
+   "high52Ratio": 0.6060037523452158,
+   "ret6m": -0.33811475409836067,
    "ret36to6m": 5.2105966864273325,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -3464,85 +3540,8 @@
    },
    "P1": {
     "value5y": 7875000000000.0,
-    "multipleX": 3.66,
+    "multipleX": 3.72,
     "verdict": "보류(3~10배)"
-   }
-  },
-  {
-   "rank": null,
-   "symbol": "010170",
-   "name": "대한광통신",
-   "exchange": "KOSDAQ",
-   "marcap": 1982442165000.0,
-   "marcapEstimated": false,
-   "price": 12750.0,
-   "priceDate": "2026-10-19",
-   "high52Ratio": 0.5246913580246914,
-   "ret6m": -0.045658682634730496,
-   "ret36to6m": 9.167427701674278,
-   "metrics": {
-    "latestPeriod": "2026Q2",
-    "revYoY": [
-     0.1780933348431053,
-     0.34871089655950716,
-     -0.1865093866062687
-    ],
-    "opTTM": -14721567041.0,
-    "opmTTM": -0.09454037592970312,
-    "opmTTMPrev": -0.18981183523436826,
-    "debtToEquity": 1.552181476415858
-   },
-   "shareGrowth": 0.4198155830063941,
-   "gates": {
-    "excluded": true,
-    "hits": [
-     {
-      "code": "G2",
-      "reason": "주식 수 전년 대비 +42.0%"
-     }
-    ],
-    "flags": []
-   },
-   "scores": {
-    "S1": 45.0,
-    "S2": 50.0,
-    "S6": 20.0,
-    "S4": 1.76
-   },
-   "reasons": {
-    "S1": [
-     "매출 YoY 18%",
-     "영업 흑자전환"
-    ],
-    "S2": [
-     "영업이익률 +9.5%p",
-     "순손실·영업현금 마이너스"
-    ],
-    "S6": [
-     "주식 수 +42.0%",
-     "증자·CB 공시 1건"
-    ]
-   },
-   "composite": 31.68,
-   "T1": "OFF",
-   "inflection": true,
-   "meetsS1Floor": true,
-   "cyclical": null,
-   "manual": {
-    "recordedAt": "2026-09-29",
-    "S3": "",
-    "S5": "",
-    "tam": "271000",
-    "share": "0.02",
-    "margin": "0.06",
-    "multiple": "15",
-    "other": "",
-    "note": "광케이블 200억$. 시총 2.69조(9/28)"
-   },
-   "P1": {
-    "value5y": 487800000000.0,
-    "multipleX": 0.25,
-    "verdict": "제외(3배 미만)"
    }
   },
   {
@@ -3550,13 +3549,13 @@
    "symbol": "214150",
    "name": "클래시스",
    "exchange": "KOSDAQ",
-   "marcap": 1940760855250.0,
+   "marcap": 1836383800850.0,
    "marcapEstimated": false,
-   "price": 29750.0,
+   "price": 28150.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.4004037685060565,
-   "ret6m": -0.49915824915824913,
-   "ret36to6m": 0.8800231590605374,
+   "high52Ratio": 0.37886944818304175,
+   "ret6m": -0.5260942760942762,
+   "ret36to6m": 0.8800230428434557,
    "metrics": {
     "latestPeriod": "2026Q2",
     "revYoY": [
@@ -3579,7 +3578,7 @@
     "S1": 50.0,
     "S2": 0.0,
     "S6": 100.0,
-    "S4": 28.91
+    "S4": 28.87
    },
    "reasons": {
     "S1": [
@@ -3595,7 +3594,7 @@
      "증자·CB 공시 0건"
     ]
    },
-   "composite": 46.17,
+   "composite": 46.16,
    "T1": "OFF",
    "inflection": false,
    "meetsS1Floor": true,
@@ -3613,21 +3612,21 @@
    },
    "P1": {
     "value5y": 4200000000000.0,
-    "multipleX": 2.16,
+    "multipleX": 2.29,
     "verdict": "제외(3배 미만)"
    }
   },
   {
-   "rank": 431,
+   "rank": 430,
    "symbol": "241710",
    "name": "코스메카코리아",
    "exchange": "KOSDAQ",
-   "marcap": 1148100000000.0,
+   "marcap": 1145964000000.0,
    "marcapEstimated": false,
-   "price": 107500.0,
+   "price": 107300.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.6985055230669266,
-   "ret6m": 0.25,
+   "high52Ratio": 0.6972059779077323,
+   "ret6m": 0.24767441860465111,
    "ret36to6m": 1.3806297877383509,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -3651,7 +3650,7 @@
     "S1": 50.0,
     "S2": 35.0,
     "S6": 100.0,
-    "S4": 19.46
+    "S4": 19.48
    },
    "reasons": {
     "S1": [
@@ -3667,7 +3666,7 @@
      "증자·CB 공시 0건"
     ]
    },
-   "composite": 53.99,
+   "composite": 54.0,
    "T1": "OFF",
    "inflection": false,
    "meetsS1Floor": true,
@@ -3685,7 +3684,7 @@
    },
    "P1": {
     "value5y": 3628800000000.0,
-    "multipleX": 3.16,
+    "multipleX": 3.17,
     "verdict": "보류(3~10배)"
    }
   },
@@ -3694,12 +3693,12 @@
    "symbol": "251970",
    "name": "펌텍코리아",
    "exchange": "KOSDAQ",
-   "marcap": 876680000000.0,
+   "marcap": 855600000000.0,
    "marcapEstimated": false,
-   "price": 70700.0,
+   "price": 69000.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.9915848527349228,
-   "ret6m": 0.6086461888509671,
+   "high52Ratio": 0.967741935483871,
+   "ret6m": 0.5699658703071673,
    "ret36to6m": 0.7531250796126054,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -3723,7 +3722,7 @@
     "S1": 20.0,
     "S2": 0.0,
     "S6": 100.0,
-    "S4": 32.1
+    "S4": 32.06
    },
    "reasons": {
     "S1": [
@@ -3756,7 +3755,7 @@
    },
    "P1": {
     "value5y": 1755000000000.0,
-    "multipleX": 2.0,
+    "multipleX": 2.05,
     "verdict": "제외(3배 미만)"
    }
   },
@@ -3765,12 +3764,12 @@
    "symbol": "069540",
    "name": "빛과전자",
    "exchange": "KOSDAQ",
-   "marcap": 423158073235.0,
+   "marcap": 424848451690.0,
    "marcapEstimated": false,
-   "price": 3755.0,
+   "price": 3770.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.5680786686838124,
-   "ret6m": -0.28339694656488545,
+   "high52Ratio": 0.5703479576399395,
+   "ret6m": -0.2805343511450382,
    "ret36to6m": 0.7466666666666666,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -3799,7 +3798,7 @@
     "S1": 0.0,
     "S2": 25.0,
     "S6": 0.0,
-    "S4": 32.5
+    "S4": 32.46
    },
    "reasons": {
     "S1": [
@@ -3814,7 +3813,7 @@
      "증자·CB 공시 7건"
     ]
    },
-   "composite": 12.73,
+   "composite": 12.72,
    "T1": "OFF",
    "inflection": false,
    "meetsS1Floor": false,
@@ -3841,12 +3840,12 @@
    "symbol": "138080",
    "name": "오이솔루션",
    "exchange": "KOSDAQ",
-   "marcap": 347814999800.0,
+   "marcap": 352147215100.0,
    "marcapEstimated": false,
-   "price": 28100.0,
+   "price": 28450.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.5272045028142589,
-   "ret6m": -0.3293556085918854,
+   "high52Ratio": 0.5337711069418386,
+   "ret6m": -0.3210023866348448,
    "ret36to6m": 2.5491089135610294,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -3875,7 +3874,7 @@
     "S1": 10.0,
     "S2": 50.0,
     "S6": 40.0,
-    "S4": 10.24
+    "S4": 10.25
    },
    "reasons": {
     "S1": [
@@ -3890,7 +3889,7 @@
      "증자·CB 공시 0건"
     ]
    },
-   "composite": 29.13,
+   "composite": 29.14,
    "T1": "OFF",
    "inflection": false,
    "meetsS1Floor": true,
@@ -3908,7 +3907,7 @@
    },
    "P1": {
     "value5y": 543000000000.0,
-    "multipleX": 1.56,
+    "multipleX": 1.54,
     "verdict": "제외(3배 미만)"
    }
   },
@@ -3917,12 +3916,12 @@
    "symbol": "052900",
    "name": "KX하이텍",
    "exchange": "KOSDAQ",
-   "marcap": 84718239450.0,
+   "marcap": 85944928890.0,
    "marcapEstimated": false,
-   "price": 1105.0,
+   "price": 1121.0,
    "priceDate": "2026-10-19",
-   "high52Ratio": 0.5403422982885085,
-   "ret6m": -0.1571319603356217,
+   "high52Ratio": 0.5481662591687042,
+   "ret6m": -0.14492753623188404,
    "ret36to6m": 0.22983114446529074,
    "metrics": {
     "latestPeriod": "2026Q2",
@@ -3951,7 +3950,7 @@
     "S1": 45.0,
     "S2": 50.0,
     "S6": 20.0,
-    "S4": 54.13
+    "S4": 54.16
    },
    "reasons": {
     "S1": [
@@ -3985,12 +3984,22 @@
    },
    "P1": {
     "value5y": 755000000000.0,
-    "multipleX": 8.91,
+    "multipleX": 8.78,
     "verdict": "보류(3~10배)"
    }
   }
  ],
  "excludedSample": [
+  {
+   "symbol": "096770",
+   "name": "SK이노베이션",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "주식 수 전년 대비 +11.8%"
+    }
+   ]
+  },
   {
    "symbol": "015760",
    "name": "한국전력",
@@ -4200,36 +4209,12 @@
    ]
   },
   {
-   "symbol": "457190",
-   "name": "이수스페셜티케미컬",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 201%"
-    }
-   ]
-  },
-  {
    "symbol": "440110",
    "name": "파두",
    "hits": [
     {
      "code": "G3",
      "reason": "부채비율 201%"
-    }
-   ]
-  },
-  {
-   "symbol": "178320",
-   "name": "서진시스템",
-   "hits": [
-    {
-     "code": "G2",
-     "reason": "12개월 내 증자·CB·BW 결정 5건"
-    },
-    {
-     "code": "G3",
-     "reason": "부채비율 206%"
     }
    ]
   },
@@ -4244,12 +4229,12 @@
    ]
   },
   {
-   "symbol": "080220",
-   "name": "제주반도체",
+   "symbol": "457190",
+   "name": "이수스페셜티케미컬",
    "hits": [
     {
-     "code": "G2",
-     "reason": "12개월 내 증자·CB·BW 결정 3건"
+     "code": "G3",
+     "reason": "부채비율 201%"
     }
    ]
   },
@@ -4260,6 +4245,26 @@
     {
      "code": "G2",
      "reason": "12개월 내 증자·CB·BW 결정 2건"
+    }
+   ]
+  },
+  {
+   "symbol": "080220",
+   "name": "제주반도체",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 3건"
+    }
+   ]
+  },
+  {
+   "symbol": "010170",
+   "name": "대한광통신",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "주식 수 전년 대비 +42.0%"
     }
    ]
   },
@@ -4292,22 +4297,16 @@
    ]
   },
   {
-   "symbol": "010170",
-   "name": "대한광통신",
+   "symbol": "178320",
+   "name": "서진시스템",
    "hits": [
     {
      "code": "G2",
-     "reason": "주식 수 전년 대비 +42.0%"
-    }
-   ]
-  },
-  {
-   "symbol": "089860",
-   "name": "롯데렌탈",
-   "hits": [
+     "reason": "12개월 내 증자·CB·BW 결정 5건"
+    },
     {
      "code": "G3",
-     "reason": "부채비율 413%"
+     "reason": "부채비율 206%"
     }
    ]
   },
@@ -4318,6 +4317,16 @@
     {
      "code": "G3",
      "reason": "부채비율 221%"
+    }
+   ]
+  },
+  {
+   "symbol": "089860",
+   "name": "롯데렌탈",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 413%"
     }
    ]
   },
@@ -4360,26 +4369,6 @@
    ]
   },
   {
-   "symbol": "008770",
-   "name": "호텔신라",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 207%"
-    }
-   ]
-  },
-  {
-   "symbol": "023590",
-   "name": "다우기술",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 1212%"
-    }
-   ]
-  },
-  {
    "symbol": "020560",
    "name": "아시아나항공",
    "hits": [
@@ -4396,6 +4385,26 @@
     {
      "code": "G3",
      "reason": "부채비율 445%"
+    }
+   ]
+  },
+  {
+   "symbol": "008770",
+   "name": "호텔신라",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 207%"
+    }
+   ]
+  },
+  {
+   "symbol": "023590",
+   "name": "다우기술",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 1212%"
     }
    ]
   },
@@ -4474,16 +4483,6 @@
    ]
   },
   {
-   "symbol": "079160",
-   "name": "CJ CGV",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 412%"
-    }
-   ]
-  },
-  {
    "symbol": "032350",
    "name": "롯데관광개발",
    "hits": [
@@ -4494,18 +4493,18 @@
    ]
   },
   {
-   "symbol": "115180",
-   "name": "큐리언트",
+   "symbol": "079160",
+   "name": "CJ CGV",
    "hits": [
     {
-     "code": "G2",
-     "reason": "12개월 내 증자·CB·BW 결정 3건"
+     "code": "G3",
+     "reason": "부채비율 412%"
     }
    ]
   },
   {
-   "symbol": "085660",
-   "name": "차바이오텍",
+   "symbol": "115180",
+   "name": "큐리언트",
    "hits": [
     {
      "code": "G2",
@@ -4524,6 +4523,16 @@
    ]
   },
   {
+   "symbol": "085660",
+   "name": "차바이오텍",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 3건"
+    }
+   ]
+  },
+  {
    "symbol": "077970",
    "name": "STX엔진",
    "hits": [
@@ -4534,22 +4543,12 @@
    ]
   },
   {
-   "symbol": "298050",
-   "name": "HS효성첨단소재",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 348%"
-    }
-   ]
-  },
-  {
-   "symbol": "033790",
-   "name": "피노",
+   "symbol": "456160",
+   "name": "지투지바이오",
    "hits": [
     {
      "code": "G2",
-     "reason": "12개월 내 증자·CB·BW 결정 2건"
+     "reason": "12개월 내 증자·CB·BW 결정 3건"
     }
    ]
   },
@@ -4574,6 +4573,26 @@
    ]
   },
   {
+   "symbol": "298050",
+   "name": "HS효성첨단소재",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 348%"
+    }
+   ]
+  },
+  {
+   "symbol": "033790",
+   "name": "피노",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 2건"
+    }
+   ]
+  },
+  {
    "symbol": "032190",
    "name": "다우데이타",
    "hits": [
@@ -4593,7 +4612,7 @@
     },
     {
      "code": "G2",
-     "reason": "12개월 내 증자·CB·BW 결정 2건"
+     "reason": "12개월 내 증자·CB·BW 결정 3건"
     }
    ]
   },
@@ -4604,16 +4623,6 @@
     {
      "code": "G2",
      "reason": "12개월 내 증자·CB·BW 결정 2건"
-    }
-   ]
-  },
-  {
-   "symbol": "456160",
-   "name": "지투지바이오",
-   "hits": [
-    {
-     "code": "G2",
-     "reason": "12개월 내 증자·CB·BW 결정 3건"
     }
    ]
   },
@@ -4648,22 +4657,22 @@
    ]
   },
   {
-   "symbol": "245620",
-   "name": "EDGC",
-   "hits": [
-    {
-     "code": "G2",
-     "reason": "12개월 내 증자·CB·BW 결정 2건"
-    }
-   ]
-  },
-  {
    "symbol": "005090",
    "name": "SGC에너지",
    "hits": [
     {
      "code": "G3",
      "reason": "부채비율 337%"
+    }
+   ]
+  },
+  {
+   "symbol": "245620",
+   "name": "EDGC",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 2건"
     }
    ]
   },
@@ -4692,16 +4701,6 @@
    ]
   },
   {
-   "symbol": "082270",
-   "name": "젬백스",
-   "hits": [
-    {
-     "code": "G2",
-     "reason": "12개월 내 증자·CB·BW 결정 5건"
-    }
-   ]
-  },
-  {
    "symbol": "004710",
    "name": "한솔테크닉스",
    "hits": [
@@ -4722,12 +4721,12 @@
    ]
   },
   {
-   "symbol": "039130",
-   "name": "하나투어",
+   "symbol": "082270",
+   "name": "젬백스",
    "hits": [
     {
-     "code": "G3",
-     "reason": "부채비율 256%"
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 5건"
     }
    ]
   },
@@ -4742,22 +4741,12 @@
    ]
   },
   {
-   "symbol": "089590",
-   "name": "제주항공",
+   "symbol": "039130",
+   "name": "하나투어",
    "hits": [
     {
      "code": "G3",
-     "reason": "부채비율 1009%"
-    }
-   ]
-  },
-  {
-   "symbol": "069540",
-   "name": "빛과전자",
-   "hits": [
-    {
-     "code": "G2",
-     "reason": "주식 수 전년 대비 +140.4%"
+     "reason": "부채비율 256%"
     }
    ]
   },
@@ -4772,6 +4761,26 @@
     {
      "code": "G3",
      "reason": "부채비율 308%"
+    }
+   ]
+  },
+  {
+   "symbol": "069540",
+   "name": "빛과전자",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "주식 수 전년 대비 +140.4%"
+    }
+   ]
+  },
+  {
+   "symbol": "089590",
+   "name": "제주항공",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 1009%"
     }
    ]
   },
@@ -4796,36 +4805,6 @@
    ]
   },
   {
-   "symbol": "403550",
-   "name": "쏘카",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 210%"
-    }
-   ]
-  },
-  {
-   "symbol": "357120",
-   "name": "코람코라이프인프라리츠",
-   "hits": [
-    {
-     "code": "G2",
-     "reason": "12개월 내 증자·CB·BW 결정 4건"
-    }
-   ]
-  },
-  {
-   "symbol": "187660",
-   "name": "페니트리움바이오",
-   "hits": [
-    {
-     "code": "G2",
-     "reason": "12개월 내 증자·CB·BW 결정 2건"
-    }
-   ]
-  },
-  {
    "symbol": "376900",
    "name": "로킷헬스케어",
    "hits": [
@@ -4836,46 +4815,22 @@
    ]
   },
   {
-   "symbol": "001470",
-   "name": "삼부토건",
+   "symbol": "403550",
+   "name": "쏘카",
    "hits": [
-    {
-     "code": "G2",
-     "reason": "12개월 내 증자·CB·BW 결정 2건"
-    }
-   ]
-  },
-  {
-   "symbol": "200470",
-   "name": "에이팩트",
-   "hits": [
-    {
-     "code": "G2",
-     "reason": "12개월 내 증자·CB·BW 결정 2건"
-    },
     {
      "code": "G3",
-     "reason": "부채비율 212%"
+     "reason": "부채비율 210%"
     }
    ]
   },
   {
-   "symbol": "372320",
-   "name": "큐로셀",
+   "symbol": "475830",
+   "name": "오름테라퓨틱",
    "hits": [
     {
      "code": "G2",
      "reason": "12개월 내 증자·CB·BW 결정 2건"
-    }
-   ]
-  },
-  {
-   "symbol": "397030",
-   "name": "에이프릴바이오",
-   "hits": [
-    {
-     "code": "G2",
-     "reason": "12개월 내 증자·CB·BW 결정 3건"
     }
    ]
   },
@@ -4894,8 +4849,42 @@
    ]
   },
   {
-   "symbol": "475830",
-   "name": "오름테라퓨틱",
+   "symbol": "357120",
+   "name": "코람코라이프인프라리츠",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 4건"
+    }
+   ]
+  },
+  {
+   "symbol": "397030",
+   "name": "에이프릴바이오",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 3건"
+    }
+   ]
+  },
+  {
+   "symbol": "200470",
+   "name": "에이팩트",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 2건"
+    },
+    {
+     "code": "G3",
+     "reason": "부채비율 212%"
+    }
+   ]
+  },
+  {
+   "symbol": "001470",
+   "name": "삼부토건",
    "hits": [
     {
      "code": "G2",
@@ -4904,12 +4893,22 @@
    ]
   },
   {
-   "symbol": "078160",
-   "name": "메디포스트",
+   "symbol": "187660",
+   "name": "페니트리움바이오",
    "hits": [
     {
      "code": "G2",
-     "reason": "12개월 내 증자·CB·BW 결정 4건"
+     "reason": "12개월 내 증자·CB·BW 결정 2건"
+    }
+   ]
+  },
+  {
+   "symbol": "372320",
+   "name": "큐로셀",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 2건"
     }
    ]
   },
@@ -4924,6 +4923,26 @@
    ]
   },
   {
+   "symbol": "389470",
+   "name": "인벤티지랩",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 3건"
+    }
+   ]
+  },
+  {
+   "symbol": "078160",
+   "name": "메디포스트",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "12개월 내 증자·CB·BW 결정 4건"
+    }
+   ]
+  },
+  {
    "symbol": "194370",
    "name": "제이에스코퍼레이션",
    "hits": [
@@ -4934,16 +4953,6 @@
     {
      "code": "G3",
      "reason": "부채비율 226%"
-    }
-   ]
-  },
-  {
-   "symbol": "389470",
-   "name": "인벤티지랩",
-   "hits": [
-    {
-     "code": "G2",
-     "reason": "12개월 내 증자·CB·BW 결정 3건"
     }
    ]
   },
@@ -4968,16 +4977,6 @@
    ]
   },
   {
-   "symbol": "452280",
-   "name": "한선엔지니어링",
-   "hits": [
-    {
-     "code": "G2",
-     "reason": "주식 수 전년 대비 +11.5%"
-    }
-   ]
-  },
-  {
    "symbol": "092190",
    "name": "서울바이오시스",
    "hits": [
@@ -4992,16 +4991,6 @@
    ]
   },
   {
-   "symbol": "000650",
-   "name": "천일고속",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 707%"
-    }
-   ]
-  },
-  {
    "symbol": "011760",
    "name": "현대코퍼레이션",
    "hits": [
@@ -5012,12 +5001,32 @@
    ]
   },
   {
+   "symbol": "452280",
+   "name": "한선엔지니어링",
+   "hits": [
+    {
+     "code": "G2",
+     "reason": "주식 수 전년 대비 +11.5%"
+    }
+   ]
+  },
+  {
    "symbol": "272450",
    "name": "진에어",
    "hits": [
     {
      "code": "G3",
      "reason": "부채비율 636%"
+    }
+   ]
+  },
+  {
+   "symbol": "000650",
+   "name": "천일고속",
+   "hits": [
+    {
+     "code": "G3",
+     "reason": "부채비율 707%"
     }
    ]
   },
@@ -5040,16 +5049,6 @@
      "reason": "부채비율 222%"
     }
    ]
-  },
-  {
-   "symbol": "010820",
-   "name": "퍼스텍",
-   "hits": [
-    {
-     "code": "G3",
-     "reason": "부채비율 406%"
-    }
-   ]
   }
  ],
  "validation": {
@@ -5057,183 +5056,223 @@
   "snapshots": {
    "2026-09-29": {
     "frozen": {},
-    "ageDays": 20,
+    "ageDays": 22,
     "current": {
      "top": {
-      "avgReturnPct": -3.71,
+      "avgReturnPct": -2.5,
       "n": 50
      },
      "passed": {
-      "avgReturnPct": -2.81,
+      "avgReturnPct": -2.59,
       "n": 1495
      },
      "excluded": {
-      "avgReturnPct": 37.63,
-      "n": 309
+      "avgReturnPct": 38.36,
+      "n": 308
      },
-     "benchmarkReturnPct": -19.18
+     "benchmarkReturnPct": -16.52
     },
-    "measuredAt": "2026-10-19"
+    "measuredAt": "2026-10-21"
    },
    "2026-09-30": {
+    "frozen": {},
+    "ageDays": 21,
+    "current": {
+     "top": {
+      "avgReturnPct": -1.34,
+      "n": 50
+     },
+     "passed": {
+      "avgReturnPct": -2.85,
+      "n": 1527
+     },
+     "excluded": {
+      "avgReturnPct": 43.42,
+      "n": 274
+     },
+     "benchmarkReturnPct": -16.12
+    },
+    "measuredAt": "2026-10-21"
+   },
+   "2026-10-02": {
     "frozen": {},
     "ageDays": 19,
     "current": {
      "top": {
-      "avgReturnPct": -2.57,
+      "avgReturnPct": -4.82,
       "n": 50
      },
      "passed": {
-      "avgReturnPct": -3.05,
-      "n": 1527
-     },
-     "excluded": {
-      "avgReturnPct": 42.57,
-      "n": 275
-     },
-     "benchmarkReturnPct": -18.8
-    },
-    "measuredAt": "2026-10-19"
-   },
-   "2026-10-02": {
-    "frozen": {},
-    "ageDays": 17,
-    "current": {
-     "top": {
-      "avgReturnPct": -5.95,
-      "n": 50
-     },
-     "passed": {
-      "avgReturnPct": -5.43,
+      "avgReturnPct": -5.24,
       "n": 1529
      },
      "excluded": {
-      "avgReturnPct": 40.63,
+      "avgReturnPct": 41.28,
       "n": 276
      },
-     "benchmarkReturnPct": -20.35
+     "benchmarkReturnPct": -17.73
     },
-    "measuredAt": "2026-10-19"
+    "measuredAt": "2026-10-21"
    },
    "2026-10-03": {
     "frozen": {},
-    "ageDays": 16,
+    "ageDays": 18,
     "current": {
      "top": {
-      "avgReturnPct": -6.58,
+      "avgReturnPct": -5.45,
       "n": 50
      },
      "passed": {
-      "avgReturnPct": -6.02,
+      "avgReturnPct": -5.83,
       "n": 1529
      },
      "excluded": {
-      "avgReturnPct": 40.12,
+      "avgReturnPct": 40.78,
       "n": 276
      },
-     "benchmarkReturnPct": -20.72
+     "benchmarkReturnPct": -18.11
     },
-    "measuredAt": "2026-10-19"
+    "measuredAt": "2026-10-21"
    },
    "2026-10-12": {
+    "frozen": {},
+    "ageDays": 9,
+    "current": {
+     "top": {
+      "avgReturnPct": -2.16,
+      "n": 50
+     },
+     "passed": {
+      "avgReturnPct": -2.19,
+      "n": 1526
+     },
+     "excluded": {
+      "avgReturnPct": 45.8,
+      "n": 278
+     },
+     "benchmarkReturnPct": -4.97
+    },
+    "measuredAt": "2026-10-21"
+   },
+   "2026-10-13": {
+    "frozen": {},
+    "ageDays": 8,
+    "current": {
+     "top": {
+      "avgReturnPct": -2.17,
+      "n": 50
+     },
+     "passed": {
+      "avgReturnPct": -2.22,
+      "n": 1521
+     },
+     "excluded": {
+      "avgReturnPct": 45.8,
+      "n": 278
+     },
+     "benchmarkReturnPct": -4.97
+    },
+    "measuredAt": "2026-10-21"
+   },
+   "2026-10-14": {
     "frozen": {},
     "ageDays": 7,
     "current": {
      "top": {
-      "avgReturnPct": -3.16,
-      "n": 50
+      "avgReturnPct": -2.0,
+      "n": 49
      },
      "passed": {
-      "avgReturnPct": -2.45,
-      "n": 1526
+      "avgReturnPct": -2.02,
+      "n": 1531
      },
      "excluded": {
-      "avgReturnPct": 44.62,
-      "n": 280
+      "avgReturnPct": -2.89,
+      "n": 278
      },
-     "benchmarkReturnPct": -8.0
+     "benchmarkReturnPct": -4.55
     },
-    "measuredAt": "2026-10-19"
+    "measuredAt": "2026-10-21"
    },
-   "2026-10-13": {
+   "2026-10-15": {
     "frozen": {},
     "ageDays": 6,
     "current": {
      "top": {
-      "avgReturnPct": -3.19,
-      "n": 50
+      "avgReturnPct": 3.77,
+      "n": 49
      },
      "passed": {
-      "avgReturnPct": -2.47,
-      "n": 1522
+      "avgReturnPct": 2.64,
+      "n": 1519
      },
      "excluded": {
-      "avgReturnPct": 44.62,
-      "n": 280
+      "avgReturnPct": 2.58,
+      "n": 276
      },
-     "benchmarkReturnPct": -8.0
+     "benchmarkReturnPct": 3.27
     },
-    "measuredAt": "2026-10-19"
+    "measuredAt": "2026-10-21"
    },
-   "2026-10-14": {
+   "2026-10-16": {
     "frozen": {},
     "ageDays": 5,
     "current": {
      "top": {
-      "avgReturnPct": -3.0,
+      "avgReturnPct": -0.12,
       "n": 49
      },
      "passed": {
-      "avgReturnPct": -2.29,
-      "n": 1531
+      "avgReturnPct": -0.37,
+      "n": 1529
      },
      "excluded": {
-      "avgReturnPct": -3.77,
+      "avgReturnPct": -0.19,
       "n": 280
      },
-     "benchmarkReturnPct": -7.59
+     "benchmarkReturnPct": 1.19
     },
-    "measuredAt": "2026-10-19"
+    "measuredAt": "2026-10-21"
    },
-   "2026-10-15": {
+   "2026-10-19": {
     "frozen": {},
-    "ageDays": 4,
+    "ageDays": 2,
     "current": {
      "top": {
-      "avgReturnPct": 2.69,
-      "n": 49
+      "avgReturnPct": 0.84,
+      "n": 50
      },
      "passed": {
-      "avgReturnPct": 2.33,
-      "n": 1520
+      "avgReturnPct": 0.32,
+      "n": 1541
      },
      "excluded": {
-      "avgReturnPct": 1.61,
-      "n": 277
+      "avgReturnPct": 0.88,
+      "n": 276
      },
-     "benchmarkReturnPct": -0.03
+     "benchmarkReturnPct": 3.29
     },
-    "measuredAt": "2026-10-19"
+    "measuredAt": "2026-10-21"
    },
-   "2026-10-16": {
+   "2026-10-20": {
     "frozen": {},
-    "ageDays": 3,
+    "ageDays": 1,
     "current": {
      "top": {
-      "avgReturnPct": -1.11,
-      "n": 49
+      "avgReturnPct": 0.84,
+      "n": 50
      },
      "passed": {
-      "avgReturnPct": -0.66,
-      "n": 1530
+      "avgReturnPct": 0.32,
+      "n": 1541
      },
      "excluded": {
-      "avgReturnPct": -1.13,
-      "n": 282
+      "avgReturnPct": 0.88,
+      "n": 276
      },
-     "benchmarkReturnPct": -2.03
+     "benchmarkReturnPct": 3.29
     },
-    "measuredAt": "2026-10-19"
+    "measuredAt": "2026-10-21"
    }
   }
  }
