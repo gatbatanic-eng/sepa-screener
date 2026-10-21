@@ -1,0 +1,912 @@
+{
+ "market": "us",
+ "regime": "GREEN",
+ "gate": "우호적",
+ "candidates": 89,
+ "suitable": 16,
+ "picks": [
+  {
+   "code": "A",
+   "name": "Agilent Technologies",
+   "market": "US",
+   "price": 173.00999450683594,
+   "score": 4,
+   "strategies": {
+    "sepa": [
+     "TREND"
+    ],
+    "multifactor": [
+     "WATCH",
+     "CONTROL"
+    ],
+    "aggressive": [
+     "AGGR_WATCH"
+    ]
+   },
+   "funnelRank": null,
+   "entry": {
+    "riskPct": 6.95,
+    "riskSource": "SEPA",
+    "verdict": "WATCH",
+    "chase": [],
+    "liquidityOk": true,
+    "zone": "READY"
+   },
+   "reject": null
+  },
+  {
+   "code": "LFST",
+   "name": "LifeStance Health Group, Inc.",
+   "market": "Nasdaq",
+   "price": 12.220000267028809,
+   "score": 2,
+   "strategies": {
+    "funnel": 5
+   },
+   "funnelRank": 5,
+   "entry": {
+    "riskPct": 7.86,
+    "riskSource": "직접 계산",
+    "verdict": null,
+    "chase": [],
+    "liquidityOk": null,
+    "zone": null
+   },
+   "reject": null
+  },
+  {
+   "code": "XRN",
+   "name": "Chiron Real Estate Inc.",
+   "market": "NYSE",
+   "price": 29.979999542236328,
+   "score": 2,
+   "strategies": {
+    "funnel": 6
+   },
+   "funnelRank": 6,
+   "entry": {
+    "riskPct": 5.14,
+    "riskSource": "직접 계산",
+    "verdict": null,
+    "chase": [],
+    "liquidityOk": null,
+    "zone": null
+   },
+   "reject": null
+  }
+ ],
+ "rejectSummary": {
+  "손절폭 8% 초과": 60,
+  "SEPA 진입 NO-GO": 10,
+  "손절폭 0 이하(계산 불가)": 3
+ },
+ "shortfall": null,
+ "session": "2026-10-20",
+ "poolPrices": {
+  "PSX": 291.0299987792969,
+  "VEEV": 318.6700134277344,
+  "EOG": 157.91000366210938,
+  "COP": 145.9499969482422,
+  "VLO": 433.4200134277344,
+  "A": 173.00999450683594,
+  "KO": 93.48999786376952,
+  "AMGN": 438.9400024414063,
+  "ABBV": 289.0799865722656,
+  "BIIB": 243.1000061035156,
+  "CAH": 257.54998779296875,
+  "APA": 49.900001525878906,
+  "ZBRA": 384.0799865722656,
+  "WAT": 442.8299865722656,
+  "EXPD": 198.41000366210935,
+  "WST": 388.7799987792969,
+  "VTRS": 18.649999618530277,
+  "XOM": 177.86000061035156,
+  "CVX": 225.7100067138672,
+  "IFF": 91.20999908447266,
+  "WSM": 253.9900054931641,
+  "ADP": 292.75,
+  "KDP": 34.630001068115234,
+  "ELV": 440.1799926757813,
+  "CNC": 70.80999755859375,
+  "MRNA": 242.0800018310547,
+  "FIVN": 34.310001373291016,
+  "MDB": 366.17999267578125,
+  "CHRD": 152.22000122070312,
+  "TWFG": 25.739999771118164,
+  "LFST": 12.220000267028809,
+  "XRN": 29.979999542236328,
+  "DINO": 125.30999755859375,
+  "REPX": 48.939998626708984,
+  "KWR": 157.97000122070312,
+  "TRC": 16.149999618530273,
+  "SD": 14.279999732971191,
+  "FRSH": 14.850000381469727,
+  "HUBS": 250.75999450683594,
+  "WK": 79.26000213623047,
+  "MNTN": 10.470000267028809,
+  "QNST": 16.6200008392334,
+  "PATH": 13.430000305175781,
+  "CRON": 3.2799999713897705,
+  "WTI": 3.950000047683716,
+  "GNK": 24.719999313354492,
+  "MQ": 18.75,
+  "DOC": 18.760000228881836,
+  "RGR": 48.7400016784668,
+  "IRWD": 3.630000114440918,
+  "RDN": 34.68000030517578,
+  "HCC": 84.12999725341797,
+  "MMI": 28.030000686645508,
+  "FICO": 799.72998046875,
+  "CSGP": 33.04999923706055,
+  "ADI": 397.04998779296875,
+  "LPG": 52.06999969482422,
+  "AMD": 534.739990234375,
+  "CDNA": 69.19999694824219,
+  "ALGM": 33.90999984741211,
+  "DAR": 59.220001220703125,
+  "BETA": 18.149999618530273,
+  "DK": 77.62999725341797,
+  "CMC": 64.6500015258789,
+  "JOE": 68.98999786376953,
+  "TER": 336.5899963378906,
+  "GSHD": 47.0099983215332,
+  "VCEL": 40.58000183105469,
+  "EQIX": 987.4400024414062,
+  "INSW": 104.76000213623047,
+  "PLTR": 192.60000610351562,
+  "DDOG": 256.42999267578125,
+  "TWLO": 258.69000244140625,
+  "FTNT": 170.92999267578125,
+  "CPAY": 408.3599853515625,
+  "RVTY": 156.00999450683594,
+  "ILMN": 267.92999267578125,
+  "NUE": 261.5,
+  "IQV": 267.8500061035156,
+  "FFIV": 456.7099914550781,
+  "MRK": 148.3000030517578,
+  "CRL": 315.45001220703125,
+  "NTAP": 209.97000122070312,
+  "ABNB": 176.94000244140625,
+  "V": 406.5700073242188,
+  "LLY": 1283.6600341796875,
+  "HUM": 427.3800048828125,
+  "MPC": 475.0400085449219,
+  "P": 126.5199966430664
+ },
+ "directComputed": [
+  "ALGM",
+  "BETA",
+  "CDNA",
+  "CHRD",
+  "CMC",
+  "CRON",
+  "DAR",
+  "DINO",
+  "DK",
+  "FIVN",
+  "FRSH",
+  "GNK",
+  "GSHD",
+  "HCC",
+  "HUBS",
+  "INSW",
+  "IRWD",
+  "JOE",
+  "KWR",
+  "LFST",
+  "LPG",
+  "MDB",
+  "MMI",
+  "MNTN",
+  "MQ",
+  "PATH",
+  "QNST",
+  "RDN",
+  "REPX",
+  "RGR",
+  "SD",
+  "TRC",
+  "TWFG",
+  "VCEL",
+  "WK",
+  "WTI",
+  "XRN"
+ ],
+ "entryUnknown": 0,
+ "rules": {
+  "maxRiskPct": 8.0,
+  "stopLossPct": 8.0,
+  "holdDays": 40,
+  "maxPicks": 3
+ },
+ "picksV2": [
+  {
+   "code": "A",
+   "name": "Agilent Technologies",
+   "market": "US",
+   "price": 173.00999450683594,
+   "score": 4,
+   "strategies": {
+    "sepa": [
+     "TREND"
+    ],
+    "multifactor": [
+     "WATCH",
+     "CONTROL"
+    ],
+    "aggressive": [
+     "AGGR_WATCH"
+    ]
+   },
+   "funnelRank": null,
+   "entry": {
+    "riskPct": 6.95,
+    "riskSource": "SEPA",
+    "verdict": "WATCH",
+    "chase": [],
+    "liquidityOk": true,
+    "zone": "READY"
+   },
+   "v2": {
+    "score": 5,
+    "sector": "Healthcare",
+    "sectorAdj": 1,
+    "marketAdj": 0
+   },
+   "why": [
+    {
+     "kind": "strategy",
+     "text": "SEPA, 멀티팩터, 계좌복구 선정 (v1 점수 4)"
+    },
+    {
+     "kind": "entry",
+     "text": "손절폭 6.95%(SEPA), 추격·NO-GO·유동성 조건 통과"
+    },
+    {
+     "kind": "sector",
+     "text": "업종 Healthcare 강세: 50일선 위 75%, 평균 RS 70, 11개 업종 중 2위 (점수 +1)"
+    },
+    {
+     "kind": "market",
+     "text": "시장 미국 GREEN"
+    },
+    {
+     "kind": "consensus",
+     "text": "컨센서스(야후, 10/21): 애널리스트 20명 · 평균 목표가 $181 (현재가 대비 +5%) · 투자의견 매수 · 다음 실적 발표 11/25 (D-35) (참고, 점수 아님)"
+    },
+    {
+     "kind": "macro",
+     "text": "매크로 리스크오프 (VIX 17.3, 달러지수 101.8, 미 10년 5.15%) — 참고, 점수 아님"
+    }
+   ]
+  },
+  {
+   "code": "LFST",
+   "name": "LifeStance Health Group, Inc.",
+   "market": "Nasdaq",
+   "price": 12.220000267028809,
+   "score": 2,
+   "strategies": {
+    "funnel": 5
+   },
+   "funnelRank": 5,
+   "entry": {
+    "riskPct": 7.86,
+    "riskSource": "직접 계산",
+    "verdict": null,
+    "chase": [],
+    "liquidityOk": null,
+    "zone": null
+   },
+   "v2": {
+    "score": 3,
+    "sector": "Healthcare",
+    "sectorAdj": 1,
+    "marketAdj": 0
+   },
+   "why": [
+    {
+     "kind": "strategy",
+     "text": "실적 턴어라운드 5위 선정 (v1 점수 2)"
+    },
+    {
+     "kind": "entry",
+     "text": "손절폭 7.86%(직접 계산), 추격·NO-GO·유동성 조건 통과"
+    },
+    {
+     "kind": "sector",
+     "text": "업종 Healthcare 강세: 50일선 위 75%, 평균 RS 70, 11개 업종 중 2위 (점수 +1)"
+    },
+    {
+     "kind": "market",
+     "text": "시장 미국 GREEN"
+    },
+    {
+     "kind": "consensus",
+     "text": "컨센서스(야후, 10/21): 애널리스트 10명 · 평균 목표가 $14 (현재가 대비 +18%) · 투자의견 매수 · 다음 실적 발표 11/05 (D-15) (참고, 점수 아님)"
+    },
+    {
+     "kind": "macro",
+     "text": "매크로 리스크오프 (VIX 17.3, 달러지수 101.8, 미 10년 5.15%) — 참고, 점수 아님"
+    }
+   ]
+  },
+  {
+   "code": "SD",
+   "name": "SANDRIDGE ENERGY INC",
+   "market": "NYSE",
+   "price": 14.279999732971191,
+   "score": 2,
+   "strategies": {
+    "funnel": 11
+   },
+   "funnelRank": 11,
+   "entry": {
+    "riskPct": 7.98,
+    "riskSource": "직접 계산",
+    "verdict": null,
+    "chase": [],
+    "liquidityOk": null,
+    "zone": null
+   },
+   "v2": {
+    "score": 3,
+    "sector": "Energy",
+    "sectorAdj": 1,
+    "marketAdj": 0
+   },
+   "why": [
+    {
+     "kind": "strategy",
+     "text": "실적 턴어라운드 11위 선정 (v1 점수 2)"
+    },
+    {
+     "kind": "entry",
+     "text": "손절폭 7.98%(직접 계산), 추격·NO-GO·유동성 조건 통과"
+    },
+    {
+     "kind": "sector",
+     "text": "업종 Energy 강세: 50일선 위 76%, 평균 RS 75, 11개 업종 중 1위 (점수 +1)"
+    },
+    {
+     "kind": "market",
+     "text": "시장 미국 GREEN"
+    },
+    {
+     "kind": "consensus",
+     "text": "컨센서스(야후, 10/21): 애널리스트 1명 · 평균 목표가 $14 (현재가 대비 -2%) · 다음 실적 발표 11/04 (D-14, 변동성 주의) (참고, 점수 아님)"
+    },
+    {
+     "kind": "macro",
+     "text": "매크로 리스크오프 (VIX 17.3, 달러지수 101.8, 미 10년 5.15%) — 참고, 점수 아님"
+    }
+   ]
+  }
+ ],
+ "picksV3": [
+  {
+   "code": "PSX",
+   "name": "Phillips 66",
+   "market": "NYSE",
+   "price": 291.0299987792969,
+   "score": 5,
+   "strategies": {
+    "sepa": [
+     "TREND"
+    ],
+    "funnel": 29,
+    "aggressive": [
+     "AGGR_WATCH"
+    ]
+   },
+   "funnelRank": 29,
+   "entry": {
+    "riskPct": 16.08,
+    "riskSource": "SEPA",
+    "verdict": "NO-GO",
+    "chase": [
+     "SEPA 과열 구간"
+    ],
+    "liquidityOk": true,
+    "zone": "EXTENDED"
+   },
+   "v2": {
+    "score": 6,
+    "sector": "Energy",
+    "sectorAdj": 1,
+    "marketAdj": 0
+   },
+   "why": [
+    {
+     "kind": "strategy",
+     "text": "SEPA, 실적 턴어라운드 29위, 계좌복구 선정 (v1 점수 5)"
+    },
+    {
+     "kind": "entry",
+     "text": "손절폭 16.08%(SEPA) → 권고 비중 50% (8% 초과분은 8%÷손절폭으로 축소)"
+    },
+    {
+     "kind": "entry",
+     "text": "참고: SEPA NO-GO, SEPA 과열 구간 — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"
+    },
+    {
+     "kind": "sector",
+     "text": "업종 Energy 강세: 50일선 위 76%, 평균 RS 75, 11개 업종 중 1위 (점수 +1)"
+    },
+    {
+     "kind": "market",
+     "text": "시장 미국 GREEN"
+    },
+    {
+     "kind": "consensus",
+     "text": "컨센서스(야후, 10/21): 애널리스트 19명 · 평균 목표가 $283 (현재가 대비 -3%) · 투자의견 매수 · 다음 실적 발표 10/28 (D-7, 변동성 주의) (참고, 점수 아님)"
+    },
+    {
+     "kind": "macro",
+     "text": "매크로 리스크오프 (VIX 17.3, 달러지수 101.8, 미 10년 5.15%) — 참고, 점수 아님"
+    }
+   ],
+   "weight": 0.5
+  },
+  {
+   "code": "VEEV",
+   "name": "VEEVA SYSTEMS INC",
+   "market": "NYSE",
+   "price": 318.6700134277344,
+   "score": 5,
+   "strategies": {
+    "sepa": [
+     "TREND"
+    ],
+    "funnel": 33,
+    "aggressive": [
+     "AGGR_WATCH"
+    ]
+   },
+   "funnelRank": 33,
+   "entry": {
+    "riskPct": 15.93,
+    "riskSource": "SEPA",
+    "verdict": "NO-GO",
+    "chase": [
+     "SEPA 과열 구간"
+    ],
+    "liquidityOk": true,
+    "zone": "EXTENDED"
+   },
+   "v2": {
+    "score": 6,
+    "sector": "Healthcare",
+    "sectorAdj": 1,
+    "marketAdj": 0
+   },
+   "why": [
+    {
+     "kind": "strategy",
+     "text": "SEPA, 실적 턴어라운드 33위, 계좌복구 선정 (v1 점수 5)"
+    },
+    {
+     "kind": "entry",
+     "text": "손절폭 15.93%(SEPA) → 권고 비중 50% (8% 초과분은 8%÷손절폭으로 축소)"
+    },
+    {
+     "kind": "entry",
+     "text": "참고: SEPA NO-GO, SEPA 과열 구간 — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"
+    },
+    {
+     "kind": "sector",
+     "text": "업종 Healthcare 강세: 50일선 위 75%, 평균 RS 70, 11개 업종 중 2위 (점수 +1)"
+    },
+    {
+     "kind": "market",
+     "text": "시장 미국 GREEN"
+    },
+    {
+     "kind": "consensus",
+     "text": "컨센서스(야후, 10/21): 애널리스트 27명 · 평균 목표가 $299 (현재가 대비 -6%) · 투자의견 매수 · 다음 실적 발표 11/25 (D-35) (참고, 점수 아님)"
+    },
+    {
+     "kind": "macro",
+     "text": "매크로 리스크오프 (VIX 17.3, 달러지수 101.8, 미 10년 5.15%) — 참고, 점수 아님"
+    }
+   ],
+   "weight": 0.5
+  },
+  {
+   "code": "COP",
+   "name": "CONOCOPHILLIPS",
+   "market": "NYSE",
+   "price": 145.9499969482422,
+   "score": 5,
+   "strategies": {
+    "sepa": [
+     "TREND"
+    ],
+    "funnel": 41,
+    "aggressive": [
+     "AGGR_WATCH"
+    ]
+   },
+   "funnelRank": 41,
+   "entry": {
+    "riskPct": 16.53,
+    "riskSource": "SEPA",
+    "verdict": "NO-GO",
+    "chase": [
+     "SEPA 과열 구간"
+    ],
+    "liquidityOk": true,
+    "zone": "EXTENDED"
+   },
+   "v2": {
+    "score": 6,
+    "sector": "Energy",
+    "sectorAdj": 1,
+    "marketAdj": 0
+   },
+   "why": [
+    {
+     "kind": "strategy",
+     "text": "SEPA, 실적 턴어라운드 41위, 계좌복구 선정 (v1 점수 5)"
+    },
+    {
+     "kind": "entry",
+     "text": "손절폭 16.53%(SEPA) → 권고 비중 48% (8% 초과분은 8%÷손절폭으로 축소)"
+    },
+    {
+     "kind": "entry",
+     "text": "참고: SEPA NO-GO, SEPA 과열 구간 — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"
+    },
+    {
+     "kind": "sector",
+     "text": "업종 Energy 강세: 50일선 위 76%, 평균 RS 75, 11개 업종 중 1위 (점수 +1)"
+    },
+    {
+     "kind": "market",
+     "text": "시장 미국 GREEN"
+    },
+    {
+     "kind": "consensus",
+     "text": "컨센서스(야후, 10/21): 애널리스트 26명 · 평균 목표가 $151 (현재가 대비 +3%) · 투자의견 매수 · 다음 실적 발표 11/05 (D-15) (참고, 점수 아님)"
+    },
+    {
+     "kind": "macro",
+     "text": "매크로 리스크오프 (VIX 17.3, 달러지수 101.8, 미 10년 5.15%) — 참고, 점수 아님"
+    }
+   ],
+   "weight": 0.48
+  }
+ ],
+ "v3": {
+  "candidates": 42,
+  "skipped": {
+   "유동성 부족": 0,
+   "손절폭 미확인": 2
+  }
+ },
+ "picksV4": [
+  {
+   "code": "PSX",
+   "name": "Phillips 66",
+   "market": "NYSE",
+   "price": 291.0299987792969,
+   "score": 5,
+   "strategies": {
+    "sepa": [
+     "TREND"
+    ],
+    "funnel": 29,
+    "aggressive": [
+     "AGGR_WATCH"
+    ]
+   },
+   "funnelRank": 29,
+   "entry": {
+    "riskPct": 16.08,
+    "riskSource": "SEPA",
+    "verdict": "NO-GO",
+    "chase": [
+     "SEPA 과열 구간"
+    ],
+    "liquidityOk": true,
+    "zone": "EXTENDED"
+   },
+   "v2": {
+    "score": 6,
+    "sector": "Energy",
+    "sectorAdj": 1,
+    "marketAdj": 0
+   },
+   "why": [
+    {
+     "kind": "strategy",
+     "text": "SEPA, 실적 턴어라운드 29위, 계좌복구 선정 (v1 점수 5)"
+    },
+    {
+     "kind": "entry",
+     "text": "추세 통과(RS 98) · 변동성 ATR 3.0% ≥ 3% (v4 조건), 손절폭 16.08% → 권고 비중 50%"
+    },
+    {
+     "kind": "sector",
+     "text": "업종 Energy 강세: 50일선 위 76%, 평균 RS 75, 11개 업종 중 1위 (점수 +1)"
+    },
+    {
+     "kind": "market",
+     "text": "시장 미국 GREEN"
+    },
+    {
+     "kind": "consensus",
+     "text": "컨센서스(야후, 10/21): 애널리스트 19명 · 평균 목표가 $283 (현재가 대비 -3%) · 투자의견 매수 · 다음 실적 발표 10/28 (D-7, 변동성 주의) (참고, 점수 아님)"
+    },
+    {
+     "kind": "macro",
+     "text": "매크로 리스크오프 (VIX 17.3, 달러지수 101.8, 미 10년 5.15%) — 참고, 점수 아님"
+    }
+   ],
+   "weight": 0.5,
+   "atrPct": 3.02,
+   "rs": 97.8
+  },
+  {
+   "code": "VEEV",
+   "name": "VEEVA SYSTEMS INC",
+   "market": "NYSE",
+   "price": 318.6700134277344,
+   "score": 5,
+   "strategies": {
+    "sepa": [
+     "TREND"
+    ],
+    "funnel": 33,
+    "aggressive": [
+     "AGGR_WATCH"
+    ]
+   },
+   "funnelRank": 33,
+   "entry": {
+    "riskPct": 15.93,
+    "riskSource": "SEPA",
+    "verdict": "NO-GO",
+    "chase": [
+     "SEPA 과열 구간"
+    ],
+    "liquidityOk": true,
+    "zone": "EXTENDED"
+   },
+   "v2": {
+    "score": 6,
+    "sector": "Healthcare",
+    "sectorAdj": 1,
+    "marketAdj": 0
+   },
+   "why": [
+    {
+     "kind": "strategy",
+     "text": "SEPA, 실적 턴어라운드 33위, 계좌복구 선정 (v1 점수 5)"
+    },
+    {
+     "kind": "entry",
+     "text": "추세 통과(RS 96) · 변동성 ATR 3.2% ≥ 3% (v4 조건), 손절폭 15.93% → 권고 비중 50%"
+    },
+    {
+     "kind": "sector",
+     "text": "업종 Healthcare 강세: 50일선 위 75%, 평균 RS 70, 11개 업종 중 2위 (점수 +1)"
+    },
+    {
+     "kind": "market",
+     "text": "시장 미국 GREEN"
+    },
+    {
+     "kind": "consensus",
+     "text": "컨센서스(야후, 10/21): 애널리스트 27명 · 평균 목표가 $299 (현재가 대비 -6%) · 투자의견 매수 · 다음 실적 발표 11/25 (D-35) (참고, 점수 아님)"
+    },
+    {
+     "kind": "macro",
+     "text": "매크로 리스크오프 (VIX 17.3, 달러지수 101.8, 미 10년 5.15%) — 참고, 점수 아님"
+    }
+   ],
+   "weight": 0.5,
+   "atrPct": 3.18,
+   "rs": 95.7
+  },
+  {
+   "code": "VLO",
+   "name": "VALERO ENERGY CORP/TX",
+   "market": "NYSE",
+   "price": 433.4200134277344,
+   "score": 4,
+   "strategies": {
+    "sepa": [
+     "TREND"
+    ],
+    "funnel": 45
+   },
+   "funnelRank": 45,
+   "entry": {
+    "riskPct": 17.62,
+    "riskSource": "SEPA",
+    "verdict": "NO-GO",
+    "chase": [],
+    "liquidityOk": true,
+    "zone": "SETUP"
+   },
+   "v2": {
+    "score": 5,
+    "sector": "Energy",
+    "sectorAdj": 1,
+    "marketAdj": 0
+   },
+   "why": [
+    {
+     "kind": "strategy",
+     "text": "SEPA, 실적 턴어라운드 45위 선정 (v1 점수 4)"
+    },
+    {
+     "kind": "entry",
+     "text": "추세 통과(RS 99) · 변동성 ATR 3.8% ≥ 3% (v4 조건), 손절폭 17.62% → 권고 비중 45%"
+    },
+    {
+     "kind": "sector",
+     "text": "업종 Energy 강세: 50일선 위 76%, 평균 RS 75, 11개 업종 중 1위 (점수 +1)"
+    },
+    {
+     "kind": "market",
+     "text": "시장 미국 GREEN"
+    },
+    {
+     "kind": "consensus",
+     "text": "컨센서스(야후, 10/21): 애널리스트 19명 · 평균 목표가 $412 (현재가 대비 -5%) · 투자의견 매수 · 다음 실적 발표 10/22 (D-1, 변동성 주의) (참고, 점수 아님)"
+    },
+    {
+     "kind": "macro",
+     "text": "매크로 리스크오프 (VIX 17.3, 달러지수 101.8, 미 10년 5.15%) — 참고, 점수 아님"
+    }
+   ],
+   "weight": 0.45,
+   "atrPct": 3.81,
+   "rs": 98.6
+  }
+ ],
+ "v4": {
+  "candidates": 15,
+  "missingAtr": 0
+ },
+ "context": {
+  "regimes": {
+   "US": "GREEN"
+  },
+  "macro": {
+   "label": "리스크오프",
+   "generatedAt": "2026-10-21 09:01 KST",
+   "vix": 17.31,
+   "usdkrw": 1323.38,
+   "dxy": 101.785,
+   "us10y": 5.15,
+   "signals": [
+    "달러 강세(DXY 1개월 +1.4%, 1년 백분위 94) — 외국인 코스피 순매도 압력",
+    "하이일드 스프레드 329bp(1주 +18bp, 백분위 98) — 신용 스트레스 신호"
+   ]
+  },
+  "consensus": {
+   "known": 86,
+   "candidates": 89
+  },
+  "sectorCoverage": {
+   "known": 89,
+   "candidates": 89
+  },
+  "sectors": [
+   {
+    "sector": "Energy",
+    "n": 21,
+    "above50Pct": 76.2,
+    "avgRs": 74.6,
+    "strength": 75.4,
+    "rank": 1,
+    "of": 11,
+    "adj": 1
+   },
+   {
+    "sector": "Healthcare",
+    "n": 60,
+    "above50Pct": 75.0,
+    "avgRs": 69.7,
+    "strength": 72.3,
+    "rank": 2,
+    "of": 11,
+    "adj": 1
+   },
+   {
+    "sector": "Consumer Defensive",
+    "n": 32,
+    "above50Pct": 68.8,
+    "avgRs": 52.1,
+    "strength": 60.4,
+    "rank": 3,
+    "of": 11,
+    "adj": 1
+   },
+   {
+    "sector": "Technology",
+    "n": 90,
+    "above50Pct": 46.7,
+    "avgRs": 64.1,
+    "strength": 55.4,
+    "rank": 4,
+    "of": 11,
+    "adj": 0
+   },
+   {
+    "sector": "Basic Materials",
+    "n": 19,
+    "above50Pct": 57.9,
+    "avgRs": 51.7,
+    "strength": 54.8,
+    "rank": 5,
+    "of": 11,
+    "adj": 0
+   },
+   {
+    "sector": "Utilities",
+    "n": 31,
+    "above50Pct": 71.0,
+    "avgRs": 27.0,
+    "strength": 49.0,
+    "rank": 6,
+    "of": 11,
+    "adj": 0
+   },
+   {
+    "sector": "Financial Services",
+    "n": 70,
+    "above50Pct": 44.3,
+    "avgRs": 48.5,
+    "strength": 46.4,
+    "rank": 7,
+    "of": 11,
+    "adj": 0
+   },
+   {
+    "sector": "Consumer Cyclical",
+    "n": 55,
+    "above50Pct": 49.1,
+    "avgRs": 35.7,
+    "strength": 42.4,
+    "rank": 8,
+    "of": 11,
+    "adj": 0
+   },
+   {
+    "sector": "Industrials",
+    "n": 76,
+    "above50Pct": 38.2,
+    "avgRs": 43.7,
+    "strength": 40.9,
+    "rank": 9,
+    "of": 11,
+    "adj": -1
+   },
+   {
+    "sector": "Communication Services",
+    "n": 22,
+    "above50Pct": 36.4,
+    "avgRs": 36.0,
+    "strength": 36.2,
+    "rank": 10,
+    "of": 11,
+    "adj": -1
+   },
+   {
+    "sector": "Real Estate",
+    "n": 30,
+    "above50Pct": 26.7,
+    "avgRs": 30.6,
+    "strength": 28.6,
+    "rank": 11,
+    "of": 11,
+    "adj": -1
+   }
+  ]
+ },
+ "recordedAt": "2026-10-21T13:15:22.571837+00:00"
+}
