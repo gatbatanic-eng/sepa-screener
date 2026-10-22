@@ -174,7 +174,7 @@ def main():
         print('당일 대표 종목 봉 없음: 휴장 또는 데이터 미도착'); return
     codes = list(universe())
     data, errors = {}, 0
-    for code, market in codes:
+    for i, (code, market) in enumerate(codes, 1):
         try:
             response = kr_period(tok, code, market, day, 21)
             meta = (response.get('data') or {}).get('Output_0') or {}
@@ -186,6 +186,8 @@ def main():
                 data[code] = d
         except Exception:
             errors += 1
+        if i % 100 == 0:
+            print(f'가격 수집 {i}/{len(codes)}, 당일 유효 {len(data)}, 오류 {errors}', flush=True)
     previous = None
     for p in sorted(OUT.glob('????????.json'), reverse=True):
         if p.stem < day:
