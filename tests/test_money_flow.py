@@ -1,7 +1,8 @@
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
-from nhplug.money_flow import build, normalize_news, explain, save
+from nhplug.money_flow import build, normalize_news, explain, save, refresh_research
 
 
 def stock(name='기업', sector='반도체', turn=1e9, chg=2, news=3):
@@ -52,3 +53,23 @@ class MoneyFlowTests(unittest.TestCase):
             save(build('20261022', {}, 0), folder)
             self.assertTrue((folder / 'latest.json').exists())
             self.assertEqual((folder / 'index.json').read_text(), '["20261022"]')
+
+
+class ResearchRetryTests(unittest.TestCase):
+    def test_news_refresh_keeps_market_numbers_and_updates_both_leader_lists(self):
+        report = build('20261022', {'a': stock(name='기업')}, 1)
+        article = {'title': '기업 수주 증가', 'url': 'https://n.news.naver.com/a', 'publishedAt': '202610221600'}
+        with patch('nhplug.money_flow.fetch_news', return_value={'status': 'ok', 'articles': [article]}) as fetch:
+            refresh_research(report)
+        self.assertEqual(fetch.call_count, 1)
+        self.assertEqual(report['totalTurnoverKRW'], 1e9)
+        self.assertEqual(report['researchVersion'], 2)
+        self.assertEqual(report['sectors'][0]['newsLeaders'][0]['research']['status'], 'reported_catalyst')
+        self.assertEqual(report['newsRequests']['failed'], 0)
+
+    def test_failed_news_remains_visible_for_retry(self):
+        report = build('20261022', {'a': stock()}, 1)
+        with patch('nhplug.money_flow.fetch_news', return_value={'status': 'failed', 'articles': []}):
+            refresh_research(report)
+        self.assertEqual(report['newsRequests']['failed'], 1)
+        self.assertEqual(report['sectors'][0]['moneyLeaders'][0]['newsFetchStatus'], 'failed')
