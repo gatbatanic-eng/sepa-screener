@@ -63,7 +63,7 @@ class ResearchRetryTests(unittest.TestCase):
             refresh_research(report)
         self.assertEqual(fetch.call_count, 1)
         self.assertEqual(report['totalTurnoverKRW'], 1e9)
-        self.assertEqual(report['researchVersion'], 2)
+        self.assertEqual(report['researchVersion'], 3)
         self.assertEqual(report['sectors'][0]['newsLeaders'][0]['research']['status'], 'reported_catalyst')
         self.assertEqual(report['newsRequests']['failed'], 0)
 

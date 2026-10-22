@@ -85,7 +85,9 @@ def build(day, data, expected, news=None, previous=None):
         # news_cnt is a provider count, not readership/search popularity.
         count = d.get('news')
         stock = {'code': code, 'name': d['name'], 'changePct': d['chg'], 'turnoverKRW': d['turn'],
-                 'turnoverVs20d': d.get('surge'), 'providerNewsCount': count,
+                 'turnoverVs20d': d.get('surge'), 'providerNewsCount': count, 'sector': name,
+                 'close': d.get('close'), 'high': d.get('high'), 'low': d.get('low'),
+                 'high250': d.get('high250'), 'nearHigh250': d.get('nearHigh250'),
                  'sourceUrl': f'https://finance.naver.com/item/main.naver?code={code}'}
         evidence = news.get(code)
         if evidence is not None:
@@ -112,12 +114,16 @@ def build(day, data, expected, news=None, previous=None):
         g['shareChangePp'] = round(g['turnoverSharePct'] - old['turnoverSharePct'], 2) if old and old.get('turnoverSharePct') is not None else None
         g['research'] = explain([a for x in xs for a in news.get(x['code'], {}).get('articles', [])])
         del g['stocks']
+    stock_universe = [dict(code=c, name=d['name'], sector=sector_group(d.get('sector')), changePct=d['chg'],
+                           turnoverKRW=d['turn'], turnoverVs20d=d.get('surge'), providerNewsCount=d.get('news'),
+                           close=d.get('close'), high=d.get('high'), low=d.get('low'), high250=d.get('high250'), nearHigh250=d.get('nearHigh250'),
+                           sourceUrl=f'https://finance.naver.com/item/main.naver?code={c}') for c, d in valid.items()]
     all_sectors = sorted(sectors.values(), key=lambda g: -g['turnoverKRW'])
     coverage = len(valid) / expected if expected else 0
     return {'schemaVersion': 1, 'date': day, 'generatedAt': dt.datetime.now(KST).isoformat(),
             'session': '장 마감 일봉·잠정', 'status': 'ok' if expected and coverage >= .8 and len(valid) >= 300 else 'degraded',
             'coverage': {'expected': expected, 'valid': len(valid), 'ratio': round(coverage, 4)},
-            'totalTurnoverKRW': total, 'sectors': all_sectors,
+            'totalTurnoverKRW': total, 'sectors': all_sectors, 'stockUniverse': stock_universe,
             'moneyRanking': [g['sector'] for g in all_sectors],
             'attentionRanking': [g['sector'] for g in sorted(all_sectors, key=lambda g: (-g['newsCount'], -g['turnoverKRW'])) if g['newsCount'] > 0],
             'previousDate': (previous or {}).get('date'),
@@ -141,7 +147,17 @@ def refresh_research(report):
     selected = set(report['moneyRanking'][:3] + report['attentionRanking'][:3])
     focus = {s['code']: s for g in report['sectors'] if g['sector'] in selected
              for s in g['moneyLeaders'][:2] + g['newsLeaders'][:2]}
-    news = {c: fetch_news(c, s['name'], report['date']) for c, s in list(focus.items())[:18]}
+    from .watchlist222 import news_pool, select
+    for stock in news_pool(report):
+        focus.setdefault(stock['code'], stock)
+    news = {c: fetch_news(c, s['name'], report['date']) for c, s in list(focus.items())[:48]}
+    all_stocks = report.get('stockUniverse', []) + [s for g in report['sectors'] for s in g['moneyLeaders'] + g['newsLeaders']]
+    for stock in all_stocks:
+        n = news.get(stock['code'])
+        if n is not None:
+            stock['newsEvidence'] = n['articles'][:10]
+            stock['research'] = explain(n['articles'])
+            stock['newsFetchStatus'] = n['status']
     for g in report['sectors']:
         for stock in g['moneyLeaders'] + g['newsLeaders']:
             n = news.get(stock['code'])
@@ -150,10 +166,43 @@ def refresh_research(report):
                 stock['newsFetchStatus'] = n['status']
         codes = {s['code'] for s in g['moneyLeaders'] + g['newsLeaders']}
         g['research'] = explain([a for c in codes for a in news.get(c, {}).get('articles', [])])
-    report['researchVersion'] = 2
+    report['researchVersion'] = 3
+    report['watchlist222'] = select(report)
     report['newsRequests'] = {'requested': len(news), 'failed': sum(n['status'] == 'failed' for n in news.values()),
                               'withDatedEvidence': sum(bool(n['articles']) for n in news.values())}
     return report
+
+
+def enrich_legacy_prices(report):
+    """Fill missing price references for the legacy review pool, same report day only."""
+    from .watchlist222 import universe as candidate_universe, reviewable, score
+    stocks, scope = candidate_universe(report)
+    if scope != 'sector_leaders_only': return
+    focus = sorted((s for s in stocks if reviewable(s)), key=lambda s: (-score(s), s['code']))[:40]
+    if not focus: return
+    tok = token()
+    levels, failed = {}, 0
+    markets = dict(universe())
+    for stock in focus:
+        try:
+            # market code is not exposed by legacy reports; lookup existing universe map.
+            bars = rows(kr_period(tok, stock['code'], markets.get(stock['code'], '1'), report['date'], 251))
+            if not bars or str(bars[0].get('bsop_date')) != report['date']:
+                failed += 1; continue
+            def number(key, bar=bars[0]):
+                try: return float(str(bar[key]).replace(',', ''))
+                except (KeyError, ValueError, TypeError): return None
+            highs = [number('stck_hgpr', b) for b in bars[1:251]]
+            high250 = max(highs) if len(highs) == 250 and all(h and h > 0 for h in highs) else None
+            close = number('stck_prpr')
+            levels[stock['code']] = dict(close=close, high=number('stck_hgpr'), low=number('stck_lwpr'), high250=high250,
+                                        nearHigh250=close/high250 >= .95 if close and high250 else None)
+        except Exception:
+            failed += 1
+    for g in report['sectors']:
+        for stock in g['moneyLeaders'] + g['newsLeaders']:
+            stock.update(levels.get(stock['code'], {}))
+    report['candidatePriceEnrichment'] = {'requested': len(focus), 'valid': len(levels), 'failed': failed}
 
 
 def main():
@@ -163,7 +212,8 @@ def main():
     day = now.strftime('%Y%m%d')
     if (OUT / f'{day}.json').exists():
         report = json.loads((OUT / f'{day}.json').read_text(encoding='utf-8'))
-        if report.get('researchVersion', 0) < 2 or report.get('newsRequests', {}).get('failed', 0):
+        if report.get('researchVersion', 0) < 3 or report.get('watchlist222', {}).get('version') != 1 or report.get('newsRequests', {}).get('failed', 0):
+            enrich_legacy_prices(report)
             save(refresh_research(report))
             print('기존 가격 집계 유지, 뉴스 재조사', report['newsRequests'])
         else:
@@ -176,13 +226,21 @@ def main():
     data, errors = {}, 0
     for i, (code, market) in enumerate(codes, 1):
         try:
-            response = kr_period(tok, code, market, day, 21)
+            response = kr_period(tok, code, market, day, 251)
             meta = (response.get('data') or {}).get('Output_0') or {}
             if isinstance(meta, list): meta = meta[0] if meta else {}
             d = stock_day(rows(response), meta, day)
             if d:
                 # Preserve missing news counts instead of treating missing as zero.
                 d['news'] = None if rows(response)[0].get('news_cnt') in (None, '') else d['news']
+                bars = rows(response)
+                def price(key, bar=bars[0]):
+                    try: return float(str(bar[key]).replace(',', ''))
+                    except (KeyError, ValueError, TypeError): return None
+                d['high'], d['low'] = price('stck_hgpr'), price('stck_lwpr')
+                highs = [price('stck_hgpr', b) for b in bars[1:251]]
+                d['high250'] = max(highs) if len(highs) == 250 and all(h and h > 0 for h in highs) else None
+                d['nearHigh250'] = d['close'] / d['high250'] >= .95 if d['close'] and d['high250'] else None
                 data[code] = d
         except Exception:
             errors += 1

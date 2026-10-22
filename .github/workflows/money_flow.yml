@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [master]
-    paths: [nhplug/money_flow.py, .github/workflows/money_flow.yml]
+    paths: [nhplug/money_flow.py, nhplug/watchlist222.py, tests/test_watchlist222.py, .github/workflows/money_flow.yml]
   schedule:
     # 16:23 KST with retry slots. GitHub schedules may be delayed.
     - cron: '23 7 * * 1-5'
@@ -26,7 +26,7 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install requests
-      - run: python -m unittest tests.test_money_flow -v
+      - run: python -m unittest tests.test_money_flow tests.test_watchlist222 -v
       - name: Collect public daily market data and news
         env:
           NHPLUG_APPKEY: ${{ secrets.NHPLUG_APPKEY }}
