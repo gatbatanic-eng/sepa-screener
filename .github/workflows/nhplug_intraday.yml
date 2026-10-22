@@ -1,17 +1,23 @@
-name: NHPLUG Intraday One Day
+name: NHPLUG Intraday Daily
 
 on:
   push:
     branches: [master]
     paths: [nhplug/live.py, .github/workflows/nhplug_intraday.yml]
   workflow_dispatch:
+  schedule:
+    # 08:55 KST on weekdays; wait for the open. Backups also resume after the
+    # 330-minute worker limit. GitHub cron can be delayed; this is not tick data.
+    - cron: '55 23 * * 0-4'
+    - cron: '17 0 * * 1-5'
+    - cron: '17 3 * * 1-5'
 
 permissions:
   contents: write
 
 concurrency:
-  group: nhplug-intraday-one-day-v2
-  cancel-in-progress: true
+  group: nhplug-intraday-daily
+  cancel-in-progress: false
 
 jobs:
   collect:
@@ -20,10 +26,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: master
           fetch-depth: 1
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Verify intraday date, freshness and public-data publishing
+        run: python -m unittest discover -s tests -p test_nhplug_live.py -v
       - name: Prepare isolated public-data worktree
         run: |
           if git ls-remote --exit-code --heads origin nhplug-live-data >/dev/null 2>&1; then
@@ -32,9 +41,9 @@ jobs:
           else
             git worktree add --detach "$RUNNER_TEMP/nhplug-live-data" HEAD
           fi
-      - name: Collect public quotes only until 15:26 KST on 2026-10-20
+      - name: Collect today's public quotes until 15:31 KST
         env:
           NHPLUG_APPKEY: ${{ secrets.NHPLUG_APPKEY }}
           NHPLUG_APPSECRET: ${{ secrets.NHPLUG_APPSECRET }}
-        run: python -m nhplug.live --watch --date 2026-10-20 --output "$RUNNER_TEMP/nhplug-live-data"
+        run: python -m nhplug.live --watch --max-minutes 330 --output "$RUNNER_TEMP/nhplug-live-data"
 

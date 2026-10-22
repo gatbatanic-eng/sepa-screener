@@ -1,0 +1,57 @@
+name: Daily Market Money Flow
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths: [nhplug/money_flow.py, .github/workflows/money_flow.yml]
+  schedule:
+    # 16:23 KST with retry slots. GitHub schedules may be delayed.
+    - cron: '23 7 * * 1-5'
+    - cron: '53 7 * * 1-5'
+    - cron: '23 9 * * 1-5'
+permissions:
+  contents: write
+concurrency:
+  group: daily-money-flow
+  cancel-in-progress: false
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install requests
+      - run: python -m unittest tests.test_money_flow -v
+      - name: Collect public daily market data and news
+        env:
+          NHPLUG_APPKEY: ${{ secrets.NHPLUG_APPKEY }}
+          NHPLUG_APPSECRET: ${{ secrets.NHPLUG_APPSECRET }}
+        run: python -m nhplug.money_flow
+      - name: Expose tab in main navigation
+        run: |
+          python - <<'PYCODE'
+          from pathlib import Path
+          p = Path('docs/index.html')
+          text = p.read_text(encoding='utf-8')
+          marker = '<a class="here" href="./">SEPA 추세템플릿</a>'
+          if './market/' not in text:
+              text = text.replace(marker, marker + '<a href="./market/">오늘의 돈과 관심</a>')
+              p.write_text(text, encoding='utf-8')
+          PYCODE
+      - name: Save report
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -f docs/market/money_flow docs/index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Daily money flow report'
+          for i in 1 2 3; do
+            if git pull --rebase origin master && git push origin HEAD:master; then exit 0; fi
+            sleep 5
+          done
+          exit 1

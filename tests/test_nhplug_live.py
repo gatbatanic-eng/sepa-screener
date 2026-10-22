@@ -9,6 +9,36 @@ from nhplug import live
 
 
 class LiveTest(unittest.TestCase):
+    def test_date_defaults_to_each_kst_day_and_rejects_expired_override(self):
+        now = dt.datetime(2026, 10, 22, 10, 0, tzinfo=live.KST)
+        self.assertEqual(live.session_date(None, now), '2026-10-22')
+        with self.assertRaises(live.DataError):
+            live.session_date('2026-10-20', now)
+
+    def test_clock_only_quote_is_not_eligible_until_date_verified(self):
+        now = dt.datetime(2026, 10, 22, 10, 0, tzinfo=live.KST)
+        raw = {'Output_0': {'stck_prpr': 110, 'stck_prdy_clpr': 100, 'prdy_ctrt': 10,
+            'hoga_bsop_hour': '100000', 'stck_hgpr': 110, 'stck_lwpr': 100,
+            'acml_vol': 100000000, 'acml_tr_pbmn': 10800000000}}
+        q = live.normalize('007810', raw, now)
+        self.assertEqual(live.summarize([q])['eligibleQuotes'], 0)
+        q['quoteDateVerified'] = True
+        self.assertEqual(live.summarize([q])['observationCandidates'], ['007810'])
+
+    def test_collection_requires_same_symbol_current_daily_bar(self):
+        now = dt.datetime.now(live.KST)
+        quote = {'Output_0': {'stck_prpr': 110, 'stck_prdy_clpr': 100, 'prdy_ctrt': 10,
+            'hoga_bsop_hour': now.strftime('%H%M%S'), 'stck_hgpr': 110, 'stck_lwpr': 100,
+            'acml_vol': 100000000, 'acml_tr_pbmn': 10800000000}}
+        client = unittest.mock.Mock()
+        client.call.side_effect = [quote, {'Output_1': [{'bsop_date': '20261020'}]}]
+        got = live.collect(client, ['007810'], {}, with_details=False)
+        self.assertEqual(got['status'], 'failed')
+        self.assertEqual(got['summary']['eligibleQuotes'], 0)
+        client.call.side_effect = [quote, {'Output_1': [{'bsop_date': now.strftime('%Y%m%d')}]}]
+        got = live.collect(client, ['007810'], {}, with_details=False)
+        self.assertEqual(got['status'], 'ok')
+
     def test_snapshot_is_committed_even_when_json_is_gitignored(self):
         with tempfile.TemporaryDirectory(dir=Path.cwd()) as tmp:
             root = Path(tmp)

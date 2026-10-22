@@ -1,7 +1,7 @@
 """Read-only NHPLUG intraday collector. Never calls account/order endpoints.
 
 Snapshots contain only public market data. Credentials stay in process memory.
-The one-day watcher publishes to a separate data branch, not the screener files.
+The session watcher publishes to a separate data branch, not the screener files.
 """
 from __future__ import annotations
 
@@ -24,6 +24,9 @@ ALLOWED = {"/krstock/quote/v1/currentPrice", "/krstock/quote/v1/currentExecution
            "/krstock/quote/v1/currentInvestor", "/krstock/quote/v1/period"}
 ROOT = Path(__file__).resolve().parent.parent
 DATA_BRANCH = "nhplug-live-data"
+SESSION_OPEN = dt.time(9, 0)
+SESSION_END = dt.time(15, 31)
+MAX_QUOTE_AGE = 300
 PRIORITY = ["007810", "353200", "222800", "396300", "126340", "014950", "042510", "053800", "263860",
             "090460", "009150", "007660", "005930", "000660", "373220", "006400",
             "012450", "064350", "010120", "267260", "207940", "068270", "010950",
@@ -169,7 +172,8 @@ def normalize(code, data, now=None):
         flags.append("turnover_unit_unverified")
     return {"code": code, "name": str(x.get("iem_nm") or code).strip().lstrip("*#"), "market": "KRX",
         "observedAt": now.isoformat(), "quoteTime": qts.isoformat() if qts else None,
-        "quoteDateVerified": False, "quoteAgeSeconds": age,
+        "quoteDateVerified": str(x.get("bsop_date") or "") == now.strftime("%Y%m%d"),
+        "quoteAgeSeconds": age,
         "price": price, "previousClose": prev, "changePct": ret,
         "changePctRaw": raw_ret, "directionCode": direction,
         "directionMethod": "API code" if direction else "same-response price/base consistency",
@@ -183,9 +187,9 @@ def normalize(code, data, now=None):
         "warnings": flags}
 
 
-def period_body(code, market="1", minutes=True):
+def period_body(code, market="1", minutes=True, count=100):
     return {"market_cd": "KRX", "iem_cd": code, "mrkt_div_cls_code": market,
-        "edate": dt.datetime.now(KST).strftime("%Y%m%d"), "array_cnt": "0100",
+        "edate": dt.datetime.now(KST).strftime("%Y%m%d"), "array_cnt": f"{count:04d}",
         "maxavg": "000", "gubun": "5" if minutes else "1", "xtick": "005" if minutes else "000",
         "today_cls_code": "1" if minutes else "0", "fake_tick": "1", "sur_flag": "0",
         "sur_gb_day_cnt": "00", "sur_bf_end_time": "", "out1_scale_change": "0",
@@ -199,7 +203,7 @@ def load_universe():
 
 
 def summarize(quotes):
-    usable = [x for x in quotes if not x["warnings"] and x["changePct"] is not None]
+    usable = [x for x in quotes if not x["warnings"] and x.get("quoteDateVerified") and x["changePct"] is not None]
     groups = {}
     for q in usable:
         if q.get("sector"):
@@ -223,6 +227,16 @@ def collect(client, codes, universe, with_details=True):
     for code in codes:
         try:
             q = normalize(code, client.call("/krstock/quote/v1/currentPrice", {"market_cd": "KRX", "iem_cd": code}))
+            # A clock-only quote cannot establish its trading date. Verify every
+            # symbol against its own current daily bar, not just focus stocks.
+            if not q["quoteDateVerified"]:
+                market = "4" if universe.get(code, {}).get("market") == "KOSDAQ" else "1"
+                daily = client.call("/krstock/quote/v1/period", period_body(code, market, minutes=False, count=2))
+                days = block(daily, "Output_1")
+                q["quoteDateVerified"] = bool(days and str(days[0].get("bsop_date")) == started.strftime("%Y%m%d"))
+                q["quoteDateVerificationMethod"] = "same-symbol daily bar queried after quote"
+            if not q["quoteDateVerified"]:
+                q["warnings"].append("quote_date_unverified")
             quotes.append(q)
         except (DataError, KeyError) as exc:
             errors.append({"code": code, "error": str(exc)[:240]})
@@ -250,17 +264,22 @@ def collect(client, codes, universe, with_details=True):
                 inv_keys = ("bsop_date1", "invest", "gigwan", "person", "program", "stck_prpr", "acml_vol")
                 details[code]["investor"] = {"message": message(inv), "responseKeys": list(inv),
                     "rows": [{k: b.get(k) for k in inv_keys} for b in block(inv, "Output_0") if isinstance(b, dict)]}
-                for q in quotes:
-                    if q["code"] == code:
-                        q["quoteDateVerified"] = bool(bars and str(bars[0].get("bsop_date")) == started.strftime("%Y%m%d"))
             except DataError as exc:
                 details[code] = {"error": str(exc)[:240]}
     finished = dt.datetime.now(KST)
-    return {"schemaVersion": 1, "source": "NHPLUG", "exchange": "KRX", "mode": "REST polling",
+    for q in quotes:
+        if q.get("quoteTime"):
+            q["quoteAgeSeconds"] = (finished - dt.datetime.fromisoformat(q["quoteTime"])).total_seconds()
+            if q["quoteAgeSeconds"] > MAX_QUOTE_AGE:
+                q["warnings"].append("quote_aged_during_collection")
+    summary = summarize(quotes)
+    valid = summary["eligibleQuotes"]
+    return {"schemaVersion": 2, "source": "NHPLUG", "exchange": "KRX", "mode": "REST polling",
         "startedAt": started.isoformat(), "generatedAt": finished.isoformat(),
         "requestedCount": len(codes), "receivedCount": len(quotes), "universeCount": len(universe),
-        "status": "ok" if len(quotes) >= len(codes) * .8 else "degraded" if quotes else "failed",
-        "quotes": quotes, "errors": errors, "details": details, "summary": summarize(quotes)}
+        "runId": os.getenv("GITHUB_RUN_ID"), "maxQuoteAgeSeconds": MAX_QUOTE_AGE,
+        "status": "ok" if codes and valid >= len(codes) * .8 else "degraded" if valid else "failed",
+        "quotes": quotes, "errors": errors, "details": details, "summary": summary}
 
 
 def git(*args, cwd=None):
@@ -286,17 +305,42 @@ def publish(snapshot, output):
     git("push", "origin", "HEAD:refs/heads/" + DATA_BRANCH, cwd=output)
 
 
+def session_date(requested, now):
+    today = now.date().isoformat()
+    if requested and requested != today:
+        raise DataError("Requested date is not today's KST session")
+    return today
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--watch", action="store_true")
-    ap.add_argument("--date", default="2026-10-20")
+    ap.add_argument("--date", help="KST session date; defaults to today, historical dates rejected")
+    ap.add_argument("--max-minutes", type=int, default=330)
     ap.add_argument("--output", type=Path)
     args = ap.parse_args()
     now = dt.datetime.now(KST)
-    if now.date().isoformat() != args.date or now.hour >= 16:
-        print("One-day collection window closed")
+    args.date = session_date(args.date, now)
+    if now.weekday() >= 5 or now.time() >= SESSION_END:
+        print("Outside KR weekday session window; no live data collected")
         return
+    if now.time() < SESSION_OPEN:
+        if not args.watch:
+            raise DataError("KR session has not opened")
+        while dt.datetime.now(KST).time() < SESSION_OPEN:
+            time.sleep(30)
+    deadline = time.monotonic() + min(max(args.max_minutes, 1), 330) * 60
     client, universe = Client(), load_universe()
+    # Exchange holidays are checked from a dated bar, never inferred from a
+    # stale price's clock. Keep the last snapshot unchanged on closed days.
+    days = block(client.call("/krstock/quote/v1/period", period_body("005930", minutes=False, count=2)), "Output_1")
+    if not days:
+        raise DataError("Session date probe returned no daily bars")
+    if str(days[0].get("bsop_date")) != args.date.replace("-", ""):
+        if dt.datetime.now(KST).time() < dt.time(9, 10):
+            raise DataError("Today's daily bar is not available yet; backup schedule will retry")
+        print("No current trading-session bar; exchange closed or source delayed")
+        return
     codes = list(dict.fromkeys(PRIORITY))
     # Publish a small authenticated health check before the broader sweep.
     snap = collect(client, ["007810", "353200"], universe, with_details=True)
@@ -305,16 +349,15 @@ def main():
     else:
         print(json.dumps(snap, ensure_ascii=False, indent=2))
     print("Initial snapshot:", snap["status"], snap["receivedCount"], "/", snap["requestedCount"], flush=True)
-    if not snap["quotes"]:
+    if snap["status"] == "failed":
         raise DataError("No valid quotes; see sanitized snapshot errors")
     if not args.watch:
         return
-    # Continuous one-day worker avoids GitHub's delayed cron for today's session.
-    # Every sixth sweep covers the whole screener universe; other sweeps retain
-    # priority stocks plus liquid leaders discovered in the last broad sweep.
+    # Bounded daily worker; a queued backup continues after the runtime cap.
     cycle, active, cursor = 0, codes, 0
     all_codes = list(universe)
-    while dt.datetime.now(KST).date().isoformat() == args.date and dt.datetime.now(KST).time() < dt.time(15, 26):
+    while (dt.datetime.now(KST).date().isoformat() == args.date
+           and dt.datetime.now(KST).time() < SESSION_END and time.monotonic() < deadline):
         begin = time.monotonic()
         # Rotate through 100 additional names per cycle so full-universe calls
         # cannot starve the priority stocks of fresh updates for 10+ minutes.
@@ -332,8 +375,8 @@ def main():
         cycle += 1
         # Never run past today's market window. No cache or credentials published.
         wait = max(0, 300 - (time.monotonic() - begin))
-        remaining = (dt.datetime.combine(dt.datetime.now(KST).date(), dt.time(15, 26), KST) - dt.datetime.now(KST)).total_seconds()
-        time.sleep(max(0, min(wait, remaining)))
+        remaining = (dt.datetime.combine(dt.datetime.now(KST).date(), SESSION_END, KST) - dt.datetime.now(KST)).total_seconds()
+        time.sleep(max(0, min(wait, remaining, deadline - time.monotonic())))
 
 
 if __name__ == "__main__":
