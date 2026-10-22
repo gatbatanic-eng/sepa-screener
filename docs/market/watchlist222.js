@@ -2,22 +2,55 @@
 let active222 = null;
 const e222 = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const n222 = n => n == null ? '미확인' : Number(n).toLocaleString('ko-KR', {maximumFractionDigits: 2});
+const memory222 = new Map();
+const object222 = value => value && typeof value==='object' && !Array.isArray(value) ? value : {};
+function cleanDraft222(value) {
+  const x=object222(value), groups={};
+  for(const [key,codes] of Object.entries(object222(x.groups))) {
+    if(['market','domestic','individual'].includes(key) && Array.isArray(codes))
+      groups[key]=codes.slice(0,2).map(c=>typeof c==='string'?c:'');
+  }
+  const notes=Object.fromEntries(Object.entries(object222(x.notes)).filter(([,v])=>typeof v==='string'));
+  const plans=Object.fromEntries(Object.entries(object222(x.plans)).map(([code,plan])=>[code,Object.fromEntries(Object.entries(object222(plan)).filter(([k,v])=>['entry','stop','target'].includes(k)&&['string','number'].includes(typeof v)))]));
+  const confirmed=Object.fromEntries(Object.entries(object222(x.confirmed)).filter(([,v])=>typeof v==='boolean'));
+  return {groups,notes,plans,confirmed,zero:typeof x.zero==='string'?x.zero:null};
+}
 function read222(date) {
-  try { const x = JSON.parse(localStorage.getItem('golden222:' + date) || '{}'); return {groups:x.groups||{}, notes:x.notes||{}, plans:x.plans||{}, confirmed:x.confirmed||{}, zero:x.zero||null}; }
-  catch { return {groups:{},notes:{},plans:{},confirmed:{},zero:null}; }
+  if(memory222.has(date))return cleanDraft222(memory222.get(date));
+  try { return cleanDraft222(JSON.parse(localStorage.getItem('golden222:'+date)||'{}')); }
+  catch { return cleanDraft222({}); }
 }
 function save222(date, draft) {
-  try { localStorage.setItem('golden222:' + date, JSON.stringify(draft)); return ''; }
-  catch { return '현재 브라우저에서 저장할 수 없습니다. 입력 내용을 따로 기록하세요.'; }
+  const clean=cleanDraft222(draft);
+  memory222.set(date,clean);
+  try { localStorage.setItem('golden222:'+date,JSON.stringify(clean)); return ''; }
+  catch { return '브라우저 저장이 차단되어 현재 화면의 임시 메모리로 유지합니다. 새로고침·종료 전에 따로 기록하세요.'; }
+}
+function choices222(w,draft,pool) {
+  const reserved=new Set(), picks={};
+  // Explicit choices take precedence over refreshed automatic recommendations.
+  for(const g of w.groups)if(Array.isArray(draft.groups[g.id])) {
+    picks[g.id]=draft.groups[g.id].slice(0,2).map(c=>{
+      if(!pool.has(c)||reserved.has(c))return '';
+      reserved.add(c);return c;
+    });
+  }
+  return w.groups.map(g=>{
+    if(!Object.prototype.hasOwnProperty.call(picks,g.id))picks[g.id]=g.items.map(s=>s.code).filter(c=>{
+      if(!pool.has(c)||reserved.has(c))return false;
+      reserved.add(c);return true;
+    }).slice(0,2);
+    return {...g,codes:picks[g.id]};
+  });
 }
 function renderWatchlist222(report, message='') {
   const root = document.querySelector('#watch222');
   const w = report.watchlist222;
-  if (!w) { root.innerHTML = '<h2>2-2-2 관심종목 준비</h2><p>이 날짜의 2-2-2 선별 자료가 아직 없습니다. 새 보고서에서는 자동 생성합니다.</p>'; return; }
+  if (!w || !Array.isArray(w.groups)) { root.innerHTML = '<h2>2-2-2 관심종목 준비</h2><p>이 날짜의 2-2-2 선별 자료가 아직 없습니다. 새 보고서에서는 자동 생성합니다.</p>'; return; }
   const opened = [...root.querySelectorAll('details[open][data-detail-code]')].map(d=>d.dataset.detailCode);
   const draft = read222(report.date);
   const pool = new Map([...(w.reviewPool||[]), ...w.groups.flatMap(g=>g.items)].map(s=>[s.code,s]));
-  const groups = w.groups.map(g => ({...g, codes: (draft.groups[g.id] || g.items.map(s=>s.code)).slice(0,2)}));
+  const groups = choices222(w,draft,pool);
   const chosen = groups.flatMap(g=>g.codes).map(c=>pool.get(c)).filter(Boolean);
   const best = pool.get(draft.zero) && chosen.some(s=>s.code===draft.zero) ? pool.get(draft.zero) : [...chosen].sort((a,b)=>b.score-a.score)[0];
   active222 = {report, draft, groups, pool};
@@ -64,6 +97,8 @@ function event222(event) {
 }
 document.addEventListener('DOMContentLoaded',()=>{
   const root=document.querySelector('#watch222');
+  if(!root || root.dataset.events222Bound)return;
+  root.dataset.events222Bound='true';
   root.addEventListener('change',event222);
   root.addEventListener('click',e=>{if(e.target.dataset.action==='zero')event222(e)});
 });

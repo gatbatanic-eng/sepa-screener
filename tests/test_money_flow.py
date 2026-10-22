@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 from pathlib import Path
-from nhplug.money_flow import build, normalize_news, explain, save, refresh_research
+from nhplug.money_flow import build, normalize_news, explain, save, refresh_research, has_full_candidate_universe
 
 
 def stock(name='기업', sector='반도체', turn=1e9, chg=2, news=3):
@@ -46,6 +46,14 @@ class MoneyFlowTests(unittest.TestCase):
         self.assertEqual(g['shareChangePp'], 20)
         self.assertEqual(g['moneyLeaders'][0]['code'], 'a')
         self.assertEqual(g['newsLeaders'][0]['code'], 'b')
+
+    def test_partial_legacy_report_does_not_skip_full_collection(self):
+        r = build('20261022', {'a': stock(), 'b': stock()}, 2)
+        self.assertTrue(has_full_candidate_universe(r))
+        r['stockUniverse'].pop()
+        self.assertFalse(has_full_candidate_universe(r))
+        del r['stockUniverse']
+        self.assertFalse(has_full_candidate_universe(r))
 
     def test_archive_and_index(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -173,36 +173,9 @@ def refresh_research(report):
     return report
 
 
-def enrich_legacy_prices(report):
-    """Fill missing price references for the legacy review pool, same report day only."""
-    from .watchlist222 import universe as candidate_universe, reviewable, score
-    stocks, scope = candidate_universe(report)
-    if scope != 'sector_leaders_only': return
-    focus = sorted((s for s in stocks if reviewable(s)), key=lambda s: (-score(s), s['code']))[:40]
-    if not focus: return
-    tok = token()
-    levels, failed = {}, 0
-    markets = dict(universe())
-    for stock in focus:
-        try:
-            # market code is not exposed by legacy reports; lookup existing universe map.
-            bars = rows(kr_period(tok, stock['code'], markets.get(stock['code'], '1'), report['date'], 251))
-            if not bars or str(bars[0].get('bsop_date')) != report['date']:
-                failed += 1; continue
-            def number(key, bar=bars[0]):
-                try: return float(str(bar[key]).replace(',', ''))
-                except (KeyError, ValueError, TypeError): return None
-            highs = [number('stck_hgpr', b) for b in bars[1:251]]
-            high250 = max(highs) if len(highs) == 250 and all(h and h > 0 for h in highs) else None
-            close = number('stck_prpr')
-            levels[stock['code']] = dict(close=close, high=number('stck_hgpr'), low=number('stck_lwpr'), high250=high250,
-                                        nearHigh250=close/high250 >= .95 if close and high250 else None)
-        except Exception:
-            failed += 1
-    for g in report['sectors']:
-        for stock in g['moneyLeaders'] + g['newsLeaders']:
-            stock.update(levels.get(stock['code'], {}))
-    report['candidatePriceEnrichment'] = {'requested': len(focus), 'valid': len(levels), 'failed': failed}
+def has_full_candidate_universe(report):
+    stocks = report.get('stockUniverse')
+    return isinstance(stocks, list) and bool(stocks) and len(stocks) == report.get('coverage', {}).get('valid')
 
 
 def main():
@@ -212,13 +185,14 @@ def main():
     day = now.strftime('%Y%m%d')
     if (OUT / f'{day}.json').exists():
         report = json.loads((OUT / f'{day}.json').read_text(encoding='utf-8'))
-        if report.get('researchVersion', 0) < 3 or report.get('watchlist222', {}).get('version') != 1 or report.get('newsRequests', {}).get('failed', 0):
-            enrich_legacy_prices(report)
-            save(refresh_research(report))
-            print('기존 가격 집계 유지, 뉴스 재조사', report['newsRequests'])
-        else:
-            print('당일 보고서 이미 생성')
-        return
+        if has_full_candidate_universe(report):
+            if report.get('researchVersion', 0) < 3 or report.get('watchlist222', {}).get('version') != 1 or report.get('newsRequests', {}).get('failed', 0):
+                save(refresh_research(report))
+                print('기존 가격 집계 유지, 뉴스 재조사', report['newsRequests'])
+            else:
+                print('당일 보고서 이미 생성')
+            return
+        print('대표 종목만 보관된 기존 보고서를 전체 후보 평가용으로 재수집', flush=True)
     tok = token()
     if not stock_day(rows(kr_period(tok, '005930', '1', day, 21)), {}, day):
         print('당일 대표 종목 봉 없음: 휴장 또는 데이터 미도착'); return
