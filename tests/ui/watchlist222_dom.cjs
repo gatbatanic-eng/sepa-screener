@@ -56,6 +56,7 @@ async function tick(){await new Promise(r=>setImmediate(r));}
   respond(requests.shift(),fixture('20261022'));await tick();
   const dates=v.document.querySelector('#dates');
   dates.value='20261021';dates.dispatchEvent(new v.Event('change'));
+  assert.equal(v.document.querySelectorAll('#watch222 select').length,0,'old-date controls must disappear immediately while the new report loads');
   dates.value='20261022';dates.dispatchEvent(new v.Event('change'));
   const earlier=requests.shift(),later=requests.shift();
   respond(later,fixture('20261022'));await tick();
