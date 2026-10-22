@@ -31,6 +31,12 @@ class MoneyFlowTests(unittest.TestCase):
         self.assertEqual(explain(news)['catalysts'][0]['category'], '수주·계약')
         self.assertEqual(explain([])['status'], 'unconfirmed')
 
+    def test_company_in_article_summary_is_relevant(self):
+        article = dict(title='중동 신사업 점검', body='삼성전자 회장이 AI 투자 현장을 방문했다.', datetime='202610221540', officeId='001', articleId='55')
+        news = normalize_news([article], '삼성전자', '20261022')
+        self.assertEqual(len(news), 1)
+        self.assertEqual(explain(news)['catalysts'][0]['category'], '산업 수요·투자')
+
     def test_share_change_and_separate_leaders(self):
         data = {'a': stock(turn=3e9, news=1), 'b': stock(turn=1e9, news=9)}
         old = {'date': '20261021', 'sectors': [{'sector': '반도체', 'turnoverSharePct': 80}]}

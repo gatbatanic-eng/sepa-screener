@@ -35,16 +35,17 @@ def normalize_news(payload, name, day):
         if isinstance(x, list):
             for v in x: walk(v)
         elif isinstance(x, dict):
-            title = clean(x.get('title') or x.get('titleFull'))
+            title = clean(x.get('titleFull') or x.get('title'))
+            excerpt = clean(x.get('body'))[:200]
             stamp = str(x.get('datetime') or x.get('dateTime') or x.get('publishDate') or x.get('publishedAt') or '')
             digits = re.sub(r'\D', '', stamp)
             url = x.get('url') or x.get('link') or ''
             office, article = x.get('officeId'), x.get('articleId')
             if office and article:
                 url = f'https://n.news.naver.com/mnews/article/{office}/{article}'
-            if len(key) >= 2 and key in re.sub(r'\s+', '', title) and digits[:8] == day and str(url).startswith('https://'):
+            if len(key) >= 2 and key in re.sub(r'\s+', '', title + excerpt) and digits[:8] == day and str(url).startswith('https://'):
                 found[title] = {'title': title, 'publishedAt': stamp, 'url': url,
-                                'publisher': clean(x.get('officeName') or x.get('publisher'))}
+                                'publisher': clean(x.get('officeName') or x.get('publisher')), 'excerpt': excerpt}
             for v in x.values():
                 if isinstance(v, (dict, list)): walk(v)
     walk(payload)
@@ -64,9 +65,9 @@ def fetch_news(code, name, day):
 def explain(articles):
     groups = []
     for category, words in CATALYSTS.items():
-        hits = [a for a in articles if any(w.lower() in a['title'].lower() for w in words)]
+        hits = [a for a in articles if any(w.lower() in (a['title'] + ' ' + a.get('excerpt', '')).lower() for w in words)]
         if hits:
-            groups.append({'category': category, 'claim': '당일 기사 제목에 보도된 관련 재료', 'evidence': hits[:3]})
+            groups.append({'category': category, 'claim': '당일 기사 제목·요약에 보도된 관련 재료', 'evidence': hits[:3]})
     return {'status': 'reported_catalyst' if groups else 'unconfirmed', 'catalysts': groups,
             'interpretation': '거래 집중과 당일 보도가 동반됨. 보도 내용·공시 원문 및 선후관계 확인 필요.' if groups else '당일 기사에서 구체적인 재료를 확인하지 못함.',
             'causality': '뉴스 동반 관측이며 가격 움직임의 인과관계는 미확정'}
@@ -123,7 +124,7 @@ def build(day, data, expected, news=None, previous=None):
             'method': {'money': '분석 대상 종목 거래대금 합계·비중. 순유입액이 아님',
                        'attention': 'NHPLUG news_cnt 뉴스 건수 합계. 조회·검색 순위가 아닌 뉴스 노출 대용 지표',
                        'classification': 'NHPLUG 업종 분류. 투자 테마와 다를 수 있음',
-                       'research': '거래대금·뉴스 상위 3개 업종의 대표 종목 최대 18개, 네이버 최신 30건 중 당일·종목명·링크가 있는 기사',
+                       'research': '거래대금·뉴스 상위 3개 업종의 대표 종목 최대 18개, 네이버 최신 30건 중 당일·종목명(제목·요약)·링크가 있는 기사',
                        'universe': '기존 한국 수집 대상 내 순위이며 전체 시장 전수 순위가 아님'}}
 
 
@@ -136,13 +137,38 @@ def save(report, folder=OUT):
     (folder / 'index.json').write_text(json.dumps(dates), encoding='utf-8')
 
 
+def refresh_research(report):
+    selected = set(report['moneyRanking'][:3] + report['attentionRanking'][:3])
+    focus = {s['code']: s for g in report['sectors'] if g['sector'] in selected
+             for s in g['moneyLeaders'][:2] + g['newsLeaders'][:2]}
+    news = {c: fetch_news(c, s['name'], report['date']) for c, s in list(focus.items())[:18]}
+    for g in report['sectors']:
+        for stock in g['moneyLeaders'] + g['newsLeaders']:
+            n = news.get(stock['code'])
+            if n is not None:
+                stock['research'] = explain(n['articles'])
+                stock['newsFetchStatus'] = n['status']
+        codes = {s['code'] for s in g['moneyLeaders'] + g['newsLeaders']}
+        g['research'] = explain([a for c in codes for a in news.get(c, {}).get('articles', [])])
+    report['researchVersion'] = 2
+    report['newsRequests'] = {'requested': len(news), 'failed': sum(n['status'] == 'failed' for n in news.values()),
+                              'withDatedEvidence': sum(bool(n['articles']) for n in news.values())}
+    return report
+
+
 def main():
     now = dt.datetime.now(KST)
     if now.weekday() >= 5 or now.time() < dt.time(15, 35):
         print('한국 장 마감 이후 평일에만 생성'); return
     day = now.strftime('%Y%m%d')
     if (OUT / f'{day}.json').exists():
-        print('당일 보고서 이미 생성'); return
+        report = json.loads((OUT / f'{day}.json').read_text(encoding='utf-8'))
+        if report.get('researchVersion', 0) < 2 or report.get('newsRequests', {}).get('failed', 0):
+            save(refresh_research(report))
+            print('기존 가격 집계 유지, 뉴스 재조사', report['newsRequests'])
+        else:
+            print('당일 보고서 이미 생성')
+        return
     tok = token()
     if not stock_day(rows(kr_period(tok, '005930', '1', day, 21)), {}, day):
         print('당일 대표 종목 봉 없음: 휴장 또는 데이터 미도착'); return
@@ -167,13 +193,8 @@ def main():
     report = build(day, data, len(codes), previous=previous)
     if report['status'] != 'ok':
         raise RuntimeError(f'Coverage insufficient: {len(data)}/{len(codes)}; latest report retained')
-    selected = set(report['moneyRanking'][:3] + report['attentionRanking'][:3])
-    focus = {s['code']: s for g in report['sectors'] if g['sector'] in selected for s in g['moneyLeaders'][:2] + g['newsLeaders'][:2]}
-    news = {c: fetch_news(c, s['name'], day) for c, s in list(focus.items())[:18]}
-    report = build(day, data, len(codes), news, previous)
     report['collectionErrors'] = errors
-    report['newsRequests'] = {'requested': len(news), 'failed': sum(n['status'] == 'failed' for n in news.values()),
-                              'withDatedEvidence': sum(bool(n['articles']) for n in news.values())}
+    refresh_research(report)
     save(report)
     print('시황 저장', day, report['coverage'], report['newsRequests'])
 
