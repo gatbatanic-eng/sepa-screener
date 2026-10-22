@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [master]
-    paths: [nhplug/money_flow.py, nhplug/watchlist222.py, tests/test_watchlist222.py, docs/market/watchlist222.js, tests/watchlist222_ui_smoke.cjs, .github/workflows/money_flow.yml]
+    paths: [nhplug/money_flow.py, nhplug/watchlist222.py, tests/test_watchlist222.py, docs/market/watchlist222.js, tests/watchlist222_ui_smoke.cjs, tests/ui/**, .github/workflows/money_flow.yml]
   schedule:
     # 16:23 KST with retry slots. GitHub schedules may be delayed.
     - cron: '23 7 * * 1-5'
@@ -31,6 +31,8 @@ jobs:
         with:
           node-version: '22'
       - run: node tests/watchlist222_ui_smoke.cjs
+      - run: npm ci --prefix tests/ui --no-audit --no-fund
+      - run: node tests/ui/watchlist222_dom.cjs
       - name: Collect public daily market data and news
         env:
           NHPLUG_APPKEY: ${{ secrets.NHPLUG_APPKEY }}

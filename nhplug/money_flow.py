@@ -15,6 +15,7 @@ from .probe import token, rows, kr_period
 
 KST = dt.timezone(dt.timedelta(hours=9))
 OUT = ROOT / 'docs/market/money_flow'
+RESEARCH_METHOD = '업종 대표와 상승·거래대금 검토 후보 최대 48종목. 네이버 최신 30건 중 당일·종목명(제목·요약)·링크가 있는 기사'
 CATALYSTS = {'실적·전망': ('실적', '영업익', '매출', '가이던스', '흑자', '적자'),
              '수주·계약': ('수주', '계약', '공급'), '정책·규제': ('정책', '정부', '규제', '관세'),
              '산업 수요·투자': ('투자', '수요', '증설', '데이터센터', 'AI', 'HBM'),
@@ -130,7 +131,7 @@ def build(day, data, expected, news=None, previous=None):
             'method': {'money': '분석 대상 종목 거래대금 합계·비중. 순유입액이 아님',
                        'attention': 'NHPLUG news_cnt 뉴스 건수 합계. 조회·검색 순위가 아닌 뉴스 노출 대용 지표',
                        'classification': 'NHPLUG 업종 분류. 투자 테마와 다를 수 있음',
-                       'research': '거래대금·뉴스 상위 3개 업종의 대표 종목 최대 18개, 네이버 최신 30건 중 당일·종목명(제목·요약)·링크가 있는 기사',
+                       'research': RESEARCH_METHOD,
                        'universe': '기존 한국 수집 대상 내 순위이며 전체 시장 전수 순위가 아님'}}
 
 
@@ -144,6 +145,7 @@ def save(report, folder=OUT):
 
 
 def refresh_research(report):
+    report.setdefault('method', {})['research'] = RESEARCH_METHOD
     selected = set(report['moneyRanking'][:3] + report['attentionRanking'][:3])
     focus = {s['code']: s for g in report['sectors'] if g['sector'] in selected
              for s in g['moneyLeaders'][:2] + g['newsLeaders'][:2]}
@@ -186,7 +188,7 @@ def main():
     if (OUT / f'{day}.json').exists():
         report = json.loads((OUT / f'{day}.json').read_text(encoding='utf-8'))
         if has_full_candidate_universe(report):
-            if report.get('researchVersion', 0) < 3 or report.get('watchlist222', {}).get('version') != 1 or report.get('newsRequests', {}).get('failed', 0):
+            if report.get('researchVersion', 0) < 3 or report.get('watchlist222', {}).get('version') != 1 or report.get('newsRequests', {}).get('failed', 0) or report.get('method', {}).get('research') != RESEARCH_METHOD:
                 save(refresh_research(report))
                 print('기존 가격 집계 유지, 뉴스 재조사', report['newsRequests'])
             else:
