@@ -1,19 +1,19 @@
 {
- "updatedAt": "2026-10-22T12:22:50.899429+00:00",
+ "updatedAt": "2026-10-23T12:03:40.846517+00:00",
  "groups": {
   "FLOW": {
    "5": {
     "series": "v1",
-    "signals": 29,
-    "days": 10,
-    "enough": false,
-    "meanPct": 0.39,
-    "winRatePct": 41.4,
-    "allMeanPct": -3.86,
-    "vsAllPp": 5.65,
+    "signals": 30,
+    "days": 11,
+    "enough": true,
+    "meanPct": -0.08,
+    "winRatePct": 40.0,
+    "allMeanPct": -3.93,
+    "vsAllPp": 4.16,
     "vsAllCI95": [
-     4.43,
-     10.0
+     2.4,
+     10.25
     ]
    },
    "20": {
@@ -42,13 +42,13 @@
   "FLOW_ACC": {
    "5": {
     "series": "v1",
-    "signals": 4,
-    "days": 2,
+    "signals": 6,
+    "days": 4,
     "enough": false,
-    "meanPct": -3.44,
-    "winRatePct": 25.0,
-    "allMeanPct": -2.97,
-    "vsAllPp": -0.47,
+    "meanPct": -4.21,
+    "winRatePct": 16.7,
+    "allMeanPct": -2.3,
+    "vsAllPp": -1.22,
     "vsAllCI95": null
    },
    "20": {
@@ -77,14 +77,17 @@
   "V2": {
    "5": {
     "series": "v2",
-    "signals": 55,
-    "days": 9,
+    "signals": 63,
+    "days": 10,
     "enough": true,
-    "meanPct": -2.63,
-    "winRatePct": 29.1,
-    "allMeanPct": -4.36,
-    "vsAllPp": 1.59,
-    "vsAllCI95": null
+    "meanPct": -2.34,
+    "winRatePct": 30.2,
+    "allMeanPct": -4.03,
+    "vsAllPp": 1.45,
+    "vsAllCI95": [
+     0.97,
+     5.07
+    ]
    },
    "20": {
     "series": "v2",
@@ -112,13 +115,13 @@
   "V2_FRG": {
    "5": {
     "series": "v2",
-    "signals": 6,
-    "days": 2,
+    "signals": 7,
+    "days": 3,
     "enough": false,
-    "meanPct": -0.14,
-    "winRatePct": 33.3,
-    "allMeanPct": 0.44,
-    "vsAllPp": -0.24,
+    "meanPct": -0.94,
+    "winRatePct": 28.6,
+    "allMeanPct": -0.79,
+    "vsAllPp": -0.98,
     "vsAllCI95": null
    },
    "20": {
@@ -147,14 +150,17 @@
   "V2_INST": {
    "5": {
     "series": "v2",
-    "signals": 50,
-    "days": 9,
+    "signals": 57,
+    "days": 10,
     "enough": true,
-    "meanPct": -2.81,
-    "winRatePct": 30.0,
-    "allMeanPct": -4.36,
-    "vsAllPp": 0.97,
-    "vsAllCI95": null
+    "meanPct": -2.41,
+    "winRatePct": 31.6,
+    "allMeanPct": -4.03,
+    "vsAllPp": 1.01,
+    "vsAllCI95": [
+     -0.14,
+     5.29
+    ]
    },
    "20": {
     "series": "v2",
@@ -182,16 +188,16 @@
   "C_ONLY": {
    "5": {
     "series": "비교군",
-    "signals": 159,
-    "days": 10,
+    "signals": 164,
+    "days": 11,
     "enough": true,
-    "meanPct": -0.72,
-    "winRatePct": 43.4,
-    "allMeanPct": -3.86,
-    "vsAllPp": -0.72,
+    "meanPct": -1.53,
+    "winRatePct": 41.5,
+    "allMeanPct": -3.93,
+    "vsAllPp": -0.46,
     "vsAllCI95": [
-     -2.3,
-     0.05
+     -1.9,
+     -0.21
     ]
    },
    "20": {
@@ -220,16 +226,16 @@
   "D_ONLY": {
    "5": {
     "series": "비교군",
-    "signals": 69,
-    "days": 10,
+    "signals": 70,
+    "days": 11,
     "enough": true,
-    "meanPct": -0.9,
-    "winRatePct": 40.6,
-    "allMeanPct": -3.86,
-    "vsAllPp": 1.59,
+    "meanPct": -1.56,
+    "winRatePct": 35.7,
+    "allMeanPct": -3.93,
+    "vsAllPp": 1.31,
     "vsAllCI95": [
-     1.41,
-     3.53
+     0.42,
+     4.16
     ]
    },
    "20": {
@@ -256,6 +262,6 @@
    }
   }
  },
- "recordedDays": 15,
+ "recordedDays": 16,
  "cooldown": 10
 }
