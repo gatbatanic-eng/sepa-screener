@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "generatedAt": "2026-10-27T02:27:54.024413+00:00",
+ "generatedAt": "2026-10-27T06:17:58.181515+00:00",
  "latest": {
   "kr": {
    "market": "kr",
@@ -773,7 +773,7 @@
      },
      "funnelRank": 10,
      "entry": {
-      "riskPct": 4.01,
+      "riskPct": 4.02,
       "riskSource": "직접 계산",
       "verdict": null,
       "chase": [],
@@ -784,9 +784,10 @@
     }
    ],
    "rejectSummary": {
-    "손절폭 8% 초과": 68,
+    "손절폭 8% 초과": 67,
     "SEPA 진입 NO-GO": 11,
-    "손절폭 0 이하(계산 불가)": 3
+    "손절폭 0 이하(계산 불가)": 3,
+    "손절폭 미확인": 1
    },
    "shortfall": null,
    "session": "2026-10-23",
@@ -890,7 +891,6 @@
     "CDNA",
     "CHRD",
     "CMC",
-    "CRON",
     "DAR",
     "DINO",
     "DK",
@@ -923,7 +923,7 @@
     "WTI",
     "XRN"
    ],
-   "entryUnknown": 0,
+   "entryUnknown": 1,
    "rules": {
     "maxRiskPct": 8.0,
     "stopLossPct": 8.0,
