@@ -65,6 +65,19 @@ class LaoerBacktestTest(unittest.TestCase):
         self.assertAlmostEqual(res["equity"].loc["2021-04-30"], 20000.0)
         self.assertAlmostEqual(res["equity"].loc["2021-05-03"], 20000.0 - 9000.0 * 0.22)
 
+    def test_signal_ramp_buys_one_fifth_per_week(self):
+        from laoer_backtest.signal import compute
+        closes = 100 * np.exp(np.cumsum(np.tile([0.03, -0.03], 15)))  # 일변동 3% → 연 약 48%
+        pos = dict(shares=0, cash_usd=10000, target_vol=0.35, lookback=20, band=0.10,
+                   ramp_start="2026-01-05", ramp_weeks=5, ramp_start_weight=0.0, ramp_min_gap=0.02)
+        full = compute(pos, closes)
+        s = compute(pos, closes, asof=pd.Timestamp("2026-01-06"))
+        self.assertAlmostEqual(s["eff"], full["w"] / 5)
+        self.assertEqual(s["qty"], int(full["w"] / 5 * 10000 // closes[-1]))
+        after = compute(pos, closes, asof=pd.Timestamp("2026-03-01"))  # 기간 종료 → 평소 규칙
+        self.assertIsNone(after["ramp"])
+        self.assertAlmostEqual(after["eff"], full["w"])
+
 
 if __name__ == "__main__":
     unittest.main()

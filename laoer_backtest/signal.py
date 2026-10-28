@@ -20,7 +20,7 @@ HERE = os.path.dirname(__file__)
 SIG = os.path.join(HERE, "signal")
 
 
-def compute(pos, closes, price=None):
+def compute(pos, closes, price=None, asof=None):
     tv, lb, band = pos.get("target_vol", 0.35), pos.get("lookback", 20), pos.get("band", 0.10)
     r = np.diff(np.log(closes[-lb - 1:]))
     vol = r.std() * math.sqrt(252)
@@ -29,17 +29,35 @@ def compute(pos, closes, price=None):
     shares, cash = float(pos["shares"]), float(pos["cash_usd"])
     total = cash + shares * px
     cur = shares * px / total if total > 0 else 0.0
-    gap = w - cur
+    ramp = _ramp(pos, asof)
+    eff = w
+    if ramp and w > ramp["start_w"]:
+        # 분할 진입: 시작 비중에서 목표까지 주차별로 1/K 씩만 올린다. 매도(위험 축소)는 평소대로.
+        eff = ramp["start_w"] + (w - ramp["start_w"]) * ramp["k"] / ramp["K"]
+    gap = eff - cur
     qty = 0
-    if abs(gap) > band:
-        want = w * total / px - shares
+    if gap < -band or (gap > (ramp["min_gap"] if ramp else band)):
+        want = eff * total / px - shares
         qty = math.floor(min(want, cash / px)) if want > 0 else -math.floor(min(-want, shares))
     # 다음 매매가 생기는 가격대 (보유·현금 고정, 목표비중 w 고정 가정)
     # 비중 s*p/(c+s*p) = w±band → p = c*x/(s*(1-x))
     def trig(x):
         return cash * x / (shares * (1 - x)) if shares > 0 and 0 < x < 1 else float("nan")
-    return dict(vol=vol, w=w, px=px, total=total, cur=cur, gap=gap, qty=qty,
-                buy_below=trig(w - band), sell_above=trig(w + band), band=band, tv=tv, lb=lb)
+    lo = eff - (ramp["min_gap"] if ramp else band)
+    return dict(vol=vol, w=w, eff=eff, ramp=ramp, px=px, total=total, cur=cur, gap=gap, qty=qty,
+                buy_below=trig(lo), sell_above=trig(w + band), band=band, tv=tv, lb=lb)
+
+
+def _ramp(pos, asof):
+    """position.yml 의 ramp_start/ramp_weeks 로 분할 진입 진행 상황. 기간이 끝났거나 설정이 없으면 None."""
+    if not pos.get("ramp_start") or asof is None:
+        return None
+    K = int(pos.get("ramp_weeks", 5))
+    k = (pd.Timestamp(asof) - pd.Timestamp(pos["ramp_start"])).days // 7 + 1
+    if k < 1 or k > K:
+        return None
+    return dict(k=k, K=K, start_w=float(pos.get("ramp_start_weight", 0.0)),
+                min_gap=float(pos.get("ramp_min_gap", 0.02)))
 
 
 def render(s, asof, pos):
@@ -55,8 +73,15 @@ def render(s, asof, pos):
         f"## TQQQ 변동성조절 신호 — {asof:%Y-%m-%d} 종가 기준",
         "",
         f"- 오늘 할 일: {action}",
-        f"- 기준가 ${s['px']:.2f} · 20일 변동성 {s['vol']:.1%} → 목표 비중 **{s['w']:.1%}** "
-        f"(현재 {s['cur']:.1%}, 차이 {s['gap']:+.1%}p, 밴드 ±{s['band']:.0%}p)",
+        f"- 기준가 ${s['px']:.2f} · 20일 변동성 {s['vol']:.1%} → 최종 목표 비중 **{s['w']:.1%}** (현재 {s['cur']:.1%})",
+    ]
+    if s["ramp"]:
+        rp = s["ramp"]
+        lines.append(f"- 분할 진입 {rp['k']}/{rp['K']}주차: 이번 주까지 맞출 비중 **{s['eff']:.1%}** "
+                     f"(시작 {rp['start_w']:.1%} → 목표까지 매주 1/{rp['K']}씩, 변동성이 오르면 목표도 낮아짐)")
+    else:
+        lines.append(f"- 목표와 차이 {s['gap']:+.1%}p (밴드 ±{s['band']:.0%}p 넘을 때만 매매)")
+    lines += [
         f"- 계좌: {pos['shares']}주 + 현금 ${pos['cash_usd']:,.0f} = ${s['total']:,.0f}",
     ]
     if s["qty"]:
@@ -64,6 +89,8 @@ def render(s, asof, pos):
     else:
         lines.append(f"- 참고: 가격이 ${s['buy_below']:.2f} 아래면 매수, ${s['sell_above']:.2f} 위면 매도 구간 "
                      f"(목표 비중이 그대로일 때)")
+    if s["ramp"] and s["qty"] >= 0:
+        lines.append("- 이번 주 매수를 했다면 같은 주에는 추가 매수 신호가 거의 나오지 않습니다 (position.yml 갱신 기준).")
     lines += ["", "주문은 다음 거래일 시가(또는 종가 LOC) 근처 체결을 가정한 백테스트 규칙입니다. 투자 권유가 아닙니다."]
     return "\n".join(lines)
 
@@ -75,7 +102,7 @@ def main():
     with open(os.path.join(HERE, "position.yml")) as f:
         pos = yaml.safe_load(f)
     df = D.load("TQQQ")
-    s = compute(pos, df["Close"].to_numpy(float), a.price)
+    s = compute(pos, df["Close"].to_numpy(float), a.price, df.index[-1])
     md = render(s, df.index[-1], pos)
     os.makedirs(SIG, exist_ok=True)
     with open(os.path.join(SIG, "latest.md"), "w") as f:
