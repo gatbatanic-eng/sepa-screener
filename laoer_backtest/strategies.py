@@ -251,3 +251,79 @@ class VolTargetRamp(VolTarget):
         gap = eff - acct.shares * bar.c / val
         if gap > self.min_gap or gap < -self.band:
             _rebalance(acct, bar.c, eff, 0.0)
+
+
+# ---------------------------------------------------------------- F2. 변동성조절 확장판
+class VolTarget2(Strategy):
+    """VolTarget 확장: 변동성 계산 원천·방식과 모멘텀 신호를 바꿔 볼 수 있다. 판단은 전일까지 데이터만 쓴다.
+
+    src:  'own'(TQQQ 종가) / 'index'(기초지수 종가 x lev, df 에 'U' 열 필요)
+    est:  'std'   lb일 단순 표준편차 (기존 VolTarget 과 같음)
+          'ewma'  지수가중 (lam, RiskMetrics 0.94 등) — 최근 날에 더 큰 가중
+          'max'   max(단기 lb, 장기 lb_long) — 둘 중 더 위험한 쪽
+          'park'  Parkinson 고가·저가 범위 기반 (lb일), 같은 기간에서 더 효율적인 추정
+          'down'  하락일만 쓴 하방 변동성 (lb일)
+    mom:  'none'
+          'ma'     지수(또는 TQQQ)가 ma일 이평 아래면 비중 x k (k=0 이면 전량 현금)
+          'ret'    최근 mom_lb일 수익률이 음수면 비중 x k
+          'cross'  50일선이 200일선 아래면 비중 x k
+          'scale'  비중 x clip(0.5 + 최근 mom_lb일 수익률 / mom_scale, k, 1) — 모멘텀 강도에 비례
+    """
+
+    def __init__(self, target_vol=0.35, lb=20, band=0.1, est="std", lam=0.94, lb_long=60, src="own", lev=3.0,
+                 mom="none", ma=200, mom_lb=126, k=0.5, mom_scale=0.4, max_w=1.0):
+        self.tv, self.lb, self.band, self.est, self.lam, self.lbl = target_vol, lb, band, est, lam, lb_long
+        self.src, self.lev, self.mom, self.ma, self.mlb, self.k, self.ms, self.max_w = \
+            src, lev, mom, ma, mom_lb, k, mom_scale, max_w
+        tag = {"std": f"std{lb}", "ewma": f"ewma{lam}", "max": f"max({lb},{lb_long})", "park": f"park{lb}",
+               "down": f"down{lb}"}[est]
+        mtag = {"none": "", "ma": f",MA{ma}x{k}", "ret": f",ret{mom_lb}x{k}", "cross": f",50/200x{k}",
+                "scale": f",mscale{mom_lb}"}[mom]
+        self.name = f"VT2({target_vol:.0%},{tag},{src}{mtag})"
+        self.ew = None  # EWMA 분산 (일간)
+
+    WARMUP = 252
+
+    def _series(self, bar):
+        return bar.aux if self.src == "index" else bar.hist
+
+    def _vol(self, bar):
+        x = self._series(bar)
+        m = self.lev if self.src == "index" else 1.0
+        r = np.diff(np.log(x[-max(self.lb, self.lbl) - 1:])) * m
+        if self.est == "ewma":
+            if self.ew is None:
+                self.ew = r[-self.lb:].var()
+            else:
+                self.ew = self.lam * self.ew + (1 - self.lam) * r[-1] ** 2
+            return np.sqrt(self.ew * 252)
+        if self.est == "max":
+            return max(r[-self.lb:].std(), r[-self.lbl:].std()) * np.sqrt(252)
+        if self.est == "park":
+            h, l = bar.hist_h[-self.lb:], bar.hist_l[-self.lb:]
+            return np.sqrt(np.mean(np.log(h / l) ** 2) / (4 * np.log(2)) * 252)
+        if self.est == "down":
+            d = np.minimum(r[-self.lb:], 0)
+            return np.sqrt(np.mean(d ** 2) * 2 * 252)  # 하락분만 쓰므로 x2 로 전체 분산 스케일 맞춤
+        return r[-self.lb:].std() * np.sqrt(252)
+
+    def _mom_mult(self, bar):
+        x = bar.aux if bar.aux is not None else bar.hist
+        if self.mom == "ma":
+            return 1.0 if x[-1] >= x[-self.ma:].mean() else self.k
+        if self.mom == "ret":
+            return 1.0 if x[-1] >= x[-self.mlb - 1] else self.k
+        if self.mom == "cross":
+            return 1.0 if x[-50:].mean() >= x[-200:].mean() else self.k
+        if self.mom == "scale":
+            ret = x[-1] / x[-self.mlb - 1] - 1
+            return float(np.clip(0.5 + ret / self.ms, self.k, 1.0))
+        return 1.0
+
+    def on_bar(self, acct, bar):
+        # 모든 변형이 같은 날 시작하도록 워밍업을 252거래일(약 1년)로 고정
+        if len(bar.hist) <= self.WARMUP or (self.src == "index" and bar.aux is None):
+            return
+        vol = self._vol(bar)
+        w = min(self.max_w, self.tv / vol) if vol > 0 else self.max_w
+        _rebalance(acct, bar.c, w * self._mom_mult(bar), self.band)

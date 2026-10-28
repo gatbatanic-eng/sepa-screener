@@ -53,7 +53,8 @@ def lever(src, rate, spread=0.0, lev=3.0, expense=EXPENSE):
     # 고가/저가가 시가·종가를 감싸도록 보정
     out["High"] = out[["High", "Open", "Close"]].max(axis=1)
     out["Low"] = out[["Low", "Open", "Close"]].min(axis=1)
-    return out[["Open", "High", "Low", "Close"]]
+    out["U"] = c  # 기초지수 종가 (변동성·모멘텀 신호를 지수로 계산할 때 사용)
+    return out[["Open", "High", "Low", "Close", "U"]]
 
 
 def bootstrap_paths(n_paths, years=10, block=252, base="NDX", spread=0.0, seed=0, lev=3.0, expense=EXPENSE):
