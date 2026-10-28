@@ -217,7 +217,8 @@ function renderBacktest() {
   const tabs = document.getElementById("btTabs");
   if (!bt) { document.getElementById("btTable").innerHTML = `<div class="empty">백테스트 결과가 없습니다.</div>`; return; }
   const m = bt.markets[btMarket];
-  document.getElementById("btRange").textContent = `· ${m.market.toUpperCase()} ${m.stocks}종목, ${m.firstDate} ~ ${m.lastDate}`;
+  const ranAge = bt.ranAt ? Math.max(0, Math.floor((Date.now() - Date.parse(bt.ranAt)) / 864e5)) : null;
+  document.getElementById("btRange").textContent = `· ${m.market.toUpperCase()} ${m.stocks}종목, ${m.firstDate} ~ ${m.lastDate} · 수동 실행 결과(자동 갱신 안 됨, 실행 ${bt.ranAt ? bt.ranAt.slice(0, 10) : "–"}${ranAge === null ? "" : ", " + ranAge + "일 전"})`;
   tabs.innerHTML = "";
   const mk = document.createElement("span"), hz = document.createElement("span"); mk.className = hz.className = "hz";
   tabs.append(mk, hz);
