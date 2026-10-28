@@ -4,6 +4,7 @@ GitHub Actions(laoer_data.yml)에서 실행한다. 세션 네트워크가 막혀
 - TQQQ: 실데이터 (2010-02~)
 - QQQ, ^NDX: 합성 TQQQ(일간수익률 x3 - 비용) 생성용 장기 데이터
 - KRW=X: 원/달러 환율 (원화 기준 성과 계산용)
+- ^IRX: 13주 T-bill 금리(%) — 합성 TQQQ 차입비용·현금 이자용
 yfinance 실패 시 FinanceDataReader로 재시도한다.
 """
 import os
@@ -12,7 +13,7 @@ import sys
 import pandas as pd
 
 OUT = os.path.join(os.path.dirname(__file__), "data")
-TICKERS = {"TQQQ": "TQQQ", "QQQ": "QQQ", "NDX": "^NDX", "USDKRW": "KRW=X"}
+TICKERS = {"TQQQ": "TQQQ", "QQQ": "QQQ", "NDX": "^NDX", "USDKRW": "KRW=X", "IRX": "^IRX"}
 FDR_ALIAS = {"^NDX": "NASDAQ100", "KRW=X": "USD/KRW"}  # FinanceDataReader 심볼
 COLS = ["Open", "High", "Low", "Close", "Adj Close", "Volume"]
 
