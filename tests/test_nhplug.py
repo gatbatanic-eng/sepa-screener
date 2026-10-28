@@ -58,6 +58,22 @@ class SectorTest(unittest.TestCase):
         self.assertFalse(any("업종" in x for r in rows if r["sector"] == "금융" for x in r["reasons"]))
         self.assertEqual(summary["notChecked"][0], "섹터 쏠림(미국)")
 
+    def test_us_sector_cap_and_markets_do_not_mix(self):
+        held = [("us", f"U{i}") for i in range(3)] + [("us", "U9"), ("kr", "000001")]
+        sectors = {("us", f"U{i}"): "Technology" for i in range(3)} | {("us", "U9"): "Energy", ("kr", "000001"): "Technology"}
+        rows, summary = pf.risk_review(pf.allocate({"a": agent(1.0, held)}, 8000)[0], 8000, sectors)
+        tech = sum(r["target"] for r in rows if r["market"] == "us" and r["sector"] == "Technology")
+        self.assertLessEqual(tech, 8000 * config.MAX_SECTOR_WEIGHT + 1)
+        self.assertFalse(any("업종" in x for r in rows if r["market"] == "kr" for x in r["reasons"]))
+        self.assertEqual(summary["notChecked"], ["유동성(거래대금 대비 비중)"])
+
+    def test_load_us_sectors_skips_missing(self):
+        with tempfile.TemporaryDirectory() as t:
+            p = Path(t) / "v.json"
+            p.write_text('{"symbols": {"A": {"sector": "Healthcare"}, "B": {"sector": null}, "C": null}}', encoding="utf-8")
+            self.assertEqual(pf.load_us_sectors(p), {("us", "A"): "Healthcare"})
+            self.assertEqual(pf.load_us_sectors(Path(t) / "none.json"), {})
+
     def test_without_sector_data_nothing_changes(self):
         rows, summary = pf.risk_review(pf.allocate({"a": agent(1.0, [("kr", "000001")])}, 8000)[0], 8000)
         self.assertEqual(summary["notChecked"][0], "섹터 쏠림")

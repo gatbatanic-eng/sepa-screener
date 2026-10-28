@@ -73,7 +73,7 @@ def run(today: dt.date, fetch=prices.fetch_closes, bench_fetch=prices.fetch_benc
                               "probationRecheck": config.PROBATION_RECHECK, "probationMaxExtra": config.PROBATION_MAX_EXTRA,
                               "weights": config.CAPITAL_WEIGHT}
     write_json(reviews_path, reviews)
-    out["portfolio"] = pf.build(out["agents"], sectors=nh_data.load_sectors())
+    out["portfolio"] = pf.build(out["agents"], sectors=nh_data.load_sectors() | pf.load_us_sectors())
     out["rules"]["portfolio"] = {"frozenOn": config.PORTFOLIO_FROZEN_ON, "maxSingle": config.MAX_SINGLE_WEIGHT,
                                  "maxMarket": config.MAX_MARKET_WEIGHT, "maxNames": config.MAX_NAMES,
                                  "maxSector": config.MAX_SECTOR_WEIGHT, "sectorFrozenOn": config.SECTOR_FROZEN_ON}

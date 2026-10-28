@@ -3,11 +3,25 @@
 1) 배분: 소멸하지 않은 에이전트(대조군 제외)가 권고 비중(정상 1.0·관찰 0.5)에 비례해 자본을 나눠 갖고,
    각 에이전트 자본 ÷ MAX_POSITIONS가 포지션 하나의 금액이다. 같은 종목을 여러 에이전트가 들면 금액이 합산된다(합의 가중).
 2) 리스크 심사(순서 고정): 종목 수 한도 → 한 종목 상한 → 시장별 상한 → 업종별 상한(한국만, NHPLUG 업종). 걸러내거나 줄인 이유를 줄마다 남긴다.
-미국 섹터·유동성 한도는 데이터(분류, 통화 환산)가 없어 아직 걸지 못한다. 심사 결과에 그렇게 표시한다.
+미국 업종은 Yahoo 분류(docs/data/valuation_us.json의 sector)를 쓰고 한국과 같은 상한을 건다(2026-10-28).
+유동성 한도는 통화 환산이 없어 아직 걸지 못한다. 심사 결과에 그렇게 표시한다.
 """
 from __future__ import annotations
 
+import json
+
 from . import config
+
+US_VALUATION = config.ROOT / "docs" / "data" / "valuation_us.json"
+
+
+def load_us_sectors(path=US_VALUATION) -> dict[tuple[str, str], str]:
+    """{('us', 티커): Yahoo 섹터}. 캐시가 없거나 섹터가 비면 빼서, 한도는 '미검사/미분류'로 남는다."""
+    try:
+        symbols = (json.loads(path.read_text(encoding="utf-8")) or {}).get("symbols") or {}
+    except (OSError, ValueError):
+        return {}
+    return {("us", str(c)): v["sector"] for c, v in symbols.items() if isinstance(v, dict) and v.get("sector")}
 
 
 def allocate(agents: dict, capital: float = config.INITIAL_CAPITAL) -> tuple[list[dict], dict]:
@@ -50,7 +64,7 @@ def _row(market, code, name):
 
 def risk_review(rows: list[dict], capital: float = config.INITIAL_CAPITAL, sectors: dict | None = None) -> tuple[list[dict], dict]:
     """한도를 적용해 줄마다 (APPROVED | TRIMMED | REJECTED, 이유)와 최종 금액을 붙인다.
-    sectors: {(시장, 코드): 업종}. 있으면 한국 종목에 업종 상한을 건다."""
+    sectors: {(시장, 코드): 업종}. 있는 시장의 종목에 업종 상한을 건다(한국 NHPLUG 업종, 미국 Yahoo 섹터)."""
     rows = sorted((dict(r, agents=list(r["agents"]), reasons=[], target=r["amount"]) for r in rows),
                   key=lambda r: (-r["amount"], -len(r["agents"]), r["market"], r["code"]))
     for i, r in enumerate(rows):
@@ -73,8 +87,8 @@ def risk_review(rows: list[dict], capital: float = config.INITIAL_CAPITAL, secto
     for r in rows:
         r["sector"] = sectors.get((r["market"], str(r["code"]).zfill(6) if r["market"] == "kr" else r["code"]))
     sec_cap = capital * config.MAX_SECTOR_WEIGHT
-    for name in sorted({r["sector"] for r in rows if r["sector"] and r["target"] > 0}):
-        group = [r for r in rows if r["sector"] == name and r["target"] > 0]
+    for market, name in sorted({(r["market"], r["sector"]) for r in rows if r["sector"] and r["target"] > 0}):
+        group = [r for r in rows if r["market"] == market and r["sector"] == name and r["target"] > 0]
         total = sum(r["target"] for r in group)
         if total > sec_cap:
             for r in group:
@@ -85,13 +99,15 @@ def risk_review(rows: list[dict], capital: float = config.INITIAL_CAPITAL, secto
         r["weight"] = round(r["target"] / capital, 4)
         r["verdict"] = "REJECTED" if r["target"] == 0 else "TRIMMED" if r["reasons"] else "APPROVED"
     gross = sum(r["target"] for r in rows)
+    covered = {m for m, _ in sectors}
+    sector_gap = ["섹터 쏠림"] if not covered else [f"섹터 쏠림({n})" for m, n in (("us", "미국"), ("kr", "한국")) if m not in covered]
     summary = {"capital": capital, "gross": round(gross, 2), "grossPct": round(100 * gross / capital, 1),
                "cashPct": round(100 * (1 - gross / capital), 1),
                "kr": round(100 * sum(r["target"] for r in rows if r["market"] == "kr") / capital, 1),
                "us": round(100 * sum(r["target"] for r in rows if r["market"] == "us") / capital, 1),
                "names": sum(r["target"] > 0 for r in rows),
-               "notChecked": (["섹터 쏠림(미국)"] if sectors else ["섹터 쏠림"]) + ["유동성(거래대금 대비 비중)"],
-               "sectorUnknown": sum(r["market"] == "kr" and not r["sector"] and r["target"] > 0 for r in rows) if sectors else None}
+               "notChecked": sector_gap + ["유동성(거래대금 대비 비중)"],
+               "sectorUnknown": sum(r["market"] in covered and not r["sector"] and r["target"] > 0 for r in rows) if sectors else None}
     return rows, summary
 
 
