@@ -1,0 +1,767 @@
+{
+ "ranAt": "2026-10-28T11:42:55.204362+09:00",
+ "scan": "top",
+ "poolSize": 150,
+ "limiterPerSecond": 5.0,
+ "universe": {
+  "source": "naver-listing",
+  "count": 3891,
+  "withAmount": 3466
+ },
+ "stages": [
+  {
+   "workers": 3,
+   "requested": 50,
+   "ok": 47,
+   "failed": 3,
+   "startedAt": "2026-10-28T11:43:35.638331+09:00",
+   "elapsedSeconds": 13.6,
+   "callsPerSecond": 3.67,
+   "medianLatency": 0.58,
+   "p90Latency": 0.92,
+   "errorKinds": {
+    "no_output/429/IGW42902/APP 호출 거래건수를 초과하였습니다.": 3
+   }
+  },
+  {
+   "workers": 5,
+   "requested": 50,
+   "ok": 45,
+   "failed": 5,
+   "startedAt": "2026-10-28T11:43:49.273758+09:00",
+   "elapsedSeconds": 10.4,
+   "callsPerSecond": 4.82,
+   "medianLatency": 0.58,
+   "p90Latency": 0.65,
+   "errorKinds": {
+    "no_output/429/IGW42902/APP 호출 거래건수를 초과하였습니다.": 5
+   }
+  },
+  {
+   "workers": 3,
+   "requested": 50,
+   "ok": 42,
+   "failed": 8,
+   "startedAt": "2026-10-28T11:43:59.649914+09:00",
+   "elapsedSeconds": 10.4,
+   "callsPerSecond": 4.81,
+   "medianLatency": 0.57,
+   "p90Latency": 0.59,
+   "errorKinds": {
+    "no_output/429/IGW42902/APP 호출 거래건수를 초과하였습니다.": 8
+   }
+  },
+  {
+   "workers": 5,
+   "requested": 50,
+   "ok": 43,
+   "failed": 7,
+   "startedAt": "2026-10-28T11:44:10.048486+09:00",
+   "elapsedSeconds": 10.4,
+   "callsPerSecond": 4.82,
+   "medianLatency": 0.57,
+   "p90Latency": 0.59,
+   "errorKinds": {
+    "no_output/429/IGW42902/APP 호출 거래건수를 초과하였습니다.": 7
+   },
+   "purpose": "상위 밖 누락 점검(네이버 순위 151~400위 5개마다)"
+  }
+ ],
+ "turnoverAgreement": {
+  "n": 134,
+  "nhOverNaverMedian": 1002486.434,
+  "p10": 1000426.167,
+  "p90": 1008086.765
+ },
+ "rankAgreementWithinPool": {
+  "top50Overlap": 50,
+  "spearman": 1.0
+ },
+ "leakCheck": {
+  "sampled": 43,
+  "thresholdWonPoolTop50": 56534000000.0,
+  "sampledAboveThreshold": 0,
+  "items": []
+ },
+ "dataStatus": {
+  "antcNonZero": 0,
+  "antcSample": [],
+  "alarm": 1,
+  "overheat": 0,
+  "groups": {
+   "ETF": 39,
+   "ETN": 3,
+   "코스닥": 38,
+   "코스피": 54
+  },
+  "latestHogaTime": "11:44:09"
+ },
+ "tops": {
+  "turnover": [
+   {
+    "code": "000660",
+    "name": "*SK하이닉스",
+    "mkt": "코스피",
+    "grp": "코스피",
+    "price": 1451000.0,
+    "pct": 8.2,
+    "tr": 3157082.0,
+    "volRate": 71.26,
+    "alarm": "0"
+   },
+   {
+    "code": "005930",
+    "name": "*삼성전자",
+    "mkt": "코스피",
+    "grp": "코스피",
+    "price": 239000.0,
+    "pct": 7.66,
+    "tr": 2098168.0,
+    "volRate": 62.42,
+    "alarm": "0"
+   },
+   {
+    "code": "069500",
+    "name": "KODEX 200",
+    "mkt": "코스피",
+    "grp": "ETF",
+    "price": 94775.0,
+    "pct": 6.6,
+    "tr": 1353769.0,
+    "volRate": 60.57,
+    "alarm": "0"
+   },
+   {
+    "code": "122630",
+    "name": "KODEX 레버리지",
+    "mkt": "코스피",
+    "grp": "ETF",
+    "price": 79050.0,
+    "pct": 13.0,
+    "tr": 1055545.0,
+    "volRate": 66.24,
+    "alarm": "0"
+   },
+   {
+    "code": "114800",
+    "name": "KODEX 인버스",
+    "mkt": "코스피",
+    "grp": "ETF",
+    "price": 1134.0,
+    "pct": 6.44,
+    "tr": 785957.0,
+    "volRate": 79.19,
+    "alarm": "0"
+   },
+   {
+    "code": "102110",
+    "name": "TIGER 200",
+    "mkt": "코스피",
+    "grp": "ETF",
+    "price": 95150.0,
+    "pct": 6.62,
+    "tr": 768305.0,
+    "volRate": 53.75,
+    "alarm": "0"
+   },
+   {
+    "code": "252670",
+    "name": "KODEX 200선물인버스2X",
+    "mkt": "코스피",
+    "grp": "ETF",
+    "price": 91.0,
+    "pct": 12.5,
+    "tr": 676205.0,
+    "volRate": 71.48,
+    "alarm": "0"
+   },
+   {
+    "code": "009150",
+    "name": "*삼성전기",
+    "mkt": "코스피",
+    "grp": "코스피",
+    "price": 1311000.0,
+    "pct": 9.16,
+    "tr": 670671.0,
+    "volRate": 67.79,
+    "alarm": "0"
+   },
+   {
+    "code": "005935",
+    "name": "삼성전자우",
+    "mkt": "코스피",
+    "grp": "코스피",
+    "price": 187200.0,
+    "pct": 9.41,
+    "tr": 509766.0,
+    "volRate": 97.14,
+    "alarm": "0"
+   },
+   {
+    "code": "402340",
+    "name": "*SK스퀘어",
+    "mkt": "코스피",
+    "grp": "코스피",
+    "price": 902000.0,
+    "pct": 8.94,
+    "tr": 448024.0,
+    "volRate": 61.47,
+    "alarm": "0"
+   },
+   {
+    "code": "459580",
+    "name": "KODEX CD금리액티브(합성)",
+    "mkt": "코스피",
+    "grp": "ETF",
+    "price": 1075957.0,
+    "pct": 0.01,
+    "tr": 404510.0,
+    "volRate": 45.85,
+    "alarm": "0"
+   },
+   {
+    "code": "360750",
+    "name": "TIGER 미국S&P500",
+    "mkt": "코스피",
+    "grp": "ETF",
+    "price": 25650.0,
+    "pct": 1.68,
+    "tr": 380829.0,
+    "volRate": 58.25,
+    "alarm": "0"
+   },
+   {
+    "code": "133690",
+    "name": "TIGER 미국나스닥100",
+    "mkt": "코스피",
+    "grp": "ETF",
+    "price": 175975.0,
+    "pct": 2.89,
+    "tr": 322738.0,
+    "volRate": 49.77,
+    "alarm": "0"
+   },
+   {
+    "code": "379810",
+    "name": "KODEX 미국나스닥100",
+    "mkt": "코스피",
+    "grp": "ETF",
+    "price": 26325.0,
+    "pct": 2.91,
+    "tr": 302175.0,
+    "volRate": 60.1,
+    "alarm": "0"
+   },
+   {
+    "code": "379800",
+    "name": "KODEX 미국S&P500",
+    "mkt": "코스피",
+    "grp": "ETF",
+    "price": 23325.0,
+    "pct": 1.66,
+    "tr": 276035.0,
+    "volRate": 61.65,
+    "alarm": "0"
+   },
+   {
+    "code": "233740",
+    "name": "KODEX 코스닥150레버리지",
+    "mkt": "코스피",
+    "grp": "ETF",
+    "price": 5465.0,
+    "pct": 7.26,
+    "tr": 241911.0,
+    "volRate": 60.64,
+    "alarm": "0"
+   },
+   {
+    "code": "179880",
+    "name": "멜콘",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 17530.0,
+    "pct": 10.74,
+    "tr": 204855.0,
+    "volRate": 414.5,
+    "alarm": "0"
+   },
+   {
+    "code": "396500",
+    "name": "TIGER 반도체TOP10",
+    "mkt": "코스피",
+    "grp": "ETF",
+    "price": 32030.0,
+    "pct": 7.85,
+    "tr": 186972.0,
+    "volRate": 52.5,
+    "alarm": "0"
+   },
+   {
+    "code": "229200",
+    "name": "KODEX 코스닥150",
+    "mkt": "코스피",
+    "grp": "ETF",
+    "price": 12715.0,
+    "pct": 3.71,
+    "tr": 179326.0,
+    "volRate": 35.59,
+    "alarm": "0"
+   },
+   {
+    "code": "488080",
+    "name": "TIGER 반도체TOP10레버리지",
+    "mkt": "코스피",
+    "grp": "ETF",
+    "price": 24745.0,
+    "pct": 15.09,
+    "tr": 173378.0,
+    "volRate": 66.47,
+    "alarm": "0"
+   },
+   {
+    "code": "494310",
+    "name": "KODEX 반도체레버리지",
+    "mkt": "코스피",
+    "grp": "ETF",
+    "price": 58580.0,
+    "pct": 12.7,
+    "tr": 165388.0,
+    "volRate": 73.15,
+    "alarm": "0"
+   },
+   {
+    "code": "148020",
+    "name": "RISE 200",
+    "mkt": "코스피",
+    "grp": "ETF",
+    "price": 95515.0,
+    "pct": 6.58,
+    "tr": 153126.0,
+    "volRate": 120.6,
+    "alarm": "0"
+   },
+   {
+    "code": "028050",
+    "name": "*삼성E&A",
+    "mkt": "코스피",
+    "grp": "코스피",
+    "price": 64100.0,
+    "pct": 3.05,
+    "tr": 151013.0,
+    "volRate": 48.97,
+    "alarm": "0"
+   },
+   {
+    "code": "069540",
+    "name": "빛과전자",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 4195.0,
+    "pct": 29.88,
+    "tr": 148616.0,
+    "volRate": 286.59,
+    "alarm": "0"
+   },
+   {
+    "code": "010170",
+    "name": "대한광통신",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 14870.0,
+    "pct": 8.54,
+    "tr": 141600.0,
+    "volRate": 190.01,
+    "alarm": "0"
+   },
+   {
+    "code": "030530",
+    "name": "#원익홀딩스",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 29050.0,
+    "pct": 22.32,
+    "tr": 140355.0,
+    "volRate": 444.58,
+    "alarm": "0"
+   },
+   {
+    "code": "006400",
+    "name": "*삼성SDI",
+    "mkt": "코스피",
+    "grp": "코스피",
+    "price": 529000.0,
+    "pct": 4.13,
+    "tr": 132155.0,
+    "volRate": 52.51,
+    "alarm": "0"
+   },
+   {
+    "code": "011070",
+    "name": "*LG이노텍",
+    "mkt": "코스피",
+    "grp": "코스피",
+    "price": 362000.0,
+    "pct": 3.34,
+    "tr": 115639.0,
+    "volRate": 234.77,
+    "alarm": "0"
+   },
+   {
+    "code": "395160",
+    "name": "KODEX AI반도체TOP2플러스",
+    "mkt": "코스피",
+    "grp": "ETF",
+    "price": 35150.0,
+    "pct": 7.9,
+    "tr": 110335.0,
+    "volRate": 65.89,
+    "alarm": "0"
+   },
+   {
+    "code": "035420",
+    "name": "*NAVER",
+    "mkt": "코스피",
+    "grp": "코스피",
+    "price": 182300.0,
+    "pct": 4.59,
+    "tr": 106336.0,
+    "volRate": 80.28,
+    "alarm": "0"
+   }
+  ],
+  "pctUp": [
+   {
+    "code": "069540",
+    "name": "빛과전자",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 4195.0,
+    "pct": 29.88,
+    "tr": 148616.0,
+    "volRate": 286.59,
+    "alarm": "0"
+   },
+   {
+    "code": "263860",
+    "name": "지니언스",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 27050.0,
+    "pct": 28.81,
+    "tr": 20088.0,
+    "volRate": 222.58,
+    "alarm": "0"
+   },
+   {
+    "code": "030530",
+    "name": "#원익홀딩스",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 29050.0,
+    "pct": 22.32,
+    "tr": 140355.0,
+    "volRate": 444.58,
+    "alarm": "0"
+   },
+   {
+    "code": "072950",
+    "name": "빛샘전자",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 15920.0,
+    "pct": 21.16,
+    "tr": 67920.0,
+    "volRate": 359.23,
+    "alarm": "0"
+   },
+   {
+    "code": "491000",
+    "name": "리브스메드",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 44800.0,
+    "pct": 20.75,
+    "tr": 28174.0,
+    "volRate": 258.69,
+    "alarm": "0"
+   },
+   {
+    "code": "125490",
+    "name": "#한라캐스트",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 11300.0,
+    "pct": 15.19,
+    "tr": 35792.0,
+    "volRate": 616.11,
+    "alarm": "0"
+   },
+   {
+    "code": "488080",
+    "name": "TIGER 반도체TOP10레버리지",
+    "mkt": "코스피",
+    "grp": "ETF",
+    "price": 24745.0,
+    "pct": 15.09,
+    "tr": 173378.0,
+    "volRate": 66.47,
+    "alarm": "0"
+   },
+   {
+    "code": "092870",
+    "name": "엑시콘",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 66700.0,
+    "pct": 15.0,
+    "tr": 38705.0,
+    "volRate": 103.45,
+    "alarm": "1"
+   },
+   {
+    "code": "356680",
+    "name": "엑스게이트",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 17440.0,
+    "pct": 14.89,
+    "tr": 57489.0,
+    "volRate": 235.16,
+    "alarm": "0"
+   },
+   {
+    "code": "530148",
+    "name": "삼성 인버스 2X 코스피200 선물 ETN B",
+    "mkt": "ETN",
+    "grp": "ETN",
+    "price": 38580.0,
+    "pct": 13.03,
+    "tr": 42244.0,
+    "volRate": 87.33,
+    "alarm": "0"
+   },
+   {
+    "code": "122630",
+    "name": "KODEX 레버리지",
+    "mkt": "코스피",
+    "grp": "ETF",
+    "price": 79050.0,
+    "pct": 13.0,
+    "tr": 1055545.0,
+    "volRate": 66.24,
+    "alarm": "0"
+   },
+   {
+    "code": "494310",
+    "name": "KODEX 반도체레버리지",
+    "mkt": "코스피",
+    "grp": "ETF",
+    "price": 58580.0,
+    "pct": 12.7,
+    "tr": 165388.0,
+    "volRate": 73.15,
+    "alarm": "0"
+   },
+   {
+    "code": "277810",
+    "name": "#레인보우로보틱스",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 395500.0,
+    "pct": 12.52,
+    "tr": 45645.0,
+    "volRate": 277.04,
+    "alarm": "0"
+   },
+   {
+    "code": "252670",
+    "name": "KODEX 200선물인버스2X",
+    "mkt": "코스피",
+    "grp": "ETF",
+    "price": 91.0,
+    "pct": 12.5,
+    "tr": 676205.0,
+    "volRate": 71.48,
+    "alarm": "0"
+   },
+   {
+    "code": "411080",
+    "name": "샌즈랩",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 9210.0,
+    "pct": 12.32,
+    "tr": 75723.0,
+    "volRate": 93.23,
+    "alarm": "0"
+   }
+  ],
+  "volRate": [
+   {
+    "code": "396470",
+    "name": "워트",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 6610.0,
+    "pct": 9.44,
+    "tr": 30201.0,
+    "volRate": 3727.98,
+    "alarm": "0"
+   },
+   {
+    "code": "125490",
+    "name": "#한라캐스트",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 11300.0,
+    "pct": 15.19,
+    "tr": 35792.0,
+    "volRate": 616.11,
+    "alarm": "0"
+   },
+   {
+    "code": "010580",
+    "name": "에스엠벡셀",
+    "mkt": "코스피",
+    "grp": "코스피",
+    "price": 3435.0,
+    "pct": 9.22,
+    "tr": 21976.0,
+    "volRate": 484.8,
+    "alarm": "0"
+   },
+   {
+    "code": "030530",
+    "name": "#원익홀딩스",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 29050.0,
+    "pct": 22.32,
+    "tr": 140355.0,
+    "volRate": 444.58,
+    "alarm": "0"
+   },
+   {
+    "code": "179880",
+    "name": "멜콘",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 17530.0,
+    "pct": 10.74,
+    "tr": 204855.0,
+    "volRate": 414.5,
+    "alarm": "0"
+   },
+   {
+    "code": "072950",
+    "name": "빛샘전자",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 15920.0,
+    "pct": 21.16,
+    "tr": 67920.0,
+    "volRate": 359.23,
+    "alarm": "0"
+   },
+   {
+    "code": "419050",
+    "name": "삼기에너지솔루션즈",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 2595.0,
+    "pct": 5.92,
+    "tr": 69408.0,
+    "volRate": 318.02,
+    "alarm": "0"
+   },
+   {
+    "code": "069540",
+    "name": "빛과전자",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 4195.0,
+    "pct": 29.88,
+    "tr": 148616.0,
+    "volRate": 286.59,
+    "alarm": "0"
+   },
+   {
+    "code": "277810",
+    "name": "#레인보우로보틱스",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 395500.0,
+    "pct": 12.52,
+    "tr": 45645.0,
+    "volRate": 277.04,
+    "alarm": "0"
+   },
+   {
+    "code": "491000",
+    "name": "리브스메드",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 44800.0,
+    "pct": 20.75,
+    "tr": 28174.0,
+    "volRate": 258.69,
+    "alarm": "0"
+   },
+   {
+    "code": "003160",
+    "name": "디아이",
+    "mkt": "코스피",
+    "grp": "코스피",
+    "price": 41700.0,
+    "pct": 10.32,
+    "tr": 53875.0,
+    "volRate": 251.55,
+    "alarm": "0"
+   },
+   {
+    "code": "356680",
+    "name": "엑스게이트",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 17440.0,
+    "pct": 14.89,
+    "tr": 57489.0,
+    "volRate": 235.16,
+    "alarm": "0"
+   },
+   {
+    "code": "011070",
+    "name": "*LG이노텍",
+    "mkt": "코스피",
+    "grp": "코스피",
+    "price": 362000.0,
+    "pct": 3.34,
+    "tr": 115639.0,
+    "volRate": 234.77,
+    "alarm": "0"
+   },
+   {
+    "code": "263860",
+    "name": "지니언스",
+    "mkt": "코스닥",
+    "grp": "코스닥",
+    "price": 27050.0,
+    "pct": 28.81,
+    "tr": 20088.0,
+    "volRate": 222.58,
+    "alarm": "0"
+   },
+   {
+    "code": "294400",
+    "name": "KIWOOM 200TR",
+    "mkt": "코스피",
+    "grp": "ETF",
+    "price": 124555.0,
+    "pct": 6.69,
+    "tr": 30853.0,
+    "volRate": 200.02,
+    "alarm": "0"
+   }
+  ]
+ }
+}
