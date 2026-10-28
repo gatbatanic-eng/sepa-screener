@@ -221,3 +221,33 @@ def _rebalance(acct, px, w, band):
         acct.buy(diff, px)
     elif diff < 0:
         acct.sell(-diff / px, px)
+
+
+class VolTargetRamp(VolTarget):
+    """VolTarget 에 분할 진입을 붙인 것 (signal.py 의 ramp 규칙과 동일).
+    변동성 계산이 가능한 첫날 start_w 비중으로 시작하고, weeks 주 동안 목표 비중을 시작값에서 매주 1/weeks 씩만 올린다.
+    이 기간에는 min_gap 이상 모자라면 매수, 위험 축소(매도)는 평소 밴드. weeks=0 이면 첫날부터 목표 비중."""
+
+    def __init__(self, target_vol=0.35, lb=20, band=0.1, weeks=5, start_w=0.27, min_gap=0.02):
+        super().__init__(target_vol, lb, band)
+        self.weeks, self.start_w, self.min_gap = weeks, start_w, min_gap
+        self.name = f"변동성조절{target_vol:.0%}(시작{start_w:.0%},{f'{weeks}주 분할' if weeks else '즉시'})"
+        self.t0 = None
+
+    def on_bar(self, acct, bar):
+        if len(bar.hist) <= self.lb:  # 변동성 계산이 가능해지는 날을 시작일로 본다
+            return
+        if self.t0 is None:
+            acct.buy(acct.cash * self.start_w, bar.c)
+            self.t0 = bar.date
+            return
+        w = _vol_weight(bar.hist, self.tv, self.lb, self.max_w)
+        k = (bar.date - self.t0).days // 7 + 1
+        if not self.weeks or k > self.weeks or w <= self.start_w:
+            _rebalance(acct, bar.c, w, self.band)
+            return
+        eff = self.start_w + (w - self.start_w) * k / self.weeks
+        val = acct.value(bar.c)
+        gap = eff - acct.shares * bar.c / val
+        if gap > self.min_gap or gap < -self.band:
+            _rebalance(acct, bar.c, eff, 0.0)
