@@ -9,8 +9,8 @@ from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parent
-SCHEDULES = {'0 11 * * 1-5': 'KR', '35 11 * * 1-5': 'KR', '35 12 * * 1-5': 'KR', '0 5 * * 2-6': 'US', '35 5 * * 2-6': 'US'}
-PLAN_LABELS = {'KR': '평일 20:00 목표 · 보완 확인 20:35/21:35 KST', 'US': '화~토 14:00 목표 · 보완 확인 14:35 KST'}
+SCHEDULES = {'7 11 * * 1-5': 'KR', '43 11 * * 1-5': 'KR', '39 12 * * 1-5': 'KR', '7 5 * * 2-6': 'US', '43 5 * * 2-6': 'US'}
+PLAN_LABELS = {'KR': '평일 20:07 목표 · 보완 확인 20:43/21:39 KST', 'US': '화~토 14:07 목표 · 보완 확인 14:43 KST'}
 
 def latest_closed_session(payload, market, now):
     zone = ZoneInfo('Asia/Seoul' if market == 'KR' else 'America/New_York')
@@ -44,12 +44,16 @@ def read(path):
     except (OSError, ValueError):
         return {}
 
+def caught_up(observed, expected):
+    """저장된 거래일이 기준 지수 완결일 이상이면 반영 완료. 기준 지수(Yahoo)가 종목 시세보다 늦게 확정돼 expected가 뒤처질 수 있다."""
+    return bool(observed and expected and observed >= expected)
+
 def route(event, schedule, requested, message, expected, saved):
     if event == 'schedule':
         if schedule not in SCHEDULES:
             raise ValueError('등록되지 않은 예약식: 시장을 임의 선택하지 않음')
         primary = SCHEDULES[schedule]
-        markets = [m for m in ('KR', 'US') if expected.get(m) and saved.get(m) != expected[m]]
+        markets = [m for m in ('KR', 'US') if expected.get(m) and not caught_up(saved.get(m), expected[m])]
         if expected.get(primary) is None and primary not in markets:
             markets.append(primary)  # unavailable source is not an exchange holiday
     else:
@@ -93,7 +97,7 @@ def main():
         research = read(ROOT / 'docs' / 'research' / (m.lower()+'.json'))
         expected = plan.get('expected', {}).get(m)
         observed = research.get('latestSession')
-        state = 'unverified' if expected is None else 'current' if observed == expected else 'pending' if m not in plan.get('markets', []) else 'stale'
+        state = 'unverified' if expected is None else 'current' if caught_up(observed, expected) else 'pending' if m not in plan.get('markets', []) else 'stale'
         attempted = m in plan.get('markets', [])
         health['markets'][m] = {'status': state, 'expectedSession': expected, 'priceAsOf': observed, 'collectionStartedAt': plan.get('startedAt') if attempted else previous.get('collectionStartedAt'), 'checkedAt': at, 'researchUpdatedAt': research.get('updatedAt'), 'runId': os.getenv('GITHUB_RUN_ID') if attempted else previous.get('runId'), 'checkRunId': os.getenv('GITHUB_RUN_ID'), 'attempted': attempted, 'scheduleLabel': PLAN_LABELS[m], 'reason': plan.get('probeErrors', {}).get(m) or ('기준지수와 연구 기록 날짜 일치' if state == 'current' else '새 거래일 기록 미반영 · 마지막 정상 자료 보존')}
     path.parent.mkdir(parents=True, exist_ok=True)

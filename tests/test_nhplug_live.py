@@ -1,4 +1,5 @@
 import datetime as dt
+import io
 import unittest
 import json
 from pathlib import Path
@@ -55,6 +56,22 @@ class LiveTest(unittest.TestCase):
                 live.publish(snapshot, checkout)
             data = live.git('show', 'HEAD:research/nhplug/intraday/latest.json', cwd=checkout)
             self.assertEqual(json.loads(data), snapshot)
+
+    def test_call_retries_dropped_connections_then_fails_closed(self):
+        import http.client
+        from unittest import mock
+        client = live.Client()
+        client.access_token, client.expires_at = "t", float("inf")
+        path = next(iter(live.ALLOWED))
+        ok = mock.MagicMock()
+        ok.__enter__.return_value = io.BytesIO(b'{"Output_0": []}')
+        drops = [http.client.RemoteDisconnected("closed"), BrokenPipeError(32, "Broken pipe"), ok]
+        with mock.patch.object(live.time, "sleep"), mock.patch.object(live.urllib.request, "urlopen", side_effect=drops):
+            self.assertEqual(client.call(path, {}), {"Output_0": []})
+        with mock.patch.object(live.time, "sleep"), mock.patch.object(live.urllib.request, "urlopen", side_effect=BrokenPipeError(32, "x")) as opened:
+            with self.assertRaises(live.DataError):
+                client.call(path, {})
+        self.assertEqual(opened.call_count, live.MAX_ATTEMPTS)
 
     def test_order_path_refused_before_auth(self):
         with self.assertRaises(ValueError):

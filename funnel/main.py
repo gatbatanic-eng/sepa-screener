@@ -194,6 +194,21 @@ def recorded_sessions(snap_dir: Path, market: str) -> set[str]:
     return out
 
 
+def warn_if_benchmark_lags(market: str, session: dt.date, allowed: dt.date) -> None:
+    """Yahoo 벤치마크(^KS11)가 NHPLUG가 이미 확인한 한국 개장일보다 늦으면 알린다. 기록 거래일은 가격이 실제로 가리키는 날이어야 하므로
+    라벨은 NHPLUG 날짜로 바꾸지 않는다(시세가 Yahoo라서 10-26 시세를 10-27로 적게 된다). 뒤의 예비 실행이 따라잡는다."""
+    if market != "kr":
+        return
+    try:
+        flow = json.loads((ROOT / "research" / "nhplug" / "kr_flow.json").read_text(encoding="utf-8"))
+        bars = sorted(dt.datetime.strptime(str(b), "%Y%m%d").date() for b in flow.get("krBars") or [])
+    except (OSError, ValueError):
+        return
+    confirmed = [b for b in bars if b <= allowed]
+    if confirmed and confirmed[-1] > session:
+        log.warning("kr: 벤치마크 일봉(%s)이 NHPLUG 확인 개장일(%s)보다 늦음 — Yahoo 일봉 확정 지연, %s 거래일로 기록", session, confirmed[-1], session)
+
+
 def plan_session(market: str, now: dt.datetime, snap_dir: Path, refresh_view: bool) -> tuple[dt.date | None, str]:
     """이번 실행이 기록할 거래일과 이유. 거래일이 None이면 이번 실행은 아무것도 하지 않는다.
     ① 벤치마크 일봉의 마지막 봉이 그 시장의 거래일 ② 아직 마감 확정 전(장중)이면 기록하지 않음 ③ 이미 기록된 거래일이면 건너뜀(휴장일·재실행·예비 실행)."""
@@ -201,6 +216,7 @@ def plan_session(market: str, now: dt.datetime, snap_dir: Path, refresh_view: bo
     if session is None:
         raise RuntimeError(f"{market}: 벤치마크 일봉을 받지 못해 거래일을 확인할 수 없음")
     allowed = effective_date(now.isoformat(), market)
+    warn_if_benchmark_lags(market, session, allowed)
     if session > allowed:
         return None, f"{session} 시세가 아직 마감 확정 전입니다(확정 거래일 {allowed}) — 기록하지 않음"
     if session.isoformat() in recorded_sessions(snap_dir, market) and not refresh_view:

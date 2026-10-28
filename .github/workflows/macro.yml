@@ -3,9 +3,9 @@ name: macro-daily
 on:
   schedule:
     # 한국 평일 06:30 KST (= 전일 21:30 UTC) — 미국장 마감 + FRED 갱신 이후, 한국장 개장 전.
-    # 기존 워크플로(daily_screen 11:00/22:00, screener_daily 12:00/22:30, range_vrebound 11:30)와
+    # 기존 워크플로(daily_screen 11:07, screener_daily 12:13/22:19, range_vrebound 11:21)와
     # concurrency 그룹이 다르고(group: macro-daily) 커밋 전 rebase 하므로 충돌하지 않는다.
-    - cron: "30 21 * * 0-4"
+    - cron: "41 21 * * 0-4"
   workflow_dispatch:
 
 permissions:

@@ -69,7 +69,7 @@ python screening.py
 
 ## 6. 자동 실행 스케줄
 
-`.github/workflows/daily_screen.yml`에 평일(월~금) 20:00 KST(UTC 11:00) 자동 실행이 이미
+`.github/workflows/daily_screen.yml`에 평일(월~금) 20:07 KST(UTC 11:07) 자동 실행이 이미
 설정되어 있습니다. 별도 조치 없이 저장소가 GitHub에 push되어 있으면 그대로 동작합니다.
 
 > 참고: GitHub Actions의 `schedule` 트리거는 정확히 그 분에 실행되지 않고 몇 분 정도

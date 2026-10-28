@@ -326,6 +326,20 @@ class DailyRecordTest(unittest.TestCase):
                 with self.assertRaises(RuntimeError):
                     fm.plan_session("kr", now, folder, False)
 
+    def test_benchmark_lag_is_warned_not_relabelled(self):
+        from unittest import mock
+        from funnel import main as fm
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "research" / "nhplug").mkdir(parents=True)
+            (root / "research" / "nhplug" / "kr_flow.json").write_text(json.dumps({"krBars": ["20261027", "20261026"]}))
+            with mock.patch.object(fm, "ROOT", root), self.assertLogs(fm.log, "WARNING") as cap:
+                fm.warn_if_benchmark_lags("kr", dt.date(2026, 10, 26), dt.date(2026, 10, 27))
+            self.assertIn("2026-10-27", cap.output[0])
+            with mock.patch.object(fm, "ROOT", root), self.assertNoLogs(fm.log, "WARNING"):
+                fm.warn_if_benchmark_lags("kr", dt.date(2026, 10, 27), dt.date(2026, 10, 27))
+                fm.warn_if_benchmark_lags("us", dt.date(2026, 10, 26), dt.date(2026, 10, 27))
+
     def test_validation_keys_new_snapshots_by_session(self):
         with tempfile.TemporaryDirectory() as d:
             folder = self.snap(d, "2026-10-12.json.gz", "2026-10-13T05:47:00+00:00", session="2026-10-12")

@@ -15,12 +15,12 @@ on:
       - "tests/test_fpd_*.py"
       - ".github/workflows/fpd_daily.yml"
   schedule:
-    # US close after the existing SEPA US run. 22:30 UTC is after regular close
+    # US close after the existing SEPA US run. 22:37 UTC is after regular close
     # in both US daylight and standard time.
-    - cron: "30 22 * * 1-5"
+    - cron: "37 22 * * 1-5"
     # Catch up after delayed SEPA US runs; includes Saturday for Friday close.
     # Immutable snapshots make an already collected session a no-op.
-    - cron: "30 10 * * 2-6"
+    - cron: "37 10 * * 2-6"
   workflow_dispatch:
 
 permissions:

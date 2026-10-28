@@ -5,16 +5,16 @@ on:
     branches: [master]
     paths: ["screening.py", "collection_health.py", "tests/test_collection_health.py", "ai_tracker.py", "tests/test_ai_tracker.py", "range_screen.py", "tests/test_range_screen.py", "aggressive_screen.py", "tests/test_aggressive_screen.py", "rebound_screen.py", "tests/test_rebound_screen.py", "research_tracker.py", "tests/test_research_tracker.py", ".gitignore", "personas/**", "tests/test_personas.py", "tests/test_personas_data.py", ".github/workflows/daily_screen.yml"]
   schedule:
-    # 한국: 평일(월~금) 20:00 KST = UTC 11:00
-    - cron: "0 11 * * 1-5"
+    # 한국: 평일(월~금) 20:07 KST = UTC 11:07. 정각·30분 같은 붐비는 분은 예약이 3~6시간 밀려 피했다(2026-10-28)
+    - cron: "7 11 * * 1-5"
     # 지연/휴장 이후 보완. 이미 완결 거래일이 반영됐으면 무거운 수집을 건너뜀.
-    - cron: "35 11 * * 1-5"
-    - cron: "35 12 * * 1-5"
-    # 미국: 시간외 거래(~8pm ET)가 끝나고 야후 일봉이 확정된 뒤 = UTC 05:00 (화~토, 전 거래일 시세)
+    - cron: "43 11 * * 1-5"
+    - cron: "39 12 * * 1-5"
+    # 미국: 시간외 거래(~8pm ET)가 끝나고 야후 일봉이 확정된 뒤 = UTC 05:07 (화~토, 전 거래일 시세)
     #   22:00 UTC 실행은 GitHub 지연으로 00~01시 UTC에 돌면서 종목 시세가 지수보다 하루 늦게 와
     #   전 종목이 '시세 기준일 불일치'로 걸러졌다(2026-10-02, 10-03).
-    - cron: "0 5 * * 2-6"
-    - cron: "35 5 * * 2-6"
+    - cron: "7 5 * * 2-6"
+    - cron: "43 5 * * 2-6"
   workflow_dispatch:
     inputs:
       market:
