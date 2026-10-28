@@ -36,6 +36,9 @@ CANDIDATES = [
     (S.Rebalance, dict(w=0.5, band=0.2)),
 ]
 _P = {}
+KRW_CAPITAL = 15_000_000  # 세금 계산은 계좌 규모에 따라 달라진다 (연 250만원 공제)
+FX = 1324.0
+TAX = dict(rate=0.22, deduction=2.5e6, fx=FX)
 
 
 def _init(n):
@@ -43,31 +46,32 @@ def _init(n):
 
 
 def evaluate(cfg):
-    cls, kw = cfg
+    """cfg = (전략 클래스, 파라미터) 또는 (클래스, 파라미터, 세금여부)"""
+    cls, kw, taxed = (*cfg, False)[:3]
     rows = []
     for df, rate in _P["paths"]:
         st = cls(**kw)
-        res, _ = sim.backtest(df, st, cash_rate=rate)
+        res, _ = sim.backtest(df, st, capital=KRW_CAPITAL / FX, cash_rate=rate, tax=TAX if taxed else None)
         s = sim.stats(res)
         rows.append((s["CAGR"], s["MDD"], s["배수"]))
     a = np.array(rows)
     cagr, mdd, mult = a[:, 0], a[:, 1], a[:, 2]
-    return dict(그룹=cls.__name__, 전략=cls(**kw).name,
+    return dict(그룹=cls.__name__, 전략=cls(**kw).name, 세금=taxed,
                 CAGR중앙=np.median(cagr), CAGR하위10=np.quantile(cagr, 0.1), CAGR하위5=np.quantile(cagr, 0.05),
                 MDD중앙=np.median(mdd), MDD하위10=np.quantile(mdd, 0.1),
                 손실확률=(mult < 1).mean(), 반토막확률=(mult < 0.5).mean(),
                 칼마중앙=np.median(cagr / -mdd))
 
 
-def main(n=300):
+def run(cands, n=300, out="montecarlo.csv"):
     with Pool(os.cpu_count(), initializer=_init, initargs=(n,)) as p:
-        rows = p.map(evaluate, CANDIDATES, chunksize=1)
+        rows = p.map(evaluate, cands, chunksize=1)
     df = pd.DataFrame(rows)
     os.makedirs(OUT, exist_ok=True)
-    df.to_csv(os.path.join(OUT, "montecarlo.csv"), index=False)
+    df.to_csv(os.path.join(OUT, out), index=False)
     return df
 
 
 if __name__ == "__main__":
     pd.set_option("display.width", 250); pd.set_option("display.max_columns", 20)
-    print(main(int(sys.argv[1]) if len(sys.argv) > 1 else 300).round(3).to_string(index=False))
+    print(run(CANDIDATES, int(sys.argv[1]) if len(sys.argv) > 1 else 300).round(3).to_string(index=False))

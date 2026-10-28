@@ -40,6 +40,31 @@ class LaoerBacktestTest(unittest.TestCase):
         self.assertGreater(t["corr"], 0.99)
         self.assertLess(abs(t["cagr_synth"] - t["cagr_real"]), 0.005)
 
+    def test_tax_lump_sum_only_on_liquidation(self):
+        df = _synthetic()
+        tax = dict(rate=0.22, deduction=0.0, fx=1.0)
+        res, acct = sim.backtest(df, S.LumpSum(), fee=0.0, tax=tax)
+        gain = res["equity"].iloc[-1] - 10000.0
+        self.assertAlmostEqual(res.attrs["liq_tax"], max(gain, 0) * 0.22, places=6)
+        self.assertEqual(acct.realized_krw, {})
+
+    def test_tax_paid_in_may_next_year(self):
+        idx = pd.bdate_range("2020-12-01", "2021-06-30")
+        c = np.where(idx < pd.Timestamp("2020-12-15"), 100.0, 200.0)
+        df = pd.DataFrame(dict(Open=c, High=c, Low=c, Close=c), index=idx)
+
+        class Flip(sim.Strategy):
+            def on_bar(self, acct, bar):
+                if bar.i == 0:
+                    acct.buy(acct.cash, bar.c)
+                elif bar.date == pd.Timestamp("2020-12-16"):
+                    acct.sell(acct.shares, bar.c)
+
+        res, acct = sim.backtest(df, Flip(), fee=0.0, tax=dict(rate=0.22, deduction=1000.0, fx=1.0))
+        self.assertAlmostEqual(acct.realized_krw[2020], 10000.0)
+        self.assertAlmostEqual(res["equity"].loc["2021-04-30"], 20000.0)
+        self.assertAlmostEqual(res["equity"].loc["2021-05-03"], 20000.0 - 9000.0 * 0.22)
+
 
 if __name__ == "__main__":
     unittest.main()

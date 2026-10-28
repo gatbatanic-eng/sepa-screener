@@ -44,6 +44,7 @@ class LaoerV1(Strategy):
         self.n, self.target, self.big, self.qc = n_split, target, big, quarter_cut
         self.name = f"라오어V1(n{n_split},tp{target:.0%},big{big:.0%}{',QC' if quarter_cut else ''})"
         self.cap = None; self.start = None; self.spent = 0.0
+        self.scale = 1.0  # 1회분 배율 (하위 클래스용)
         self._cycles = []
 
     def on_bar(self, acct, bar):
@@ -58,7 +59,7 @@ class LaoerV1(Strategy):
                                          ret=pnl / self.cap, used=self.spent / self.cap))
                 self.cap = acct.cash; self.spent = 0.0
                 return
-        unit = self.cap / self.n
+        unit = self.cap / self.n * self.scale
         if acct.shares == 0:
             self.spent += unit
             acct.buy(unit, bar.c)
@@ -80,10 +81,11 @@ class LaoerX(LaoerV1):
     trend: >0 이면 전일 종가가 그 기간 이평선 아래일 때 새 사이클을 시작하지 않는다 (진행 중인 사이클은 유지)
     """
 
-    def __init__(self, n_split=40, target=0.10, big=0.10, cut="quarter", trend=0):
+    def __init__(self, n_split=40, target=0.10, big=0.10, cut="quarter", trend=0, vol_target=0.0, vol_lb=20):
         super().__init__(n_split, target, big, cut == "quarter")
-        self.cut, self.trend = cut, trend
-        self.name = f"라오어(n{n_split},tp{target:.1%},big{big:.0%},{cut}{f',MA{trend}' if trend else ''})"
+        self.cut, self.trend, self.vt, self.vlb = cut, trend, vol_target, vol_lb
+        self.name = (f"라오어(n{n_split},tp{target:.1%},big{big:.0%},{cut}{f',MA{trend}' if trend else ''}"
+                     f"{f',vol{vol_target:.0%}' if vol_target else ''})")
 
     def on_bar(self, acct, bar):
         if self.cap is None:
@@ -99,6 +101,8 @@ class LaoerX(LaoerV1):
                                      ret=pnl / self.cap, used=self.spent / self.cap))
             self.cap = acct.cash; self.spent = 0.0
             return
+        if self.vt and len(bar.hist) > self.vlb:
+            self.scale = _vol_weight(bar.hist, self.vt, self.vlb)  # 변동성이 높으면 1회분 매수액 축소
         super().on_bar(acct, bar)
 
 
@@ -171,31 +175,40 @@ class TrendHold(Strategy):
 
 # ---------------------------------------------------------------- F. 변동성 조절
 class VolTarget(Strategy):
-    """목표 비중 = min(max_w, target_vol / 최근 lb일 실현변동성). 비중 차이가 band 넘으면 종가 리밸런싱."""
+    """목표 비중 = min(max_w, target_vol / 최근 lb일 실현변동성). 비중 차이가 band 넘으면 리밸런싱.
+    trend>0 이면 전일 종가가 그 이평선 아래일 때 목표 비중 0. at='close'(당일 종가) / 'open'(당일 시가) 체결.
+    판단에는 항상 전일까지 종가만 쓴다."""
 
-    def __init__(self, target_vol=0.4, lb=20, band=0.1, max_w=1.0):
-        self.tv, self.lb, self.band, self.max_w = target_vol, lb, band, max_w
-        self.name = f"변동성조절(목표{target_vol:.0%},{lb}일)"
+    def __init__(self, target_vol=0.4, lb=20, band=0.1, max_w=1.0, trend=0, at="close"):
+        self.tv, self.lb, self.band, self.max_w, self.trend, self.at = target_vol, lb, band, max_w, trend, at
+        self.name = (f"변동성조절(목표{target_vol:.0%},{lb}일,±{band:.0%}"
+                     f"{f',MA{trend}' if trend else ''}{',시가' if at == 'open' else ''})")
 
     def on_bar(self, acct, bar):
-        if len(bar.hist) <= self.lb:
+        if len(bar.hist) <= max(self.lb, self.trend):
             return
-        r = np.diff(np.log(bar.hist[-self.lb - 1:]))
-        vol = r.std() * np.sqrt(252)
-        w = min(self.max_w, self.tv / vol) if vol > 0 else self.max_w
-        _rebalance(acct, bar.c, w, self.band)
+        w = _vol_weight(bar.hist, self.tv, self.lb, self.max_w)
+        if self.trend and not _above_ma(bar.hist, self.trend):
+            w = 0.0
+        _rebalance(acct, bar.o if self.at == "open" else bar.c, w, self.band)
+
+
+def _vol_weight(hist, tv, lb, max_w=1.0):
+    r = np.diff(np.log(hist[-lb - 1:]))
+    vol = r.std() * np.sqrt(252)
+    return min(max_w, tv / vol) if vol > 0 else max_w
 
 
 # ---------------------------------------------------------------- G. 고정비중 리밸런싱
 class Rebalance(Strategy):
     """TQQQ 비중 w 유지. 비중이 w±band 를 벗어나면 종가로 되돌린다 (현금은 cash_rate 이자)."""
 
-    def __init__(self, w=0.5, band=0.1):
-        self.w, self.band = w, band
-        self.name = f"리밸런싱(w{w:.0%},±{band:.0%})"
+    def __init__(self, w=0.5, band=0.1, at="close"):
+        self.w, self.band, self.at = w, band, at
+        self.name = f"리밸런싱(w{w:.0%},±{band:.0%}{',시가' if at == 'open' else ''})"
 
     def on_bar(self, acct, bar):
-        _rebalance(acct, bar.c, self.w, self.band if bar.i else 0)
+        _rebalance(acct, bar.o if self.at == "open" else bar.c, self.w, self.band if bar.i else 0)
 
 
 def _rebalance(acct, px, w, band):
