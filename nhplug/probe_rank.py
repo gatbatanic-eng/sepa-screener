@@ -1,4 +1,4 @@
-"""NHPLUG 전종목 순위 대체 가능성 점검. (python -m nhplug.probe_rank [sample|full|top])
+"""NHPLUG 전종목 순위 대체 가능성 점검. (python -m nhplug.probe_rank [sample|full|top|antc])
 NHPLUG에는 순위 조회가 없어(공개 명세 확인) 전종목 현재가(/krstock/quote/v1/currentPrice)를 직접 받아 순위를 만들 수 있는지 본다.
 조회 전용: 시세 경로(probe.ALLOWED)만 부르고 주문·계좌 경로는 코드에 없다. 토큰·키는 결과에 남기지 않는다.
 확인 대상: ① 거래비율(vol_rate)의 뜻 ② 예상체결가(antc_cnpr) 제공 여부 ③ 전종목 1회 소요 시간·유량 초과 ④ 종목 목록 출처
@@ -18,6 +18,7 @@ from . import probe
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "research" / "nhplug" / "probe" / "rank_probe.json"
+OUT_ANTC = ROOT / "research" / "nhplug" / "probe" / "rank_probe_antc.json"
 OUT_TOP = ROOT / "research" / "nhplug" / "probe" / "rank_probe_top.json"
 KST = dt.timezone(dt.timedelta(hours=9))
 PATH = "/krstock/quote/v1/currentPrice"
@@ -274,6 +275,36 @@ def main_top(pool_n=150):
     print(json.dumps({k: res[k] for k in ("stages", "turnoverAgreement", "rankAgreementWithinPool", "leakCheck", "dataStatus")}, ensure_ascii=False, indent=1))
 
 
+def main_antc(n=10, rounds=4, wait=180):
+    """종가 단일가 구간(15:20~15:30)의 예상체결가 필드 점검. 네이버 거래대금 상위 n종목만 순차(호출 간 1초) 조회한다.
+    정기 수집과 같은 앱 키를 쓰므로 호출량을 최소로 한다. rounds회를 wait초 간격으로 반복해 장중→단일가→마감 후 변화를 본다."""
+    tok = probe.token()
+    probe.GAP = 1.0
+    uni, source = universe()
+    codes = [c for c, _ in sorted(((r[0], r[3]) for r in uni if r[3]), key=lambda t: -t[1])[:n]]
+    res = {"ranAt": dt.datetime.now(KST).isoformat(), "scan": "antc", "universe": source, "codes": codes, "rounds": []}
+    for i in range(rounds):
+        if i:
+            time.sleep(wait)
+        rd = {"startedAt": dt.datetime.now(KST).isoformat(), "items": []}
+        for code in codes:
+            try:
+                r = probe.call(tok, PATH, {"market_cd": "KRX", "iem_cd": code})
+                d = r.get("data") or {}
+                o0, o2 = d.get("Output_0") or {}, d.get("Output_2") or {}
+                rd["items"].append({"code": code, "name": o0.get("iem_nm"), "http": r.get("http"), "rsp_cd": r.get("rsp_cd"), "price": o0.get("stck_prpr"),
+                                    "marketStatus": o0.get("market_status"), "hogaTime": o0.get("hoga_bsop_hour"), "ask1": o0.get("askp1"), "bid1": o0.get("bidp1"),
+                                    "output2": o2})
+            except Exception as e:  # noqa: BLE001
+                rd["items"].append({"code": code, "error": type(e).__name__})
+        rd["antcNonZero"] = sum(1 for x in rd["items"] if num((x.get("output2") or {}).get("antc_cnpr")))
+        rd["endedAt"] = dt.datetime.now(KST).isoformat()
+        res["rounds"].append(rd)
+        OUT_ANTC.parent.mkdir(parents=True, exist_ok=True)
+        OUT_ANTC.write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
+        print(rd["startedAt"], "antc 채워진 종목", rd["antcNonZero"], "/", len(codes), flush=True)
+
+
 if __name__ == "__main__":
     mode = sys.argv[1] if len(sys.argv) > 1 else "sample"
-    main_top() if mode == "top" else main(mode)
+    main_antc() if mode == "antc" else main_top() if mode == "top" else main(mode)
