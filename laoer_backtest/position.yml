@@ -10,7 +10,9 @@ ramp_weeks: 5
 ramp_start_weight: 0.267
 ramp_min_gap: 0.02
 
-# 전략 설정 (백테스트 추천값)
-target_vol: 0.35    # 목표 변동성
+# 전략 설정 (REFINE.md 후보 규칙, 2026-10-28 변경: 목표 35% → 40% + 추세 규칙)
+target_vol: 0.40    # 목표 변동성
+trend_rule: cross50_200  # 나스닥100 50일선이 200일선 아래면 비중 x trend_k
+trend_k: 0.5
 lookback: 20        # 실현변동성 계산 기간(거래일)
 band: 0.10          # 목표 비중과 이만큼(%p) 넘게 차이 날 때만 매매
