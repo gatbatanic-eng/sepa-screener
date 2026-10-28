@@ -1,4 +1,4 @@
-"""NHPLUG 전종목 순위 대체 가능성 점검. (python -m nhplug.probe_rank [sample|full])
+"""NHPLUG 전종목 순위 대체 가능성 점검. (python -m nhplug.probe_rank [sample|full|top])
 NHPLUG에는 순위 조회가 없어(공개 명세 확인) 전종목 현재가(/krstock/quote/v1/currentPrice)를 직접 받아 순위를 만들 수 있는지 본다.
 조회 전용: 시세 경로(probe.ALLOWED)만 부르고 주문·계좌 경로는 코드에 없다. 토큰·키는 결과에 남기지 않는다.
 확인 대상: ① 거래비율(vol_rate)의 뜻 ② 예상체결가(antc_cnpr) 제공 여부 ③ 전종목 1회 소요 시간·유량 초과 ④ 종목 목록 출처
@@ -9,13 +9,16 @@ import datetime as dt
 import json
 import statistics
 import sys
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from . import probe
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "research" / "nhplug" / "probe" / "rank_probe.json"
+OUT_TOP = ROOT / "research" / "nhplug" / "probe" / "rank_probe_top.json"
 KST = dt.timezone(dt.timedelta(hours=9))
 PATH = "/krstock/quote/v1/currentPrice"
 GAP = 0.22          # 명세 권고 0.2초 이상, 초당 5회 수준
@@ -161,5 +164,116 @@ def main(scan="sample"):
     print(json.dumps({k: res[k] for k in ("universe", "throughput", "dataStatus", "volRateDefinition", "rankCheck")}, ensure_ascii=False, indent=1))
 
 
+class Limiter:
+    """호출 시작 간격을 전체 스레드에 걸쳐 일정 이상으로 유지한다(명세: REST 초당 5회 수준)."""
+
+    def __init__(self, per_sec):
+        self.gap, self.lock, self.next = 1.0 / per_sec, threading.Lock(), 0.0
+
+    def wait(self):
+        with self.lock:
+            now = time.monotonic()
+            at = max(now, self.next)
+            self.next = at + self.gap
+        if at > now:
+            time.sleep(at - now)
+
+
+def run_stage(tok, codes, workers, lim):
+    def one(code):
+        lim.wait()
+        t = time.monotonic()
+        row, err = fetch(tok, code, "KRX")
+        return code, row, err, time.monotonic() - t
+
+    t0, start = time.monotonic(), dt.datetime.now(KST).isoformat()
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        out = list(ex.map(one, codes))
+    el = time.monotonic() - t0
+    lat = sorted(o[3] for o in out)
+    kinds = {}
+    for _, row, err, _ in out:
+        if not row:
+            k = f"{err.get('kind')}/{err.get('http')}/{err.get('rsp_cd')}/{err.get('rsp_msg')}"
+            kinds[k] = kinds.get(k, 0) + 1
+    ok = [o[1] for o in out if o[1]]
+    return ok, {"workers": workers, "requested": len(codes), "ok": len(ok), "failed": len(codes) - len(ok), "startedAt": start,
+                "elapsedSeconds": round(el, 1), "callsPerSecond": round(len(codes) / el, 2) if el else None,
+                "medianLatency": round(statistics.median(lat), 2) if lat else None, "p90Latency": round(lat[len(lat) * 9 // 10], 2) if lat else None,
+                "errorKinds": kinds}
+
+
+def spearman(a, b):
+    def ranks(v):
+        order = sorted(range(len(v)), key=lambda i: v[i])
+        r = [0.0] * len(v)
+        for pos, i in enumerate(order):
+            r[i] = pos
+        return r
+    ra, rb = ranks(a), ranks(b)
+    n = len(a)
+    if n < 5:
+        return None
+    ma, mb = sum(ra) / n, sum(rb) / n
+    cov = sum((x - ma) * (y - mb) for x, y in zip(ra, rb))
+    va, vb = sum((x - ma) ** 2 for x in ra), sum((x - mb) ** 2 for x in rb)
+    return round(cov / (va * vb) ** 0.5, 3) if va and vb else None
+
+
+def main_top(pool_n=150):
+    """네이버 거래대금 상위로 후보를 잡고(발견), NHPLUG로 확인한다. 병렬 호출 한도·거래대금 일치도·상위 밖 누락도 본다."""
+    tok = probe.token()
+    probe.GAP = 0.0
+    lim = Limiter(5.0)
+    res = {"ranAt": dt.datetime.now(KST).isoformat(), "scan": "top", "poolSize": pool_n, "limiterPerSecond": 5.0}
+    uni, source = universe()
+    nv = {r[0]: (r[1], r[3]) for r in uni if r[3]}
+    ranked = [c for c, _ in sorted(nv.items(), key=lambda kv: -kv[1][1])]
+    res["universe"] = {"source": source, "count": len(uni), "withAmount": len(nv)}
+    pool, leak = ranked[:pool_n], ranked[pool_n:pool_n + 250:5]
+    rows, stages = [], []
+    third = pool_n // 3
+    plan = [(3, pool[:third]), (5, pool[third:2 * third])]
+    for w, codes in plan:
+        ok, st = run_stage(tok, codes, w, lim)
+        rows += ok
+        stages.append(st)
+    clean = all(s["failed"] == 0 for s in stages)
+    w3 = 6 if clean else 3     # 앞 단계가 깨끗하면 6까지만 올린다(5/초 한도를 약간 넘는 수준에서 멈춤)
+    ok, st = run_stage(tok, pool[2 * third:], w3, lim)
+    rows += ok
+    stages.append(st)
+    ok, st = run_stage(tok, leak, 5, lim)
+    leak_rows = ok
+    st["purpose"] = "상위 밖 누락 점검(네이버 순위 151~400위 5개마다)"
+    stages.append(st)
+    res["stages"] = stages
+    # 거래대금 일치도(네이버 Amount ↔ NHPLUG acml_tr_pbmn 백만원)
+    pair = [(nv[r["code"]][1], r["tr"] * 1e6, r) for r in rows if r["tr"]]
+    ratios = sorted(b / a for a, b, _ in pair if a)
+    q = lambda f: round(ratios[int(len(ratios) * f)], 3) if ratios else None  # noqa: E731
+    res["turnoverAgreement"] = {"n": len(ratios), "nhOverNaverMedian": round(statistics.median(ratios), 3) if ratios else None, "p10": q(0.1), "p90": q(0.9)}
+    byn = sorted(pair, key=lambda t: -t[0])
+    byh = sorted(pair, key=lambda t: -t[1])
+    n50 = min(50, len(pair))
+    res["rankAgreementWithinPool"] = {"top50Overlap": len({t[2]["code"] for t in byn[:n50]} & {t[2]["code"] for t in byh[:n50]}),
+                                      "spearman": spearman([t[0] for t in pair], [t[1] for t in pair])}
+    # 상위 밖 누락: 풀의 50번째 거래대금보다 큰 종목이 풀 밖 표본에 있는가
+    thr = byh[n50 - 1][1] if n50 else None
+    above = [{"code": r["code"], "name": r["name"], "naverRank": ranked.index(r["code"]) + 1, "nhTurnoverWon": r["tr"] * 1e6, "pct": r["pct"]}
+             for r in leak_rows if thr and r["tr"] and r["tr"] * 1e6 >= thr]
+    res["leakCheck"] = {"sampled": len(leak_rows), "thresholdWonPoolTop50": thr, "sampledAboveThreshold": len(above), "items": above[:10]}
+    res["dataStatus"] = {"antcNonZero": sum(1 for r in rows if r["antcPrice"]), "antcSample": [{k: r[k] for k in ("code", "name", "price", "antcPrice", "antcVol")} for r in rows if r["antcPrice"]][:3],
+                         "alarm": sum(1 for r in rows if r["alarm"] not in (None, "", "0")), "overheat": sum(1 for r in rows if r["overheat"] not in (None, "", "0")),
+                         "groups": {g: sum(1 for r in rows if r["grp"] == g) for g in sorted({str(r["grp"]) for r in rows})},
+                         "latestHogaTime": max((str(r["hogaTime"]) for r in rows if r["hogaTime"]), default=None)}
+    res["tops"] = {"turnover": tops(rows, "tr", 30), "pctUp": tops([r for r in rows if (r["tr"] or 0) >= 5000], "pct", 15),
+                   "volRate": tops([r for r in rows if (r["tr"] or 0) >= 5000], "volRate", 15)}
+    OUT_TOP.write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
+    print("저장:", OUT_TOP)
+    print(json.dumps({k: res[k] for k in ("stages", "turnoverAgreement", "rankAgreementWithinPool", "leakCheck", "dataStatus")}, ensure_ascii=False, indent=1))
+
+
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else "sample")
+    mode = sys.argv[1] if len(sys.argv) > 1 else "sample"
+    main_top() if mode == "top" else main(mode)

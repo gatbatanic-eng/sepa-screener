@@ -12,9 +12,9 @@ on:
         options: [docs, quotes, kr_extra, rank]
         default: docs
       scan:
-        description: "rank 모드 범위: sample=약 100종목(약 1분), full=전종목(약 15분)"
+        description: "rank 모드 범위: sample=약 100종목(약 2분), full=전종목(약 70분 이상), top=네이버 거래대금 상위 150+표본 병렬 점검(약 2분)"
         type: choice
-        options: [sample, full]
+        options: [sample, full, top]
         default: sample
 
 permissions:
@@ -143,7 +143,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f research/nhplug/probe/rank_probe.json
+          git add -f research/nhplug/probe/rank_probe.json research/nhplug/probe/rank_probe_top.json
           git diff --cached --quiet && exit 0
           git commit -m "NHPLUG 순위 대체 점검 결과 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
           for i in 1 2 3; do
