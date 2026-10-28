@@ -78,6 +78,18 @@ class LaoerBacktestTest(unittest.TestCase):
         self.assertIsNone(after["ramp"])
         self.assertAlmostEqual(after["eff"], full["w"])
 
+    def test_signal_trend_rule_halves_weight_in_downtrend(self):
+        from laoer_backtest.signal import compute
+        closes = 100 * np.exp(np.cumsum(np.tile([0.03, -0.03], 15)))
+        pos = dict(shares=0, cash_usd=10000, target_vol=0.40, lookback=20, band=0.10,
+                   trend_rule="cross50_200", trend_k=0.5)
+        up = compute(pos, closes, index_closes=np.linspace(100, 200, 250))
+        down = compute(pos, closes, index_closes=np.linspace(200, 100, 250))
+        self.assertTrue(up["trend"]["up"])
+        self.assertFalse(down["trend"]["up"])
+        self.assertAlmostEqual(down["w"], up["w"] * 0.5)
+        self.assertAlmostEqual(compute(pos, closes)["w"], up["w"])  # 지수 데이터 없으면 규칙 미적용
+
 
 if __name__ == "__main__":
     unittest.main()

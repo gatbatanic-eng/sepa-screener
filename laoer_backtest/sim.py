@@ -76,6 +76,10 @@ class Bar:
     l: float
     c: float
     hist: np.ndarray = field(repr=False)
+    # 전일까지 고가·저가, 기초지수 종가(df 에 'U' 열이 있을 때). 모두 [:i] 로 잘려 있어 미래참조 없음
+    hist_h: np.ndarray = field(default=None, repr=False)
+    hist_l: np.ndarray = field(default=None, repr=False)
+    aux: np.ndarray = field(default=None, repr=False)
 
 
 def backtest(df, strategy, capital=10000.0, fee=0.0007, cash_rate=None, tax=None):
@@ -86,6 +90,7 @@ def backtest(df, strategy, capital=10000.0, fee=0.0007, cash_rate=None, tax=None
     acct = Account(capital, fee)
     closes = df["Close"].to_numpy(float)
     O, H, L = (df[k].to_numpy(float) for k in ("Open", "High", "Low"))
+    U = df["U"].to_numpy(float) if "U" in df else None
     cr = _series(cash_rate, df.index)
     fx = _series(tax.get("fx", 1.0), df.index) if tax else np.ones(len(df))
     eq = np.empty(len(df)); expo = np.empty(len(df))
@@ -100,7 +105,8 @@ def backtest(df, strategy, capital=10000.0, fee=0.0007, cash_rate=None, tax=None
             if due > acct.cash:
                 acct.sell((due - acct.cash) / (closes[i] * (1 - fee)), closes[i])
             acct.cash -= min(due, acct.cash)
-        strategy.on_bar(acct, Bar(dt, i, O[i], H[i], L[i], closes[i], closes[:i]))
+        strategy.on_bar(acct, Bar(dt, i, O[i], H[i], L[i], closes[i], closes[:i], H[:i], L[:i],
+                                  U[:i] if U is not None else None))
         eq[i] = acct.value(closes[i])
         expo[i] = acct.shares * closes[i] / eq[i] if eq[i] > 0 else 0
     res = pd.DataFrame({"equity": eq, "exposure": expo}, index=df.index)

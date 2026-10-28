@@ -1,4 +1,4 @@
-"""TQQQ 변동성조절 일일 주문 계산.
+"""TQQQ 변동성조절(+ 나스닥 50/200일선 추세 규칙) 일일 주문 계산.
 
   python -m laoer_backtest.signal [--price 현재가]
 
@@ -20,11 +20,18 @@ HERE = os.path.dirname(__file__)
 SIG = os.path.join(HERE, "signal")
 
 
-def compute(pos, closes, price=None, asof=None):
+def compute(pos, closes, price=None, asof=None, index_closes=None):
+    """index_closes: 나스닥100 종가 (추세 규칙용, 전일까지). 없거나 trend_rule 이 없으면 추세 규칙 미적용."""
     tv, lb, band = pos.get("target_vol", 0.35), pos.get("lookback", 20), pos.get("band", 0.10)
     r = np.diff(np.log(closes[-lb - 1:]))
     vol = r.std() * math.sqrt(252)
-    w = min(1.0, tv / vol) if vol > 0 else 1.0
+    w_vol = min(1.0, tv / vol) if vol > 0 else 1.0
+    trend = None
+    if pos.get("trend_rule") == "cross50_200" and index_closes is not None and len(index_closes) >= 200:
+        # 백테스트 VolTarget2(mom="cross"): 50일선 < 200일선이면 비중 x trend_k
+        ma50, ma200 = index_closes[-50:].mean(), index_closes[-200:].mean()
+        trend = dict(ma50=ma50, ma200=ma200, up=ma50 >= ma200, k=float(pos.get("trend_k", 0.5)))
+    w = w_vol * (1.0 if trend is None or trend["up"] else trend["k"])
     px = price or closes[-1]
     shares, cash = float(pos["shares"]), float(pos["cash_usd"])
     total = cash + shares * px
@@ -44,7 +51,7 @@ def compute(pos, closes, price=None, asof=None):
     def trig(x):
         return cash * x / (shares * (1 - x)) if shares > 0 and 0 < x < 1 else float("nan")
     lo = eff - (ramp["min_gap"] if ramp else band)
-    return dict(vol=vol, w=w, eff=eff, ramp=ramp, px=px, total=total, cur=cur, gap=gap, qty=qty,
+    return dict(vol=vol, w=w, w_vol=w_vol, trend=trend, eff=eff, ramp=ramp, px=px, total=total, cur=cur, gap=gap, qty=qty,
                 buy_below=trig(lo), sell_above=trig(w + band), band=band, tv=tv, lb=lb)
 
 
@@ -75,6 +82,11 @@ def render(s, asof, pos):
         f"- 오늘 할 일: {action}",
         f"- 기준가 ${s['px']:.2f} · 20일 변동성 {s['vol']:.1%} → 최종 목표 비중 **{s['w']:.1%}** (현재 {s['cur']:.1%})",
     ]
+    if s["trend"]:
+        t = s["trend"]
+        state = ("상승 추세 → 비중 그대로" if t["up"]
+                 else f"**하락 추세 → 비중 x{t['k']:g}** (변동성 기준 {s['w_vol']:.1%} → {s['w']:.1%})")
+        lines.append(f"- 추세: 나스닥 50일선 {t['ma50']:,.0f} / 200일선 {t['ma200']:,.0f} → {state}")
     if s["ramp"]:
         rp = s["ramp"]
         lines.append(f"- 분할 진입 {rp['k']}/{rp['K']}주차: 이번 주까지 맞출 비중 **{s['eff']:.1%}** "
@@ -103,7 +115,11 @@ def main():
     with open(os.path.join(HERE, "position.yml")) as f:
         pos = yaml.safe_load(f)
     df = D.load("TQQQ")
-    s = compute(pos, df["Close"].to_numpy(float), a.price, df.index[-1])
+    try:
+        ndx = D.load("NDX")["Close"].loc[:df.index[-1]].to_numpy(float)
+    except FileNotFoundError:
+        ndx = None
+    s = compute(pos, df["Close"].to_numpy(float), a.price, df.index[-1], ndx)
     md = render(s, df.index[-1], pos)
     os.makedirs(SIG, exist_ok=True)
     with open(os.path.join(SIG, "latest.md"), "w") as f:
