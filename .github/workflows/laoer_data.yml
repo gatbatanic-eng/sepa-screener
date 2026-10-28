@@ -1,0 +1,44 @@
+name: Laoer Backtest Data
+
+# 분할매수 백테스트용 일봉(TQQQ·QQQ·^NDX·환율)을 받아 laoer_backtest/data 에 커밋한다.
+# 기본 브랜치에 없어도 돌도록 이 파일·수집 스크립트가 바뀐 push 에서도 실행된다.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/laoer_data.yml
+      - laoer_backtest/fetch_data.py
+
+permissions:
+  contents: write
+
+concurrency:
+  group: laoer-data-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install pandas yfinance finance-datareader
+      - name: Fetch prices
+        run: python -m laoer_backtest.fetch_data
+      - name: Save data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add laoer_backtest/data
+          git diff --cached --quiet && exit 0
+          git commit -m "분할매수 백테스트 데이터 갱신 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+          for i in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && break
+            sleep $((i * 5))
+          done
