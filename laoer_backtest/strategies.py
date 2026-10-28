@@ -71,3 +71,140 @@ class LaoerV1(Strategy):
                     acct.buy(half, bar.c); self.spent += half
         elif self.qc:
             acct.sell(acct.shares / 4, bar.c)
+
+
+class LaoerX(LaoerV1):
+    """V1 확장판. 기본값이면 LaoerV1 과 같다.
+
+    cut: 'quarter'(V1 쿼터손절) / 'none'(소진 시 익절까지 보유) / 'all'(소진 시 전량 종가 손절, 사이클 종료)
+    trend: >0 이면 전일 종가가 그 기간 이평선 아래일 때 새 사이클을 시작하지 않는다 (진행 중인 사이클은 유지)
+    """
+
+    def __init__(self, n_split=40, target=0.10, big=0.10, cut="quarter", trend=0):
+        super().__init__(n_split, target, big, cut == "quarter")
+        self.cut, self.trend = cut, trend
+        self.name = f"라오어(n{n_split},tp{target:.1%},big{big:.0%},{cut}{f',MA{trend}' if trend else ''})"
+
+    def on_bar(self, acct, bar):
+        if self.cap is None:
+            self.cap = acct.cash
+        if acct.shares == 0 and self.trend and not _above_ma(bar.hist, self.trend):
+            self.cap = acct.cash  # 대기 중 붙은 이자를 다음 사이클 원금에 반영
+            return
+        if self.cut == "all" and acct.shares > 0 and acct.cash < self.cap / self.n / 2 - 1e-9 \
+                and bar.h < acct.avg * (1 + self.target):
+            acct.sell(acct.shares, bar.c)
+            pnl = acct.cash - self.cap
+            self._cycles.append(dict(start=self.start, end=bar.date, days=(bar.date - self.start).days,
+                                     ret=pnl / self.cap, used=self.spent / self.cap))
+            self.cap = acct.cash; self.spent = 0.0
+            return
+        super().on_bar(acct, bar)
+
+
+def _above_ma(hist, n):
+    return len(hist) < n or hist[-1] >= hist[-n:].mean()
+
+
+# ---------------------------------------------------------------- C. 가치평균법
+class ValueAvg(Strategy):
+    """every 거래일마다 주식 평가액 목표 = unit x k x (1+g)^k (k=회차). 부족분 매수, 초과분은 allow_sell 이면 매도.
+    n 회 이후에는 목표를 계속 (1+g) 씩 올리며 현금이 남아 있는 한 같은 규칙 유지."""
+
+    def __init__(self, every=21, n=40, g=0.01, allow_sell=True):
+        self.every, self.n, self.g, self.sell = every, n, g, allow_sell
+        self.name = f"가치평균({every}일,n{n},g{g:.1%}{',매도' if allow_sell else ''})"
+        self.unit = None; self.k = 0
+
+    def on_bar(self, acct, bar):
+        if self.unit is None:
+            self.unit = acct.cash / self.n
+        if bar.i % self.every:
+            return
+        self.k += 1
+        target = self.unit * min(self.k, self.n) * (1 + self.g) ** self.k
+        gap = target - acct.shares * bar.c
+        if gap > 0:
+            acct.buy(gap, bar.c)
+        elif self.sell and gap < 0:
+            acct.sell(-gap / bar.c, bar.c)
+
+
+# ---------------------------------------------------------------- D. 하락 가중 분할
+class DipWeighted(Strategy):
+    """every 거래일마다 기본 1회분(초기현금/n) x 배수 매수. 배수는 전일 종가의 252일 고점 대비 낙폭 구간으로 정한다.
+    tiers: ((낙폭하한, 배수), ...) 예) ((0, 1), (0.2, 2), (0.4, 3), (0.6, 4))"""
+
+    def __init__(self, every=5, n=80, tiers=((0, 1), (0.2, 2), (0.4, 3), (0.6, 4)), lookback=252):
+        self.every, self.n, self.tiers, self.lb = every, n, tiers, lookback
+        self.name = f"하락가중({every}일,n{n},{'/'.join(str(m) for _, m in tiers)})"
+        self.unit = None
+
+    def on_bar(self, acct, bar):
+        if self.unit is None:
+            self.unit = acct.cash / self.n
+        if bar.i % self.every or acct.cash <= 1e-9:
+            return
+        h = bar.hist[-self.lb:]
+        dd = 1 - h[-1] / h.max() if len(h) else 0
+        mult = max(m for lo, m in self.tiers if dd >= lo)
+        acct.buy(self.unit * mult, bar.c)
+
+
+# ---------------------------------------------------------------- E. 추세 필터
+class TrendHold(Strategy):
+    """전일 종가가 ma 이평선 x (1+band) 위면 전액 보유, x (1-band) 아래면 전액 현금. 체결은 당일 시가."""
+
+    def __init__(self, ma=200, band=0.0):
+        self.ma, self.band = ma, band
+        self.name = f"추세보유(MA{ma}{f',±{band:.0%}' if band else ''})"
+
+    def on_bar(self, acct, bar):
+        if len(bar.hist) < self.ma:
+            return
+        m = bar.hist[-self.ma:].mean(); p = bar.hist[-1]
+        if acct.shares == 0 and p > m * (1 + self.band):
+            acct.buy(acct.cash, bar.o)
+        elif acct.shares > 0 and p < m * (1 - self.band):
+            acct.sell(acct.shares, bar.o)
+
+
+# ---------------------------------------------------------------- F. 변동성 조절
+class VolTarget(Strategy):
+    """목표 비중 = min(max_w, target_vol / 최근 lb일 실현변동성). 비중 차이가 band 넘으면 종가 리밸런싱."""
+
+    def __init__(self, target_vol=0.4, lb=20, band=0.1, max_w=1.0):
+        self.tv, self.lb, self.band, self.max_w = target_vol, lb, band, max_w
+        self.name = f"변동성조절(목표{target_vol:.0%},{lb}일)"
+
+    def on_bar(self, acct, bar):
+        if len(bar.hist) <= self.lb:
+            return
+        r = np.diff(np.log(bar.hist[-self.lb - 1:]))
+        vol = r.std() * np.sqrt(252)
+        w = min(self.max_w, self.tv / vol) if vol > 0 else self.max_w
+        _rebalance(acct, bar.c, w, self.band)
+
+
+# ---------------------------------------------------------------- G. 고정비중 리밸런싱
+class Rebalance(Strategy):
+    """TQQQ 비중 w 유지. 비중이 w±band 를 벗어나면 종가로 되돌린다 (현금은 cash_rate 이자)."""
+
+    def __init__(self, w=0.5, band=0.1):
+        self.w, self.band = w, band
+        self.name = f"리밸런싱(w{w:.0%},±{band:.0%})"
+
+    def on_bar(self, acct, bar):
+        _rebalance(acct, bar.c, self.w, self.band if bar.i else 0)
+
+
+def _rebalance(acct, px, w, band):
+    val = acct.value(px)
+    cur = acct.shares * px / val if val > 0 else 0
+    if abs(cur - w) <= band and cur > 0:
+        return
+    diff = w * val - acct.shares * px
+    if diff > 0:
+        acct.buy(diff, px)
+    elif diff < 0:
+        acct.sell(-diff / px, px)
