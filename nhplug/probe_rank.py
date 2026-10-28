@@ -1,4 +1,4 @@
-"""NHPLUG 전종목 순위 대체 가능성 점검. (python -m nhplug.probe_rank [sample|full|top|antc])
+"""NHPLUG 전종목 순위 대체 가능성 점검. (python -m nhplug.probe_rank [sample|full|top|antc|cand 코드,코드,...])
 NHPLUG에는 순위 조회가 없어(공개 명세 확인) 전종목 현재가(/krstock/quote/v1/currentPrice)를 직접 받아 순위를 만들 수 있는지 본다.
 조회 전용: 시세 경로(probe.ALLOWED)만 부르고 주문·계좌 경로는 코드에 없다. 토큰·키는 결과에 남기지 않는다.
 확인 대상: ① 거래비율(vol_rate)의 뜻 ② 예상체결가(antc_cnpr) 제공 여부 ③ 전종목 1회 소요 시간·유량 초과 ④ 종목 목록 출처
@@ -18,6 +18,7 @@ from . import probe
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "research" / "nhplug" / "probe" / "rank_probe.json"
+OUT_CAND = ROOT / "research" / "nhplug" / "probe" / "rank_probe_cand.json"
 OUT_ANTC = ROOT / "research" / "nhplug" / "probe" / "rank_probe_antc.json"
 OUT_TOP = ROOT / "research" / "nhplug" / "probe" / "rank_probe_top.json"
 KST = dt.timezone(dt.timedelta(hours=9))
@@ -305,6 +306,86 @@ def main_antc(n=10, rounds=4, wait=180):
         print(rd["startedAt"], "antc 채워진 종목", rd["antcNonZero"], "/", len(codes), flush=True)
 
 
+def signed(o0):
+    """등락률은 부호 없는 절댓값으로 온다. 등락부호(prdy_vrss_sign) 4·5·8·9는 하락."""
+    v = num(o0.get("prdy_ctrt"))
+    if v is None:
+        return None
+    return -v if str(o0.get("prdy_vrss_sign")) in ("4", "5", "8", "9") else v
+
+
+def cand_one(tok, code, lim):
+    """후보 한 종목: KRX·NXT 현재가(부호 반영), 투자자 30일(프로그램 포함), 일봉 260개(뉴스 건수 포함)에서 가격 구조를 계산한다."""
+    out = {"code": code}
+    today = dt.datetime.now(KST).strftime("%Y%m%d")
+
+    def call(path, body):
+        lim.wait()
+        return probe.call(tok, path, body)
+
+    try:
+        d = (call(PATH, {"market_cd": "KRX", "iem_cd": code}).get("data") or {})
+        o0, o2 = d.get("Output_0") or {}, d.get("Output_2") or {}
+        out["krx"] = {"name": o0.get("iem_nm"), "group": o0.get("scrt_grp_isnm"), "market": o0.get("mrkt_div_isnm"), "sector": o0.get("bstp_kor_isnm"),
+                      "price": num(o0.get("stck_prpr")), "pct": signed(o0), "turnoverMillion": num(o0.get("acml_tr_pbmn")), "volRate": num(o0.get("vol_rate")),
+                      "w52High": num(o0.get("w52_hgpr")), "d20High": num(o0.get("d20_hgpr")), "capEok": num(o0.get("hts_avls")), "alarm": o0.get("mrkt_alrm_code"),
+                      "overheat": o0.get("short_over_code"), "limitUp": num(o0.get("stck_mxpr")), "status": o0.get("market_status"),
+                      "seln1": o0.get("seln_mbcr_name1"), "shnu1": o0.get("shnu_mbcr_name1"), "frgnHoldRate": num(o0.get("for_rate"))}
+    except Exception as e:  # noqa: BLE001
+        out["krx"] = {"error": type(e).__name__}
+    try:
+        r = call(PATH, {"market_cd": "NXT", "iem_cd": code})
+        d = r.get("data") or {}
+        o0 = d.get("Output_0")
+        out["nxt"] = ({"price": num(o0.get("stck_prpr")), "pct": signed(o0), "turnoverMillion": num(o0.get("acml_tr_pbmn")), "vol": num(o0.get("acml_vol")),
+                       "status": o0.get("market_status"), "hogaTime": o0.get("hoga_bsop_hour"), "ask1": num(o0.get("askp1")), "bid1": num(o0.get("bidp1"))}
+                      if isinstance(o0, dict) and num(o0.get("stck_prpr")) is not None else {"unavailable": str(r.get("rsp_msg"))[:40]})
+    except Exception as e:  # noqa: BLE001
+        out["nxt"] = {"error": type(e).__name__}
+    try:
+        r = call("/krstock/quote/v1/currentInvestor", {"market_cd": "KRX", "iem_cd": code, "array_cnt": "030"})
+        rows_ = (r.get("data") or {}).get("Output_0") or []
+        out["investor"] = [{"date": x.get("bsop_date1"), "close": num(x.get("stck_prpr")), "vol": num(x.get("acml_vol")), "frgn": num(x.get("invest")),
+                            "inst": num(x.get("gigwan")), "indiv": num(x.get("person")), "program": num(x.get("program"))} for x in rows_[:20]]
+    except Exception as e:  # noqa: BLE001
+        out["investor"] = {"error": type(e).__name__}
+    try:
+        mk = "1" if "코스피" in str((out.get("krx") or {}).get("market")) else "4"
+        r = call("/krstock/quote/v1/period", {"market_cd": "KRX", "iem_cd": code, "mrkt_div_cls_code": mk, "edate": today, "array_cnt": "0260", "maxavg": "000",
+                                               "gubun": "1", "xtick": "000", "today_cls_code": "0", "fake_tick": "1", "sur_flag": "0", "sur_gb_day_cnt": "00",
+                                               "sur_bf_end_time": "", "out1_scale_change": "0", "out2_scale_change": "0", "view_main_yn": "Y"})
+        bars = (r.get("data") or {}).get("Output_1") or []
+        cl = [num(b.get("stck_prpr")) for b in bars]
+        hi = [num(b.get("stck_hgpr")) for b in bars]
+        tr = [num(b.get("tr_pbmn")) for b in bars]
+        out["bars"] = {"n": len(bars), "latest": bars[0].get("bsop_date") if bars else None, "oldest": bars[-1].get("bsop_date") if bars else None,
+                       "close": cl[0] if cl else None, "high250": max((h for h in hi if h), default=None) if len(bars) >= 240 else None,
+                       "high250Note": None if len(bars) >= 240 else f"일봉 {len(bars)}개뿐(상장 이후 최고가)",
+                       "high250IfShort": max((h for h in hi if h), default=None),
+                       "close20ago": cl[20] if len(cl) > 20 else None, "close60ago": cl[60] if len(cl) > 60 else None,
+                       "turnover20avgMillion": round(sum(t for t in tr[1:21] if t) / max(1, len([t for t in tr[1:21] if t])), 1) if len(tr) > 1 else None,
+                       "newsCnt": [b.get("news_cnt") for b in bars[:5]], "last5": [{"d": b.get("bsop_date"), "c": num(b.get("stck_prpr")), "tr": num(b.get("tr_pbmn"))} for b in bars[:5]]}
+    except Exception as e:  # noqa: BLE001
+        out["bars"] = {"error": type(e).__name__}
+    return out
+
+
+def main_cand(codes):
+    tok = probe.token()
+    probe.GAP = 0.0
+    lim = Limiter(4.0)
+    t0 = time.monotonic()
+    with ThreadPoolExecutor(max_workers=4) as ex:
+        res = list(ex.map(lambda c: cand_one(tok, c, lim), codes))
+    OUT_CAND.parent.mkdir(parents=True, exist_ok=True)
+    OUT_CAND.write_text(json.dumps({"ranAt": dt.datetime.now(KST).isoformat(), "elapsedSeconds": round(time.monotonic() - t0, 1), "codes": codes, "items": res},
+                                   ensure_ascii=False, indent=1), encoding="utf-8")
+    print("저장:", OUT_CAND, f"{len(res)}종목 {time.monotonic() - t0:.0f}초")
+
+
 if __name__ == "__main__":
     mode = sys.argv[1] if len(sys.argv) > 1 else "sample"
-    main_antc() if mode == "antc" else main_top() if mode == "top" else main(mode)
+    if mode == "cand":
+        main_cand([c.strip() for c in (sys.argv[2] if len(sys.argv) > 2 else "").split(",") if c.strip()])
+    else:
+        main_antc() if mode == "antc" else main_top() if mode == "top" else main(mode)
