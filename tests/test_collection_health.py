@@ -2,7 +2,7 @@ import unittest
 import subprocess
 from unittest.mock import patch
 from datetime import datetime, timezone
-from collection_health import route, latest_closed_session
+from collection_health import route, latest_closed_session, caught_up
 
 class CollectionHealthTests(unittest.TestCase):
     def test_source_provenance_uses_checkout_not_delayed_event(self):
@@ -20,6 +20,13 @@ class CollectionHealthTests(unittest.TestCase):
     def test_source_failure_is_not_a_holiday_and_unknown_cron_is_not_us(self):
         self.assertTrue(route('schedule','0 11 * * 1-5','','',{'KR':None,'US':'2026-10-05'},{'US':'2026-10-05'})['needed'])
         with self.assertRaises(ValueError):route('schedule','wrong','','',{}, {})
+    def test_saved_session_ahead_of_lagging_index_is_caught_up(self):
+        self.assertTrue(caught_up('2026-10-27', '2026-10-26'))
+        self.assertTrue(caught_up('2026-10-26', '2026-10-26'))
+        self.assertFalse(caught_up('2026-10-23', '2026-10-26'))
+        self.assertFalse(caught_up(None, '2026-10-26'))
+        plan = route('schedule', '0 11 * * 1-5', '', '', {'KR': '2026-10-26', 'US': '2026-10-26'}, {'KR': '2026-10-27', 'US': '2026-10-26'})
+        self.assertFalse(plan['needed'])
     def test_manual_market_is_preserved(self):
         self.assertEqual(route('workflow_dispatch','','KR','',{}, {})['markets'],['KR'])
         self.assertEqual(route('push','','','fix [run-kr]',{}, {})['markets'],['KR'])

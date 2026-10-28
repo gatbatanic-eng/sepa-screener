@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import http.client
 import json
 import math
 import os
@@ -20,6 +21,7 @@ import urllib.request
 
 KST = dt.timezone(dt.timedelta(hours=9))
 HOST = "https://api.nhplug.com:8443"
+MAX_ATTEMPTS = 4  # 단발성 연결 끊김으로 수 시간짜리 수집이 통째로 죽지 않게
 ALLOWED = {"/krstock/quote/v1/currentPrice", "/krstock/quote/v1/currentExecution",
            "/krstock/quote/v1/currentInvestor", "/krstock/quote/v1/period"}
 ROOT = Path(__file__).resolve().parent.parent
@@ -86,11 +88,13 @@ class Client:
     def call(self, path, body):
         if path not in ALLOWED:
             raise ValueError("Read-only endpoint not allowed")
-        for attempt in range(2):
+        refreshed = False
+        for attempt in range(MAX_ATTEMPTS):
             time.sleep(0.35)
             req = urllib.request.Request(HOST + path,
                 data=json.dumps({"Input_0": body}).encode(), method="POST",
                 headers={"Authorization": "Bearer " + self.token(), "Content-Type": "application/json"})
+            last = attempt == MAX_ATTEMPTS - 1
             try:
                 with urllib.request.urlopen(req, timeout=12) as response:
                     data = json.load(response)
@@ -98,17 +102,20 @@ class Client:
                     raise DataError("API response is not an object")
                 return data
             except urllib.error.HTTPError as exc:
-                if exc.code == 401 and attempt == 0:
+                if exc.code == 401 and not refreshed:
+                    refreshed = True
                     self.access_token = None
                     self.expires_at = 0
                     continue
-                if exc.code == 429 and attempt < 1:
+                if (exc.code == 429 or exc.code >= 500) and not last:
                     time.sleep(2 ** (attempt + 1))
                     continue
                 raise DataError("API HTTP " + str(exc.code)) from None
-            except (urllib.error.URLError, TimeoutError, json.JSONDecodeError):
-                if attempt == 1:
+            # RemoteDisconnected·BrokenPipe·ConnectionReset 등은 URLError가 아니라 OSError/HTTPException으로 나온다.
+            except (urllib.error.URLError, OSError, http.client.HTTPException, json.JSONDecodeError):
+                if last:
                     raise DataError("API network/JSON failure") from None
+                time.sleep(2 ** (attempt + 1))
         raise DataError("API retries exhausted")
 
 
