@@ -9,8 +9,8 @@ from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parent
-SCHEDULES = {'0 11 * * 1-5': 'KR', '35 11 * * 1-5': 'KR', '35 12 * * 1-5': 'KR', '0 5 * * 2-6': 'US', '35 5 * * 2-6': 'US'}
-PLAN_LABELS = {'KR': '평일 20:00 목표 · 보완 확인 20:35/21:35 KST', 'US': '화~토 14:00 목표 · 보완 확인 14:35 KST'}
+SCHEDULES = {'7 11 * * 1-5': 'KR', '43 11 * * 1-5': 'KR', '39 12 * * 1-5': 'KR', '7 5 * * 2-6': 'US', '43 5 * * 2-6': 'US'}
+PLAN_LABELS = {'KR': '평일 20:07 목표 · 보완 확인 20:43/21:39 KST', 'US': '화~토 14:07 목표 · 보완 확인 14:43 KST'}
 
 def latest_closed_session(payload, market, now):
     zone = ZoneInfo('Asia/Seoul' if market == 'KR' else 'America/New_York')

@@ -2,8 +2,8 @@ name: RANGE-MR / V-REBOUND Daily Screening
 
 on:
   schedule:
-    # 평일(월~금) 20:30 KST = UTC 11:30 — SEPA 스크리너(20:00 KST)와 겹치지 않게 30분 뒤로 뺐다.
-    - cron: "30 11 * * 1-5"
+    # 평일(월~금) 20:21 KST = UTC 11:21 — SEPA 스크리너(20:07 KST)와 겹치지 않게 뒤로 뺐고, 붐비는 분을 피했다.
+    - cron: "21 11 * * 1-5"
   workflow_dispatch:
     inputs:
       limit:

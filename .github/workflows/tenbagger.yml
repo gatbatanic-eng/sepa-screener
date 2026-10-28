@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   schedule:
     # 미국 정규장 종료 뒤: 화~토 08:30 KST
-    - cron: "30 23 * * 1-5"
+    - cron: "41 23 * * 1-5"
   push:
     branches: [master]
     paths:

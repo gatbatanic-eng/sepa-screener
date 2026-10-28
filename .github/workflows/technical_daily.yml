@@ -2,10 +2,10 @@ name: Technical Signals Daily Screening
 
 on:
   schedule:
-    # 한국: 평일 20:45 KST = UTC 11:45 (SEPA 20:00, RANGE-MR 20:30, 멀티팩터 21:00과 겹치지 않게 뒤로 뺐다)
-    - cron: "45 11 * * 1-5"
-    # 미국: 평일 07:45 KST(전날 장마감 후) = UTC 22:45 (SEPA 07:00, 멀티팩터 07:30과 겹치지 않게)
-    - cron: "45 22 * * 1-5"
+    # 한국: 평일 20:53 KST = UTC 11:53 (SEPA 20:07, RANGE-MR 20:21, 멀티팩터 21:13과 겹치지 않게, 붐비는 분 회피)
+    - cron: "53 11 * * 1-5"
+    # 미국: 평일 07:53 KST(전날 장마감 후) = UTC 22:53 (멀티팩터 07:19와 겹치지 않게)
+    - cron: "53 22 * * 1-5"
   workflow_dispatch:
     inputs:
       market:
@@ -52,7 +52,7 @@ jobs:
         id: market
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
-            if [ "${{ github.event.schedule }}" = "45 11 * * 1-5" ]; then
+            if [ "${{ github.event.schedule }}" = "53 11 * * 1-5" ]; then
               echo "market=KR" >> "$GITHUB_OUTPUT"
             else
               echo "market=US" >> "$GITHUB_OUTPUT"

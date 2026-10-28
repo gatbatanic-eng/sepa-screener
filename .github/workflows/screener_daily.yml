@@ -2,10 +2,10 @@ name: Multi-Factor Screener Daily
 
 on:
   schedule:
-    # 한국장 마감 후: 평일 21:00 KST = UTC 12:00 (SEPA 20:00 / range_vrebound 20:30 과 겹치지 않게)
-    - cron: "0 12 * * 1-5"
-    # 미국장 마감 후: 평일 UTC 22:30 (= KST 07:30 익일)
-    - cron: "30 22 * * 1-5"
+    # 한국장 마감 후: 평일 21:13 KST = UTC 12:13 (SEPA 20:07 / range_vrebound 20:21 과 겹치지 않게, 붐비는 분 회피)
+    - cron: "13 12 * * 1-5"
+    # 미국장 마감 후: 평일 UTC 22:19 (= KST 07:19 익일)
+    - cron: "19 22 * * 1-5"
   workflow_dispatch:
     inputs:
       market:
