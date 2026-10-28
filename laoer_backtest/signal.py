@@ -87,8 +87,9 @@ def render(s, asof, pos):
     if s["qty"]:
         lines.append(f"- 체결 후 position.yml: shares {after_sh}, cash_usd {after_cash:,.0f} (실제 체결가로 고쳐 주세요)")
     else:
-        lines.append(f"- 참고: 가격이 ${s['buy_below']:.2f} 아래면 매수, ${s['sell_above']:.2f} 위면 매도 구간 "
-                     f"(목표 비중이 그대로일 때)")
+        sell = (f"${s['sell_above']:.2f} 위면 매도 구간" if s["sell_above"] < 2 * s["px"]
+                else "가격만으로는 매도 신호 없음(변동성이 오르면 매도)")
+        lines.append(f"- 참고: 가격이 ${s['buy_below']:.2f} 아래면 매수, {sell} (목표 비중이 그대로일 때)")
     if s["ramp"] and s["qty"] >= 0:
         lines.append("- 이번 주 매수를 했다면 같은 주에는 추가 매수 신호가 거의 나오지 않습니다 (position.yml 갱신 기준).")
     lines += ["", "주문은 다음 거래일 시가(또는 종가 LOC) 근처 체결을 가정한 백테스트 규칙입니다. 투자 권유가 아닙니다."]
