@@ -1,0 +1,65 @@
+name: TQQQ Vol-Target Signal
+
+# 매일 미국장 마감 후(07:10 KST) TQQQ 일봉을 받아 변동성조절 주문 수량을 계산하고
+# laoer_backtest/signal/latest.md 에 커밋, "TQQQ 변동성조절 일일 신호" 이슈에 댓글로 알린다.
+# position.yml 을 고치면 그 자리에서 다시 계산한다.
+# schedule 은 기본 브랜치에 병합된 뒤부터 동작한다.
+on:
+  schedule:
+    - cron: "10 22 * * 1-5"
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/laoer_signal.yml
+      - laoer_backtest/signal.py
+      - laoer_backtest/position.yml
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: laoer-signal-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  signal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install pandas numpy pyyaml yfinance finance-datareader
+      - name: Fetch prices
+        run: python -m laoer_backtest.fetch_data
+      - name: Compute signal
+        run: python -m laoer_backtest.signal
+      - name: Save
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add laoer_backtest/data laoer_backtest/signal
+          git diff --cached --quiet && exit 0
+          git commit -m "TQQQ 변동성조절 신호 ($(date -u +%Y-%m-%d))"
+          for i in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && break
+            sleep $((i * 5))
+          done
+      - name: Notify issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="TQQQ 변동성조절 일일 신호"
+          num=$(gh issue list --state open --search "in:title $title" --json number,title \
+                -q "map(select(.title == \"$title\")) | .[0].number")
+          if [ -z "$num" ]; then
+            num=$(gh issue create --title "$title" \
+                  --body "매일 07:10 KST 신호를 이 이슈에 댓글로 남깁니다. 이 이슈를 구독하면 휴대폰으로 알림을 받습니다. 계좌가 바뀌면 laoer_backtest/position.yml 을 수정하세요." \
+                  | grep -oE '[0-9]+$')
+          fi
+          gh issue comment "$num" --body-file laoer_backtest/signal/latest.md
