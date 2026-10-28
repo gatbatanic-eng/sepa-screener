@@ -1,14 +1,37 @@
 {
  "schemaVersion": 1,
- "generatedAt": "2026-10-28T06:54:55.832537+00:00",
+ "generatedAt": "2026-10-28T14:31:53.592393+00:00",
  "latest": {
   "kr": {
    "market": "kr",
    "regime": "RED",
    "gate": "비우호적",
-   "candidates": 74,
-   "suitable": 10,
+   "candidates": 77,
+   "suitable": 9,
    "picks": [
+    {
+     "code": "355150",
+     "name": "코스텍시스",
+     "market": "KOSDAQ",
+     "price": 14940.0,
+     "score": 3,
+     "strategies": {
+      "funnel": 18,
+      "rebound": [
+       "REB_WATCH"
+      ]
+     },
+     "funnelRank": 18,
+     "entry": {
+      "riskPct": 2.81,
+      "riskSource": "SEPA",
+      "verdict": null,
+      "chase": [],
+      "liquidityOk": true,
+      "zone": "SETUP"
+     },
+     "reject": null
+    },
     {
      "code": "005950",
      "name": "이수화학",
@@ -20,7 +43,7 @@
      },
      "funnelRank": 5,
      "entry": {
-      "riskPct": 1.23,
+      "riskPct": 3.94,
       "riskSource": "SEPA",
       "verdict": null,
       "chase": [],
@@ -48,32 +71,11 @@
       "zone": null
      },
      "reject": null
-    },
-    {
-     "code": "123890",
-     "name": "한국자산신탁",
-     "market": "KOSPI",
-     "price": 2245.0,
-     "score": 2,
-     "strategies": {
-      "funnel": 20
-     },
-     "funnelRank": 20,
-     "entry": {
-      "riskPct": 5.13,
-      "riskSource": "기술적",
-      "verdict": null,
-      "chase": [],
-      "liquidityOk": null,
-      "zone": null
-     },
-     "reject": null
     }
    ],
    "rejectSummary": {
-    "손절폭 8% 초과": 58,
-    "손절폭 0 이하(계산 불가)": 5,
-    "SEPA 진입 NO-GO": 1
+    "손절폭 8% 초과": 66,
+    "손절폭 0 이하(계산 불가)": 2
    },
    "shortfall": null,
    "session": "2026-10-26",
@@ -83,10 +85,12 @@
     "323350": 12370.0,
     "005930": 222000.0,
     "136150": 7860.0,
-    "089860": 50000.0,
-    "031980": 170300.0,
-    "425420": 76200.0,
-    "028050": 62800.0,
+    "089860": 52600.0,
+    "131290": 278500.0,
+    "031980": 194700.0,
+    "053800": 111600.0,
+    "425420": 84800.0,
+    "028050": 63400.0,
     "032580": 7080.0,
     "049550": 3420.0,
     "396470": 6040.0,
@@ -132,26 +136,27 @@
     "059100": 7200.0,
     "039200": 35900.0,
     "024740": 2060.0,
-    "003350": 15320.0,
-    "012030": 2380.0,
-    "059090": 22050.0,
-    "080580": 26900.0,
-    "086450": 24200.0,
-    "091580": 26550.0,
+    "003350": 15000.0,
+    "042510": 19280.0,
+    "012030": 2555.0,
     "071200": 10420.0,
-    "052460": 6740.0,
-    "159010": 29850.0,
-    "064290": 58000.0,
-    "077500": 11990.0,
-    "351320": 5380.0,
-    "217190": 8270.0,
-    "219130": 96500.0,
+    "091580": 27200.0,
+    "144960": 15420.0,
+    "252990": 17890.0,
+    "077500": 11330.0,
+    "052460": 7140.0,
+    "064290": 64700.0,
+    "159010": 31700.0,
+    "059090": 26000.0,
+    "080580": 30000.0,
+    "219130": 103900.0,
+    "351320": 5390.0,
+    "078350": 41150.0,
+    "098120": 54200.0,
     "051160": 12930.0,
-    "144960": 14940.0,
-    "092870": 58000.0,
-    "042510": 18160.0,
-    "396300": 9520.0,
-    "078350": 38200.0
+    "217190": 8960.0,
+    "092870": 68000.0,
+    "396300": 9030.0
    },
    "directComputed": [],
    "entryUnknown": 0,
@@ -163,6 +168,107 @@
    },
    "picksV2": [
     {
+     "code": "355150",
+     "name": "코스텍시스",
+     "market": "KOSDAQ",
+     "price": 14940.0,
+     "score": 3,
+     "strategies": {
+      "funnel": 18,
+      "rebound": [
+       "REB_WATCH"
+      ]
+     },
+     "funnelRank": 18,
+     "entry": {
+      "riskPct": 2.81,
+      "riskSource": "SEPA",
+      "verdict": null,
+      "chase": [],
+      "liquidityOk": true,
+      "zone": "SETUP"
+     },
+     "v2": {
+      "score": 3,
+      "sector": "전기·전자",
+      "sectorAdj": 1,
+      "marketAdj": -1
+     },
+     "why": [
+      {
+       "kind": "strategy",
+       "text": "실적 턴어라운드 18위, 반등관찰 선정 (v1 점수 3)"
+      },
+      {
+       "kind": "entry",
+       "text": "손절폭 2.81%(SEPA), 추격·NO-GO·유동성 조건 통과"
+      },
+      {
+       "kind": "sector",
+       "text": "업종 전기·전자 강세: 50일선 위 41%, 평균 RS 64, 18개 업종 중 3위 (점수 +1)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 KOSDAQ RED (점수 -1)"
+      },
+      {
+       "kind": "consensus",
+       "text": "컨센서스(네이버, 10/28): 2026년 EPS 추정 539원 (참고, 점수 아님)"
+      },
+      {
+       "kind": "macro",
+       "text": "매크로 리스크오프 (VIX 17.5, 달러지수 102.3, 원/달러 1,331, 미 10년 5.00%) — 참고, 점수 아님"
+      }
+     ]
+    },
+    {
+     "code": "093190",
+     "name": "빅솔론",
+     "market": "KOSDAQ",
+     "price": 7830.0,
+     "score": 2,
+     "strategies": {
+      "funnel": 46
+     },
+     "funnelRank": 46,
+     "entry": {
+      "riskPct": 7.83,
+      "riskSource": "기술적",
+      "verdict": null,
+      "chase": [],
+      "liquidityOk": null,
+      "zone": null
+     },
+     "v2": {
+      "score": 2,
+      "sector": "전기·전자",
+      "sectorAdj": 1,
+      "marketAdj": -1
+     },
+     "why": [
+      {
+       "kind": "strategy",
+       "text": "실적 턴어라운드 46위 선정 (v1 점수 2)"
+      },
+      {
+       "kind": "entry",
+       "text": "손절폭 7.83%(기술적), 추격·NO-GO·유동성 조건 통과"
+      },
+      {
+       "kind": "sector",
+       "text": "업종 전기·전자 강세: 50일선 위 41%, 평균 RS 64, 18개 업종 중 3위 (점수 +1)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 KOSDAQ RED (점수 -1)"
+      },
+      {
+       "kind": "macro",
+       "text": "매크로 리스크오프 (VIX 17.5, 달러지수 102.3, 원/달러 1,331, 미 10년 5.00%) — 참고, 점수 아님"
+      }
+     ]
+    },
+    {
      "code": "005950",
      "name": "이수화학",
      "market": "KOSPI",
@@ -173,7 +279,7 @@
      },
      "funnelRank": 5,
      "entry": {
-      "riskPct": 1.23,
+      "riskPct": 3.94,
       "riskSource": "SEPA",
       "verdict": null,
       "chase": [],
@@ -193,11 +299,11 @@
       },
       {
        "kind": "entry",
-       "text": "손절폭 1.23%(SEPA), 추격·NO-GO·유동성 조건 통과"
+       "text": "손절폭 3.94%(SEPA), 추격·NO-GO·유동성 조건 통과"
       },
       {
        "kind": "sector",
-       "text": "업종 화학 중간: 50일선 위 20%, 평균 RS 43, 17개 업종 중 12위 (점수 +0)"
+       "text": "업종 화학 중간: 50일선 위 24%, 평균 RS 42, 18개 업종 중 12위 (점수 +0)"
       },
       {
        "kind": "market",
@@ -212,90 +318,54 @@
        "text": "매크로 리스크오프 (VIX 17.5, 달러지수 102.3, 원/달러 1,331, 미 10년 5.00%) — 참고, 점수 아님"
       }
      ]
-    },
+    }
+   ],
+   "picksV3": [
     {
-     "code": "009160",
-     "name": "SIMPAC",
-     "market": "KOSPI",
-     "price": 4440.0,
-     "score": 2,
-     "strategies": {
-      "funnel": 12
-     },
-     "funnelRank": 12,
-     "entry": {
-      "riskPct": 7.45,
-      "riskSource": "기술적",
-      "verdict": null,
-      "chase": [],
-      "liquidityOk": null,
-      "zone": null
-     },
-     "v2": {
-      "score": 1,
-      "sector": "금속",
-      "sectorAdj": 0,
-      "marketAdj": -1
-     },
-     "why": [
-      {
-       "kind": "strategy",
-       "text": "실적 턴어라운드 12위 선정 (v1 점수 2)"
-      },
-      {
-       "kind": "entry",
-       "text": "손절폭 7.45%(기술적), 추격·NO-GO·유동성 조건 통과"
-      },
-      {
-       "kind": "sector",
-       "text": "업종 금속 중간: 50일선 위 24%, 평균 RS 41, 17개 업종 중 11위 (점수 +0)"
-      },
-      {
-       "kind": "market",
-       "text": "시장 KOSPI RED (점수 -1)"
-      },
-      {
-       "kind": "macro",
-       "text": "매크로 리스크오프 (VIX 17.5, 달러지수 102.3, 원/달러 1,331, 미 10년 5.00%) — 참고, 점수 아님"
-      }
-     ]
-    },
-    {
-     "code": "192440",
-     "name": "슈피겐코리아",
+     "code": "131290",
+     "name": "티에스이",
      "market": "KOSDAQ",
-     "price": 27850.0,
-     "score": 2,
+     "price": 278500.0,
+     "score": 3,
      "strategies": {
-      "funnel": 22
+      "sepa": [
+       "TREND"
+      ],
+      "multifactor": [
+       "WATCH"
+      ]
      },
-     "funnelRank": 22,
+     "funnelRank": null,
      "entry": {
-      "riskPct": 7.91,
-      "riskSource": "기술적",
-      "verdict": null,
+      "riskPct": 20.59,
+      "riskSource": "SEPA",
+      "verdict": "NO-GO",
       "chase": [],
-      "liquidityOk": null,
-      "zone": null
+      "liquidityOk": true,
+      "zone": "SETUP"
      },
      "v2": {
-      "score": 1,
-      "sector": "기타제조",
-      "sectorAdj": 0,
+      "score": 3,
+      "sector": "의료·정밀기기",
+      "sectorAdj": 1,
       "marketAdj": -1
      },
      "why": [
       {
        "kind": "strategy",
-       "text": "실적 턴어라운드 22위 선정 (v1 점수 2)"
+       "text": "SEPA, 멀티팩터 선정 (v1 점수 3)"
       },
       {
        "kind": "entry",
-       "text": "손절폭 7.91%(기술적), 추격·NO-GO·유동성 조건 통과"
+       "text": "손절폭 20.59%(SEPA) → 권고 비중 39% (8% 초과분은 8%÷손절폭으로 축소)"
+      },
+      {
+       "kind": "entry",
+       "text": "참고: SEPA NO-GO — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"
       },
       {
        "kind": "sector",
-       "text": "업종 기타제조: 세파 유니버스 종목이 5개 미만이라 강도를 계산하지 않음 (점수 0)"
+       "text": "업종 의료·정밀기기 강세: 50일선 위 62%, 평균 RS 62, 18개 업종 중 1위 (점수 +1)"
       },
       {
        "kind": "market",
@@ -305,15 +375,14 @@
        "kind": "macro",
        "text": "매크로 리스크오프 (VIX 17.5, 달러지수 102.3, 원/달러 1,331, 미 10년 5.00%) — 참고, 점수 아님"
       }
-     ]
-    }
-   ],
-   "picksV3": [
+     ],
+     "weight": 0.39
+    },
     {
      "code": "031980",
      "name": "피에스케이홀딩스",
      "market": "KOSDAQ",
-     "price": 170300.0,
+     "price": 194700.0,
      "score": 3,
      "strategies": {
       "sepa": [
@@ -326,7 +395,7 @@
      },
      "funnelRank": null,
      "entry": {
-      "riskPct": 21.0,
+      "riskPct": 31.0,
       "riskSource": "SEPA",
       "verdict": "NO-GO",
       "chase": [],
@@ -346,7 +415,7 @@
       },
       {
        "kind": "entry",
-       "text": "손절폭 21.00%(SEPA) → 권고 비중 38% (8% 초과분은 8%÷손절폭으로 축소)"
+       "text": "손절폭 31.00%(SEPA) → 권고 비중 26% (8% 초과분은 8%÷손절폭으로 축소)"
       },
       {
        "kind": "entry",
@@ -354,7 +423,7 @@
       },
       {
        "kind": "sector",
-       "text": "업종 기계·장비 강세: 50일선 위 31%, 평균 RS 61, 17개 업종 중 4위 (점수 +1)"
+       "text": "업종 기계·장비 강세: 50일선 위 36%, 평균 RS 63, 18개 업종 중 4위 (점수 +1)"
       },
       {
        "kind": "market",
@@ -362,36 +431,36 @@
       },
       {
        "kind": "consensus",
-       "text": "컨센서스(네이버, 10/28): 2026년 EPS 추정 6,528원 · 평균 목표가 243,333원 (현재가 대비 +43%) · 투자의견 평균 4.0/5 (참고, 점수 아님)"
+       "text": "컨센서스(네이버, 10/28): 2026년 EPS 추정 6,528원 · 평균 목표가 243,333원 (현재가 대비 +25%) · 투자의견 평균 4.0/5 (참고, 점수 아님)"
       },
       {
        "kind": "macro",
        "text": "매크로 리스크오프 (VIX 17.5, 달러지수 102.3, 원/달러 1,331, 미 10년 5.00%) — 참고, 점수 아님"
       }
      ],
-     "weight": 0.38
+     "weight": 0.26
     },
     {
-     "code": "028050",
-     "name": "삼성E&A",
-     "market": "KOSPI",
-     "price": 62800.0,
+     "code": "425420",
+     "name": "티에프이",
+     "market": "KOSDAQ",
+     "price": 84800.0,
      "score": 3,
      "strategies": {
       "sepa": [
        "TREND"
       ],
       "multifactor": [
-       "WATCH",
-       "CONTROL"
+       "WATCH"
       ]
      },
      "funnelRank": null,
      "entry": {
-      "riskPct": 36.43,
+      "riskPct": 36.57,
       "riskSource": "SEPA",
       "verdict": "NO-GO",
       "chase": [
+       "계좌복구 과열",
        "SEPA 과열 구간"
       ],
       "liquidityOk": true,
@@ -399,7 +468,7 @@
      },
      "v2": {
       "score": 3,
-      "sector": "일반서비스",
+      "sector": "전기·전자",
       "sectorAdj": 1,
       "marketAdj": -1
      },
@@ -410,23 +479,23 @@
       },
       {
        "kind": "entry",
-       "text": "손절폭 36.43%(SEPA) → 권고 비중 22% (8% 초과분은 8%÷손절폭으로 축소)"
+       "text": "손절폭 36.57%(SEPA) → 권고 비중 22% (8% 초과분은 8%÷손절폭으로 축소)"
       },
       {
        "kind": "entry",
-       "text": "참고: SEPA NO-GO, SEPA 과열 구간 — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"
+       "text": "참고: SEPA NO-GO, 계좌복구 과열, SEPA 과열 구간 — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"
       },
       {
        "kind": "sector",
-       "text": "업종 일반서비스 강세: 50일선 위 40%, 평균 RS 51, 17개 업종 중 5위 (점수 +1)"
+       "text": "업종 전기·전자 강세: 50일선 위 41%, 평균 RS 64, 18개 업종 중 3위 (점수 +1)"
       },
       {
        "kind": "market",
-       "text": "시장 KOSPI RED (점수 -1)"
+       "text": "시장 KOSDAQ RED (점수 -1)"
       },
       {
        "kind": "consensus",
-       "text": "컨센서스(네이버, 10/28): 2026년 EPS 추정 4,456원 · 평균 목표가 77,350원 (현재가 대비 +23%) · 투자의견 평균 4.0/5 (참고, 점수 아님)"
+       "text": "컨센서스(네이버, 10/28): 2026년 EPS 추정 2,682원 · 평균 목표가 61,000원 (현재가 대비 -28%) · 투자의견 평균 4.0/5 (참고, 점수 아님)"
       },
       {
        "kind": "macro",
@@ -434,72 +503,10 @@
       }
      ],
      "weight": 0.22
-    },
-    {
-     "code": "089860",
-     "name": "롯데렌탈",
-     "market": "KOSPI",
-     "price": 50000.0,
-     "score": 3,
-     "strategies": {
-      "sepa": [
-       "TREND"
-      ],
-      "multifactor": [
-       "WATCH",
-       "CONTROL"
-      ]
-     },
-     "funnelRank": null,
-     "entry": {
-      "riskPct": 4.49,
-      "riskSource": "SEPA",
-      "verdict": "NO-GO",
-      "chase": [],
-      "liquidityOk": true,
-      "zone": "WATCH"
-     },
-     "v2": {
-      "score": 3,
-      "sector": "일반서비스",
-      "sectorAdj": 1,
-      "marketAdj": -1
-     },
-     "why": [
-      {
-       "kind": "strategy",
-       "text": "SEPA, 멀티팩터 선정 (v1 점수 3)"
-      },
-      {
-       "kind": "entry",
-       "text": "손절폭 4.49%(SEPA) → 권고 비중 100%"
-      },
-      {
-       "kind": "entry",
-       "text": "참고: SEPA NO-GO — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"
-      },
-      {
-       "kind": "sector",
-       "text": "업종 일반서비스 강세: 50일선 위 40%, 평균 RS 51, 17개 업종 중 5위 (점수 +1)"
-      },
-      {
-       "kind": "market",
-       "text": "시장 KOSPI RED (점수 -1)"
-      },
-      {
-       "kind": "consensus",
-       "text": "컨센서스(네이버, 10/28): 2026년 EPS 추정 3,687원 · 평균 목표가 54,300원 (현재가 대비 +9%) · 투자의견 평균 4.0/5 (참고, 점수 아님)"
-      },
-      {
-       "kind": "macro",
-       "text": "매크로 리스크오프 (VIX 17.5, 달러지수 102.3, 원/달러 1,331, 미 10년 5.00%) — 참고, 점수 아님"
-      }
-     ],
-     "weight": 1.0
     }
    ],
    "v3": {
-    "candidates": 23,
+    "candidates": 26,
     "skipped": {
      "유동성 부족": 1,
      "손절폭 미확인": 0
@@ -530,181 +537,191 @@
     },
     "consensus": {
      "known": 37,
-     "candidates": 74
+     "candidates": 77
     },
     "sectorCoverage": {
-     "known": 71,
-     "candidates": 74
+     "known": 74,
+     "candidates": 77
     },
     "sectors": [
      {
       "sector": "의료·정밀기기",
-      "n": 18,
-      "above50Pct": 55.6,
-      "avgRs": 61.2,
-      "strength": 58.4,
+      "n": 16,
+      "above50Pct": 62.5,
+      "avgRs": 62.2,
+      "strength": 62.4,
       "rank": 1,
-      "of": 17,
+      "of": 18,
       "adj": 1
      },
      {
       "sector": "IT 서비스",
       "n": 43,
-      "above50Pct": 51.2,
-      "avgRs": 56.0,
-      "strength": 53.6,
+      "above50Pct": 53.5,
+      "avgRs": 55.1,
+      "strength": 54.3,
       "rank": 2,
-      "of": 17,
-      "adj": 1
-     },
-     {
-      "sector": "운송·창고",
-      "n": 10,
-      "above50Pct": 40.0,
-      "avgRs": 52.8,
-      "strength": 46.4,
-      "rank": 3,
-      "of": 17,
-      "adj": 1
-     },
-     {
-      "sector": "기계·장비",
-      "n": 71,
-      "above50Pct": 31.0,
-      "avgRs": 61.0,
-      "strength": 46.0,
-      "rank": 4,
-      "of": 17,
-      "adj": 1
-     },
-     {
-      "sector": "일반서비스",
-      "n": 37,
-      "above50Pct": 40.5,
-      "avgRs": 51.2,
-      "strength": 45.9,
-      "rank": 5,
-      "of": 17,
+      "of": 18,
       "adj": 1
      },
      {
       "sector": "전기·전자",
-      "n": 125,
-      "above50Pct": 28.0,
-      "avgRs": 62.7,
-      "strength": 45.3,
-      "rank": 6,
-      "of": 17,
-      "adj": 0
+      "n": 123,
+      "above50Pct": 40.7,
+      "avgRs": 63.6,
+      "strength": 52.1,
+      "rank": 3,
+      "of": 18,
+      "adj": 1
      },
      {
-      "sector": "보험",
-      "n": 9,
-      "above50Pct": 22.2,
-      "avgRs": 57.0,
-      "strength": 39.6,
-      "rank": 7,
-      "of": 17,
-      "adj": 0
+      "sector": "기계·장비",
+      "n": 72,
+      "above50Pct": 36.1,
+      "avgRs": 63.1,
+      "strength": 49.6,
+      "rank": 4,
+      "of": 18,
+      "adj": 1
      },
      {
-      "sector": "유통",
-      "n": 27,
-      "above50Pct": 25.9,
-      "avgRs": 48.6,
-      "strength": 37.3,
-      "rank": 8,
-      "of": 17,
-      "adj": 0
-     },
-     {
-      "sector": "건설",
+      "sector": "운송·창고",
       "n": 11,
-      "above50Pct": 18.2,
-      "avgRs": 53.3,
-      "strength": 35.8,
-      "rank": 9,
-      "of": 17,
+      "above50Pct": 45.5,
+      "avgRs": 49.0,
+      "strength": 47.2,
+      "rank": 5,
+      "of": 18,
+      "adj": 1
+     },
+     {
+      "sector": "일반서비스",
+      "n": 34,
+      "above50Pct": 38.2,
+      "avgRs": 49.8,
+      "strength": 44.0,
+      "rank": 6,
+      "of": 18,
+      "adj": 1
+     },
+     {
+      "sector": "오락·문화",
+      "n": 9,
+      "above50Pct": 44.4,
+      "avgRs": 26.9,
+      "strength": 35.7,
+      "rank": 7,
+      "of": 18,
       "adj": 0
      },
      {
       "sector": "제약",
       "n": 38,
       "above50Pct": 28.9,
-      "avgRs": 42.0,
-      "strength": 35.5,
-      "rank": 10,
-      "of": 17,
+      "avgRs": 41.0,
+      "strength": 35.0,
+      "rank": 8,
+      "of": 18,
       "adj": 0
+     },
+     {
+      "sector": "건설",
+      "n": 11,
+      "above50Pct": 18.2,
+      "avgRs": 50.9,
+      "strength": 34.5,
+      "rank": 9,
+      "of": 18,
+      "adj": 0
+     },
+     {
+      "sector": "운송장비·부품",
+      "n": 24,
+      "above50Pct": 33.3,
+      "avgRs": 35.3,
+      "strength": 34.3,
+      "rank": 10,
+      "of": 18,
+      "adj": 0
+     },
+     {
+      "sector": "유통",
+      "n": 28,
+      "above50Pct": 21.4,
+      "avgRs": 45.5,
+      "strength": 33.5,
+      "rank": 11,
+      "of": 18,
+      "adj": 0
+     },
+     {
+      "sector": "화학",
+      "n": 53,
+      "above50Pct": 24.5,
+      "avgRs": 41.9,
+      "strength": 33.2,
+      "rank": 12,
+      "of": 18,
+      "adj": 0
+     },
+     {
+      "sector": "보험",
+      "n": 8,
+      "above50Pct": 12.5,
+      "avgRs": 52.3,
+      "strength": 32.4,
+      "rank": 13,
+      "of": 18,
+      "adj": -1
      },
      {
       "sector": "금속",
       "n": 29,
       "above50Pct": 24.1,
-      "avgRs": 41.2,
-      "strength": 32.7,
-      "rank": 11,
-      "of": 17,
-      "adj": 0
+      "avgRs": 40.2,
+      "strength": 32.2,
+      "rank": 14,
+      "of": 18,
+      "adj": -1
      },
      {
-      "sector": "화학",
-      "n": 55,
+      "sector": "섬유·의류",
+      "n": 5,
       "above50Pct": 20.0,
-      "avgRs": 43.2,
-      "strength": 31.6,
-      "rank": 12,
-      "of": 17,
-      "adj": 0
-     },
-     {
-      "sector": "운송장비·부품",
-      "n": 26,
-      "above50Pct": 26.9,
-      "avgRs": 35.1,
-      "strength": 31.0,
-      "rank": 13,
-      "of": 17,
+      "avgRs": 30.9,
+      "strength": 25.5,
+      "rank": 15,
+      "of": 18,
       "adj": -1
      },
      {
       "sector": "음식료·담배",
-      "n": 11,
-      "above50Pct": 18.2,
-      "avgRs": 38.0,
-      "strength": 28.1,
-      "rank": 14,
-      "of": 17,
-      "adj": -1
-     },
-     {
-      "sector": "오락·문화",
-      "n": 8,
-      "above50Pct": 25.0,
-      "avgRs": 27.7,
-      "strength": 26.4,
-      "rank": 15,
-      "of": 17,
+      "n": 10,
+      "above50Pct": 20.0,
+      "avgRs": 29.5,
+      "strength": 24.7,
+      "rank": 16,
+      "of": 18,
       "adj": -1
      },
      {
       "sector": "금융",
-      "n": 42,
-      "above50Pct": 2.4,
-      "avgRs": 40.6,
-      "strength": 21.5,
-      "rank": 16,
-      "of": 17,
+      "n": 40,
+      "above50Pct": 5.0,
+      "avgRs": 38.8,
+      "strength": 21.9,
+      "rank": 17,
+      "of": 18,
       "adj": -1
      },
      {
       "sector": "증권",
       "n": 6,
       "above50Pct": 0.0,
-      "avgRs": 19.8,
+      "avgRs": 19.7,
       "strength": 9.9,
-      "rank": 17,
-      "of": 17,
+      "rank": 18,
+      "of": 18,
       "adj": -1
      }
     ]
@@ -782,7 +799,7 @@
      },
      "funnelRank": 5,
      "entry": {
-      "riskPct": 5.8,
+      "riskPct": 5.85,
       "riskSource": "직접 계산",
       "verdict": null,
       "chase": [],
