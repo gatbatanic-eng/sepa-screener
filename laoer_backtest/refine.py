@@ -63,6 +63,7 @@ def _eval(args):
         syn, rs = _G["syn"], _G["rs"]
         starts = syn.index.to_series().resample(opt.get("step", "QS")).first().dropna()
         starts = starts[(starts >= syn.index[V.WARMUP + 1]) & (starts <= syn.index[-1] - pd.DateOffset(years=10))]
+        starts = starts[(starts >= opt.get("hist_from", "1900")) & (starts <= opt.get("hist_to", "2100"))]
         h = []
         for t0 in starts:
             i0 = syn.index.get_loc(t0)
@@ -92,12 +93,25 @@ def run(cfgs, spec=(10, 252, 42, 300), opt=None, out="refine_stage1.csv"):
 
 
 FINAL_SCEN = {
-    "기준": ((10, 252, 42, 300), {}), "다른난수": ((10, 252, 7, 300), {"hist": False}),
-    "3개월블록": ((10, 63, 42, 300), {"hist": False}), "2년블록": ((10, 504, 42, 300), {"hist": False}),
-    "20년": ((20, 252, 42, 300), {"hist": False}), "현금이자0": ((10, 252, 42, 300), {"hist": False, "nocash": True}),
-    "슬리피지": ((10, 252, 42, 300), {"hist": False, "fee": 0.0027}),
-    "세후": ((10, 252, 42, 300), {"hist": False, "tax": True}),
+    # 모멘텀은 몇 달~1년 넘게 이어지는 추세에 기대므로, 블록이 짧으면 경로를 섞는 과정에서 추세가 끊겨 불리하다.
+    # 그래서 블록 1·2·3년을 모두 본다.
+    "블록1년": ((10, 252, 42, 300), {"step": "MS"}),
+    "블록2년": ((10, 504, 42, 300), {"hist": False}),
+    "블록3년": ((10, 756, 42, 300), {"hist": False}),
+    "블록2년_다른난수": ((10, 504, 7, 300), {"hist": False}),
+    "블록2년_20년": ((20, 504, 42, 300), {"hist": False}),
+    "블록2년_슬리피지": ((10, 504, 42, 300), {"hist": False, "fee": 0.0027}),
+    "블록2년_세후": ((10, 504, 42, 300), {"hist": False, "tax": True}),
+    "블록2년_현금이자0": ((10, 504, 42, 300), {"hist": False, "nocash": True}),
+    "역사_전반(1986~2000시작)": ((10, 252, 42, 1), {"step": "MS", "hist_to": "2000-12-31"}),
+    "역사_후반(2001~2016시작)": ((10, 252, 42, 1), {"step": "MS", "hist_from": "2001-01-01"}),
 }
+FINAL_CANDS = [
+    dict(target_vol=0.35), dict(target_vol=0.40),
+    dict(target_vol=0.40, mom="ma", ma=100, k=0.5), dict(target_vol=0.40, mom="ma", ma=200, k=0.5),
+    dict(target_vol=0.35, mom="cross", k=0.5), dict(target_vol=0.40, mom="cross", k=0.5),
+    dict(target_vol=0.50, mom="cross", k=0.5), dict(target_vol=0.40, mom="ret", mom_lb=252, k=0.5),
+]
 
 
 def final(cfgs):
@@ -113,7 +127,8 @@ def final(cfgs):
 if __name__ == "__main__":
     pd.set_option("display.width", 250); pd.set_option("display.max_columns", 30); pd.set_option("display.max_rows", 300)
     if "--final" in sys.argv:
-        print("--final 은 후보 목록을 코드에서 지정해 호출하세요 (refine.final([...]))")
+        d = final(FINAL_CANDS)
+        print(d.drop(columns=["파라미터"]).round(3).to_string(index=False))
     else:
         d = run(stage1_configs())
         print(d.drop(columns=["파라미터"]).round(3).to_string(index=False))
