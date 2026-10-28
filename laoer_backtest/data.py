@@ -33,9 +33,15 @@ def synth_tqqq(base="NDX", spread=0.0, lev=3.0):
     src = load(base)
     px = src["Adj Close"] if base == "QQQ" else src["Close"]
     adj = px / src["Close"]  # QQQ 배당 반영분을 OHLC에 같이 적용
-    o, h, l, c = (src[k] * adj for k in ("Open", "High", "Low", "Close"))
+    src = pd.DataFrame({k: src[k] * adj for k in ("Open", "High", "Low", "Close")})
+    return lever(src, short_rate(src.index), spread, lev)
+
+
+def lever(src, rate, spread=0.0, lev=3.0):
+    """기초자산 OHLC(src)와 연율 단기금리(rate, 같은 인덱스)로 레버리지 OHLC를 만든다."""
+    o, h, l, c = (src[k] for k in ("Open", "High", "Low", "Close"))
     prev = c.shift()
-    drag = (EXPENSE + (lev - 1) * short_rate(src.index) + spread) / 252
+    drag = (EXPENSE + (lev - 1) * rate + spread) / 252
     rc = (lev * (c / prev - 1) - drag).clip(lower=-0.99)
     out = pd.DataFrame(index=src.index)
     out["Close"] = 100 * (1 + rc.fillna(0)).cumprod()
@@ -47,6 +53,34 @@ def synth_tqqq(base="NDX", spread=0.0, lev=3.0):
     out["High"] = out[["High", "Open", "Close"]].max(axis=1)
     out["Low"] = out[["Low", "Open", "Close"]].min(axis=1)
     return out[["Open", "High", "Low", "Close"]]
+
+
+def bootstrap_paths(n_paths, years=10, block=252, base="NDX", spread=0.0, seed=0):
+    """기초지수 일봉을 block 거래일 단위로 무작위 복원추출해 이어 붙인 가상 경로를 만든다.
+    각 날의 (시가·고가·저가·종가 / 전일종가)와 그날 금리를 한 묶음으로 옮겨 변동성 군집과 금리 환경을 유지한다.
+    반환: [(레버리지 OHLC df, 금리 Series), ...]"""
+    src = load(base)
+    rate = short_rate(src.index)
+    prev = src["Close"].shift()
+    rel = pd.DataFrame({k: src[k] / prev for k in ("Open", "High", "Low", "Close")}).iloc[1:]
+    rel["rate"] = rate.iloc[1:]
+    arr = rel.to_numpy()
+    rng = np.random.default_rng(seed)
+    n_days = int(years * 252)
+    idx = pd.bdate_range("2000-01-03", periods=n_days + 1)
+    out = []
+    for _ in range(n_paths):
+        starts = rng.integers(0, len(arr) - block, size=n_days // block + 1)
+        seq = np.concatenate([arr[s:s + block] for s in starts])[:n_days]
+        close = np.concatenate([[100.0], 100 * np.cumprod(seq[:, 3])])
+        pc = close[:-1]
+        df = pd.DataFrame(index=idx)
+        df["Close"] = close
+        for j, k in enumerate(("Open", "High", "Low")):
+            df[k] = np.concatenate([[100.0], pc * seq[:, j]])
+        r = pd.Series(np.concatenate([[seq[0, 4]], seq[:, 4]]), index=idx)
+        out.append((lever(df, r, spread), r))
+    return out
 
 
 def tracking(synth, real=None):
