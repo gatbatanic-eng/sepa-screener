@@ -9,6 +9,9 @@ import math
 import os
 import re
 import threading
+import time
+import urllib.parse
+import urllib.request
 import zipfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -21,9 +24,10 @@ PILOT = [('355150', '코스텍시스'), ('007810', '코리아써키트'),
 EXTRA = {
     'assets': (['ifrs-full_Assets'], ['자산총계']),
     'inventory': (['ifrs-full_Inventories'], ['재고자산']),
-    'receivables': (['ifrs-full_TradeAndOtherCurrentReceivables', 'ifrs-full_TradeReceivables'], ['매출채권및기타채권', '매출채권']),
-    'capexYtd': (['ifrs-full_PurchaseOfPropertyPlantAndEquipment'], ['유형자산의취득', '유형자산취득']),
+    'receivables': (['ifrs-full_CurrentTradeReceivables', 'ifrs-full_TradeReceivables', 'dart_ShortTermTradeReceivable', 'ifrs-full_TradeAndOtherCurrentReceivables'], ['매출채권', '매출채권및기타채권']),
+    'capexYtd': (['ifrs-full_PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities', 'ifrs-full_PurchaseOfPropertyPlantAndEquipment'], ['유형자산의취득', '유형자산취득']),
 }
+PPE_NAMES = ('토지', '건물', '구축물', '기계장치', '차량운반구', '공구와기구', '공구와비품', '비품', '시설장치', '건설중인자산', '기타유형자산')
 TERMS = {
     '사업·고객': ['주요 제품', '주요제품', '주요 고객', '주요고객', '매출실적'],
     '수주·증설': ['수주상황', '수주현황', '공급계약', '시설투자', '생산능력'],
@@ -53,6 +57,25 @@ class Client(pf.Dart):
             self.calls += 1
             if self.calls > self.budget:
                 raise RuntimeError('DART request budget reached')
+        if endpoint == 'list.json':
+            # The old client's list-only return discards total_page. DART may repeat
+            # the final full page instead of returning an empty page out of range.
+            url = 'https://opendart.fss.or.kr/api/list.json?' + urllib.parse.urlencode({'crtfc_key': self.key, **params})
+            for attempt in range(3):
+                try:
+                    with urllib.request.urlopen(url, timeout=30) as response:
+                        obj = json.loads(response.read())
+                    if obj.get('status') == '013':
+                        return {'list': [], 'total_page': 0}
+                    if obj.get('status') != '000':
+                        raise RuntimeError('DART status ' + str(obj.get('status', 'unknown')))
+                    return obj
+                except RuntimeError:
+                    raise
+                except Exception:
+                    if attempt == 2:
+                        raise RuntimeError('DART disclosure list request failed') from None
+                    time.sleep(2)
         return super().request(endpoint, **params)
 
 
@@ -61,6 +84,10 @@ def pick(rows, key):
     groups = ['CF'] if key in ('operatingCashFlow', 'capexYtd') else ['BS'] if key in ('cash', 'liabilities', 'equity', 'assets', 'inventory', 'receivables') else ['IS', 'CIS']
     for group in groups:
         subset = [r for r in rows if r.get('sj_div') == group and r.get('currency', 'KRW') == 'KRW']
+        if key == 'receivables':
+            # Some issuers tag OTHER receivables with the broad trade-and-other ID.
+            # Never use that account alone as customer trade receivables.
+            subset = [r for r in subset if '매출' in r.get('account_nm', '') or r.get('account_id') in EXTRA['receivables'][0][:3]]
         for ident in ids:
             hits = [r for r in subset if r.get('account_id') == ident]
             if len(hits) == 1:
@@ -71,6 +98,15 @@ def pick(rows, key):
             hits = [r for r in subset if re.sub(r'\s+', '', r.get('account_nm', '')) == name]
             if len(hits) == 1:
                 return hits[0]
+    if key == 'capexYtd':
+        components = [r for r in rows if r.get('sj_div') == 'CF' and r.get('currency', 'KRW') == 'KRW'
+                      and re.sub(r'\s+', '', r.get('account_nm', '')) in {n + suffix for n in PPE_NAMES for suffix in ('의취득', '취득')}]
+        names = [re.sub(r'\s+', '', r.get('account_nm', '')) for r in components]
+        values = [pf.number(r.get('thstrm_amount')) for r in components]
+        if components and len(names) == len(set(names)) and all(valid(v) for v in values):
+            return {'account_id': 'derived:PPE-components', 'account_nm': '유형자산 취득 세부항목 합계',
+                    'thstrm_amount': str(sum(abs(v) for v in values)),
+                    'components': [{'accountId': r.get('account_id'), 'accountName': r.get('account_nm'), 'reportedAmount': v} for r, v in zip(components, values)]}
     return {}
 
 
@@ -87,6 +123,11 @@ def normalize(reports):
             row = pick(rows, key)
             value = pf.number(row.get('thstrm_amount'))
             rec['provenance'][key] = {'accountId': row.get('account_id'), 'accountName': row.get('account_nm'), 'receipt': receipt}
+            if row.get('components'):
+                rec['provenance'][key]['components'] = row['components']
+            if key == 'capexYtd':
+                rec['provenance'][key]['reportedSignedAmount'] = value
+                value = abs(value) if valid(value) else None  # Known purchase outflow, both DART sign conventions.
             if quarter == 4 and key in ('revenue', 'operatingProfit', 'netIncome'):
                 ytd = pf.number(pick(previous.get('rows', []), key).get('thstrm_add_amount'))
                 value = value - ytd if valid(value) and valid(ytd) and previous.get('basis') == basis else None
@@ -95,6 +136,8 @@ def normalize(reports):
                 rec[key + 'Reported'] = value
                 if quarter > 1:
                     prior = pf.number(pick(previous.get('rows', []), key).get('thstrm_amount'))
+                    if key == 'capexYtd' and valid(prior):
+                        prior = abs(prior)
                     value = value - prior if valid(value) and valid(prior) and previous.get('basis') == basis else None
                     rec['provenance'][key]['subtractReceipt'] = previous.get('rows', [{}])[0].get('rcept_no') if previous.get('rows') else None
             rec['capex' if key == 'capexYtd' else key] = value
@@ -106,18 +149,25 @@ def normalize(reports):
         old = next((q for q in records if q['year'] == rec['year'] - 1 and q['quarter'] == rec['quarter'] and q['basis'] == rec['basis']), {})
         for key in ('revenue', 'operatingProfit', 'inventory', 'receivables'):
             rec[key + 'YoY'] = pf.growth(rec.get(key), old.get(key))
+            if key == 'receivables':
+                current_name = rec['provenance'][key].get('accountName') or ''
+                prior_name = old.get('provenance', {}).get(key, {}).get('accountName') or ''
+                if ('기타' in current_name) != ('기타' in prior_name):
+                    rec[key + 'YoY'] = {'pct': None, 'label': '채권 범위 불일치'}
     return records
 
 
 def filings(api, corp, today):
     result = []
     for page in range(1, 31):
-        rows = api.request('list.json', corp_code=corp,
+        response = api.request('list.json', corp_code=corp,
                            bgn_de=(today - dt.timedelta(days=800)).strftime('%Y%m%d'),
                            end_de=today.strftime('%Y%m%d'), last_reprt_at='N',
                            page_count=100, page_no=page, sort='date', sort_mth='desc')
+        rows = response.get('list', []) if isinstance(response, dict) else response
         result.extend(rows)
-        if len(rows) < 100:
+        total_pages = int(response['total_page']) if isinstance(response, dict) and response.get('total_page') is not None else None
+        if len(rows) < 100 or (total_pages is not None and page >= total_pages):
             return sorted({r['rcept_no']: r for r in result}.values(), key=lambda r: r['rcept_no'], reverse=True)
     raise RuntimeError('Disclosure pagination limit reached; coverage incomplete')
 
@@ -295,6 +345,10 @@ def collect(api, corp, code, name, now):
     return {'schemaVersion': 1, 'code': code, 'name': name, 'source': 'OpenDART', 'checkedAt': now.isoformat(),
             'status': 'ok' if quarters and all(d['status'] != 'unavailable' for d in documents) and documents and not issues else 'partial',
             'collectionIssues': issues,
+            'rawReports': [{'year': year, 'quarter': quarter, 'basis': report['basis'],
+                            'rows': [{k: r[k] for k in ('rcept_no', 'sj_div', 'currency', 'account_id', 'account_nm', 'thstrm_amount', 'thstrm_add_amount') if k in r}
+                                     for r in report['rows'] if r.get('sj_div') == 'CF' or any(r == pick(report['rows'], key) for key in pf.ACCOUNTS | EXTRA)]}
+                           for (year, quarter), report in sorted(reports.items())],
             'quarters': quarters[-8:], 'assessment': review, 'documents': documents, 'comparisons': comparisons,
             'filings': [{'receipt': r['rcept_no'], 'title': r['report_nm'], 'filedAt': r['rcept_dt'],
                          'sourceUrl': 'https://dart.fss.or.kr/dsaf001/main.do?rcpNo=' + r['rcept_no']} for r in notices],
@@ -316,7 +370,12 @@ def main():
             path = output / (code + '.json')
             if path.exists():
                 payload = json.loads(path.read_text(encoding='utf-8'))
+                if payload.get('rawReports'):
+                    payload['quarters'] = normalize({(r['year'], r['quarter']): {'basis': r['basis'], 'rows': r['rows']} for r in payload['rawReports']})[-8:]
                 payload['assessment'] = assess(payload['quarters'], now.date())
+                if payload.get('collectionIssues'):
+                    payload['assessment']['status'] = 'hold'
+                    payload['assessment']['warnings'].append('기존 수집 누락 미해결')
                 results.append(payload)
             else:
                 errors.append({'code': code, 'name': name, 'reason': '기존 공시 검증 자료 없음'})

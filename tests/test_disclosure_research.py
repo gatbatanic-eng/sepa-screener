@@ -50,6 +50,28 @@ class QuarterTests(unittest.TestCase):
         self.assertEqual(dr.pick(data + [duplicate], 'netIncome')['sj_div'], 'IS')
         self.assertEqual(dr.pick(data + [data[2]], 'netIncome'), {})
 
+    def test_purchase_sign_conventions_have_same_cash_outflow(self):
+        data = rows(100, 10, 20, -5, '20260515000001')
+        q = dr.normalize({(2026, 1): {'rows': data, 'basis': 'CFS'}})[0]
+        self.assertEqual(q['capex'], 5)
+        self.assertEqual(q['fcf'], 15)
+
+    def test_component_ppe_is_summed_only_without_aggregate(self):
+        data = rows(100, 10, 20, 5, '20260515000001')
+        data = [r for r in data if r['account_id'] != 'ifrs-full_PurchaseOfPropertyPlantAndEquipment']
+        data.extend({'sj_div': 'CF', 'account_nm': name, 'thstrm_amount': value} for name, value in [('건물의 취득', '2'), ('기계장치의 취득', '3')])
+        q = dr.normalize({(2026, 1): {'rows': data, 'basis': 'OFS'}})[0]
+        self.assertEqual(q['capex'], 5)
+        self.assertEqual(len(q['provenance']['capexYtd']['components']), 2)
+        data.append({'sj_div': 'CF', 'account_id': 'ifrs-full_PurchaseOfPropertyPlantAndEquipment', 'thstrm_amount': '5'})
+        self.assertEqual(dr.pick(data, 'capexYtd')['thstrm_amount'], '5')
+
+    def test_other_receivable_cannot_replace_customer_receivable(self):
+        data = [{'sj_div': 'BS', 'account_id': 'ifrs-full_TradeAndOtherCurrentReceivables', 'account_nm': '기타유동수취채권', 'thstrm_amount': '2'},
+                {'sj_div': 'BS', 'account_id': 'dart_ShortTermTradeReceivable', 'account_nm': '매출채권', 'thstrm_amount': '100'}]
+        self.assertEqual(dr.pick(data, 'receivables')['thstrm_amount'], '100')
+        self.assertEqual(dr.pick(data[:1], 'receivables'), {})
+
 
 class EvidenceTests(unittest.TestCase):
     def test_extracts_primary_archive_and_marks_excerpt_unreviewed(self):
@@ -73,6 +95,15 @@ class EvidenceTests(unittest.TestCase):
             def request(self, endpoint, **params):
                 return [{'rcept_no': str(i), 'report_nm': '공시'} for i in range(100)] if params['page_no'] == 1 else [{'rcept_no': '101', 'report_nm': '공시'}]
         self.assertEqual(len(dr.filings(API(), 'corp', dt.date(2026, 10, 29))), 101)
+
+    def test_full_last_page_stops_at_declared_total(self):
+        class API:
+            def request(self, endpoint, **params):
+                if params['page_no'] > 2:
+                    raise AssertionError('Must not request beyond declared last page')
+                start = (params['page_no'] - 1) * 100
+                return {'total_page': 2, 'list': [{'rcept_no': str(i), 'report_nm': '공시'} for i in range(start, start + 100)]}
+        self.assertEqual(len(dr.filings(API(), 'corp', dt.date(2026, 10, 29))), 200)
 
     def test_missing_financials_cannot_pass(self):
         result = dr.assess([], dt.date(2026, 10, 29))
