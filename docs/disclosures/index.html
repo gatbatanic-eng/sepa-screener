@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>공시로 보는 성장 검증 · Golden Code</title>
+<style>
+:root{color-scheme:dark;--bg:#101720;--panel:#19232e;--line:#344350;--text:#e5edf4;--muted:#a9bac9;--blue:#8dbbff;--amber:#f5cd81}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.7 system-ui,sans-serif}main{max-width:1150px;margin:auto;padding:32px 22px 70px}a{color:var(--blue)}h1{font-size:32px;line-height:1.3;margin:16px 0}h2{font-size:23px}p{max-width:900px}.muted{color:var(--muted)}.banner,.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;margin:18px 0}.banner{border-left:4px solid var(--amber)}button,select{font:inherit;color:var(--text);background:var(--panel);border:1px solid var(--line);padding:9px 14px;border-radius:8px}button{cursor:pointer;margin:4px}button.active{border-color:var(--blue)}.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}td.wrap{white-space:normal}summary{cursor:pointer;color:var(--blue)}blockquote{margin:12px 0;padding:12px 16px;border-left:3px solid var(--line);white-space:pre-wrap;font-size:14px}li{margin:5px 0}.tag{color:var(--amber)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}small{color:var(--muted)}@media(max-width:600px){main{padding:20px 14px}h1{font-size:27px}.card{padding:14px}}
+</style></head><body><main>
+<a href="../market/">← 시장 화면</a><p class="muted">GOLDEN CODE / 기업 조사</p>
+<h1>공시로 보는 성장 검증</h1><p>주가 추세와 별개로 기업의 매출·이익·현금흐름을 비교하고, 판단 근거가 될 공시 원문을 확인합니다.</p>
+<div class="banner">5개 기업 시범 검증 · 연구 후보는 매수 추천이 아닙니다. 원문 발췌는 검토할 근거이며, 기술해자·수주 확정성·신사업 성공을 자동으로 판정하지 않습니다.</div>
+<p id="status" role="status">공시 수집 상태 확인 중…</p><div id="overview"></div><div id="buttons"></div><div id="detail"></div>
+<p class="muted">금액: 억원. 손익·현금흐름은 개별 분기, 재무상태는 분기 말. 누적 현금흐름은 같은 회계 기준의 직전 누적값을 차감합니다. 미확인 값은 ‘—’이며 0으로 대체하지 않습니다.</p>
+<p><a href="https://github.com/gatbatanic-eng/sepa-screener/actions/workflows/disclosure_research.yml">수집 실행·오류 확인</a> · <a href="../data/disclosures/index.json">검증 결과 JSON</a></p>
+</main><script>
+'use strict';
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=x=>typeof x==='number'&&Number.isFinite(x)?(x/1e8).toLocaleString('ko-KR',{maximumFractionDigits:1}):'—';
+const pct=x=>typeof x==='number'&&Number.isFinite(x)?x.toFixed(1)+'%':'—';
+const labels={hold:'판단 보류',review_candidate:'정독 후보',conditions_not_met:'조건 미충족',ok:'수집 완료',partial:'일부 미확인'};
+const safeUrl=x=>/^https:\/\/dart\.fss\.or\.kr\/dsaf001\/main\.do\?rcpNo=\d{14}$/.test(x)?x:'#';
+async function get(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw Error('자료 미수집 또는 조회 실패 ('+r.status+')');return r.json();}
+async function show(code){
+ document.querySelectorAll('button[data-code]').forEach(b=>b.classList.toggle('active',b.dataset.code===code));
+ const target=document.getElementById('detail');target.textContent='기업 근거 불러오는 중…';
+ try{const d=await get('../data/disclosures/'+encodeURIComponent(code)+'.json');const a=d.assessment;
+ const age=(Date.now()-Date.parse(d.checkedAt))/86400000;
+ target.innerHTML=`<h2>${esc(d.name)} <small>${esc(d.code)}</small></h2><p class="muted">수집 확인: ${esc(new Date(d.checkedAt).toLocaleString('ko-KR'))} · ${age>3?'오래된 자료 · 현재 후보로 사용 금지':'수집일 확인'} · ${esc(a.candidateType)}</p>
+ <div class="card"><strong>${esc(labels[a.status]||a.status)}</strong><ul>${a.warnings.map(w=>`<li>${esc(w)}</li>`).join('')}</ul><div class="scroll"><table><tr><th>확인 조건</th><th>결과</th></tr>${a.checks.map(c=>`<tr><td>${esc(c.label)}</td><td>${c.passed===null?'미확인':c.passed?'충족':'미충족'}</td></tr>`).join('')}</table></div></div>
+ <h2>최근 분기 비교</h2><div class="scroll"><table><thead><tr><th>분기·기준</th><th>매출</th><th>전년 대비</th><th>영업이익</th><th>이익률</th><th>영업현금</th><th>설비취득</th><th>차감 현금</th><th>재고</th><th>채권</th><th>근거</th></tr></thead><tbody>${d.quarters.map(q=>`<tr><td>${esc(q.period)} ${esc(q.basis)}</td><td>${money(q.revenue)}</td><td>${pct(q.revenueYoY?.pct)}</td><td>${money(q.operatingProfit)}</td><td>${pct(q.operatingMargin)}</td><td>${money(q.operatingCashFlow)}</td><td>${money(q.capex)}</td><td>${money(q.fcf)}</td><td>${money(q.inventory)}</td><td>${money(q.receivables)}</td><td><a href="${safeUrl(q.sourceUrl)}" target="_blank" rel="noopener">공시</a></td></tr>`).join('')}</tbody></table></div>
+ <h2>원문 확인</h2><p class="muted">최신·전년 동분기 공시와 주요 사건을 골라 읽습니다. 발췌의 조건·부정 표현까지 원문에서 확인하세요.</p>${d.documents.map(doc=>`<details class="card"><summary>${esc(doc.title)} · ${esc(doc.filedAt)} · ${doc.status==='unavailable'?'원문 미확인':'발췌 검토 필요'}</summary><p><a href="${safeUrl(doc.sourceUrl)}" target="_blank" rel="noopener">DART 원문 열기</a></p>${(doc.evidence||[]).map(e=>`<h3>${esc(e.topic)}</h3>${e.matches.length?e.matches.map(m=>`<small>${esc(m.term)} · 원문 문자 위치 ${esc(m.offset)}</small><blockquote>${esc(m.excerpt)}</blockquote>`).join(''):'<p class="muted">발췌 없음: 해당 사업·위험이 없다는 뜻은 아닙니다.</p>'}`).join('')}${doc.reason?`<p>${esc(doc.reason)}</p>`:''}</details>`).join('')}
+ <h2>비교와 해석의 한계</h2><ul>${d.comparisons.map(c=>`<li>전년 동분기 문서 ${c.textChanged?'변경 있음':'동일'} · ${esc(c.note)}</li>`).join('')}${d.limits.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+ <details><summary>범위 내 공시 목록 ${d.filings.length}건</summary><p class="muted">${esc(d.filingScope||'전체 공시 목록 기준의 기존 관측')}</p><ul>${d.filings.map(f=>`<li>${esc(f.filedAt)} <a href="${safeUrl(f.sourceUrl)}" target="_blank" rel="noopener">${esc(f.title)}</a></li>`).join('')}</ul></details>`;
+ }catch(e){target.textContent=e.message;}
+}
+(async()=>{try{const d=await get('../data/disclosures/index.json');const age=(Date.now()-Date.parse(d.checkedAt))/86400000;
+ document.getElementById('status').textContent=`${new Date(d.checkedAt).toLocaleString('ko-KR')} 확인 · ${d.received}/${d.requested}개 기업 · ${labels[d.status]||d.status}${age>3?' · 3일 경과: 재수집 필요':''}`;
+ document.getElementById('overview').innerHTML=`<div class="grid">${d.rows.map(r=>`<div class="card"><strong>${esc(r.name)}</strong><p>${esc(labels[r.assessment.status]||r.assessment.status)} · ${esc(r.assessment.latestPeriod||'기간 미확인')}</p><small>${esc(labels[r.status]||r.status)} · 공시 ${r.documentCount}건</small></div>`).join('')}</div>${d.errors.map(e=>`<p class="tag">${esc(e.name)}: ${esc(e.reason)}</p>`).join('')}`;
+ document.getElementById('buttons').innerHTML=d.rows.map(r=>`<button data-code="${esc(r.code)}">${esc(r.name)}</button>`).join('');
+ document.querySelectorAll('button[data-code]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.code)));
+ if(d.rows.length)await show(d.rows.find(r=>r.code==='355150')?.code||d.rows[0].code);
+ }catch(e){document.getElementById('status').textContent=e.message+' · 아직 수집이 완료되지 않았습니다.';}})();
+</script></body></html>
