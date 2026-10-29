@@ -390,5 +390,70 @@ class DailyRecordTest(unittest.TestCase):
         self.assertEqual(set(data_kr.collect.degraded), {"corpList", "events"})
 
 
+class EventFilingsTest(unittest.TestCase):
+    """2단계: 최종 후보의 이벤트 공시 분류·요약."""
+
+    def test_classification(self):
+        from funnel.events_kr import classify_filing as c
+        self.assertEqual(c("단일판매ㆍ공급계약체결"), "contract")
+        self.assertEqual(c("단일판매 · 공급계약체결(자율공시)"), "contract")
+        self.assertEqual(c("단일판매ㆍ공급계약해지"), "contractCancel")   # 체결보다 해지를 먼저 본다
+        self.assertEqual(c("주요사항보고서(전환사채권발행결정)"), "dilution")
+        self.assertEqual(c("전환가액의조정"), "refixing")
+        self.assertEqual(c("최대주주변경"), "holderChange")
+        self.assertEqual(c("횡령ㆍ배임혐의발생"), "risk")
+        self.assertEqual(c("주요사항보고서(자기주식취득결정)"), "buyback")
+        self.assertIsNone(c("[기재정정]단일판매ㆍ공급계약체결"))             # 정정은 세지 않는다
+        self.assertIsNone(c("분기보고서 (2026.06)"))
+
+    def test_summary_dedups_and_orders_by_severity(self):
+        from funnel.events_kr import summarize
+        rows = [
+            {"rcept_no": "1", "rcept_dt": "20260301", "report_nm": "단일판매ㆍ공급계약체결"},
+            {"rcept_no": "1", "rcept_dt": "20260301", "report_nm": "단일판매ㆍ공급계약체결"},   # 같은 접수번호
+            {"rcept_no": "2", "rcept_dt": "20260501", "report_nm": "주요사항보고서(유상증자결정)"},
+            {"rcept_no": "3", "rcept_dt": "20260601", "report_nm": "분기보고서"},
+        ]
+        s = summarize(rows)
+        self.assertEqual(s["counts"], {"contract": 1, "dilution": 1})
+        self.assertEqual(s["severity"], "caution")
+        self.assertEqual(s["items"][0]["kind"], "dilution")          # 주의가 정보보다 앞
+        self.assertEqual(s["items"][0]["url"], "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=2")
+        self.assertEqual(s["line"], "⚠증자·CB 1 · 계약 1")
+        self.assertEqual(summarize([])["line"], "—")
+        self.assertIsNone(summarize([])["severity"])
+
+    def test_fetch_pages_through_results(self):
+        from funnel import events_kr
+
+        class Api:
+            calls = 0
+
+            def request(self, endpoint, **params):
+                Api.calls += 1
+                return [{"rcept_no": "a"}] * 100 if params["page_no"] == 1 else [{"rcept_no": "b"}]
+
+        rows = events_kr.fetch_filings(Api(), "C1", dt.date(2026, 10, 29))
+        self.assertEqual(len(rows), 101)
+        self.assertEqual(Api.calls, 2)
+
+    def test_collect_failure_is_none_not_empty(self):
+        from funnel import events_kr
+
+        class Api:
+            def request(self, endpoint, **params):
+                if params["corp_code"] == "BAD":
+                    raise RuntimeError("DART network request failed")
+                return [{"rcept_no": "1", "rcept_dt": "20260301", "report_nm": "최대주주변경"}]
+
+        records = [{"symbol": "000001", "corpCode": "OK"}, {"symbol": "000002", "corpCode": "BAD"},
+                   {"symbol": "000003", "corpCode": None}]
+        status = events_kr.collect(Api(), records, dt.date(2026, 10, 29))
+        self.assertEqual(status, {"asked": 2, "failed": 1})
+        self.assertEqual(records[0]["filings"]["counts"], {"holderChange": 1})
+        self.assertIsNone(records[1]["filings"])        # 실패는 '공시 없음'이 아니라 '모름'
+        self.assertNotIn("filings", records[2])         # corp_code 없는 종목은 조회하지 않음
+
+
 if __name__ == "__main__":
     unittest.main()
