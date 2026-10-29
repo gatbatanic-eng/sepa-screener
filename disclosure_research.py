@@ -42,7 +42,7 @@ def digest(obj):
 
 class Client(pf.Dart):
     """Budgeted calls; return list for list.json as in the existing collector."""
-    def __init__(self, key, budget=250):
+    def __init__(self, key, budget=350):
         super().__init__(key)
         self.calls = 0
         self.budget = budget
@@ -111,7 +111,7 @@ def normalize(reports):
 
 def filings(api, corp, today):
     result = []
-    for page in range(1, 11):
+    for page in range(1, 31):
         rows = api.request('list.json', corp_code=corp,
                            bgn_de=(today - dt.timedelta(days=800)).strftime('%Y%m%d'),
                            end_de=today.strftime('%Y%m%d'), last_reprt_at='N',
@@ -231,22 +231,39 @@ def assess(quarters, today):
 
 def collect(api, corp, code, name, now):
     today = now.date()
-    notices = filings(api, corp, today)
+    issues = []
+    try:
+        notices = filings(api, corp, today)
+    except Exception as exc:
+        notices = []
+        reason = str(exc) if isinstance(exc, RuntimeError) else type(exc).__name__
+        issues.append({'area': '공시 목록', 'reason': reason})
+        print(code, 'filing list unavailable:', reason, flush=True)
     reports = {}
     # Fresh requests also revisit old periods: do not freeze corrections after 150 days.
     for year in range(today.year - 2, today.year + 1):
         for quarter, report_code in pf.REPORTS.items():
             if pf.period_end(year, quarter) >= today:
                 continue
-            rows = api.request('fnlttSinglAcntAll.json', corp_code=corp, bsns_year=year, reprt_code=report_code, fs_div='CFS')
-            basis = 'CFS'
-            if not rows:
-                rows = api.request('fnlttSinglAcntAll.json', corp_code=corp, bsns_year=year, reprt_code=report_code, fs_div='OFS')
-                basis = 'OFS'
+            try:
+                rows = api.request('fnlttSinglAcntAll.json', corp_code=corp, bsns_year=year, reprt_code=report_code, fs_div='CFS')
+                basis = 'CFS'
+                if not rows:
+                    rows = api.request('fnlttSinglAcntAll.json', corp_code=corp, bsns_year=year, reprt_code=report_code, fs_div='OFS')
+                    basis = 'OFS'
+            except Exception as exc:
+                reason = str(exc) if isinstance(exc, RuntimeError) else type(exc).__name__
+                issues.append({'area': f'{year} Q{quarter} 재무', 'reason': reason})
+                print(code, year, quarter, 'financial request unavailable:', reason, flush=True)
+                continue
             if rows:
                 reports[(year, quarter)] = {'rows': rows, 'basis': basis}
     quarters = normalize(reports)
     review = assess(quarters, today)
+    print(code, 'financial periods:', len(quarters), 'filings:', len(notices), flush=True)
+    if issues:
+        review['status'] = 'hold'
+        review['warnings'].append('수집 일부 미확인: 누락 자료를 확인하기 전 후보 판단 보류')
     periods = [report_period(r.get('report_nm', '')) for r in notices]
     periods = [p for p in periods if p]
     if periods and (not quarters or max(periods) > (quarters[-1]['year'], quarters[-1]['quarter'])):
@@ -276,7 +293,8 @@ def collect(api, corp, code, name, now):
                                 'textChanged': docs[0]['textDigest'] != docs[1]['textDigest'],
                                 'status': 'requires_review', 'note': '전년 동분기 문서 비교. 수치·서식 변경도 포함하므로 사업 변화로 자동 판정하지 않음'})
     return {'schemaVersion': 1, 'code': code, 'name': name, 'source': 'OpenDART', 'checkedAt': now.isoformat(),
-            'status': 'ok' if quarters and all(d['status'] != 'unavailable' for d in documents) and documents else 'partial',
+            'status': 'ok' if quarters and all(d['status'] != 'unavailable' for d in documents) and documents and not issues else 'partial',
+            'collectionIssues': issues,
             'quarters': quarters[-8:], 'assessment': review, 'documents': documents, 'comparisons': comparisons,
             'filings': [{'receipt': r['rcept_no'], 'title': r['report_nm'], 'filedAt': r['rcept_dt'],
                          'sourceUrl': 'https://dart.fss.or.kr/dsaf001/main.do?rcpNo=' + r['rcept_no']} for r in notices],
@@ -308,7 +326,7 @@ def main():
             raise RuntimeError('DART_API_KEY is not configured; no fabricated fallback')
         api = Client(key)
         corps = api.corporations()
-        with ThreadPoolExecutor(max_workers=3) as pool:
+        with ThreadPoolExecutor(max_workers=4) as pool:
             jobs = {pool.submit(collect, api, corps[code], code, name, now): (code, name) for code, name in PILOT if code in corps}
             errors.extend({'code': code, 'name': name, 'reason': 'DART 기업코드 미확인'} for code, name in PILOT if code not in corps)
             for job in as_completed(jobs):
@@ -327,8 +345,10 @@ def main():
                     pf.save(previous_path, payload)
                     results.append(payload)
                     print(code, payload['status'], payload['assessment']['status'], flush=True)
-                except Exception:
-                    errors.append({'code': code, 'name': name, 'reason': 'DART 수집 실패; 이전 파일을 최신으로 표시하지 않음'})
+                except Exception as exc:
+                    reason = str(exc) if isinstance(exc, RuntimeError) else type(exc).__name__
+                    errors.append({'code': code, 'name': name, 'reason': 'DART 수집 실패: ' + reason})
+                    print(code, 'collection failed:', reason, flush=True)
         print('OpenDART calls:', api.calls, flush=True)
     index = {'schemaVersion': 1, 'checkedAt': now.isoformat(), 'mode': 'offline' if args.offline else 'live',
              'status': 'partial' if errors or any(r['status'] != 'ok' for r in results) else 'ok',
