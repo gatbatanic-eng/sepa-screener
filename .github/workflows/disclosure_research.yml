@@ -1,0 +1,55 @@
+name: DART Disclosure Research Pilot
+on:
+  workflow_dispatch:
+  push:
+    branches: [master, dart-research-pilot]
+    paths:
+      - disclosure_research.py
+      - tests/test_disclosure_research.py
+      - .github/workflows/disclosure_research.yml
+      - docs/disclosures/**
+  workflow_run:
+    workflows: [Trend Fundamentals DART and SEC]
+    types: [completed]
+permissions:
+  contents: write
+concurrency:
+  group: dart-disclosure-research-${{ github.event_name == 'workflow_run' && 'master' || github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  research:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'master')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && 'master' || github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify period and evidence integrity
+        run: python -m unittest discover -s tests -p test_disclosure_research.py -v
+      - name: Collect primary disclosures and financials
+        id: collect
+        continue-on-error: true
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+        run: python disclosure_research.py
+      - name: Preserve public evidence and collection status
+        if: always() && steps.collect.outcome != 'skipped'
+        env:
+          TARGET_REF: ${{ github.event_name == 'workflow_run' && 'master' || github.ref_name }}
+        run: |
+          mkdir -p docs/data/disclosures research/disclosures
+          git add -f docs/data/disclosures/ research/disclosures/
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          if ! git diff --cached --quiet; then
+            git commit -m 'Record primary DART disclosure research pilot'
+            git pull --rebase origin "$TARGET_REF"
+            git push origin HEAD:"$TARGET_REF"
+          fi
+      - name: Report collection errors
+        if: steps.collect.outcome == 'failure'
+        run: exit 1
