@@ -79,5 +79,38 @@ class EvidenceTests(unittest.TestCase):
         self.assertEqual(result['status'], 'hold')
 
 
+class AssessmentTests(unittest.TestCase):
+    def quarters(self):
+        reports = {}
+        for year, limit in ((2024, 4), (2025, 4), (2026, 2)):
+            for quarter in range(1, limit + 1):
+                sales = 100 * (1.2 ** (year - 2024))
+                data = rows(sales * (4 if quarter == 4 else 1), 10 * (4 if quarter == 4 else 1),
+                            quarter * 20, quarter * 5, f'{year+1}0101000001', sales * quarter)
+                if quarter == 3:
+                    data[1]['thstrm_add_amount'] = '30'
+                    data[2]['thstrm_add_amount'] = '30'
+                reports[(year, quarter)] = {'rows': data, 'basis': 'CFS'}
+        return dr.normalize(reports)
+
+    def test_complete_cash_generating_growth_becomes_reading_candidate(self):
+        result = dr.assess(self.quarters(), dt.date(2026, 10, 29))
+        self.assertEqual(result['status'], 'review_candidate')
+
+    def test_missing_cashflow_blocks_positive_growth(self):
+        data = self.quarters()
+        data[-1]['operatingCashFlow'] = None
+        self.assertEqual(dr.assess(data, dt.date(2026, 10, 29))['status'], 'hold')
+
+    def test_gap_or_mixed_basis_blocks_candidate(self):
+        data = self.quarters()
+        self.assertEqual(dr.assess(data[:-2] + data[-1:], dt.date(2026, 10, 29))['status'], 'hold')
+        data[-1]['basis'] = 'OFS'
+        self.assertEqual(dr.assess(data, dt.date(2026, 10, 29))['status'], 'hold')
+
+    def test_stale_financial_period_blocks_candidate(self):
+        self.assertEqual(dr.assess(self.quarters(), dt.date(2027, 1, 1))['status'], 'hold')
+
+
 if __name__ == '__main__':
     unittest.main()
