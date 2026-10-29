@@ -35,7 +35,13 @@ jobs:
         continue-on-error: true
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
-        run: python disclosure_research.py
+          RETRY_INCOMPLETE: ${{ github.event_name == 'push' }}
+        run: |
+          if [ "$RETRY_INCOMPLETE" = 'true' ]; then
+            python disclosure_research.py --retry-incomplete
+          else
+            python disclosure_research.py
+          fi
       - name: Preserve public evidence and collection status
         if: always() && steps.collect.outcome != 'skipped'
         env:

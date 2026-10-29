@@ -158,18 +158,22 @@ def normalize(reports):
 
 
 def filings(api, corp, today):
+    """Relevant filing families; insider ownership notices are outside this pilot."""
     result = []
-    for page in range(1, 31):
-        response = api.request('list.json', corp_code=corp,
-                           bgn_de=(today - dt.timedelta(days=800)).strftime('%Y%m%d'),
-                           end_de=today.strftime('%Y%m%d'), last_reprt_at='N',
-                           page_count=100, page_no=page, sort='date', sort_mth='desc')
-        rows = response.get('list', []) if isinstance(response, dict) else response
-        result.extend(rows)
-        total_pages = int(response['total_page']) if isinstance(response, dict) and response.get('total_page') is not None else None
-        if len(rows) < 100 or (total_pages is not None and page >= total_pages):
-            return sorted({r['rcept_no']: r for r in result}.values(), key=lambda r: r['rcept_no'], reverse=True)
-    raise RuntimeError('Disclosure pagination limit reached; coverage incomplete')
+    for family in ('A', 'B', 'I', 'F'):
+        for page in range(1, 31):
+            response = api.request('list.json', corp_code=corp, pblntf_ty=family,
+                               bgn_de=(today - dt.timedelta(days=800)).strftime('%Y%m%d'),
+                               end_de=today.strftime('%Y%m%d'), last_reprt_at='N',
+                               page_count=100, page_no=page, sort='date', sort_mth='desc')
+            rows = response.get('list', []) if isinstance(response, dict) else response
+            result.extend(rows)
+            total_pages = int(response['total_page']) if isinstance(response, dict) and response.get('total_page') is not None else None
+            if len(rows) < 100 or (total_pages is not None and page >= total_pages):
+                break
+        else:
+            raise RuntimeError('Disclosure pagination limit reached; coverage incomplete')
+    return sorted({r['rcept_no']: r for r in result}.values(), key=lambda r: r['rcept_no'], reverse=True)
 
 
 def report_period(title):
@@ -345,6 +349,7 @@ def collect(api, corp, code, name, now):
     return {'schemaVersion': 1, 'code': code, 'name': name, 'source': 'OpenDART', 'checkedAt': now.isoformat(),
             'status': 'ok' if quarters and all(d['status'] != 'unavailable' for d in documents) and documents and not issues else 'partial',
             'collectionIssues': issues,
+            'filingScope': '정기·주요사항·거래소·외부감사 공시(A/B/I/F). 임원 지분변동 등은 제외',
             'rawReports': [{'year': year, 'quarter': quarter, 'basis': report['basis'],
                             'rows': [{k: r[k] for k in ('rcept_no', 'sj_div', 'currency', 'account_id', 'account_nm', 'thstrm_amount', 'thstrm_add_amount') if k in r}
                                      for r in report['rows'] if r.get('sj_div') == 'CF' or any(r == pick(report['rows'], key) for key in pf.ACCOUNTS | EXTRA)]}
@@ -360,6 +365,7 @@ def collect(api, corp, code, name, now):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--offline', action='store_true', help='Rebuild assessment from existing pilot files without API calls')
+    parser.add_argument('--retry-incomplete', action='store_true', help='Reuse complete observations less than one day old and retry missing companies')
     args = parser.parse_args()
     now = dt.datetime.now(dt.timezone.utc)
     output = ROOT / 'docs/data/disclosures'
@@ -380,14 +386,27 @@ def main():
             else:
                 errors.append({'code': code, 'name': name, 'reason': '기존 공시 검증 자료 없음'})
     else:
+        selected = []
+        for code, name in PILOT:
+            path = output / (code + '.json')
+            previous = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}
+            try:
+                fresh = (now - dt.datetime.fromisoformat(previous['checkedAt'])).total_seconds() < 86400
+            except (KeyError, ValueError):
+                fresh = False
+            if args.retry_incomplete and previous.get('status') == 'ok' and fresh:
+                results.append(previous)
+                print(code, 'reuse complete observation:', previous['checkedAt'], flush=True)
+            else:
+                selected.append((code, name))
         key = os.environ.get('DART_API_KEY', '').strip()
         if not key:
             raise RuntimeError('DART_API_KEY is not configured; no fabricated fallback')
         api = Client(key)
         corps = api.corporations()
         with ThreadPoolExecutor(max_workers=4) as pool:
-            jobs = {pool.submit(collect, api, corps[code], code, name, now): (code, name) for code, name in PILOT if code in corps}
-            errors.extend({'code': code, 'name': name, 'reason': 'DART 기업코드 미확인'} for code, name in PILOT if code not in corps)
+            jobs = {pool.submit(collect, api, corps[code], code, name, now): (code, name) for code, name in selected if code in corps}
+            errors.extend({'code': code, 'name': name, 'reason': 'DART 기업코드 미확인'} for code, name in selected if code not in corps)
             for job in as_completed(jobs):
                 code, name = jobs[job]
                 try:
