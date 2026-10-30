@@ -1,0 +1,42 @@
+name: GoldenCode Ranking Probe
+
+on:
+  push:
+    branches: [claude/gallant-clarke-qdl4zu]
+    paths: [goldencode/probe_rankings.py, .github/workflows/goldencode_probe.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: goldencode-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install requests
+      - name: Prepare data-branch worktree
+        run: |
+          if git ls-remote --exit-code --heads origin goldencode-live-data >/dev/null 2>&1; then
+            git fetch origin goldencode-live-data
+            git worktree add --detach "$RUNNER_TEMP/gc" FETCH_HEAD
+          else
+            git worktree add --detach "$RUNNER_TEMP/gc" HEAD
+          fi
+      - name: Probe ranking endpoints
+        run: python -m goldencode.probe_rankings --output "$RUNNER_TEMP/gc"
+      - name: Publish result
+        working-directory: ${{ runner.temp }}/gc
+        run: |
+          git add -f research/goldencode/probe
+          git diff --cached --quiet && exit 0
+          git -c user.name=github-actions[bot] -c user.email=github-actions[bot]@users.noreply.github.com commit -m "GoldenCode ranking probe"
+          git push origin HEAD:refs/heads/goldencode-live-data
