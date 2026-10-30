@@ -90,6 +90,17 @@ class LaoerBacktestTest(unittest.TestCase):
         self.assertAlmostEqual(down["w"], up["w"] * 0.5)
         self.assertAlmostEqual(compute(pos, closes)["w"], up["w"])  # 지수 데이터 없으면 규칙 미적용
 
+    def test_signal_ramp_does_not_sell_shares_bought_early(self):
+        from laoer_backtest.signal import compute
+        closes = 100 * np.exp(np.cumsum(np.tile([0.03, -0.03], 15)))  # 목표 약 83%
+        pos = dict(shares=50, cash_usd=5000, target_vol=0.40, lookback=20, band=0.10,
+                   ramp_start="2026-01-05", ramp_weeks=5, ramp_start_weight=0.0, ramp_min_gap=0.02)
+        s = compute(pos, closes, asof=pd.Timestamp("2026-01-06"))  # 1주차 분할 목표 약 17%, 현재 약 50%
+        self.assertGreater(s["cur"] - s["eff"], 0.10)
+        self.assertEqual(s["qty"], 0)
+        hi = compute(dict(pos, target_vol=0.10), closes, asof=pd.Timestamp("2026-01-06"))  # 최종 목표보다 10%p 넘게 많으면 매도
+        self.assertLess(hi["qty"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -43,9 +43,11 @@ def compute(pos, closes, price=None, asof=None, index_closes=None):
         eff = ramp["start_w"] + (w - ramp["start_w"]) * ramp["k"] / ramp["K"]
     gap = eff - cur
     qty = 0
-    if gap < -band or (gap > (ramp["min_gap"] if ramp else band)):
-        want = eff * total / px - shares
-        qty = math.floor(min(want, cash / px)) if want > 0 else -math.floor(min(-want, shares))
+    if cur - w > band:
+        # 매도(위험 축소)는 분할 진입 중에도 최종 목표 w 기준. 분할 목표(eff)보다 미리 많이 산 것은 팔지 않는다
+        qty = -math.floor(min((cur - w) * total / px, shares))
+    elif gap > (ramp["min_gap"] if ramp else band):
+        qty = math.floor(min(eff * total / px - shares, cash / px))
     # 다음 매매가 생기는 가격대 (보유·현금 고정, 목표비중 w 고정 가정)
     # 비중 s*p/(c+s*p) = w±band → p = c*x/(s*(1-x))
     def trig(x):
