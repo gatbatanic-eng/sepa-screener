@@ -1,0 +1,41 @@
+name: GoldenCode Rankings
+
+on:
+  push:
+    branches: [claude/gallant-clarke-qdl4zu]
+    paths: [goldencode/rankings.py, .github/workflows/goldencode_rankings.yml]
+  workflow_dispatch:
+  schedule:
+    # 08:55 KST 평일 + 백업. GitHub cron은 지연될 수 있다.
+    - cron: '55 23 * * 0-4'
+    - cron: '17 1 * * 1-5'
+    - cron: '17 4 * * 1-5'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: goldencode-rankings
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install requests
+      - run: python -m unittest tests.test_goldencode_rankings
+      - name: Prepare data-branch worktree
+        run: |
+          if git ls-remote --exit-code --heads origin goldencode-live-data >/dev/null 2>&1; then
+            git fetch origin goldencode-live-data
+            git worktree add --detach "$RUNNER_TEMP/gc" FETCH_HEAD
+          else
+            git worktree add --detach "$RUNNER_TEMP/gc" HEAD
+          fi
+      - name: Collect rankings (watch until 15:35 KST on weekdays)
+        run: python -m goldencode.rankings --watch --interval 120 --max-minutes 330 --output "$RUNNER_TEMP/gc"
