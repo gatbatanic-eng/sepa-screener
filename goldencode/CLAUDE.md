@@ -13,8 +13,13 @@
 | 용도 | 위치 | 비고 |
 |---|---|---|
 | 정밀 시세(감시 표본) | `nhplug-live-data` 브랜치 `research/nhplug/intraday/latest.json` | NHPLUG REST, 초당 5회. 한 바퀴 지연 확인 필수 |
-| 시장 전체 순위(후보 발견) | `goldencode-live-data` 브랜치 `research/goldencode/` | 네이버 금융. 지연 순위, 발견용 |
+| 시장 전체 순위(후보 발견) | `goldencode-live-data` 브랜치 `research/goldencode/rankings/latest.json` | 네이버 모바일 증권, 2분 간격. 행마다 `ageSeconds`(체결 시각 대비 지연). 2026-10-30 시험에서 약 17~30초 |
 | 순위 경로 점검 결과 | `goldencode-live-data` `research/goldencode/probe/rankings.json` | 어떤 경로가 되는지 |
+
+순위 목록: `value`(거래대금 상위 50) / `rise`(상승률 30) / `fall`(하락률 30, 시장 진단용) / `popular`(인기검색 20, 순간·누적 기준 미확인) / `high52`(52주 신고가, 코스닥은 적을 수 있음), 코스피·코스닥 각각.
+**없는 것:** 거래량·거래대금 급증 순위(`notAvailable`에 표기). 급증은 확인하지 못한 것으로 보고하고, 필요하면 NHPLUG 일별 시세로 후보만 따로 비교한다.
+거래대금 단위는 표시값이 백만원이며 한글 표기와 교차 검증한다. ETF·ETN·우선주·스팩은 `kind`로 구별한다.
+`status`가 `degraded`/`failed`이거나 `staleRows`가 있으면 그대로 보고한다.
 
 NHPLUG에는 순위·조건검색 API가 없다(`research/nhplug/docs/krstock/openapi.json` 확인). 순위는 NHPLUG 밖에서 받는다.
 
