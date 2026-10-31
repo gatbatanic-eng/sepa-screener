@@ -26,7 +26,9 @@ def main():
     ev = pd.read_csv(R / "phase1_dart_events.csv", dtype=str); ev = ev[ev.type == "무상증자"].copy(); ev["rcept"] = pd.to_datetime(ev.rcept)
     with ThreadPoolExecutor(8) as ex: res = list(ex.map(call, ev.itertuples()))
     rs = pd.DataFrame(res); ev = ev.merge(rs, on="rcept_no", how="left")
-    P(f"무상증자결정 공시 {len(ev)}건 조회: 성공 {int((ev.status=='000').sum())}, 실패 {int((ev.status!='000').sum())}. 응답 필드 예: {ev["fields"].dropna().iloc[0] if ev["fields"].notna().any() else '없음'}")
+    fld = ev["fields"].dropna().iloc[0] if ev["fields"].notna().any() else "없음"
+    ok = int((ev["status"] == "000").sum())
+    P(f"무상증자결정 공시 {len(ev)}건 조회: 성공 {ok}, 실패 {len(ev) - ok}. 응답 필드 예: {fld}")
     ev["ratio"] = ev.new / ev.old; ev["expected_drop"] = 1 / (1 + ev.ratio) - 1
     px = pd.concat([pd.read_parquet(f) for f in sorted(glob.glob(str(S / "ohlcv_*.parquet")))], ignore_index=True)
     px["Date"] = pd.to_datetime(px.Date); px = px.sort_values(["ticker", "Date"]); px["ret"] = px.groupby("ticker").Close.pct_change()
