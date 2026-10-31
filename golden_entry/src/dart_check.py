@@ -32,8 +32,9 @@ def main():
     d0 = dt.date(2020, 1, 1)
     while d0 <= dt.date.today():
         d1 = min(d0 + dt.timedelta(days=85), dt.date.today())
-        for ty in ("B", "I"):          # B 주요사항보고, I 거래소공시
+        for ty in ("B",):          # B 주요사항보고 (증자·감자·분할 결정 공시). 거래소공시(I)는 용량이 커서 제외 -> 한계로 보고
             lst, st = fetch_window(d0.strftime("%Y%m%d"), d1.strftime("%Y%m%d"), ty); windows += 1
+            print(f"{d0}~{d1} {ty} {len(lst)}건 {st}", flush=True)
             if st != "000": errs.append(f"{d0}~{d1} {ty}: {st}")
             rows += lst
         d0 = d1 + dt.timedelta(days=1)
