@@ -74,9 +74,12 @@ try:
                             "수정 전일": j.adj.iloc[i-1], "수정 당일": j.adj.iloc[i], "비수정 수익률": round(j.unadj.iloc[i] / j.unadj.iloc[i-1] - 1, 4),
                             "수정 수익률": round(j.adj.iloc[i] / j.adj.iloc[i-1] - 1, 4)})
             return out
-        except Exception: return []
+        except Exception as e:
+            errs.append(f"{type(e).__name__} {str(e)[:80]}"); return []
+    errs = []
     with ThreadPoolExecutor(6) as ex:
         for o in ex.map(scan, samp): ev += o
+    P(f"pykrx 수정/비수정 조회 중 예외 {len(errs)}건" + (f", 대표 사유: {pd.Series(errs).value_counts().head(3).to_dict()}" if errs else ""))
     P(f"표본 {len(samp)}종목(seed=0) 스캔, 수정/비수정 종가 비율이 하루에 20% 넘게 바뀐 사건 {len(ev)}건 발견.")
     if ev:
         ev = pd.DataFrame(ev).sort_values(["ticker", "date"]); ev.to_csv(R / "phase1_adjustment_events.csv", index=False)
@@ -94,6 +97,32 @@ try:
 except Exception as e:
     P(f"수정주가 검증 실행 실패: {type(e).__name__} {str(e)[:150]}. 이 항목은 미수행.")
 
+
+H("4b. 수정주가 검증: 급변 사건(−50% 미만)을 야후 Close(분할 반영)와 대조")
+try:
+    import yfinance as yf
+    o0 = px[px.groupby("ticker").Close.pct_change() < -0.5][["ticker", "Date"]].sort_values(["ticker", "Date"]).head(5)
+    P("선정 규칙: 저장 데이터에서 하루 수익률이 −50% 미만인 사건을 종목·날짜 순으로 정렬한 앞 5건(임의 선택 없음).")
+    rows4 = []
+    for r in o0.itertuples():
+        mk = st.set_index("ticker").market.get(r.ticker, "KOSDAQ"); sym = f"{r.ticker}.{'KS' if mk=='KOSPI' else 'KQ'}"
+        w0, w1 = r.Date - pd.Timedelta(days=6), r.Date + pd.Timedelta(days=6)
+        a = px[(px.ticker == r.ticker) & px.Date.between(w0, w1)].set_index("Date").Close
+        try:
+            y = yf.download(sym, start=w0.strftime("%Y-%m-%d"), end=(w1 + pd.Timedelta(days=1)).strftime("%Y-%m-%d"), progress=False, auto_adjust=False)
+            if isinstance(y.columns, pd.MultiIndex): y.columns = y.columns.get_level_values(0)
+            yc = y.Close; yc.index = pd.to_datetime(yc.index).tz_localize(None)
+        except Exception as e:
+            yc = pd.Series(dtype=float)
+        def jump(x):
+            if r.Date in x.index and x.index.get_loc(r.Date) > 0: i = x.index.get_loc(r.Date); return round(float(x.iloc[i] / x.iloc[i-1] - 1), 4)
+            return None
+        rows4.append({"ticker": r.ticker, "date": r.Date.date(), "저장데이터 당일 수익률": jump(a), "야후 Close 당일 수익률": jump(yc), "야후 행수": len(yc)})
+    T(pd.DataFrame(rows4))
+    P("해석: 저장 데이터만 급락하고 야후는 연속이면 저장 데이터가 분할을 반영하지 못한 것. 둘 다 급락이면 실제 하락이거나 둘 다 미반영.")
+except Exception as e:
+    P(f"4b 실행 실패: {type(e).__name__} {str(e)[:150]}")
+
 # 5 결측/정지
 H("5. 결측일, 거래정지, 0 거래량")
 g = px.groupby("ticker")
@@ -102,6 +131,8 @@ exp = span.apply(lambda r: int(((cal >= r["min"]) & (cal <= r["max"])).sum()), a
 miss = (exp - span["size"]).clip(lower=0); extra = (span["size"] - exp).clip(lower=0)
 P(f"기대 거래일 합계 {int(exp.sum()):,}, 결측일 합계 {int(miss.sum()):,} ({miss.sum()/exp.sum():.4%}). 결측 있는 종목 {(miss>0).sum()}개, 결측 6일 이상 종목 {(miss>5).sum()}개. 달력에 없는 날짜 행(초과) 합계 {int(extra.sum())}.")
 T(pd.DataFrame({"결측일": miss, "기대일": exp, "첫날": span["min"].dt.date, "끝날": span["max"].dt.date}).sort_values("결측일", ascending=False).head(15), True)
+susp = (px.Volume == 0) & (px.Open == 0) & (px.High == 0) & (px.Low == 0)
+P(f"소스는 거래정지일을 '시가·고가·저가=0, 종가=전일종가, 거래량=0' 행으로 채워 넣는다(결측 행이 아니므로 결측일이 0으로 나옴). 이 패턴 행 {int(susp.sum()):,}개, 종목 {px[susp].ticker.nunique()}개. 시가/고가/저가가 0인 행 {int(((px.Open==0)|(px.High==0)|(px.Low==0)).sum()):,}개 → 백테스트 시 정지일 행은 제외하거나 별도 처리해야 한다.")
 z = px[px.Volume == 0].copy(); P(f"거래량 0인 행 {len(z):,}개 ({len(z)/len(px):.4%}), 해당 종목 {z.ticker.nunique()}개.")
 px["_z"] = (px.Volume == 0).astype(int); px["_run"] = px.groupby("ticker")["_z"].transform(lambda s: s.groupby((s != s.shift()).cumsum()).cumsum())
 runs = px[px._z == 1].groupby("ticker")["_run"].max()
