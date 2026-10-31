@@ -1,0 +1,31 @@
+name: Golden Entry DART Check
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/golden_entry_dart.yml
+      - golden_entry/src/dart_check.py
+permissions:
+  contents: write
+jobs:
+  dart:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: "${{ github.ref_name }}"}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+      - run: pip install pandas pyarrow requests tabulate numpy
+      - name: DART check
+        working-directory: golden_entry
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+        run: python -m src.dart_check
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"; git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add golden_entry/reports
+          git diff --cached --quiet && exit 0
+          git commit -m "Golden Entry Phase 1: DART corporate-action check output"
+          for i in 1 2 3; do git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && break; sleep $((i*5)); done
