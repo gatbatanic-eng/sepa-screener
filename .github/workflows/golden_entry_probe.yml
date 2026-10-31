@@ -1,0 +1,25 @@
+name: Golden Entry Source Probe
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/golden_entry_probe.yml
+      - golden_entry/src/probe_sources.py
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+      - run: pip install pandas pykrx finance-datareader yfinance pyarrow requests
+      - name: Probe
+        env:
+          NHPLUG_APPKEY: ${{ secrets.NHPLUG_APPKEY }}
+          NHPLUG_APPSECRET: ${{ secrets.NHPLUG_APPSECRET }}
+          KRX_ID: ${{ secrets.KRX_ID }}
+          KRX_PW: ${{ secrets.KRX_PW }}
+        run: python golden_entry/src/probe_sources.py
