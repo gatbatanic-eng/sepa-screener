@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "generatedAt": "2026-10-31T13:54:33.586934+00:00",
+ "generatedAt": "2026-10-31T22:26:06.089438+00:00",
  "latest": {
   "kr": {
    "market": "kr",
@@ -199,7 +199,7 @@
       },
       {
        "kind": "sector",
-       "text": "업종 IT 서비스 강세: 50일선 위 33%, 평균 RS 55, 17개 업종 중 3위 (점수 +1)"
+       "text": "업종 IT 서비스 강세: 50일선 위 40%, 평균 RS 57, 19개 업종 중 2위 (점수 +1)"
       },
       {
        "kind": "market",
@@ -250,7 +250,7 @@
       },
       {
        "kind": "sector",
-       "text": "업종 화학 중간: 50일선 위 16%, 평균 RS 43, 17개 업종 중 11위 (점수 +0)"
+       "text": "업종 화학 중간: 50일선 위 20%, 평균 RS 44, 19개 업종 중 12위 (점수 +0)"
       },
       {
        "kind": "market",
@@ -357,7 +357,7 @@
       },
       {
        "kind": "sector",
-       "text": "업종 전기·전자 중간: 50일선 위 18%, 평균 RS 59, 17개 업종 중 7위 (점수 +0)"
+       "text": "업종 전기·전자 중간: 50일선 위 18%, 평균 RS 58, 19개 업종 중 8위 (점수 +0)"
       },
       {
        "kind": "market",
@@ -373,6 +373,68 @@
       }
      ],
      "weight": 0.36
+    },
+    {
+     "code": "031980",
+     "name": "피에스케이홀딩스",
+     "market": "KOSDAQ",
+     "price": 182500.0,
+     "score": 3,
+     "strategies": {
+      "sepa": [
+       "TREND"
+      ],
+      "multifactor": [
+       "WATCH",
+       "CONTROL"
+      ]
+     },
+     "funnelRank": null,
+     "entry": {
+      "riskPct": 19.41,
+      "riskSource": "SEPA",
+      "verdict": "NO-GO",
+      "chase": [],
+      "liquidityOk": true,
+      "zone": "SETUP"
+     },
+     "v2": {
+      "score": 3,
+      "sector": "기계·장비",
+      "sectorAdj": 1,
+      "marketAdj": -1
+     },
+     "why": [
+      {
+       "kind": "strategy",
+       "text": "SEPA, 멀티팩터 선정 (v1 점수 3)"
+      },
+      {
+       "kind": "entry",
+       "text": "손절폭 19.41%(SEPA) → 권고 비중 41% (8% 초과분은 8%÷손절폭으로 축소)"
+      },
+      {
+       "kind": "entry",
+       "text": "참고: SEPA NO-GO — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"
+      },
+      {
+       "kind": "sector",
+       "text": "업종 기계·장비 강세: 50일선 위 23%, 평균 RS 60, 19개 업종 중 6위 (점수 +1)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 KOSDAQ RED (점수 -1)"
+      },
+      {
+       "kind": "consensus",
+       "text": "컨센서스(네이버, 10/31): 2026년 EPS 추정 6,528원 · 평균 목표가 243,333원 (현재가 대비 +33%) · 투자의견 평균 4.0/5 (참고, 점수 아님)"
+      },
+      {
+       "kind": "macro",
+       "text": "매크로 리스크오프 (VIX 17.2, 달러지수 101.6, 원/달러 1,338, 미 10년 5.05%) — 참고, 점수 아님"
+      }
+     ],
+     "weight": 0.41
     },
     {
      "code": "053800",
@@ -420,7 +482,7 @@
       },
       {
        "kind": "sector",
-       "text": "업종 IT 서비스 강세: 50일선 위 33%, 평균 RS 55, 17개 업종 중 3위 (점수 +1)"
+       "text": "업종 IT 서비스 강세: 50일선 위 40%, 평균 RS 57, 19개 업종 중 2위 (점수 +1)"
       },
       {
        "kind": "market",
@@ -432,69 +494,6 @@
       }
      ],
      "weight": 0.19
-    },
-    {
-     "code": "028050",
-     "name": "삼성E&A",
-     "market": "KOSPI",
-     "price": 60600.0,
-     "score": 3,
-     "strategies": {
-      "sepa": [
-       "TREND"
-      ],
-      "multifactor": [
-       "WATCH"
-      ]
-     },
-     "funnelRank": null,
-     "entry": {
-      "riskPct": 34.09,
-      "riskSource": "SEPA",
-      "verdict": "NO-GO",
-      "chase": [
-       "SEPA 과열 구간"
-      ],
-      "liquidityOk": true,
-      "zone": "EXTENDED"
-     },
-     "v2": {
-      "score": 3,
-      "sector": "일반서비스",
-      "sectorAdj": 1,
-      "marketAdj": -1
-     },
-     "why": [
-      {
-       "kind": "strategy",
-       "text": "SEPA, 멀티팩터 선정 (v1 점수 3)"
-      },
-      {
-       "kind": "entry",
-       "text": "손절폭 34.09%(SEPA) → 권고 비중 23% (8% 초과분은 8%÷손절폭으로 축소)"
-      },
-      {
-       "kind": "entry",
-       "text": "참고: SEPA NO-GO, SEPA 과열 구간 — 백테스트에서 이 필터는 성과를 개선하지 않았음(v3는 거르지 않고 비중으로 조절)"
-      },
-      {
-       "kind": "sector",
-       "text": "업종 일반서비스 강세: 50일선 위 31%, 평균 RS 51, 17개 업종 중 5위 (점수 +1)"
-      },
-      {
-       "kind": "market",
-       "text": "시장 KOSPI RED (점수 -1)"
-      },
-      {
-       "kind": "consensus",
-       "text": "컨센서스(네이버, 10/31): 2026년 EPS 추정 4,456원 · 평균 목표가 77,350원 (현재가 대비 +28%) · 투자의견 평균 4.0/5 (참고, 점수 아님)"
-      },
-      {
-       "kind": "macro",
-       "text": "매크로 리스크오프 (VIX 17.2, 달러지수 101.6, 원/달러 1,338, 미 10년 5.05%) — 참고, 점수 아님"
-      }
-     ],
-     "weight": 0.23
     }
    ],
    "v3": {
@@ -532,178 +531,198 @@
      "candidates": 73
     },
     "sectorCoverage": {
-     "known": 64,
+     "known": 70,
      "candidates": 73
     },
     "sectors": [
-     {
-      "sector": "의료·정밀기기",
-      "n": 17,
-      "above50Pct": 41.2,
-      "avgRs": 61.6,
-      "strength": 51.4,
-      "rank": 1,
-      "of": 17,
-      "adj": 1
-     },
      {
       "sector": "운송·창고",
       "n": 11,
       "above50Pct": 45.5,
       "avgRs": 56.9,
       "strength": 51.2,
-      "rank": 2,
-      "of": 17,
+      "rank": 1,
+      "of": 19,
       "adj": 1
      },
      {
       "sector": "IT 서비스",
-      "n": 42,
-      "above50Pct": 33.3,
-      "avgRs": 55.1,
-      "strength": 44.2,
+      "n": 52,
+      "above50Pct": 40.4,
+      "avgRs": 57.1,
+      "strength": 48.7,
+      "rank": 2,
+      "of": 19,
+      "adj": 1
+     },
+     {
+      "sector": "의료·정밀기기",
+      "n": 20,
+      "above50Pct": 40.0,
+      "avgRs": 57.1,
+      "strength": 48.6,
       "rank": 3,
-      "of": 17,
+      "of": 19,
+      "adj": 1
+     },
+     {
+      "sector": "섬유·의류",
+      "n": 7,
+      "above50Pct": 42.9,
+      "avgRs": 44.6,
+      "strength": 43.7,
+      "rank": 4,
+      "of": 19,
       "adj": 1
      },
      {
       "sector": "보험",
-      "n": 9,
-      "above50Pct": 22.2,
-      "avgRs": 64.3,
-      "strength": 43.2,
-      "rank": 4,
-      "of": 17,
-      "adj": 1
-     },
-     {
-      "sector": "일반서비스",
-      "n": 35,
-      "above50Pct": 31.4,
-      "avgRs": 51.1,
-      "strength": 41.3,
+      "n": 10,
+      "above50Pct": 20.0,
+      "avgRs": 66.7,
+      "strength": 43.3,
       "rank": 5,
-      "of": 17,
+      "of": 19,
       "adj": 1
      },
      {
       "sector": "기계·장비",
-      "n": 68,
-      "above50Pct": 19.1,
-      "avgRs": 58.9,
-      "strength": 39.0,
+      "n": 77,
+      "above50Pct": 23.4,
+      "avgRs": 59.6,
+      "strength": 41.5,
       "rank": 6,
-      "of": 17,
+      "of": 19,
+      "adj": 1
+     },
+     {
+      "sector": "일반서비스",
+      "n": 42,
+      "above50Pct": 28.6,
+      "avgRs": 48.8,
+      "strength": 38.7,
+      "rank": 7,
+      "of": 19,
       "adj": 0
      },
      {
       "sector": "전기·전자",
-      "n": 119,
-      "above50Pct": 17.6,
-      "avgRs": 59.0,
+      "n": 135,
+      "above50Pct": 18.5,
+      "avgRs": 58.1,
       "strength": 38.3,
-      "rank": 7,
-      "of": 17,
+      "rank": 8,
+      "of": 19,
+      "adj": 0
+     },
+     {
+      "sector": "비금속",
+      "n": 7,
+      "above50Pct": 14.3,
+      "avgRs": 61.1,
+      "strength": 37.7,
+      "rank": 9,
+      "of": 19,
       "adj": 0
      },
      {
       "sector": "유통",
-      "n": 28,
-      "above50Pct": 21.4,
-      "avgRs": 50.3,
-      "strength": 35.9,
-      "rank": 8,
-      "of": 17,
+      "n": 31,
+      "above50Pct": 19.4,
+      "avgRs": 49.7,
+      "strength": 34.5,
+      "rank": 10,
+      "of": 19,
       "adj": 0
      },
      {
       "sector": "음식료·담배",
-      "n": 10,
-      "above50Pct": 30.0,
-      "avgRs": 41.8,
-      "strength": 35.9,
-      "rank": 9,
-      "of": 17,
-      "adj": 0
-     },
-     {
-      "sector": "제약",
-      "n": 37,
-      "above50Pct": 16.2,
-      "avgRs": 43.7,
-      "strength": 30.0,
-      "rank": 10,
-      "of": 17,
+      "n": 11,
+      "above50Pct": 27.3,
+      "avgRs": 38.5,
+      "strength": 32.9,
+      "rank": 11,
+      "of": 19,
       "adj": 0
      },
      {
       "sector": "화학",
-      "n": 58,
-      "above50Pct": 15.5,
-      "avgRs": 43.3,
-      "strength": 29.4,
-      "rank": 11,
-      "of": 17,
+      "n": 69,
+      "above50Pct": 20.3,
+      "avgRs": 43.9,
+      "strength": 32.1,
+      "rank": 12,
+      "of": 19,
       "adj": 0
      },
      {
       "sector": "건설",
-      "n": 11,
-      "above50Pct": 9.1,
-      "avgRs": 48.3,
-      "strength": 28.7,
-      "rank": 12,
-      "of": 17,
+      "n": 13,
+      "above50Pct": 15.4,
+      "avgRs": 48.5,
+      "strength": 32.0,
+      "rank": 13,
+      "of": 19,
       "adj": 0
      },
      {
-      "sector": "오락·문화",
-      "n": 8,
-      "above50Pct": 25.0,
-      "avgRs": 30.2,
-      "strength": 27.6,
-      "rank": 13,
-      "of": 17,
+      "sector": "제약",
+      "n": 39,
+      "above50Pct": 17.9,
+      "avgRs": 42.8,
+      "strength": 30.4,
+      "rank": 14,
+      "of": 19,
       "adj": -1
      },
      {
       "sector": "금융",
-      "n": 39,
-      "above50Pct": 7.7,
-      "avgRs": 43.2,
-      "strength": 25.5,
-      "rank": 14,
-      "of": 17,
+      "n": 45,
+      "above50Pct": 8.9,
+      "avgRs": 42.7,
+      "strength": 25.8,
+      "rank": 15,
+      "of": 19,
       "adj": -1
      },
      {
       "sector": "금속",
-      "n": 30,
-      "above50Pct": 10.0,
-      "avgRs": 40.2,
-      "strength": 25.1,
-      "rank": 15,
-      "of": 17,
+      "n": 31,
+      "above50Pct": 9.7,
+      "avgRs": 40.7,
+      "strength": 25.2,
+      "rank": 16,
+      "of": 19,
+      "adj": -1
+     },
+     {
+      "sector": "오락·문화",
+      "n": 10,
+      "above50Pct": 20.0,
+      "avgRs": 30.0,
+      "strength": 25.0,
+      "rank": 17,
+      "of": 19,
       "adj": -1
      },
      {
       "sector": "운송장비·부품",
-      "n": 25,
-      "above50Pct": 12.0,
-      "avgRs": 30.9,
-      "strength": 21.4,
-      "rank": 16,
-      "of": 17,
+      "n": 30,
+      "above50Pct": 13.3,
+      "avgRs": 33.4,
+      "strength": 23.4,
+      "rank": 18,
+      "of": 19,
       "adj": -1
      },
      {
       "sector": "증권",
-      "n": 6,
+      "n": 7,
       "above50Pct": 0.0,
-      "avgRs": 21.0,
-      "strength": 10.5,
-      "rank": 17,
-      "of": 17,
+      "avgRs": 21.1,
+      "strength": 10.6,
+      "rank": 19,
+      "of": 19,
       "adj": -1
      }
     ]
