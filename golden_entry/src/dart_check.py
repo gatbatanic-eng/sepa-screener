@@ -28,16 +28,19 @@ def fetch_window(b, e, ty):
 def main():
     if not KEY:
         P("DART_API_KEY 가 설정되지 않아 DART 대조를 수행하지 못했다."); return finish()
-    rows, errs, windows = [], [], 0
+    rows, errs, wins = [], [], []
     d0 = dt.date(2020, 1, 1)
     while d0 <= dt.date.today():
-        d1 = min(d0 + dt.timedelta(days=85), dt.date.today())
-        for ty in ("B",):          # B 주요사항보고 (증자·감자·분할 결정 공시). 거래소공시(I)는 용량이 커서 제외 -> 한계로 보고
-            lst, st = fetch_window(d0.strftime("%Y%m%d"), d1.strftime("%Y%m%d"), ty); windows += 1
-            print(f"{d0}~{d1} {ty} {len(lst)}건 {st}", flush=True)
-            if st != "000": errs.append(f"{d0}~{d1} {ty}: {st}")
+        d1 = min(d0 + dt.timedelta(days=85), dt.date.today()); wins.append((d0, d1)); d0 = d1 + dt.timedelta(days=1)
+    from concurrent.futures import ThreadPoolExecutor
+    def run(w):      # B 주요사항보고(증자·감자·분할 결정 공시). 거래소공시(I)는 용량이 커서 제외 -> 한계로 보고
+        lst, st = fetch_window(w[0].strftime("%Y%m%d"), w[1].strftime("%Y%m%d"), "B")
+        print(f"{w[0]}~{w[1]} B {len(lst)}건 {st}", flush=True); return w, lst, st
+    with ThreadPoolExecutor(5) as ex:
+        for w, lst, st in ex.map(run, wins):
+            if st != "000": errs.append(f"{w[0]}~{w[1]} B: {st}")
             rows += lst
-        d0 = d1 + dt.timedelta(days=1)
+    windows = len(wins)
     df = pd.DataFrame(rows)
     P(f"조회 창 {windows}개, 공시 {len(df):,}건 수신, 조회 오류 {len(errs)}건" + (f": {errs[:5]}" if errs else ""))
     if df.empty: return finish()
