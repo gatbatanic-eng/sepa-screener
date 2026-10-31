@@ -1,0 +1,8 @@
+period: {start: "2013-01-01", dev_end: "2023-12-31", holdout_start: "2024-01-01"}
+collect:
+  sleep_sec: 0.3
+  cache_dir: data/cache
+  markets: [KOSPI, KOSDAQ]
+  universe_sample_freq: "YE"   # 연말 + 최신일 기준 종목 목록 스냅샷
+universe: {min_listing_days: 250, min_avg_value_krw: 1.0e9, min_price: 1000}
+costs: {commission_oneway: 0.00015, sell_tax: null, slippage: 0.002, slippage_illiquid: 0.004}
