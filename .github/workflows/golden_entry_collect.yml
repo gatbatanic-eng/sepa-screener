@@ -1,0 +1,38 @@
+name: Golden Entry Collect
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/golden_entry_collect.yml
+      - golden_entry/src/collect.py
+      - golden_entry/src/audit_report.py
+permissions:
+  contents: write
+concurrency:
+  group: golden-entry-collect
+  cancel-in-progress: false
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: "${{ github.ref_name }}"}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+      - run: pip install pandas pykrx finance-datareader yfinance pyarrow requests tabulate numpy
+      - name: Collect
+        working-directory: golden_entry
+        run: python -m src.collect
+      - name: Audit
+        continue-on-error: true
+        working-directory: golden_entry
+        run: python -m src.audit_report
+      - name: Commit data and reports
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add golden_entry/data_store golden_entry/reports
+          git diff --cached --quiet && exit 0
+          git commit -m "Golden Entry Phase 1: data_store + audit output ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+          for i in 1 2 3; do git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && break; sleep $((i*5)); done

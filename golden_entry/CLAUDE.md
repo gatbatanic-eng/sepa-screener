@@ -322,3 +322,8 @@ data/               # gitignore
 ### 환경
 - Python 3.11
 - pandas, numpy, pyarrow, scipy, pykrx, finance-datareader, matplotlib, pyyaml, pytest
+
+---
+## 변경 이력
+- 2026-10-31 (사용자 지시): 2장 기간을 10년에서 5년으로 축소. 수집 2020-01-01~(워밍업 포함), 분석 2021-01-01~. 2장의 개발/홀드아웃/Walk-Forward 일정은 이 기간에 맞게 Phase 2 전에 사용자와 다시 확정한다(현재 미정, 홀드아웃 날짜 미확정).
+- 수집 환경: 세션 네트워크는 데이터 호스트가 차단되어 GitHub Actions(`golden_entry_collect.yml`)에서 수집해 `golden_entry/data_store/`에 커밋한다.

@@ -1,4 +1,5 @@
-period: {start: "2013-01-01", dev_end: "2023-12-31", holdout_start: "2024-01-01"}
+# 2026-10-31 사용자 지시로 10년 -> 5년으로 축소. 수집은 워밍업 포함 2020-01-01~, 분석은 2021-01-01~. 개발/홀드아웃 분할은 Phase 2 전에 사용자와 재확정 필요.
+period: {fetch_start: "2020-01-01", analysis_start: "2021-01-01", dev_end: null, holdout_start: null}
 collect:
   sleep_sec: 0.3
   cache_dir: data/cache
