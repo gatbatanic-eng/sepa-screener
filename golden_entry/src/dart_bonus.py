@@ -20,13 +20,13 @@ def call(r):
         except Exception: j = {"status": "ERR"}; time.sleep(2)
     if j.get("status") != "000": return {"rcept_no": r.rcept_no, "status": j.get("status"), "msg": str(j.get("message"))[:40]}
     it = [x for x in j["list"] if x.get("rcept_no") == r.rcept_no] or j["list"]
-    x = it[0]; return {"rcept_no": r.rcept_no, "status": "000", "new": num(x.get("nstk_ostk_cnt")), "old": num(x.get("bfic_tisstk_ostk")), "keys": ",".join(list(x.keys())[:12])}
+    x = it[0]; return {"rcept_no": r.rcept_no, "status": "000", "new": num(x.get("nstk_ostk_cnt")), "old": num(x.get("bfic_tisstk_ostk")), "fields": ",".join(list(x.keys())[:12])}
 
 def main():
     ev = pd.read_csv(R / "phase1_dart_events.csv", dtype=str); ev = ev[ev.type == "무상증자"].copy(); ev["rcept"] = pd.to_datetime(ev.rcept)
     with ThreadPoolExecutor(8) as ex: res = list(ex.map(call, ev.itertuples()))
     rs = pd.DataFrame(res); ev = ev.merge(rs, on="rcept_no", how="left")
-    P(f"무상증자결정 공시 {len(ev)}건 조회: 성공 {int((ev.status=='000').sum())}, 실패 {int((ev.status!='000').sum())}. 응답 필드 예: {ev.keys.dropna().iloc[0] if ev.keys.notna().any() else '없음'}")
+    P(f"무상증자결정 공시 {len(ev)}건 조회: 성공 {int((ev.status=='000').sum())}, 실패 {int((ev.status!='000').sum())}. 응답 필드 예: {ev["fields"].dropna().iloc[0] if ev["fields"].notna().any() else '없음'}")
     ev["ratio"] = ev.new / ev.old; ev["expected_drop"] = 1 / (1 + ev.ratio) - 1
     px = pd.concat([pd.read_parquet(f) for f in sorted(glob.glob(str(S / "ohlcv_*.parquet")))], ignore_index=True)
     px["Date"] = pd.to_datetime(px.Date); px = px.sort_values(["ticker", "Date"]); px["ret"] = px.groupby("ticker").Close.pct_change()
