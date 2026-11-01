@@ -1,0 +1,214 @@
+{
+  "audit_version": "0.2.0",
+  "source_commit": "359ce852283c91c8fd59a7cd4fdc3e485a092cea",
+  "runtime": {
+    "python": "3.12.14",
+    "pandas": "3.1.0",
+    "numpy": "2.5.4",
+    "pyarrow": "26.0.0"
+  },
+  "rows": 3925855,
+  "symbols": 2729,
+  "first": "2020-01-02",
+  "last": "2026-10-30",
+  "duplicate_key_rows": 0,
+  "calendar_issues": {},
+  "index_duplicate_rows": 0,
+  "status_mismatch_rows": 0,
+  "flags": {
+    "nonfinite": 0,
+    "zero_volume": 154201,
+    "halt_pattern": 110696,
+    "nonpositive_price": 111182,
+    "negative_volume": 0,
+    "ohlc_inconsistent": 6214,
+    "jump_over_30pct": 799,
+    "mechanically_valid_bar": 3765318
+  },
+  "classification": {
+    "REVIEW_CURRENT_CLASSIFICATION": 2511,
+    "PROVISIONAL_EQUITY": 202,
+    "REVIEW_ASSET_POLICY": 16,
+    "EXCLUDE_NON_EQUITY": 7
+  },
+  "zero_volume_runs": 2730,
+  "zero_runs_at_least_5": 1263,
+  "symbols_zero_run_at_least_5": 842,
+  "max_zero_run": 1363,
+  "jump_symbols": 380,
+  "jumps_with_candidate_event": 75,
+  "delisting_tail_rows": 218,
+  "delisting_tail_gaps": 0,
+  "delisted_with_zero_volume_tail": 71,
+  "symbols_with_prices_after_delist": 0,
+  "markets_per_symbol_conflicts": 0,
+  "years": [
+    {
+      "year": 2020,
+      "rows": 537915,
+      "symbols": 2231,
+      "nonfinite": 0,
+      "zero_volume": 23919,
+      "halt_pattern": 15981,
+      "nonpositive_price": 16230,
+      "negative_volume": 0,
+      "ohlc_inconsistent": 3264,
+      "jump_over_30pct": 135
+    },
+    {
+      "year": 2021,
+      "rows": 554678,
+      "symbols": 2292,
+      "nonfinite": 0,
+      "zero_volume": 25280,
+      "halt_pattern": 18056,
+      "nonpositive_price": 18292,
+      "negative_volume": 0,
+      "ohlc_inconsistent": 1875,
+      "jump_over_30pct": 105
+    },
+    {
+      "year": 2022,
+      "rows": 560870,
+      "symbols": 2336,
+      "nonfinite": 0,
+      "zero_volume": 20333,
+      "halt_pattern": 14545,
+      "nonpositive_price": 14545,
+      "negative_volume": 0,
+      "ohlc_inconsistent": 860,
+      "jump_over_30pct": 84
+    },
+    {
+      "year": 2023,
+      "rows": 574187,
+      "symbols": 2407,
+      "nonfinite": 0,
+      "zero_volume": 17184,
+      "halt_pattern": 13196,
+      "nonpositive_price": 13196,
+      "negative_volume": 0,
+      "ohlc_inconsistent": 154,
+      "jump_over_30pct": 96
+    },
+    {
+      "year": 2024,
+      "rows": 590404,
+      "symbols": 2486,
+      "nonfinite": 0,
+      "zero_volume": 22275,
+      "halt_pattern": 17493,
+      "nonpositive_price": 17493,
+      "negative_volume": 0,
+      "ohlc_inconsistent": 50,
+      "jump_over_30pct": 91
+    },
+    {
+      "year": 2025,
+      "rows": 601612,
+      "symbols": 2547,
+      "nonfinite": 0,
+      "zero_volume": 22687,
+      "halt_pattern": 16253,
+      "nonpositive_price": 16253,
+      "negative_volume": 0,
+      "ohlc_inconsistent": 10,
+      "jump_over_30pct": 117
+    },
+    {
+      "year": 2026,
+      "rows": 506189,
+      "symbols": 2561,
+      "nonfinite": 0,
+      "zero_volume": 22523,
+      "halt_pattern": 15172,
+      "nonpositive_price": 15173,
+      "negative_volume": 0,
+      "ohlc_inconsistent": 1,
+      "jump_over_30pct": 171
+    }
+  ],
+  "approval": "DATA_NOT_APPROVED_FOR_PERFORMANCE_BACKTEST",
+  "performance_experiments": 0,
+  "source_files": [
+    {
+      "file": "listing.parquet",
+      "bytes": 243106,
+      "sha256": "69df0aaaa6a7bef34535f34fde6a85f3b0b6aa5b3a121ee2ccd83aaa7dd25601",
+      "git_blob_sha1": "fd0f79c80d4bfb31431720da476ecfebdc84a9c2"
+    },
+    {
+      "file": "delisting.parquet",
+      "bytes": 213266,
+      "sha256": "3cfebfe8d4b03c9b4096119e725bb1687464451af1ff6d4c2dbb30ba7a7d4677",
+      "git_blob_sha1": "89f7b9c3e19308215623e3693e56e11332a18fed"
+    },
+    {
+      "file": "index.parquet",
+      "bytes": 142423,
+      "sha256": "3c5c7b4ee81c3a39f48dd215a8ab57a7ecb72462e952749aae2b6af9f623f77d",
+      "git_blob_sha1": "48f29efb765cd4975c6183ede14b78149696f379"
+    },
+    {
+      "file": "fetch_status.parquet",
+      "bytes": 36801,
+      "sha256": "2907e6153469fa7e0d9d636d552b5f95d498b3daec3c771af34bb05aa350fd8d",
+      "git_blob_sha1": "88d401dba4e89adfaab30f760baa17070d446901"
+    },
+    {
+      "file": "ohlcv_2020.parquet",
+      "bytes": 6473041,
+      "sha256": "d84fa80ce079cd6b58863b0eab054f7f78a9eb9987cd348f1cb2929cc52583ac",
+      "git_blob_sha1": "86becf9958cd17c03f1e25aba6f1d92d25e05036"
+    },
+    {
+      "file": "ohlcv_2021.parquet",
+      "bytes": 6646674,
+      "sha256": "0f5d75eeaae17cf0855c81382d68532d917b64d15957747fb84c2a076ba5d225",
+      "git_blob_sha1": "08227f8b8b3f14ea840d6a0da4c6e8dbf6e11b48"
+    },
+    {
+      "file": "ohlcv_2022.parquet",
+      "bytes": 6579008,
+      "sha256": "188ef022e2e4f9f6136c3a7185dfeea442f99e6140b7623c8c96f653de2f579a",
+      "git_blob_sha1": "f1e297bba3d6a5eee925a298625703e51f4b16c7"
+    },
+    {
+      "file": "ohlcv_2023.parquet",
+      "bytes": 6732928,
+      "sha256": "8e1b8322faf0bf28e12604a7d05e0a92c6a6d72d55613e9938aa046e19eb5e2a",
+      "git_blob_sha1": "c9001ed20d9e01f40bdf09b45cf8613a4e9376e8"
+    },
+    {
+      "file": "ohlcv_2024.parquet",
+      "bytes": 6731912,
+      "sha256": "9a4032509bee1c6bbf155e27f204a51a9c3a8bdb00ef117898d92091b034b797",
+      "git_blob_sha1": "5dfe1e9cfef34c01c990eff0886cf11e23ed0b9f"
+    },
+    {
+      "file": "ohlcv_2025.parquet",
+      "bytes": 6738532,
+      "sha256": "d97e60b21b4bb97ee271a3b404591857def79901dda53a148adf9e1822a623d9",
+      "git_blob_sha1": "6463b9d47f22aa030bb06eda14d3bf3592d6f6b7"
+    },
+    {
+      "file": "ohlcv_2026.parquet",
+      "bytes": 5453487,
+      "sha256": "5ce7e9d642f6b142c9d788a9f8865471e7f487291ee1bb4a12eec53bd2a93817",
+      "git_blob_sha1": "8cf12378973b65a6f470f936667a278f51535905"
+    },
+    {
+      "file": "phase1_dart_events.csv",
+      "bytes": 146744,
+      "sha256": "dc6acd415dd3199a7b107dfb80c4beedb92d1ac484438a82f034c453a9427bac",
+      "git_blob_sha1": "9c20ac6d3b09ba57041c08939892900010027e32"
+    }
+  ],
+  "limitations": [
+    "Index dates are a provider-derived calendar, not an independently verified exchange calendar.",
+    "Current master classifications and delisting records are ex-post audit evidence only.",
+    "Corporate action matches use broad receipt windows; adjustment accuracy and event effectiveness are unverified.",
+    "Mechanically valid bars are not verified tradable prices or approved historical adjustment factors.",
+    "No historical management/halts, market-transfer, original listing-age or full point-in-time universe verification."
+  ]
+}
