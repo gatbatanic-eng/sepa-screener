@@ -1,0 +1,54 @@
+name: NH Stock On Demand
+on:
+  workflow_dispatch:
+    inputs:
+      code:
+        description: '종목코드 (삼성전자 005930)'
+        required: true
+        default: '005930'
+        type: string
+      market:
+        description: '시장'
+        required: true
+        default: KOSPI
+        type: choice
+        options:
+          - KOSPI
+          - KOSDAQ
+permissions:
+  contents: read
+concurrency:
+  group: nh-stock-on-demand
+  cancel-in-progress: false
+jobs:
+  query:
+    if: github.repository == 'gatbatanic-eng/sepa-screener'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Validate offline
+        run: python3 -m unittest discover -s tools/nh_on_demand -p 'test_*.py' -v
+      - name: Query requested stock
+        env:
+          NHPLUG_APPKEY: ${{ secrets.NHPLUG_APPKEY }}
+          NHPLUG_APPSECRET: ${{ secrets.NHPLUG_APPSECRET }}
+          STOCK_CODE: ${{ inputs.code }}
+          STOCK_MARKET: ${{ inputs.market }}
+        run: python3 tools/nh_on_demand/query.py --code "$STOCK_CODE" --market "$STOCK_MARKET"
+      - name: Show result
+        if: always()
+        run: |
+          if [ -f nh-results/summary.md ]; then
+            cat nh-results/summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Save query result
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: nh-stock-${{ github.run_id }}-${{ github.run_attempt }}
+          path: nh-results/
+          retention-days: 7
+          if-no-files-found: warn
