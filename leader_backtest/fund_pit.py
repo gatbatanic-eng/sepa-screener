@@ -250,7 +250,10 @@ def attach(panel: pd.DataFrame, feats: pd.DataFrame) -> pd.DataFrame:
 
 def load_quarters(market: str) -> pd.DataFrame:
     path = ROOT / "research" / "leader_backtest" / "fund_pit" / f"{market}.csv.gz"
-    return pd.read_csv(path)
+    df = pd.read_csv(path, dtype={"code": str})                  # 한국 종목코드의 앞자리 0이 숫자로 바뀌지 않게 문자열로 읽는다
+    if market == "kr":
+        df["code"] = df["code"].str.zfill(6)
+    return df
 
 
 def main() -> None:

@@ -64,6 +64,19 @@ class FeatureTest(unittest.TestCase):
         self.assertTrue(np.isnan(m.loc[3, "revYoY"]) or m.loc[3, "daysSince"] <= 200)    # 200일 넘은 낡은 값은 결측 처리
 
 
+class LoadTest(unittest.TestCase):
+    def test_kr_codes_keep_leading_zeros(self):
+        import tempfile, pathlib
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as d:
+            root = pathlib.Path(d)
+            (root / "research" / "leader_backtest" / "fund_pit").mkdir(parents=True)
+            pd.DataFrame({"code": ["009450", "005930"], "qend": ["2024-03-31"] * 2, "filed": ["2024-05-15"] * 2}).to_csv(root / "research" / "leader_backtest" / "fund_pit" / "kr.csv.gz", index=False)
+            with mock.patch.object(F, "ROOT", root):
+                df = F.load_quarters("kr")
+        self.assertEqual(list(df["code"]), ["009450", "005930"])
+
+
 class UsTest(unittest.TestCase):
     def test_earliest_first_beats_tag_priority_and_late_balance_sheet_is_dropped(self):
         import publish_us_fundamentals as us
