@@ -19,6 +19,15 @@ on:
       null_reps:
         description: "search: 귀무(섞은 데이터) 복제 횟수"
         default: "8"
+      sp_source:
+        description: "portfolio: 탐색 결과 json(research/leader_backtest/ 기준 경로)"
+        default: "search_2017_2026/search.json"
+      sp_pick:
+        description: "portfolio: SMA50X=SMA50X 청산 후보 전부, TOP5=한국 상위 5개"
+        default: "SMA50X"
+      sp_slip:
+        description: "portfolio: 편도 슬리피지 목록(쉼표)"
+        default: "0"
       out_name:
         description: "결과 하위 폴더(비우면 기존 파일 덮어씀)"
         default: ""
@@ -84,6 +93,9 @@ jobs:
         env:
           LB_OUT: ${{ inputs.out_name }}
           LB_FETCH_START: "2015-06-01"
+          SP_SOURCE: ${{ inputs.sp_source }}
+          SP_PICK: ${{ inputs.sp_pick }}
+          SP_SLIP: ${{ inputs.sp_slip }}
         run: python -m leader_backtest.search_portfolio
       - name: Save
         run: |

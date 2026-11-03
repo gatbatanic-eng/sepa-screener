@@ -65,6 +65,17 @@ class SimTest(unittest.TestCase):
         self.assertGreater(m["benchTotalPct"], 0)
         self.assertLess(out["equity"].iloc[-1], 1 + 0.125 * 0.10)                        # 진입 비용 반영
 
+    def test_fixed_hold_with_stop_exit(self):
+        close = {"A": [100, 100, 100, 110, 120, 130, 140, 150.0]}
+        out = self.run_sim(close, [(1, "A")], "H3_S8")                     # 진입 t=2(100), 3일 뒤 t=5(130) 종가 청산
+        self.assertEqual(len(out["trades"]), 1)
+        self.assertAlmostEqual(out["trades"][0]["ret"], 0.30)
+        self.assertEqual(out["trades"][0]["days"], 3)
+        stopped = self.run_sim({"A": [100, 100, 100, 95, 91, 130, 140, 150.0]}, [(1, "A")], "H3_S8")
+        self.assertAlmostEqual(stopped["trades"][0]["ret"], -0.09)         # t=4에 -8% 이하 손절이 보유 만료보다 먼저
+        nostop = self.run_sim({"A": [100, 100, 100, 95, 91, 130, 140, 150.0]}, [(1, "A")], "H3")
+        self.assertAlmostEqual(nostop["trades"][0]["ret"], 0.30)           # 손절 없는 고정 보유
+
 
 if __name__ == "__main__":
     unittest.main()

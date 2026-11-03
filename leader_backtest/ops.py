@@ -29,6 +29,10 @@ EXITS = ("E1", "E2")
 def simulate(close: pd.DataFrame, sma50: pd.DataFrame, sig: pd.DataFrame, rs: pd.DataFrame, regime: pd.Series, exit_rule: str, cost: float, p: dict = P) -> dict:
     """close/sma50/sig/rs: 날짜×종목(같은 인덱스·열). sig[t]=t일 종가에 난 신호 -> t+1 종가 진입. regime[t]=t일 신규 진입 허용."""
     dates = close.index
+    hold_n, stop_pct = None, p["stop"]
+    if exit_rule.startswith("H"):            # "H10_S8" = 진입 후 10거래일째 종가 청산 + 종가 -8% 손절(탐색 청산 이름과 같다)
+        head, _, tail = exit_rule.partition("_S")
+        hold_n, stop_pct = int(head[1:]), (int(tail) / 100 if tail else None)
     cl, sm, sg, rr = close.to_numpy(float), sma50.to_numpy(float), sig.to_numpy(bool), rs.to_numpy(float)
     reg = regime.reindex(dates).fillna(False).to_numpy(bool)
     cash, pos, trades, eq = 1.0, {}, [], []
@@ -42,8 +46,10 @@ def simulate(close: pd.DataFrame, sma50: pd.DataFrame, sig: pd.DataFrame, rs: pd
                 continue
             q = pos[j]
             q["peak"] = max(q["peak"], row[j])
-            hit = row[j] <= q["entry"] * (1 - p["stop"])
-            if exit_rule == "E1":
+            hit = stop_pct is not None and row[j] <= q["entry"] * (1 - stop_pct)
+            if hold_n is not None:
+                hit = hit or i - q["i"] >= hold_n
+            elif exit_rule == "E1":
                 hit = hit or (not np.isnan(sm[i, j]) and row[j] < sm[i, j])
             else:
                 hit = hit or row[j] <= q["peak"] * (1 - p["trail"])
