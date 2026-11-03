@@ -25,6 +25,12 @@ on:
       sp_pick:
         description: "portfolio: SMA50X=SMA50X 청산 후보 전부, TOP5=한국 상위 5개"
         default: "SMA50X"
+      sp_market:
+        description: "portfolio: kr 또는 us"
+        default: "kr"
+      sp_fund:
+        description: "portfolio: 1이면 재무 특징 사용(재무 탐색 결과 재검증)"
+        default: ""
       sp_slip:
         description: "portfolio: 편도 슬리피지 목록(쉼표)"
         default: "0"
@@ -102,6 +108,8 @@ jobs:
           SP_SOURCE: ${{ inputs.sp_source }}
           SP_PICK: ${{ inputs.sp_pick }}
           SP_SLIP: ${{ inputs.sp_slip }}
+          SP_MARKET: ${{ inputs.sp_market }}
+          SP_FUND: ${{ inputs.sp_fund }}
         run: python -m leader_backtest.search_portfolio
       - name: Collect point-in-time quarterly fundamentals (DART, SEC)
         if: inputs.only == 'fundcollect'
