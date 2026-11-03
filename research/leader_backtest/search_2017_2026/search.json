@@ -1,0 +1,1923 @@
+{
+ "ranAt": "2026-11-03T05:14:42.832940+00:00",
+ "nConfigs": 100000,
+ "nullReps": 8,
+ "markets": {
+  "us": {
+   "market": "us",
+   "configs": 100000,
+   "validConfigs": 20112,
+   "rows": 1218674,
+   "dates": 2472,
+   "nullReplicates": 8,
+   "nullMaxScores": [
+    2.1,
+    2.4,
+    2.48,
+    2.5,
+    2.5,
+    2.32,
+    2.04,
+    2.82
+   ],
+   "nullScoreQuantiles": {
+    "0.5": -0.57,
+    "0.9": 0.51,
+    "0.99": 1.27,
+    "0.999": 1.81
+   },
+   "realScoreQuantiles": {
+    "0.5": -0.91,
+    "0.9": 0.17,
+    "0.99": 1.15,
+    "0.999": 1.84
+   },
+   "positiveTestShareAmongTop20": 1.0,
+   "top": [
+    {
+     "rank": 1,
+     "config": {
+      "rs": 95,
+      "trend": 0,
+      "atrMin": 0.04,
+      "atrMax": 9,
+      "emaLo": -0.1,
+      "emaHi": 0.1,
+      "highMin": -9,
+      "rsiLo": 40,
+      "rsiHi": 101,
+      "vol": 0,
+      "breakout": 0,
+      "ret20Min": -9,
+      "riskMax": 999,
+      "regime": 150,
+      "exit": "H40"
+     },
+     "score": 2.51,
+     "nullTail": 1.864546884031399e-05,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 3.156,
+       "signals": 2382,
+       "dates": 656,
+       "excessPct": 6.383,
+       "meanPct": 12.738
+      },
+      "val": {
+       "t": 2.51,
+       "signals": 2894,
+       "dates": 522,
+       "excessPct": 8.684,
+       "meanPct": 5.626
+      },
+      "test": {
+       "t": 2.979,
+       "signals": 5775,
+       "dates": 605,
+       "excessPct": 9.66,
+       "meanPct": 8.423
+      }
+     }
+    },
+    {
+     "rank": 2,
+     "config": {
+      "rs": 90,
+      "trend": 0,
+      "atrMin": 0.04,
+      "atrMax": 9,
+      "emaLo": -0.1,
+      "emaHi": 0.02,
+      "highMin": -0.2,
+      "rsiLo": 50,
+      "rsiHi": 80,
+      "vol": 0,
+      "breakout": 0,
+      "ret20Min": -9,
+      "riskMax": 999,
+      "regime": 150,
+      "exit": "H40"
+     },
+     "score": 2.34,
+     "nullTail": 7.458187536125596e-05,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 2.478,
+       "signals": 563,
+       "dates": 318,
+       "excessPct": 5.829,
+       "meanPct": 11.309
+      },
+      "val": {
+       "t": 2.343,
+       "signals": 635,
+       "dates": 291,
+       "excessPct": 5.45,
+       "meanPct": 6.072
+      },
+      "test": {
+       "t": 2.125,
+       "signals": 1240,
+       "dates": 457,
+       "excessPct": 5.136,
+       "meanPct": 7.66
+      }
+     }
+    },
+    {
+     "rank": 3,
+     "config": {
+      "rs": 95,
+      "trend": 0,
+      "atrMin": 0.04,
+      "atrMax": 0.08,
+      "emaLo": -0.05,
+      "emaHi": 0.0,
+      "highMin": -0.3,
+      "rsiLo": 40,
+      "rsiHi": 70,
+      "vol": 0,
+      "breakout": 0,
+      "ret20Min": -0.1,
+      "riskMax": 999,
+      "regime": 100,
+      "exit": "H40"
+     },
+     "score": 2.33,
+     "nullTail": 8.701218792146528e-05,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 2.331,
+       "signals": 601,
+       "dates": 323,
+       "excessPct": 4.641,
+       "meanPct": 12.226
+      },
+      "val": {
+       "t": 2.971,
+       "signals": 715,
+       "dates": 313,
+       "excessPct": 5.941,
+       "meanPct": 6.378
+      },
+      "test": {
+       "t": 1.439,
+       "signals": 1047,
+       "dates": 412,
+       "excessPct": 3.826,
+       "meanPct": 5.617
+      }
+     }
+    },
+    {
+     "rank": 4,
+     "config": {
+      "rs": 90,
+      "trend": 0,
+      "atrMin": 0.04,
+      "atrMax": 9,
+      "emaLo": -0.05,
+      "emaHi": 0.02,
+      "highMin": -0.3,
+      "rsiLo": 40,
+      "rsiHi": 50,
+      "vol": 0,
+      "breakout": 0,
+      "ret20Min": -0.1,
+      "riskMax": 25,
+      "regime": 200,
+      "exit": "H60"
+     },
+     "score": 2.32,
+     "nullTail": 9.944250048167462e-05,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 2.323,
+       "signals": 641,
+       "dates": 357,
+       "excessPct": 7.112,
+       "meanPct": 15.537
+      },
+      "val": {
+       "t": 2.682,
+       "signals": 699,
+       "dates": 315,
+       "excessPct": 11.51,
+       "meanPct": 14.031
+      },
+      "test": {
+       "t": 1.942,
+       "signals": 1236,
+       "dates": 442,
+       "excessPct": 5.448,
+       "meanPct": 11.153
+      }
+     }
+    },
+    {
+     "rank": 5,
+     "config": {
+      "rs": 90,
+      "trend": 1,
+      "atrMin": 0.04,
+      "atrMax": 0.08,
+      "emaLo": -0.05,
+      "emaHi": 0.02,
+      "highMin": -0.3,
+      "rsiLo": 0,
+      "rsiHi": 60,
+      "vol": 0,
+      "breakout": 0,
+      "ret20Min": -9,
+      "riskMax": 25,
+      "regime": 100,
+      "exit": "H40"
+     },
+     "score": 2.21,
+     "nullTail": 0.00014916375072251191,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 2.601,
+       "signals": 520,
+       "dates": 285,
+       "excessPct": 5.296,
+       "meanPct": 10.328
+      },
+      "val": {
+       "t": 2.206,
+       "signals": 692,
+       "dates": 277,
+       "excessPct": 6.886,
+       "meanPct": 6.213
+      },
+      "test": {
+       "t": 1.254,
+       "signals": 1004,
+       "dates": 415,
+       "excessPct": 4.088,
+       "meanPct": 5.614
+      }
+     }
+    },
+    {
+     "rank": 6,
+     "config": {
+      "rs": 90,
+      "trend": 0,
+      "atrMin": 0.04,
+      "atrMax": 9,
+      "emaLo": -0.1,
+      "emaHi": 0.05,
+      "highMin": -9,
+      "rsiLo": 50,
+      "rsiHi": 101,
+      "vol": 0,
+      "breakout": 0,
+      "ret20Min": -9,
+      "riskMax": 999,
+      "regime": 0,
+      "exit": "H60"
+     },
+     "score": 2.15,
+     "nullTail": 0.0001864546884031399,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 2.153,
+       "signals": 2085,
+       "dates": 624,
+       "excessPct": 6.523,
+       "meanPct": 16.813
+      },
+      "val": {
+       "t": 2.88,
+       "signals": 2426,
+       "dates": 657,
+       "excessPct": 10.106,
+       "meanPct": 7.763
+      },
+      "test": {
+       "t": 3.336,
+       "signals": 3242,
+       "dates": 621,
+       "excessPct": 13.755,
+       "meanPct": 16.59
+      }
+     }
+    },
+    {
+     "rank": 7,
+     "config": {
+      "rs": 70,
+      "trend": 0,
+      "atrMin": 0.04,
+      "atrMax": 9,
+      "emaLo": -9,
+      "emaHi": 0.05,
+      "highMin": -0.3,
+      "rsiLo": 30,
+      "rsiHi": 60,
+      "vol": 0,
+      "breakout": 0,
+      "ret20Min": -0.1,
+      "riskMax": 25,
+      "regime": 150,
+      "exit": "H60"
+     },
+     "score": 2.03,
+     "nullTail": 0.0003045426577251285,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 2.444,
+       "signals": 2014,
+       "dates": 603,
+       "excessPct": 5.359,
+       "meanPct": 14.179
+      },
+      "val": {
+       "t": 2.031,
+       "signals": 2914,
+       "dates": 483,
+       "excessPct": 9.85,
+       "meanPct": 9.205
+      },
+      "test": {
+       "t": 2.25,
+       "signals": 4530,
+       "dates": 546,
+       "excessPct": 6.431,
+       "meanPct": 8.751
+      }
+     }
+    },
+    {
+     "rank": 8,
+     "config": {
+      "rs": 85,
+      "trend": 0,
+      "atrMin": 0.04,
+      "atrMax": 9,
+      "emaLo": 0.0,
+      "emaHi": 9,
+      "highMin": -9,
+      "rsiLo": 50,
+      "rsiHi": 101,
+      "vol": 0,
+      "breakout": 0,
+      "ret20Min": -9,
+      "riskMax": 25,
+      "regime": 0,
+      "exit": "H40"
+     },
+     "score": 2.02,
+     "nullTail": 0.0003418335954057565,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 2.017,
+       "signals": 1599,
+       "dates": 524,
+       "excessPct": 4.485,
+       "meanPct": 10.633
+      },
+      "val": {
+       "t": 2.147,
+       "signals": 2439,
+       "dates": 615,
+       "excessPct": 6.151,
+       "meanPct": 3.738
+      },
+      "test": {
+       "t": 1.681,
+       "signals": 2579,
+       "dates": 577,
+       "excessPct": 5.967,
+       "meanPct": 8.875
+      }
+     }
+    },
+    {
+     "rank": 9,
+     "config": {
+      "rs": 0,
+      "trend": 0,
+      "atrMin": 0.03,
+      "atrMax": 9,
+      "emaLo": -9,
+      "emaHi": 0.0,
+      "highMin": -0.3,
+      "rsiLo": 50,
+      "rsiHi": 80,
+      "vol": 0,
+      "breakout": 0,
+      "ret20Min": -0.1,
+      "riskMax": 999,
+      "regime": 200,
+      "exit": "H60"
+     },
+     "score": 2.01,
+     "nullTail": 0.0003480487516858611,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 2.01,
+       "signals": 1577,
+       "dates": 460,
+       "excessPct": 2.688,
+       "meanPct": 11.036
+      },
+      "val": {
+       "t": 2.196,
+       "signals": 1123,
+       "dates": 349,
+       "excessPct": 1.505,
+       "meanPct": 4.076
+      },
+      "test": {
+       "t": 2.6,
+       "signals": 1644,
+       "dates": 483,
+       "excessPct": 4.347,
+       "meanPct": 7.642
+      }
+     }
+    },
+    {
+     "rank": 10,
+     "config": {
+      "rs": 95,
+      "trend": 0,
+      "atrMin": 0.04,
+      "atrMax": 9,
+      "emaLo": -0.02,
+      "emaHi": 0.02,
+      "highMin": -0.3,
+      "rsiLo": 30,
+      "rsiHi": 70,
+      "vol": 0,
+      "breakout": 0,
+      "ret20Min": -0.1,
+      "riskMax": 25,
+      "regime": 150,
+      "exit": "H60"
+     },
+     "score": 1.98,
+     "nullTail": 0.0004226306270471171,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 1.979,
+       "signals": 512,
+       "dates": 293,
+       "excessPct": 7.272,
+       "meanPct": 15.781
+      },
+      "val": {
+       "t": 2.082,
+       "signals": 547,
+       "dates": 277,
+       "excessPct": 13.975,
+       "meanPct": 12.961
+      },
+      "test": {
+       "t": 0.725,
+       "signals": 755,
+       "dates": 366,
+       "excessPct": 3.525,
+       "meanPct": 7.236
+      }
+     }
+    },
+    {
+     "rank": 11,
+     "config": {
+      "rs": 70,
+      "trend": 0,
+      "atrMin": 0.04,
+      "atrMax": 0.08,
+      "emaLo": -0.1,
+      "emaHi": 0.05,
+      "highMin": -9,
+      "rsiLo": 0,
+      "rsiHi": 101,
+      "vol": 1.0,
+      "breakout": 0,
+      "ret20Min": -9,
+      "riskMax": 25,
+      "regime": 150,
+      "exit": "H60"
+     },
+     "score": 1.97,
+     "nullTail": 0.0004226306270471171,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 1.973,
+       "signals": 1033,
+       "dates": 431,
+       "excessPct": 5.008,
+       "meanPct": 12.258
+      },
+      "val": {
+       "t": 2.22,
+       "signals": 1463,
+       "dates": 377,
+       "excessPct": 5.053,
+       "meanPct": 7.172
+      },
+      "test": {
+       "t": 1.635,
+       "signals": 2229,
+       "dates": 476,
+       "excessPct": 1.752,
+       "meanPct": 6.26
+      }
+     }
+    },
+    {
+     "rank": 12,
+     "config": {
+      "rs": 50,
+      "trend": 0,
+      "atrMin": 0.04,
+      "atrMax": 0.05,
+      "emaLo": 0.0,
+      "emaHi": 0.05,
+      "highMin": -9,
+      "rsiLo": 0,
+      "rsiHi": 101,
+      "vol": 0,
+      "breakout": 0,
+      "ret20Min": -0.1,
+      "riskMax": 25,
+      "regime": 100,
+      "exit": "H60"
+     },
+     "score": 1.97,
+     "nullTail": 0.0004226306270471171,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 1.968,
+       "signals": 773,
+       "dates": 336,
+       "excessPct": 4.292,
+       "meanPct": 11.886
+      },
+      "val": {
+       "t": 2.034,
+       "signals": 1206,
+       "dates": 376,
+       "excessPct": 3.625,
+       "meanPct": 6.117
+      },
+      "test": {
+       "t": 1.667,
+       "signals": 1597,
+       "dates": 467,
+       "excessPct": 2.751,
+       "meanPct": 5.435
+      }
+     }
+    },
+    {
+     "rank": 13,
+     "config": {
+      "rs": 80,
+      "trend": 0,
+      "atrMin": 0.04,
+      "atrMax": 0.05,
+      "emaLo": -9,
+      "emaHi": 0.02,
+      "highMin": -0.3,
+      "rsiLo": 40,
+      "rsiHi": 80,
+      "vol": 0,
+      "breakout": 0,
+      "ret20Min": 0.0,
+      "riskMax": 999,
+      "regime": 150,
+      "exit": "H60"
+     },
+     "score": 1.94,
+     "nullTail": 0.0004909973461282684,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 2.497,
+       "signals": 563,
+       "dates": 306,
+       "excessPct": 6.009,
+       "meanPct": 13.029
+      },
+      "val": {
+       "t": 1.94,
+       "signals": 607,
+       "dates": 290,
+       "excessPct": 2.999,
+       "meanPct": 6.316
+      },
+      "test": {
+       "t": 2.352,
+       "signals": 964,
+       "dates": 402,
+       "excessPct": 5.9,
+       "meanPct": 10.822
+      }
+     }
+    },
+    {
+     "rank": 14,
+     "config": {
+      "rs": 60,
+      "trend": 1,
+      "atrMin": 0.04,
+      "atrMax": 0.05,
+      "emaLo": -0.05,
+      "emaHi": 9,
+      "highMin": -0.3,
+      "rsiLo": 50,
+      "rsiHi": 70,
+      "vol": 0,
+      "breakout": 0,
+      "ret20Min": 0.1,
+      "riskMax": 999,
+      "regime": 200,
+      "exit": "H40"
+     },
+     "score": 1.94,
+     "nullTail": 0.0004972125024083731,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 2.288,
+       "signals": 622,
+       "dates": 341,
+       "excessPct": 6.012,
+       "meanPct": 12.433
+      },
+      "val": {
+       "t": 1.938,
+       "signals": 893,
+       "dates": 340,
+       "excessPct": 1.25,
+       "meanPct": 2.202
+      },
+      "test": {
+       "t": 2.254,
+       "signals": 1396,
+       "dates": 479,
+       "excessPct": 7.377,
+       "meanPct": 10.318
+      }
+     }
+    },
+    {
+     "rank": 15,
+     "config": {
+      "rs": 0,
+      "trend": 0,
+      "atrMin": 0.04,
+      "atrMax": 0.08,
+      "emaLo": -0.1,
+      "emaHi": 0.1,
+      "highMin": -9,
+      "rsiLo": 30,
+      "rsiHi": 101,
+      "vol": 1.0,
+      "breakout": 0,
+      "ret20Min": -9,
+      "riskMax": 999,
+      "regime": 150,
+      "exit": "H40"
+     },
+     "score": 1.93,
+     "nullTail": 0.0005220731275287917,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 2.628,
+       "signals": 5027,
+       "dates": 707,
+       "excessPct": 3.372,
+       "meanPct": 9.81
+      },
+      "val": {
+       "t": 1.93,
+       "signals": 5021,
+       "dates": 515,
+       "excessPct": 2.376,
+       "meanPct": 4.423
+      },
+      "test": {
+       "t": 2.284,
+       "signals": 7828,
+       "dates": 590,
+       "excessPct": 4.379,
+       "meanPct": 4.687
+      }
+     }
+    },
+    {
+     "rank": 16,
+     "config": {
+      "rs": 90,
+      "trend": 0,
+      "atrMin": 0.04,
+      "atrMax": 9,
+      "emaLo": -0.1,
+      "emaHi": 0.0,
+      "highMin": -9,
+      "rsiLo": 0,
+      "rsiHi": 50,
+      "vol": 1.0,
+      "breakout": 0,
+      "ret20Min": -9,
+      "riskMax": 999,
+      "regime": 100,
+      "exit": "H60"
+     },
+     "score": 1.91,
+     "nullTail": 0.0006028701591701524,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 1.907,
+       "signals": 486,
+       "dates": 278,
+       "excessPct": 5.901,
+       "meanPct": 13.821
+      },
+      "val": {
+       "t": 1.909,
+       "signals": 652,
+       "dates": 256,
+       "excessPct": 5.35,
+       "meanPct": 7.7
+      },
+      "test": {
+       "t": 1.971,
+       "signals": 957,
+       "dates": 346,
+       "excessPct": 3.671,
+       "meanPct": 5.342
+      }
+     }
+    },
+    {
+     "rank": 17,
+     "config": {
+      "rs": 85,
+      "trend": 0,
+      "atrMin": 0.04,
+      "atrMax": 0.08,
+      "emaLo": -0.1,
+      "emaHi": 0.02,
+      "highMin": -9,
+      "rsiLo": 0,
+      "rsiHi": 50,
+      "vol": 0,
+      "breakout": 0,
+      "ret20Min": -9,
+      "riskMax": 15,
+      "regime": 150,
+      "exit": "H60"
+     },
+     "score": 1.91,
+     "nullTail": 0.0006153004717303616,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 3.062,
+       "signals": 917,
+       "dates": 446,
+       "excessPct": 5.747,
+       "meanPct": 12.227
+      },
+      "val": {
+       "t": 1.906,
+       "signals": 1386,
+       "dates": 411,
+       "excessPct": 7.979,
+       "meanPct": 10.493
+      },
+      "test": {
+       "t": 3.049,
+       "signals": 2094,
+       "dates": 477,
+       "excessPct": 6.252,
+       "meanPct": 9.449
+      }
+     }
+    },
+    {
+     "rank": 18,
+     "config": {
+      "rs": 95,
+      "trend": 1,
+      "atrMin": 0,
+      "atrMax": 9,
+      "emaLo": -9,
+      "emaHi": 0.0,
+      "highMin": -0.2,
+      "rsiLo": 30,
+      "rsiHi": 70,
+      "vol": 1.0,
+      "breakout": 0,
+      "ret20Min": -0.1,
+      "riskMax": 999,
+      "regime": 150,
+      "exit": "H60"
+     },
+     "score": 1.87,
+     "nullTail": 0.0007458187536125596,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 1.997,
+       "signals": 787,
+       "dates": 403,
+       "excessPct": 1.956,
+       "meanPct": 4.611
+      },
+      "val": {
+       "t": 1.871,
+       "signals": 466,
+       "dates": 235,
+       "excessPct": 3.128,
+       "meanPct": 6.363
+      },
+      "test": {
+       "t": 1.992,
+       "signals": 496,
+       "dates": 252,
+       "excessPct": 5.805,
+       "meanPct": 11.212
+      }
+     }
+    },
+    {
+     "rank": 19,
+     "config": {
+      "rs": 0,
+      "trend": 0,
+      "atrMin": 0.04,
+      "atrMax": 0.08,
+      "emaLo": 0.0,
+      "emaHi": 9,
+      "highMin": -9,
+      "rsiLo": 0,
+      "rsiHi": 80,
+      "vol": 1.0,
+      "breakout": 0,
+      "ret20Min": -9,
+      "riskMax": 999,
+      "regime": 150,
+      "exit": "H60"
+     },
+     "score": 1.85,
+     "nullTail": 0.0008514764103743389,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 1.845,
+       "signals": 3510,
+       "dates": 565,
+       "excessPct": 6.07,
+       "meanPct": 13.427
+      },
+      "val": {
+       "t": 1.965,
+       "signals": 2953,
+       "dates": 495,
+       "excessPct": 4.363,
+       "meanPct": 7.181
+      },
+      "test": {
+       "t": 3.456,
+       "signals": 4595,
+       "dates": 561,
+       "excessPct": 11.576,
+       "meanPct": 12.876
+      }
+     }
+    },
+    {
+     "rank": 20,
+     "config": {
+      "rs": 60,
+      "trend": 0,
+      "atrMin": 0.04,
+      "atrMax": 0.08,
+      "emaLo": -0.1,
+      "emaHi": 0.1,
+      "highMin": -9,
+      "rsiLo": 0,
+      "rsiHi": 70,
+      "vol": 1.0,
+      "breakout": 0,
+      "ret20Min": -9,
+      "riskMax": 25,
+      "regime": 200,
+      "exit": "H60"
+     },
+     "score": 1.84,
+     "nullTail": 0.0008576915666544435,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 2.619,
+       "signals": 1353,
+       "dates": 504,
+       "excessPct": 5.349,
+       "meanPct": 11.987
+      },
+      "val": {
+       "t": 1.844,
+       "signals": 1934,
+       "dates": 417,
+       "excessPct": 4.145,
+       "meanPct": 7.634
+      },
+      "test": {
+       "t": 1.275,
+       "signals": 2885,
+       "dates": 519,
+       "excessPct": 1.557,
+       "meanPct": 6.422
+      }
+     }
+    }
+   ],
+   "avgExcessPctByPeriodAllValid": {
+    "train": -0.236,
+    "val": -0.07,
+    "test": 0.717
+   }
+  },
+  "kr": {
+   "market": "kr",
+   "configs": 100000,
+   "validConfigs": 16502,
+   "rows": 1360623,
+   "dates": 2405,
+   "nullReplicates": 8,
+   "nullMaxScores": [
+    2.49,
+    1.87,
+    1.99,
+    1.97,
+    2.07,
+    2.33,
+    1.94,
+    2.05
+   ],
+   "nullScoreQuantiles": {
+    "0.5": -0.74,
+    "0.9": 0.38,
+    "0.99": 1.12,
+    "0.999": 1.59
+   },
+   "realScoreQuantiles": {
+    "0.5": -0.23,
+    "0.9": 0.98,
+    "0.99": 1.87,
+    "0.999": 2.42
+   },
+   "positiveTestShareAmongTop20": 1.0,
+   "top": [
+    {
+     "rank": 1,
+     "config": {
+      "rs": 50,
+      "trend": 0,
+      "atrMin": 0.02,
+      "atrMax": 0.05,
+      "emaLo": -0.1,
+      "emaHi": 9,
+      "highMin": -0.2,
+      "rsiLo": 50,
+      "rsiHi": 80,
+      "vol": 1.5,
+      "breakout": 0,
+      "ret20Min": -9,
+      "riskMax": 999,
+      "regime": 200,
+      "exit": "H10_S8"
+     },
+     "score": 3.26,
+     "nullTail": 7.574782035646924e-06,
+     "bonferroniP": 0.7574782035646924,
+     "periods": {
+      "train": {
+       "t": 3.693,
+       "signals": 9575,
+       "dates": 554,
+       "excessPct": 0.647,
+       "meanPct": 0.923
+      },
+      "val": {
+       "t": 3.259,
+       "signals": 6795,
+       "dates": 361,
+       "excessPct": 0.971,
+       "meanPct": 0.599
+      },
+      "test": {
+       "t": 1.357,
+       "signals": 6680,
+       "dates": 453,
+       "excessPct": 0.429,
+       "meanPct": 1.52
+      }
+     }
+    },
+    {
+     "rank": 2,
+     "config": {
+      "rs": 50,
+      "trend": 0,
+      "atrMin": 0.02,
+      "atrMax": 0.08,
+      "emaLo": 0.0,
+      "emaHi": 9,
+      "highMin": -0.2,
+      "rsiLo": 50,
+      "rsiHi": 101,
+      "vol": 1.5,
+      "breakout": 0,
+      "ret20Min": -9,
+      "riskMax": 25,
+      "regime": 150,
+      "exit": "H10_S6"
+     },
+     "score": 2.72,
+     "nullTail": 7.574782035646924e-06,
+     "bonferroniP": 0.7574782035646924,
+     "periods": {
+      "train": {
+       "t": 2.716,
+       "signals": 7428,
+       "dates": 571,
+       "excessPct": 0.726,
+       "meanPct": 0.75
+      },
+      "val": {
+       "t": 3.785,
+       "signals": 5216,
+       "dates": 344,
+       "excessPct": 0.947,
+       "meanPct": 0.616
+      },
+      "test": {
+       "t": 2.376,
+       "signals": 4757,
+       "dates": 449,
+       "excessPct": 0.621,
+       "meanPct": 1.549
+      }
+     }
+    },
+    {
+     "rank": 3,
+     "config": {
+      "rs": 60,
+      "trend": 0,
+      "atrMin": 0.02,
+      "atrMax": 9,
+      "emaLo": -0.05,
+      "emaHi": 9,
+      "highMin": -0.2,
+      "rsiLo": 50,
+      "rsiHi": 101,
+      "vol": 2.0,
+      "breakout": 0,
+      "ret20Min": -0.1,
+      "riskMax": 25,
+      "regime": 150,
+      "exit": "H10_S8"
+     },
+     "score": 2.68,
+     "nullTail": 7.574782035646924e-06,
+     "bonferroniP": 0.7574782035646924,
+     "periods": {
+      "train": {
+       "t": 2.68,
+       "signals": 3280,
+       "dates": 561,
+       "excessPct": 1.059,
+       "meanPct": 0.973
+      },
+      "val": {
+       "t": 3.017,
+       "signals": 2528,
+       "dates": 334,
+       "excessPct": 1.495,
+       "meanPct": 1.125
+      },
+      "test": {
+       "t": 2.516,
+       "signals": 1853,
+       "dates": 385,
+       "excessPct": 1.396,
+       "meanPct": 1.747
+      }
+     }
+    },
+    {
+     "rank": 4,
+     "config": {
+      "rs": 50,
+      "trend": 0,
+      "atrMin": 0.03,
+      "atrMax": 0.08,
+      "emaLo": -0.02,
+      "emaHi": 9,
+      "highMin": -0.2,
+      "rsiLo": 30,
+      "rsiHi": 101,
+      "vol": 1.5,
+      "breakout": 0,
+      "ret20Min": -0.1,
+      "riskMax": 25,
+      "regime": 150,
+      "exit": "H10_S8"
+     },
+     "score": 2.62,
+     "nullTail": 7.574782035646924e-06,
+     "bonferroniP": 0.7574782035646924,
+     "periods": {
+      "train": {
+       "t": 2.876,
+       "signals": 5204,
+       "dates": 571,
+       "excessPct": 0.721,
+       "meanPct": 0.971
+      },
+      "val": {
+       "t": 2.62,
+       "signals": 4301,
+       "dates": 336,
+       "excessPct": 0.695,
+       "meanPct": 0.954
+      },
+      "test": {
+       "t": 1.898,
+       "signals": 3745,
+       "dates": 450,
+       "excessPct": 0.711,
+       "meanPct": 1.868
+      }
+     }
+    },
+    {
+     "rank": 5,
+     "config": {
+      "rs": 0,
+      "trend": 1,
+      "atrMin": 0,
+      "atrMax": 0.08,
+      "emaLo": -9,
+      "emaHi": 9,
+      "highMin": -9,
+      "rsiLo": 0,
+      "rsiHi": 80,
+      "vol": 2.0,
+      "breakout": 0,
+      "ret20Min": -0.1,
+      "riskMax": 999,
+      "regime": 150,
+      "exit": "SMA50X"
+     },
+     "score": 2.62,
+     "nullTail": 7.574782035646924e-06,
+     "bonferroniP": 0.7574782035646924,
+     "periods": {
+      "train": {
+       "t": 2.616,
+       "signals": 4961,
+       "dates": 565,
+       "excessPct": 2.625,
+       "meanPct": 4.635
+      },
+      "val": {
+       "t": 2.85,
+       "signals": 5648,
+       "dates": 328,
+       "excessPct": 3.828,
+       "meanPct": 3.11
+      },
+      "test": {
+       "t": 1.944,
+       "signals": 6829,
+       "dates": 447,
+       "excessPct": 2.703,
+       "meanPct": 5.12
+      }
+     }
+    },
+    {
+     "rank": 6,
+     "config": {
+      "rs": 0,
+      "trend": 0,
+      "atrMin": 0,
+      "atrMax": 9,
+      "emaLo": 0.0,
+      "emaHi": 9,
+      "highMin": -0.3,
+      "rsiLo": 0,
+      "rsiHi": 80,
+      "vol": 0,
+      "breakout": 0,
+      "ret20Min": -9,
+      "riskMax": 999,
+      "regime": 150,
+      "exit": "SMA50X"
+     },
+     "score": 2.61,
+     "nullTail": 7.574782035646924e-06,
+     "bonferroniP": 0.7574782035646924,
+     "periods": {
+      "train": {
+       "t": 2.61,
+       "signals": 115000,
+       "dates": 572,
+       "excessPct": 1.159,
+       "meanPct": 2.58
+      },
+      "val": {
+       "t": 2.81,
+       "signals": 78720,
+       "dates": 347,
+       "excessPct": 1.022,
+       "meanPct": 1.663
+      },
+      "test": {
+       "t": 1.923,
+       "signals": 105683,
+       "dates": 450,
+       "excessPct": 1.35,
+       "meanPct": 3.682
+      }
+     }
+    },
+    {
+     "rank": 7,
+     "config": {
+      "rs": 0,
+      "trend": 1,
+      "atrMin": 0.04,
+      "atrMax": 0.05,
+      "emaLo": 0.0,
+      "emaHi": 9,
+      "highMin": -0.3,
+      "rsiLo": 30,
+      "rsiHi": 80,
+      "vol": 0,
+      "breakout": 0,
+      "ret20Min": 0.0,
+      "riskMax": 999,
+      "regime": 100,
+      "exit": "SMA50X"
+     },
+     "score": 2.59,
+     "nullTail": 7.574782035646924e-06,
+     "bonferroniP": 0.7574782035646924,
+     "periods": {
+      "train": {
+       "t": 2.759,
+       "signals": 9471,
+       "dates": 597,
+       "excessPct": 4.628,
+       "meanPct": 5.069
+      },
+      "val": {
+       "t": 2.585,
+       "signals": 8796,
+       "dates": 346,
+       "excessPct": 3.904,
+       "meanPct": 3.614
+      },
+      "test": {
+       "t": 2.546,
+       "signals": 10556,
+       "dates": 443,
+       "excessPct": 3.319,
+       "meanPct": 5.25
+      }
+     }
+    },
+    {
+     "rank": 8,
+     "config": {
+      "rs": 60,
+      "trend": 1,
+      "atrMin": 0.02,
+      "atrMax": 0.08,
+      "emaLo": -0.02,
+      "emaHi": 9,
+      "highMin": -0.2,
+      "rsiLo": 40,
+      "rsiHi": 101,
+      "vol": 1.0,
+      "breakout": 1,
+      "ret20Min": 0.0,
+      "riskMax": 999,
+      "regime": 200,
+      "exit": "H10_S12"
+     },
+     "score": 2.52,
+     "nullTail": 7.574782035646924e-06,
+     "bonferroniP": 0.7574782035646924,
+     "periods": {
+      "train": {
+       "t": 2.523,
+       "signals": 2431,
+       "dates": 510,
+       "excessPct": 1.049,
+       "meanPct": 1.166
+      },
+      "val": {
+       "t": 2.959,
+       "signals": 1573,
+       "dates": 323,
+       "excessPct": 1.316,
+       "meanPct": 1.472
+      },
+      "test": {
+       "t": 0.51,
+       "signals": 2901,
+       "dates": 449,
+       "excessPct": 0.511,
+       "meanPct": 1.594
+      }
+     }
+    },
+    {
+     "rank": 9,
+     "config": {
+      "rs": 0,
+      "trend": 0,
+      "atrMin": 0.02,
+      "atrMax": 0.08,
+      "emaLo": -9,
+      "emaHi": 9,
+      "highMin": -0.1,
+      "rsiLo": 40,
+      "rsiHi": 70,
+      "vol": 1.0,
+      "breakout": 0,
+      "ret20Min": -9,
+      "riskMax": 999,
+      "regime": 200,
+      "exit": "SMA50X"
+     },
+     "score": 2.52,
+     "nullTail": 7.574782035646924e-06,
+     "bonferroniP": 0.7574782035646924,
+     "periods": {
+      "train": {
+       "t": 2.523,
+       "signals": 14641,
+       "dates": 554,
+       "excessPct": 1.677,
+       "meanPct": 2.427
+      },
+      "val": {
+       "t": 2.708,
+       "signals": 9701,
+       "dates": 358,
+       "excessPct": 1.661,
+       "meanPct": 1.905
+      },
+      "test": {
+       "t": 1.6,
+       "signals": 13370,
+       "dates": 445,
+       "excessPct": 1.447,
+       "meanPct": 3.667
+      }
+     }
+    },
+    {
+     "rank": 10,
+     "config": {
+      "rs": 0,
+      "trend": 0,
+      "atrMin": 0.04,
+      "atrMax": 0.08,
+      "emaLo": -0.02,
+      "emaHi": 0.1,
+      "highMin": -0.2,
+      "rsiLo": 50,
+      "rsiHi": 101,
+      "vol": 2.0,
+      "breakout": 0,
+      "ret20Min": 0.0,
+      "riskMax": 999,
+      "regime": 150,
+      "exit": "H20"
+     },
+     "score": 2.5,
+     "nullTail": 7.574782035646924e-06,
+     "bonferroniP": 0.7574782035646924,
+     "periods": {
+      "train": {
+       "t": 3.014,
+       "signals": 1893,
+       "dates": 511,
+       "excessPct": 1.856,
+       "meanPct": 3.537
+      },
+      "val": {
+       "t": 2.5,
+       "signals": 1750,
+       "dates": 323,
+       "excessPct": 2.069,
+       "meanPct": 2.69
+      },
+      "test": {
+       "t": 2.744,
+       "signals": 2032,
+       "dates": 433,
+       "excessPct": 3.377,
+       "meanPct": 6.113
+      }
+     }
+    },
+    {
+     "rank": 11,
+     "config": {
+      "rs": 70,
+      "trend": 0,
+      "atrMin": 0.03,
+      "atrMax": 0.08,
+      "emaLo": -0.1,
+      "emaHi": 9,
+      "highMin": -0.3,
+      "rsiLo": 60,
+      "rsiHi": 70,
+      "vol": 0,
+      "breakout": 0,
+      "ret20Min": -0.1,
+      "riskMax": 999,
+      "regime": 100,
+      "exit": "SMA50X"
+     },
+     "score": 2.49,
+     "nullTail": 7.574782035646924e-06,
+     "bonferroniP": 0.7574782035646924,
+     "periods": {
+      "train": {
+       "t": 3.312,
+       "signals": 14652,
+       "dates": 600,
+       "excessPct": 4.189,
+       "meanPct": 4.617
+      },
+      "val": {
+       "t": 2.494,
+       "signals": 9441,
+       "dates": 346,
+       "excessPct": 2.775,
+       "meanPct": 3.186
+      },
+      "test": {
+       "t": 2.245,
+       "signals": 13702,
+       "dates": 455,
+       "excessPct": 2.689,
+       "meanPct": 4.892
+      }
+     }
+    },
+    {
+     "rank": 12,
+     "config": {
+      "rs": 50,
+      "trend": 1,
+      "atrMin": 0.03,
+      "atrMax": 9,
+      "emaLo": -0.1,
+      "emaHi": 9,
+      "highMin": -0.3,
+      "rsiLo": 60,
+      "rsiHi": 101,
+      "vol": 0,
+      "breakout": 0,
+      "ret20Min": -0.1,
+      "riskMax": 999,
+      "regime": 200,
+      "exit": "SMA50X"
+     },
+     "score": 2.49,
+     "nullTail": 7.574782035646924e-06,
+     "bonferroniP": 0.7574782035646924,
+     "periods": {
+      "train": {
+       "t": 2.493,
+       "signals": 19639,
+       "dates": 555,
+       "excessPct": 2.193,
+       "meanPct": 3.892
+      },
+      "val": {
+       "t": 2.52,
+       "signals": 17482,
+       "dates": 362,
+       "excessPct": 3.124,
+       "meanPct": 2.041
+      },
+      "test": {
+       "t": 2.32,
+       "signals": 28863,
+       "dates": 447,
+       "excessPct": 3.498,
+       "meanPct": 5.314
+      }
+     }
+    },
+    {
+     "rank": 13,
+     "config": {
+      "rs": 85,
+      "trend": 0,
+      "atrMin": 0,
+      "atrMax": 9,
+      "emaLo": -0.1,
+      "emaHi": 0.1,
+      "highMin": -0.2,
+      "rsiLo": 0,
+      "rsiHi": 80,
+      "vol": 0,
+      "breakout": 0,
+      "ret20Min": 0.0,
+      "riskMax": 999,
+      "regime": 200,
+      "exit": "SMA50X"
+     },
+     "score": 2.47,
+     "nullTail": 1.5149564071293848e-05,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 2.875,
+       "signals": 16527,
+       "dates": 555,
+       "excessPct": 2.332,
+       "meanPct": 3.668
+      },
+      "val": {
+       "t": 2.475,
+       "signals": 9579,
+       "dates": 362,
+       "excessPct": 2.703,
+       "meanPct": 3.459
+      },
+      "test": {
+       "t": 2.511,
+       "signals": 11430,
+       "dates": 447,
+       "excessPct": 4.031,
+       "meanPct": 6.053
+      }
+     }
+    },
+    {
+     "rank": 14,
+     "config": {
+      "rs": 0,
+      "trend": 0,
+      "atrMin": 0,
+      "atrMax": 0.05,
+      "emaLo": 0.0,
+      "emaHi": 9,
+      "highMin": -0.3,
+      "rsiLo": 60,
+      "rsiHi": 80,
+      "vol": 1.5,
+      "breakout": 0,
+      "ret20Min": 0.0,
+      "riskMax": 15,
+      "regime": 150,
+      "exit": "H10_S6"
+     },
+     "score": 2.47,
+     "nullTail": 1.5149564071293848e-05,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 2.645,
+       "signals": 3212,
+       "dates": 539,
+       "excessPct": 0.656,
+       "meanPct": 0.545
+      },
+      "val": {
+       "t": 2.474,
+       "signals": 1979,
+       "dates": 326,
+       "excessPct": 0.577,
+       "meanPct": 0.373
+      },
+      "test": {
+       "t": 0.663,
+       "signals": 1871,
+       "dates": 370,
+       "excessPct": 0.11,
+       "meanPct": 0.836
+      }
+     }
+    },
+    {
+     "rank": 15,
+     "config": {
+      "rs": 60,
+      "trend": 1,
+      "atrMin": 0.04,
+      "atrMax": 0.08,
+      "emaLo": -0.05,
+      "emaHi": 9,
+      "highMin": -0.1,
+      "rsiLo": 30,
+      "rsiHi": 101,
+      "vol": 1.0,
+      "breakout": 0,
+      "ret20Min": 0.1,
+      "riskMax": 999,
+      "regime": 200,
+      "exit": "SMA50X"
+     },
+     "score": 2.46,
+     "nullTail": 1.5149564071293848e-05,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 2.461,
+       "signals": 5258,
+       "dates": 550,
+       "excessPct": 2.967,
+       "meanPct": 4.26
+      },
+      "val": {
+       "t": 2.696,
+       "signals": 4535,
+       "dates": 346,
+       "excessPct": 3.12,
+       "meanPct": 2.133
+      },
+      "test": {
+       "t": 2.679,
+       "signals": 8454,
+       "dates": 446,
+       "excessPct": 4.619,
+       "meanPct": 5.956
+      }
+     }
+    },
+    {
+     "rank": 16,
+     "config": {
+      "rs": 0,
+      "trend": 1,
+      "atrMin": 0.02,
+      "atrMax": 9,
+      "emaLo": 0.0,
+      "emaHi": 9,
+      "highMin": -0.2,
+      "rsiLo": 50,
+      "rsiHi": 80,
+      "vol": 1.0,
+      "breakout": 0,
+      "ret20Min": -0.1,
+      "riskMax": 999,
+      "regime": 150,
+      "exit": "SMA50X"
+     },
+     "score": 2.46,
+     "nullTail": 1.5149564071293848e-05,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 2.46,
+       "signals": 16630,
+       "dates": 571,
+       "excessPct": 2.264,
+       "meanPct": 3.976
+      },
+      "val": {
+       "t": 2.512,
+       "signals": 15717,
+       "dates": 333,
+       "excessPct": 2.569,
+       "meanPct": 2.399
+      },
+      "test": {
+       "t": 2.108,
+       "signals": 24652,
+       "dates": 450,
+       "excessPct": 2.519,
+       "meanPct": 4.825
+      }
+     }
+    },
+    {
+     "rank": 17,
+     "config": {
+      "rs": 0,
+      "trend": 0,
+      "atrMin": 0,
+      "atrMax": 0.05,
+      "emaLo": -0.05,
+      "emaHi": 9,
+      "highMin": -0.3,
+      "rsiLo": 50,
+      "rsiHi": 80,
+      "vol": 2.0,
+      "breakout": 0,
+      "ret20Min": -0.1,
+      "riskMax": 999,
+      "regime": 100,
+      "exit": "SMA50X"
+     },
+     "score": 2.44,
+     "nullTail": 1.5149564071293848e-05,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 2.606,
+       "signals": 11336,
+       "dates": 599,
+       "excessPct": 2.51,
+       "meanPct": 3.268
+      },
+      "val": {
+       "t": 2.437,
+       "signals": 8171,
+       "dates": 344,
+       "excessPct": 1.904,
+       "meanPct": 2.098
+      },
+      "test": {
+       "t": 1.9,
+       "signals": 7843,
+       "dates": 434,
+       "excessPct": 3.124,
+       "meanPct": 4.562
+      }
+     }
+    },
+    {
+     "rank": 18,
+     "config": {
+      "rs": 0,
+      "trend": 0,
+      "atrMin": 0.03,
+      "atrMax": 9,
+      "emaLo": -9,
+      "emaHi": 0.1,
+      "highMin": -9,
+      "rsiLo": 30,
+      "rsiHi": 70,
+      "vol": 1.5,
+      "breakout": 0,
+      "ret20Min": -0.1,
+      "riskMax": 25,
+      "regime": 100,
+      "exit": "H10_S8"
+     },
+     "score": 2.41,
+     "nullTail": 2.2724346106940774e-05,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 2.406,
+       "signals": 15206,
+       "dates": 599,
+       "excessPct": 0.236,
+       "meanPct": 0.559
+      },
+      "val": {
+       "t": 2.562,
+       "signals": 12271,
+       "dates": 346,
+       "excessPct": 0.517,
+       "meanPct": 0.757
+      },
+      "test": {
+       "t": 1.478,
+       "signals": 13500,
+       "dates": 462,
+       "excessPct": 0.621,
+       "meanPct": 1.201
+      }
+     }
+    },
+    {
+     "rank": 19,
+     "config": {
+      "rs": 0,
+      "trend": 0,
+      "atrMin": 0.02,
+      "atrMax": 9,
+      "emaLo": 0.0,
+      "emaHi": 0.1,
+      "highMin": -0.3,
+      "rsiLo": 30,
+      "rsiHi": 101,
+      "vol": 1.5,
+      "breakout": 0,
+      "ret20Min": -9,
+      "riskMax": 25,
+      "regime": 100,
+      "exit": "H10_S8"
+     },
+     "score": 2.4,
+     "nullTail": 2.2724346106940774e-05,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 2.404,
+       "signals": 14180,
+       "dates": 598,
+       "excessPct": 0.324,
+       "meanPct": 0.646
+      },
+      "val": {
+       "t": 3.087,
+       "signals": 9897,
+       "dates": 345,
+       "excessPct": 0.67,
+       "meanPct": 0.7
+      },
+      "test": {
+       "t": 2.411,
+       "signals": 9496,
+       "dates": 459,
+       "excessPct": 1.073,
+       "meanPct": 1.722
+      }
+     }
+    },
+    {
+     "rank": 20,
+     "config": {
+      "rs": 0,
+      "trend": 1,
+      "atrMin": 0,
+      "atrMax": 0.05,
+      "emaLo": -0.1,
+      "emaHi": 9,
+      "highMin": -0.2,
+      "rsiLo": 60,
+      "rsiHi": 101,
+      "vol": 0,
+      "breakout": 0,
+      "ret20Min": -9,
+      "riskMax": 999,
+      "regime": 200,
+      "exit": "H10_S12"
+     },
+     "score": 2.39,
+     "nullTail": 2.2724346106940774e-05,
+     "bonferroniP": 1.0,
+     "periods": {
+      "train": {
+       "t": 2.39,
+       "signals": 17648,
+       "dates": 555,
+       "excessPct": 0.64,
+       "meanPct": 1.096
+      },
+      "val": {
+       "t": 2.446,
+       "signals": 16383,
+       "dates": 362,
+       "excessPct": 0.74,
+       "meanPct": 0.988
+      },
+      "test": {
+       "t": 1.727,
+       "signals": 16765,
+       "dates": 491,
+       "excessPct": 0.57,
+       "meanPct": 1.277
+      }
+     }
+    }
+   ],
+   "avgExcessPctByPeriodAllValid": {
+    "train": 0.311,
+    "val": 0.514,
+    "test": 1.035
+   }
+  }
+ }
+}
