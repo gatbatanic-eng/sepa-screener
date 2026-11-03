@@ -3,6 +3,16 @@ name: Leader Entry Backtest
 # 주도주 진입 규칙(손절폭 8% 이하 필터 vs 추격 허용·눌림목·돌파) 백테스트. 수동 실행 전용, 기존 파이프라인과 연결하지 않는다. 결과는 research/leader_backtest.
 on:
   workflow_dispatch:
+    inputs:
+      fetch_start:
+        description: "가격 수집 시작일(평가 시작 15개월 전)"
+        default: "2023-06-01"
+      eval_start:
+        description: "평가 시작일"
+        default: "2024-09-02"
+      out_name:
+        description: "결과 하위 폴더(비우면 기존 파일 덮어씀)"
+        default: ""
 
 permissions:
   contents: write
@@ -27,8 +37,16 @@ jobs:
       - name: Unit tests
         run: python -m unittest tests.test_leader_backtest -v
       - name: Run backtest
+        env:
+          LB_FETCH_START: ${{ inputs.fetch_start }}
+          LB_EVAL_START: ${{ inputs.eval_start }}
+          LB_OUT: ${{ inputs.out_name }}
         run: python -m leader_backtest.main
       - name: Run robustness (sepa universe, PRE/OOS split at rule freeze date)
+        env:
+          LB_FETCH_START: ${{ inputs.fetch_start }}
+          LB_EVAL_START: ${{ inputs.eval_start }}
+          LB_OUT: ${{ inputs.out_name }}
         run: python -m leader_backtest.robust
       - name: Save
         run: |
