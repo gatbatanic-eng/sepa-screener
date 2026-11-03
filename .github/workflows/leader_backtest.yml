@@ -10,6 +10,9 @@ on:
       eval_start:
         description: "평가 시작일"
         default: "2024-09-02"
+      only:
+        description: "ops=운용형 시뮬레이션만, all=기존 백테스트+robust+운용형"
+        default: "all"
       out_name:
         description: "결과 하위 폴더(비우면 기존 파일 덮어씀)"
         default: ""
@@ -35,19 +38,27 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Unit tests
-        run: python -m unittest tests.test_leader_backtest -v
+        run: python -m unittest tests.test_leader_backtest tests.test_leader_ops -v
       - name: Run backtest
+        if: inputs.only != 'ops'
         env:
           LB_FETCH_START: ${{ inputs.fetch_start }}
           LB_EVAL_START: ${{ inputs.eval_start }}
           LB_OUT: ${{ inputs.out_name }}
         run: python -m leader_backtest.main
       - name: Run robustness (sepa universe, PRE/OOS split at rule freeze date)
+        if: inputs.only != 'ops'
         env:
           LB_FETCH_START: ${{ inputs.fetch_start }}
           LB_EVAL_START: ${{ inputs.eval_start }}
           LB_OUT: ${{ inputs.out_name }}
         run: python -m leader_backtest.robust
+      - name: Run operating (portfolio) simulation
+        env:
+          LB_FETCH_START: ${{ inputs.fetch_start }}
+          LB_EVAL_START: ${{ inputs.eval_start }}
+          LB_OUT: ${{ inputs.out_name }}
+        run: python -m leader_backtest.ops
       - name: Save
         run: |
           git config user.name "github-actions[bot]"
