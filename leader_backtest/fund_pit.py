@@ -154,6 +154,28 @@ def collect_kr(codes: list[str], key: str, last_year: int | None = None) -> pd.D
     return df
 
 
+def earliest_first(rows):
+    """공시일이 가장 이른 사실을 고른다(같은 날이면 태그 우선순위). PIT: 값이 처음 알려진 시점의 버전."""
+    if not rows:
+        return None
+    import publish_us_fundamentals as us
+    return sorted(rows, key=lambda r: (us.day(r["filed"]).toordinal(), r["rank"], r.get("accn", "")))[0]
+
+
+def us_record(r: dict, ticker: str) -> dict:
+    """normalize 결과 한 분기 -> 행. 접수일은 손익 항목(매출·영업이익·순이익)의 공시일 중 가장 늦은 날이고,
+    그보다 늦게 공시된 재무상태 항목(부채·자본)은 그 시점에 알 수 없으므로 결측으로 둔다."""
+    prov = r.get("provenance", {})
+    inc = [prov[k]["filedAt"] for k in ("revenue", "operatingProfit", "netIncome") if k in prov]
+    filed = max(inc) if inc else r.get("filedAt")
+    out = {"market": "us", "code": ticker, "qend": r["periodEnd"], "filed": filed, "revenue": r.get("revenue"), "op": r.get("operatingProfit"),
+           "net": r.get("netIncome"), "liabilities": r.get("liabilities"), "equity": r.get("equity"), "basis": "US-GAAP"}
+    for k, field in (("liabilities", "liabilities"), ("equity", "equity")):
+        if k in prov and prov[k]["filedAt"] > filed:
+            out[field] = None
+    return out
+
+
 def collect_us(tickers: list[str]) -> pd.DataFrame:
     import publish_us_fundamentals as us
     ua = os.environ.get("SEC_USER_AGENT", "").strip()
@@ -163,7 +185,7 @@ def collect_us(tickers: list[str]) -> pd.DataFrame:
     mapping = {v["ticker"].replace(".", "-").upper(): v["cik_str"] for v in tk.values()}
     today = dt.date.today().isoformat()
     orig = us.choose
-    us.choose = lambda rows: (sorted(rows, key=lambda r: (r["rank"], us.day(r["filed"]).toordinal(), r.get("accn", "")))[0] if rows else None)   # 가장 이른 공시 우선
+    us.choose = earliest_first   # 가장 이른 공시 우선(태그 우선순위보다 공시일이 먼저: 나중에 바뀐 태그로 과거 값을 늦게 받는 일을 막는다)
     recs, miss, t0 = [], 0, time.time()
     try:
         for n, t in enumerate(tickers):
@@ -176,8 +198,7 @@ def collect_us(tickers: list[str]) -> pd.DataFrame:
             try:
                 data = us.fetch(f"https://data.sec.gov/api/xbrl/companyfacts/CIK{int(cik):010d}.json")
                 for r in us.normalize(data, today, last=None):
-                    recs.append({"market": "us", "code": t, "qend": r["periodEnd"], "filed": r["filedAt"], "revenue": r.get("revenue"), "op": r.get("operatingProfit"),
-                                 "net": r.get("netIncome"), "liabilities": r.get("liabilities"), "equity": r.get("equity"), "basis": "US-GAAP"})
+                    recs.append(us_record(r, t))
             except Exception as exc:                      # noqa: BLE001
                 miss += 1
                 log.warning("%s 실패: %s", t, exc)

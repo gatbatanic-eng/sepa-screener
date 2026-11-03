@@ -64,5 +64,19 @@ class FeatureTest(unittest.TestCase):
         self.assertTrue(np.isnan(m.loc[3, "revYoY"]) or m.loc[3, "daysSince"] <= 200)    # 200일 넘은 낡은 값은 결측 처리
 
 
+class UsTest(unittest.TestCase):
+    def test_earliest_first_beats_tag_priority_and_late_balance_sheet_is_dropped(self):
+        import publish_us_fundamentals as us
+        rows = [{"rank": 0, "filed": "2012-05-01", "val": 111.0, "accn": "b"}, {"rank": 3, "filed": "2010-05-01", "val": 100.0, "accn": "a"}]
+        self.assertEqual(F.earliest_first(rows)["val"], 100.0)             # 태그 우선순위가 높아도 나중에 공시된 값은 쓰지 않는다
+        self.assertIsNone(F.earliest_first([]))
+        rec = {"periodEnd": "2010-03-31", "filedAt": "2011-01-01", "revenue": 1.0, "operatingProfit": 0.1, "netIncome": 0.05, "liabilities": 5.0, "equity": 9.0,
+               "provenance": {"revenue": {"filedAt": "2010-05-01"}, "netIncome": {"filedAt": "2010-05-01"}, "liabilities": {"filedAt": "2010-05-01"}, "equity": {"filedAt": "2011-01-01"}}}
+        r = F.us_record(rec, "X")
+        self.assertEqual(r["filed"], "2010-05-01")                          # 손익 항목 공시일 기준
+        self.assertEqual(r["liabilities"], 5.0)
+        self.assertIsNone(r["equity"])                                       # 늦게 공시된 자본은 그 시점에 알 수 없다
+
+
 if __name__ == "__main__":
     unittest.main()
