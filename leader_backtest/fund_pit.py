@@ -89,6 +89,16 @@ def kr_quarters(reports: dict[tuple[int, int], dict]) -> list[dict]:
     return out
 
 
+def _progress(name: str, **kw) -> None:
+    """실행 중에도 진행 상황이 저장소에 남도록 작은 파일을 갱신한다(워크플로 Save 단계가 항상 실행)."""
+    try:
+        d = OUT_DIR / "fund_pit"
+        d.mkdir(parents=True, exist_ok=True)
+        (d / f"progress_{name}.json").write_text(json.dumps({"at": dt.datetime.now(dt.timezone.utc).isoformat(), **kw}, ensure_ascii=False), encoding="utf-8")
+    except Exception:                                    # noqa: BLE001
+        pass
+
+
 def collect_kr(codes: list[str], key: str, last_year: int | None = None) -> pd.DataFrame:
     from publish_fundamentals import Dart
     api = Dart(key)
@@ -118,10 +128,13 @@ def collect_kr(codes: list[str], key: str, last_year: int | None = None) -> pd.D
             except Exception as exc:                      # noqa: BLE001
                 time.sleep(3 * (attempt + 1))
         return job, None
-    failed = 0
-    with ThreadPoolExecutor(4) as pool:
+    failed, done, t0 = 0, 0, time.time()
+    with ThreadPoolExecutor(int(os.environ.get("FP_WORKERS", "4"))) as pool:
         for fut in as_completed([pool.submit(run, j) for j in jobs]):
             (year, q, rc, batch), rows = fut.result()
+            done += 1
+            if done % 10 == 0 or done == len(jobs):
+                _progress("kr", done=done, total=len(jobs), failed=failed, seconds=round(time.time() - t0), reportsSoFar=sum(len(v) for v in reports.values()))
             if rows is None:
                 failed += 1
                 continue
@@ -151,9 +164,11 @@ def collect_us(tickers: list[str]) -> pd.DataFrame:
     today = dt.date.today().isoformat()
     orig = us.choose
     us.choose = lambda rows: (sorted(rows, key=lambda r: (r["rank"], us.day(r["filed"]).toordinal(), r.get("accn", "")))[0] if rows else None)   # 가장 이른 공시 우선
-    recs, miss = [], 0
+    recs, miss, t0 = [], 0, time.time()
     try:
-        for t in tickers:
+        for n, t in enumerate(tickers):
+            if n % 25 == 0:
+                _progress("us", done=n, total=len(tickers), missing=miss, seconds=round(time.time() - t0), rows=len(recs))
             cik = mapping.get(t.replace(".", "-").upper())
             if cik is None:
                 miss += 1

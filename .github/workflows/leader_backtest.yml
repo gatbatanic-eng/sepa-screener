@@ -28,6 +28,9 @@ on:
       sp_slip:
         description: "portfolio: 편도 슬리피지 목록(쉼표)"
         default: "0"
+      fp_only:
+        description: "fundcollect: kr 또는 us만(비우면 둘 다)"
+        default: ""
       out_name:
         description: "결과 하위 폴더(비우면 기존 파일 덮어씀)"
         default: ""
@@ -103,6 +106,7 @@ jobs:
           LB_OUT: ${{ inputs.out_name }}
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
           SEC_USER_AGENT: 'GoldenCodeResearch gatbatanic@gmail.com'
+          FP_ONLY: ${{ inputs.fp_only }}
         run: python -m leader_backtest.fund_pit
       - name: Run fundamentals-signal large-scale search
         if: inputs.only == 'searchfund'
@@ -113,6 +117,7 @@ jobs:
           SEARCH_NULL_REPS: ${{ inputs.null_reps }}
         run: python -m leader_backtest.search_fund
       - name: Save
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
