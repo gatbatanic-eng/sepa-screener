@@ -83,3 +83,18 @@ def _G_nulls():
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PortfolioStageTest(unittest.TestCase):
+    def test_signal_matrix_and_nonstrict_mask(self):
+        from leader_backtest.search_portfolio import signal_matrix
+        d = tiny_data(0.0, n_stocks=10)
+        cfg = {"rs": 80, "trend": 0, "atrMin": 0, "atrMax": 9, "emaLo": -9, "emaHi": 9, "highMin": -9, "rsiLo": 0, "rsiHi": 101, "vol": 0, "breakout": 0,
+               "ret20Min": -9, "riskMax": 999, "regime": 0, "exit": "SMA50X"}
+        strict, loose = d.mask(cfg), d.mask(cfg, strict=False)
+        self.assertGreaterEqual(int(loose.sum()), int(strict.sum()))
+        sig = signal_matrix(d, loose)
+        self.assertEqual(int(sig.values.sum()), int(loose.sum()))
+        self.assertEqual(list(sig.columns), list(d.mats["close"].columns))
+        i = int(np.flatnonzero(loose)[0])
+        self.assertTrue(sig.iloc[d.didx[i], d.cidx[i]])

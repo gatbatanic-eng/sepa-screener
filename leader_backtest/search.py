@@ -73,6 +73,7 @@ def stock_frame(df: pd.DataFrame, cost: float) -> pd.DataFrame:
     f["distHigh"] = c / hi - 1
     f["ret20"] = c / c.shift(20) - 1
     sma50 = c.rolling(50).mean()
+    f["close"], f["sma50"] = c, sma50
     for k, v in exit_outcomes(c, sma50, cost).items():
         f["x_" + k] = v.astype(np.float32)
     return f
@@ -100,6 +101,10 @@ class Data:
         p = panel.sort_values(["date", "code"]).reset_index(drop=True)
         self.dates = np.sort(p["date"].unique())
         self.didx = np.searchsorted(self.dates, p["date"].to_numpy()).astype(np.int32)
+        self.codes = np.sort(p["code"].unique())
+        self.cidx = np.searchsorted(self.codes, p["code"].to_numpy()).astype(np.int32)
+        self.mats = {k: p.pivot(index="date", columns="code", values=v).reindex(index=self.dates, columns=self.codes) for k, v in (("close", "close"), ("sma50", "sma50"), ("rs", "rs"))}
+        self.bench = None
         self.D = len(self.dates)
         a = lambda k: p[k].to_numpy(np.float32)
         self.ok = p["ok"].to_numpy(bool)
@@ -134,8 +139,9 @@ class Data:
         for v in (8, 15, 25): M[("riskMax", v)] = (P["risk"] <= v) & (P["risk"] > 0)
         return M
 
-    def mask(self, c: dict) -> np.ndarray:
-        m = self.valid[c["exit"]] & self.regime[c["regime"]]
+    def mask(self, c: dict, strict: bool = True) -> np.ndarray:
+        """strict=True: 청산 결과가 확정된 행만(탐색용). False: 지표 계산 가능한 모든 행(포트폴리오 시뮬레이션용; 끝까지 보유 중인 포지션을 마지막 종가로 평가)."""
+        m = (self.valid[c["exit"]] if strict else self.ok) & self.regime[c["regime"]]
         if c["trend"]: m = m & self.trend
         for key in ("rs", "atrMin", "atrMax", "emaLo", "emaHi", "highMin", "rsiLo", "rsiHi", "vol", "ret20Min", "riskMax"):
             mk = self.masks.get((key, c[key]))
@@ -231,7 +237,9 @@ def build_data(market: str, universe: list[dict], idx_sym: str, start_fetch: str
     panel = panel.reset_index()
     panel["rs"] = panel.groupby("date")["ret252"].rank(pct=True) * 100
     panel = panel[panel["date"] >= PERIODS["train"][0]]
-    return Data(panel, regimes)
+    d = Data(panel, regimes)
+    d.bench = ic
+    return d
 
 
 def summarize(market: str, data: Data, cfgs: list[dict], real: list, null_scores: list[np.ndarray]) -> dict:
@@ -244,6 +252,8 @@ def summarize(market: str, data: Data, cfgs: list[dict], real: list, null_scores
     pooled = np.concatenate(null_scores) if null_scores else np.array([])
     pooled = pooled[pooled > -99]
     n_valid = int((scores > -99).sum())
+    best = float(scores.max())
+    rc_p = float((sum(float(ns.max()) >= best for ns in null_scores) + 1) / (len(null_scores) + 1)) if null_scores else None   # White 식 현실점검: 귀무 복제 중 최고 점수가 실제 최고 이상인 비율
 
     def q(s):
         return float((pooled >= s).sum() + 1) / (len(pooled) + 1) if len(pooled) else None
@@ -254,10 +264,11 @@ def summarize(market: str, data: Data, cfgs: list[dict], real: list, null_scores
         s = float(scores[i])
         qq = q(s)
         top.append({"rank": len(top) + 1, "config": cfgs[i], "score": round(s, 2), "nullTail": qq, "bonferroniP": min(1.0, qq * len(cfgs)) if qq is not None else None,
+                    "bonferroniPValidN": min(1.0, qq * n_valid) if qq is not None else None,
                     "periods": {k: {a: (round(b, 3) if isinstance(b, float) else b) for a, b in v.items()} for k, v in full.items()}})
     allp = {per: [detail[i][per]["excessPct"] for i in detail if detail[i][per]["excessPct"] is not None] for per in PERIODS}
     return {"market": market, "configs": len(cfgs), "validConfigs": n_valid, "rows": int(len(data.didx)), "dates": int(data.D),
-            "nullReplicates": len(null_scores), "nullMaxScores": [round(float(s.max()), 2) for s in null_scores],
+            "nullReplicates": len(null_scores), "realityCheckP": rc_p, "bonferroniPValidN": None, "nullMaxScores": [round(float(s.max()), 2) for s in null_scores],
             "nullScoreQuantiles": {str(p): round(float(np.quantile(pooled, p)), 2) for p in (0.5, 0.9, 0.99, 0.999)} if len(pooled) else None,
             "realScoreQuantiles": {str(p): round(float(np.quantile(scores[scores > -99], p)), 2) for p in (0.5, 0.9, 0.99, 0.999)} if n_valid else None,
             "positiveTestShareAmongTop20": round(float(np.mean([(t["periods"]["test"]["excessPct"] or -1) > 0 for t in top])), 2) if top else None, "top": top,
@@ -270,6 +281,7 @@ def to_markdown(res: dict) -> str:
         o += [f"## {m['market'].upper()} — 조합 {m['configs']:,}개(유효 {m['validConfigs']:,}), 행 {m['rows']:,}, 거래일 {m['dates']}", "",
               f"- 귀무 복제 {m['nullReplicates']}회 최고 점수: {m['nullMaxScores']} / 귀무 점수 분위수: {m['nullScoreQuantiles']}",
               f"- 실제 점수 분위수: {m['realScoreQuantiles']}",
+              f"- 현실점검 p(귀무 {m['nullReplicates']}회 중 최고 점수가 실제 최고 이상인 비율, 최소 1/(복제+1)): {m['realityCheckP']}",
               f"- 유효 조합 전체의 구간별 평균 초과수익 %p(신호 단위): {m['avgExcessPctByPeriodAllValid']}",
               f"- 상위 20개 중 시험 구간 초과수익이 양수인 비율: {m['positiveTestShareAmongTop20']}", "",
               "| 순위 | 점수(min t) | Bonferroni p | 훈련 t/초과% | 검증 t/초과% | 시험 t/초과%/신호 | 조건 |", "|---|---|---|---|---|---|---|"]
