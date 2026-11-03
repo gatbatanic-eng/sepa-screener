@@ -31,6 +31,9 @@ on:
       fp_only:
         description: "fundcollect: kr 또는 us만(비우면 둘 다)"
         default: ""
+      sf_markets:
+        description: "searchfund: 시장 선택(us,kr)"
+        default: "us,kr"
       out_name:
         description: "결과 하위 폴더(비우면 기존 파일 덮어씀)"
         default: ""
@@ -115,6 +118,7 @@ jobs:
           LB_FETCH_START: "2015-06-01"
           SEARCH_N: ${{ inputs.search_n }}
           SEARCH_NULL_REPS: ${{ inputs.null_reps }}
+          SF_MARKETS: ${{ inputs.sf_markets }}
         run: python -m leader_backtest.search_fund
       - name: Save
         if: always()

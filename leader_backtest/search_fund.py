@@ -103,7 +103,8 @@ def main() -> None:
     kr = [r for r in json.loads((ROOT / "docs" / "data" / "latest_kr.json").read_text(encoding="utf-8")) if r.get("status") == "OK" and r.get("code")]
     us = [r for r in json.loads((ROOT / "docs" / "data" / "latest_us.json").read_text(encoding="utf-8")) if r.get("status") == "OK" and r.get("code")]
     res = {"ranAt": dt.datetime.now(dt.timezone.utc).isoformat(), "nConfigs": S.N_CONFIGS, "nullReps": S.N_NULL_REPS, "markets": {}}
-    for market, uni, sym in (("us", us, "^GSPC"), ("kr", kr, "^KS11")):
+    want = (os.environ.get("SF_MARKETS") or "us,kr").split(",")
+    for market, uni, sym in [m for m in (("us", us, "^GSPC"), ("kr", kr, "^KS11")) if m[0] in want]:
         data = build(market, uni, sym, start_fetch)
         cov = {k: round(float(np.isfinite(v).mean()), 3) for k, v in data.extra.items()}
         log.info("%s 재무 특징 결측 아닌 비율 %s", market, cov)
