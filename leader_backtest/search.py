@@ -97,8 +97,9 @@ def sample_configs(n: int, seed: int = SEED) -> list[dict]:
 class Data:
     """종목×날짜 행을 한 배열로 쌓은 것. 조건 하나하나의 불리언 마스크를 미리 만들어 조합은 AND 로만 계산한다."""
 
-    def __init__(self, panel: pd.DataFrame, regimes: dict[int, pd.Series]):
+    def __init__(self, panel: pd.DataFrame, regimes: dict[int, pd.Series], extra: tuple = ()):
         p = panel.sort_values(["date", "code"]).reset_index(drop=True)
+        self.extra = {k: p[k].to_numpy(np.float32) for k in extra}
         self.dates = np.sort(p["date"].unique())
         self.didx = np.searchsorted(self.dates, p["date"].to_numpy()).astype(np.int32)
         self.codes = np.sort(p["code"].unique())
@@ -215,7 +216,7 @@ def run_all(data: Data, cfgs: list[dict], null_reps: int, workers: int) -> tuple
     return real, null_scores
 
 
-def build_data(market: str, universe: list[dict], idx_sym: str, start_fetch: str) -> Data:
+def build_data(market: str, universe: list[dict], idx_sym: str, start_fetch: str, panel_hook=None, data_cls=None, extra: tuple = ()) -> Data:
     import yfinance as yf
     syms = {}
     for u in universe:
@@ -237,7 +238,9 @@ def build_data(market: str, universe: list[dict], idx_sym: str, start_fetch: str
     panel = panel.reset_index()
     panel["rs"] = panel.groupby("date")["ret252"].rank(pct=True) * 100
     panel = panel[panel["date"] >= PERIODS["train"][0]]
-    d = Data(panel, regimes)
+    if panel_hook:
+        panel = panel_hook(panel)
+    d = (data_cls or Data)(panel, regimes, extra=extra) if data_cls else Data(panel, regimes, extra=extra)
     d.bench = ic
     return d
 
