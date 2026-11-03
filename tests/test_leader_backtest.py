@@ -114,7 +114,7 @@ class RobustTest(unittest.TestCase):
         data = {f"S{i}": synth(seed=i, drift=0.003 if i % 2 else -0.0003, vol=0.025) for i in range(20)}
         panel = robust.build_panel(data, "us")
         res = robust.evaluate(panel)
-        self.assertEqual(set(res["periods"]), {"ALL", "T1", "T2", "T3"})
+        self.assertEqual(set(res["periods"]), {"ALL", "T1", "T2", "T3", "PRE", "OOS"})
         self.assertEqual(res["periods"]["ALL"]["ALL"]["rows"], len(panel))
         self.assertEqual(set(res["verdict"]), set(robust.RULES) - {"VOL"})
         for v in res["verdict"].values():

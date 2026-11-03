@@ -28,11 +28,14 @@ jobs:
         run: python -m unittest tests.test_leader_backtest -v
       - name: Run backtest
         run: python -m leader_backtest.main
+      - name: Run robustness (sepa universe, PRE/OOS split at rule freeze date)
+        run: python -m leader_backtest.robust
       - name: Save
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -f research/leader_backtest
+          git add -f research/leader_backtest/archive_2026-10-10
           git diff --cached --quiet && exit 0
           git commit -m "주도주 진입 규칙 백테스트 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
           for i in 1 2 3; do
