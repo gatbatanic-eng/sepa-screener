@@ -67,9 +67,30 @@ class FundData(S.Data):
         return m
 
 
+def join_key(code: pd.Series, market: str) -> pd.Series:
+    """가격 쪽 키(한국 '009450.KS', 미국 'BRK-B')와 재무 쪽 키(한국 '009450', 미국 'BRK.B')를 같은 형태로 맞춘다."""
+    c = code.astype(str)
+    if market == "kr":
+        return c.str.replace(r"\.(KS|KQ)$", "", regex=True).str.zfill(6)
+    return c.str.replace(".", "-", regex=False).str.upper()
+
+
 def fund_hook(market: str):
     feats = quarter_features(load_quarters(market))
-    return lambda panel: attach(panel, feats)
+    feats["code"] = join_key(feats["code"], market)
+
+    def hook(panel: pd.DataFrame) -> pd.DataFrame:
+        p = panel.copy()
+        p["_orig"] = p["code"]
+        p["code"] = join_key(p["_orig"], market)
+        out = attach(p, feats)
+        out["code"] = out["_orig"]
+        n = float(out["revYoY"].notna().mean())
+        log.info("%s 재무 병합 후 매출증가율 비결측 비율 %.3f", market, n)
+        if n < 0.05:
+            raise RuntimeError("재무 특징이 거의 붙지 않았습니다(종목 키 불일치 의심): %.3f" % n)
+        return out.drop(columns="_orig")
+    return hook
 
 
 def build(market, universe, sym, start_fetch):

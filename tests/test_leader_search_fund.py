@@ -59,5 +59,26 @@ class FundSearchTest(unittest.TestCase):
         self.assertGreater(int(d.mask(base).sum()), int(m_no.sum()))
 
 
+class KeyTest(unittest.TestCase):
+    def test_join_keys_match_price_and_fund_sides(self):
+        self.assertEqual(list(SF.join_key(pd.Series(["009450.KS", "035720.KQ", "9450"]), "kr")), ["009450", "035720", "009450"])
+        self.assertEqual(list(SF.join_key(pd.Series(["BRK-B", "brk.b", "AAPL"]), "us")), ["BRK-B", "BRK-B", "AAPL"])
+
+    def test_hook_attaches_features_with_suffixed_codes_and_fails_loudly_when_nothing_matches(self):
+        from leader_backtest import fund_pit as FP
+        from unittest import mock
+        q = pd.DataFrame({"code": ["009450"] * 8, "qend": pd.date_range("2022-03-31", periods=8, freq="QE"), "filed": pd.date_range("2022-05-15", periods=8, freq="QE") + pd.Timedelta(days=0),
+                          "revenue": [100, 110, 120, 130, 150, 160, 170, 180.0], "op": [10.0] * 8, "net": [5.0] * 8, "liabilities": [50.0] * 8, "equity": [100.0] * 8})
+        panel = pd.DataFrame({"date": pd.bdate_range("2024-01-02", periods=60), "code": "009450.KS", "close": 1.0})
+        with mock.patch.object(SF, "load_quarters", return_value=q):
+            out = SF.fund_hook("kr")(panel)
+        self.assertEqual(set(out["code"]), {"009450.KS"})
+        self.assertGreater(float(out["revYoY"].notna().mean()), 0.5)
+        other = panel.assign(code="999999.KS")
+        with mock.patch.object(SF, "load_quarters", return_value=q):
+            with self.assertRaises(RuntimeError):
+                SF.fund_hook("kr")(other)
+
+
 if __name__ == "__main__":
     unittest.main()
