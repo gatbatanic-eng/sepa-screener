@@ -3,6 +3,49 @@ name: Leader Entry Backtest
 # 주도주 진입 규칙(손절폭 8% 이하 필터 vs 추격 허용·눌림목·돌파) 백테스트. 수동 실행 전용, 기존 파이프라인과 연결하지 않는다. 결과는 research/leader_backtest.
 on:
   workflow_dispatch:
+    inputs:
+      fetch_start:
+        description: "가격 수집 시작일(평가 시작 15개월 전)"
+        default: "2023-06-01"
+      eval_start:
+        description: "평가 시작일"
+        default: "2024-09-02"
+      only:
+        description: "all=기존 백테스트+robust+운용형, ops=운용형만, index=지수 필터만, search=대규모 규칙 탐색, portfolio=탐색 한국 상위 후보 포트폴리오 재검증, fundcollect=분기 재무(PIT) 수집, searchfund=재무 신호 대규모 탐색, members=S&P500 편입일 수집"
+        default: "all"
+      search_n:
+        description: "search: 탐색 조합 수"
+        default: "100000"
+      null_reps:
+        description: "search: 귀무(섞은 데이터) 복제 횟수"
+        default: "8"
+      sp_source:
+        description: "portfolio: 탐색 결과 json(research/leader_backtest/ 기준 경로)"
+        default: "search_2017_2026/search.json"
+      sp_pick:
+        description: "portfolio: SMA50X=SMA50X 청산 후보 전부, TOP5=한국 상위 5개"
+        default: "SMA50X"
+      sp_market:
+        description: "portfolio: kr 또는 us"
+        default: "kr"
+      sp_fund:
+        description: "portfolio: 1이면 재무 특징 사용(재무 탐색 결과 재검증)"
+        default: ""
+      sp_slip:
+        description: "portfolio: 편도 슬리피지 목록(쉼표)"
+        default: "0"
+      fp_only:
+        description: "fundcollect: kr 또는 us만(비우면 둘 다)"
+        default: ""
+      sf_markets:
+        description: "searchfund: 시장 선택(us,kr)"
+        default: "us,kr"
+      use_members:
+        description: "1이면 S&P500 편입일 이전 구간을 신호 대상에서 제외(미국, search/searchfund/portfolio)"
+        default: ""
+      out_name:
+        description: "결과 하위 폴더(비우면 기존 파일 덮어씀)"
+        default: ""
 
 permissions:
   contents: write
@@ -14,7 +57,7 @@ concurrency:
 jobs:
   backtest:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,14 +68,82 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Unit tests
-        run: python -m unittest tests.test_leader_backtest -v
+        run: python -m unittest tests.test_leader_backtest tests.test_leader_ops tests.test_leader_index_filter tests.test_leader_search tests.test_leader_fund_pit tests.test_leader_search_fund tests.test_leader_members -v
       - name: Run backtest
+        if: inputs.only == 'all'
+        env:
+          LB_FETCH_START: ${{ inputs.fetch_start }}
+          LB_EVAL_START: ${{ inputs.eval_start }}
+          LB_OUT: ${{ inputs.out_name }}
         run: python -m leader_backtest.main
+      - name: Run robustness (sepa universe, PRE/OOS split at rule freeze date)
+        if: inputs.only == 'all'
+        env:
+          LB_FETCH_START: ${{ inputs.fetch_start }}
+          LB_EVAL_START: ${{ inputs.eval_start }}
+          LB_OUT: ${{ inputs.out_name }}
+        run: python -m leader_backtest.robust
+      - name: Run operating (portfolio) simulation
+        if: inputs.only == 'all' || inputs.only == 'ops'
+        env:
+          LB_FETCH_START: ${{ inputs.fetch_start }}
+          LB_EVAL_START: ${{ inputs.eval_start }}
+          LB_OUT: ${{ inputs.out_name }}
+        run: python -m leader_backtest.ops
+      - name: Run index filter comparison
+        if: inputs.only == 'index'
+        env:
+          LB_OUT: ${{ inputs.out_name }}
+        run: python -m leader_backtest.index_filter
+      - name: Run large-scale rule search (train/val/test + null)
+        if: inputs.only == 'search'
+        env:
+          LB_OUT: ${{ inputs.out_name }}
+          LB_FETCH_START: "2015-06-01"
+          SEARCH_N: ${{ inputs.search_n }}
+          SEARCH_NULL_REPS: ${{ inputs.null_reps }}
+          MEMBERS_CSV: ${{ inputs.use_members == '1' && 'research/leader_backtest/sp500_members.csv' || '' }}
+        run: python -m leader_backtest.search
+      - name: Run portfolio re-validation of search candidates
+        if: inputs.only == 'portfolio'
+        env:
+          LB_OUT: ${{ inputs.out_name }}
+          LB_FETCH_START: "2015-06-01"
+          SP_SOURCE: ${{ inputs.sp_source }}
+          SP_PICK: ${{ inputs.sp_pick }}
+          SP_SLIP: ${{ inputs.sp_slip }}
+          SP_MARKET: ${{ inputs.sp_market }}
+          SP_FUND: ${{ inputs.sp_fund }}
+          MEMBERS_CSV: ${{ inputs.use_members == '1' && 'research/leader_backtest/sp500_members.csv' || '' }}
+        run: python -m leader_backtest.search_portfolio
+      - name: Collect point-in-time quarterly fundamentals (DART, SEC)
+        if: inputs.only == 'fundcollect'
+        env:
+          LB_OUT: ${{ inputs.out_name }}
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+          SEC_USER_AGENT: 'GoldenCodeResearch gatbatanic@gmail.com'
+          FP_ONLY: ${{ inputs.fp_only }}
+        run: python -m leader_backtest.fund_pit
+      - name: Run fundamentals-signal large-scale search
+        if: inputs.only == 'searchfund'
+        env:
+          LB_OUT: ${{ inputs.out_name }}
+          LB_FETCH_START: "2015-06-01"
+          SEARCH_N: ${{ inputs.search_n }}
+          SEARCH_NULL_REPS: ${{ inputs.null_reps }}
+          SF_MARKETS: ${{ inputs.sf_markets }}
+          MEMBERS_CSV: ${{ inputs.use_members == '1' && 'research/leader_backtest/sp500_members.csv' || '' }}
+        run: python -m leader_backtest.search_fund
+      - name: Fetch S&P500 membership dates
+        if: inputs.only == 'members'
+        run: python -m leader_backtest.sp500_members
       - name: Save
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -f research/leader_backtest
+          git add -f research/leader_backtest/archive_2026-10-10
           git diff --cached --quiet && exit 0
           git commit -m "주도주 진입 규칙 백테스트 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
           for i in 1 2 3; do

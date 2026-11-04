@@ -6,6 +6,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 import logging
+import os
 import time
 from pathlib import Path
 
@@ -16,9 +17,10 @@ from .rules import CFG, GROUPS, HORIZONS, features, forward_returns, select
 
 log = logging.getLogger("leader_backtest")
 ROOT = Path(__file__).resolve().parent.parent
-OUT_DIR = ROOT / "research" / "leader_backtest"
+OUT_DIR = ROOT / "research" / "leader_backtest" / os.environ.get("LB_OUT", "")
 COST = {"kr": 0.0025 * 2, "us": 0.0010 * 2}
-START_FETCH, START_EVAL = "2023-06-01", "2024-09-02"
+START_FETCH = os.environ.get("LB_FETCH_START") or "2023-06-01"  # 평가 시작 약 15개월 전(52주 지표 워밍업)
+START_EVAL = os.environ.get("LB_EVAL_START") or "2024-09-02"
 BOOT_N, SEED = 2000, 20261010
 MODES = {"HOLD": None, "STOP8": CFG["stop_exit"]}
 

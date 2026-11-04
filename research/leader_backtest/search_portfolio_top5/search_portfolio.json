@@ -1,0 +1,1948 @@
+{
+ "ranAt": "2026-11-03T08:02:05.944070+00:00",
+ "pick": "TOP5",
+ "source": "search.json",
+ "excluded": 15,
+ "results": [
+  {
+   "rank": 1,
+   "config": {
+    "rs": 50,
+    "trend": 0,
+    "atrMin": 0.02,
+    "atrMax": 0.05,
+    "emaLo": -0.1,
+    "emaHi": 9,
+    "highMin": -0.2,
+    "rsiLo": 50,
+    "rsiHi": 80,
+    "vol": 1.5,
+    "breakout": 0,
+    "ret20Min": -9,
+    "riskMax": 999,
+    "regime": 200,
+    "exit": "H10_S8"
+   },
+   "searchScore": 3.29,
+   "signals": 23021,
+   "bySlip": {
+    "0.0": {
+     "train": {
+      "totalPct": 92.0,
+      "cagrPct": 17.8,
+      "mddPct": -19.3,
+      "trades": 470,
+      "winPct": 45.7,
+      "avgWinPct": 9.6,
+      "avgLossPct": -6.2,
+      "avgDays": 9.2,
+      "profitFactor": 1.31,
+      "expectancyPct": 1.05,
+      "byYearPct": {
+       "2017": 45.9,
+       "2018": -4.7,
+       "2019": -6.6,
+       "2020": 47.9
+      },
+      "benchTotalPct": 40.6,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8
+      }
+     },
+     "val": {
+      "totalPct": 78.6,
+      "cagrPct": 21.5,
+      "mddPct": -21.0,
+      "trades": 307,
+      "winPct": 45.6,
+      "avgWinPct": 12.0,
+      "avgLossPct": -6.3,
+      "avgDays": 8.9,
+      "profitFactor": 1.61,
+      "expectancyPct": 2.07,
+      "byYearPct": {
+       "2021": 19.3,
+       "2022": 0.0,
+       "2023": 49.6
+      },
+      "benchTotalPct": -9.8,
+      "benchMddPct": -34.8,
+      "benchByYearPct": {
+       "2021": 1.1,
+       "2022": -24.9,
+       "2023": 18.7
+      }
+     },
+     "test": {
+      "totalPct": 36.2,
+      "cagrPct": 11.5,
+      "mddPct": -28.4,
+      "trades": 411,
+      "winPct": 46.2,
+      "avgWinPct": 10.2,
+      "avgLossPct": -7.0,
+      "avgDays": 8.7,
+      "profitFactor": 1.25,
+      "expectancyPct": 0.94,
+      "byYearPct": {
+       "2024": 25.5,
+       "2025": 21.7,
+       "2026": -10.8
+      },
+      "benchTotalPct": 111.6,
+      "benchMddPct": -40.0,
+      "benchByYearPct": {
+       "2024": -10.1,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     },
+     "full": {
+      "totalPct": 404.5,
+      "cagrPct": 17.9,
+      "mddPct": -28.4,
+      "trades": 1188,
+      "winPct": 45.9,
+      "avgWinPct": 10.4,
+      "avgLossPct": -6.5,
+      "avgDays": 9.0,
+      "profitFactor": 1.36,
+      "expectancyPct": 1.27,
+      "byYearPct": {
+       "2017": 45.9,
+       "2018": -4.7,
+       "2019": -6.6,
+       "2020": 47.9,
+       "2021": 27.1,
+       "2022": 0.0,
+       "2023": 49.6,
+       "2024": 27.4,
+       "2025": 21.7,
+       "2026": -10.8
+      },
+      "benchTotalPct": 176.4,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8,
+       "2021": 3.6,
+       "2022": -24.9,
+       "2023": 18.7,
+       "2024": -9.6,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     }
+    },
+    "0.001": {
+     "train": {
+      "totalPct": 62.6,
+      "cagrPct": 13.0,
+      "mddPct": -27.6,
+      "trades": 468,
+      "winPct": 44.9,
+      "avgWinPct": 9.6,
+      "avgLossPct": -6.4,
+      "avgDays": 9.2,
+      "profitFactor": 1.22,
+      "expectancyPct": 0.78,
+      "byYearPct": {
+       "2017": 47.7,
+       "2018": -8.5,
+       "2019": -10.2,
+       "2020": 33.8
+      },
+      "benchTotalPct": 40.6,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8
+      }
+     },
+     "val": {
+      "totalPct": 46.2,
+      "cagrPct": 13.6,
+      "mddPct": -18.6,
+      "trades": 300,
+      "winPct": 44.3,
+      "avgWinPct": 11.3,
+      "avgLossPct": -6.2,
+      "avgDays": 9.0,
+      "profitFactor": 1.45,
+      "expectancyPct": 1.56,
+      "byYearPct": {
+       "2021": 12.5,
+       "2022": 0.0,
+       "2023": 29.9
+      },
+      "benchTotalPct": -9.8,
+      "benchMddPct": -34.8,
+      "benchByYearPct": {
+       "2021": 1.1,
+       "2022": -24.9,
+       "2023": 18.7
+      }
+     },
+     "test": {
+      "totalPct": 24.1,
+      "cagrPct": 7.9,
+      "mddPct": -29.4,
+      "trades": 408,
+      "winPct": 44.6,
+      "avgWinPct": 10.2,
+      "avgLossPct": -6.9,
+      "avgDays": 8.8,
+      "profitFactor": 1.19,
+      "expectancyPct": 0.74,
+      "byYearPct": {
+       "2024": 20.7,
+       "2025": 13.5,
+       "2026": -9.4
+      },
+      "benchTotalPct": 111.6,
+      "benchMddPct": -40.0,
+      "benchByYearPct": {
+       "2024": -10.1,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     },
+     "full": {
+      "totalPct": 219.6,
+      "cagrPct": 12.5,
+      "mddPct": -29.4,
+      "trades": 1176,
+      "winPct": 44.6,
+      "avgWinPct": 10.2,
+      "avgLossPct": -6.5,
+      "avgDays": 9.0,
+      "profitFactor": 1.27,
+      "expectancyPct": 0.97,
+      "byYearPct": {
+       "2017": 47.7,
+       "2018": -8.5,
+       "2019": -10.2,
+       "2020": 33.8,
+       "2021": 20.1,
+       "2022": 0.0,
+       "2023": 29.9,
+       "2024": 22.5,
+       "2025": 13.5,
+       "2026": -9.4
+      },
+      "benchTotalPct": 176.4,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8,
+       "2021": 3.6,
+       "2022": -24.9,
+       "2023": 18.7,
+       "2024": -9.6,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     }
+    },
+    "0.003": {
+     "train": {
+      "totalPct": 32.7,
+      "cagrPct": 7.3,
+      "mddPct": -31.3,
+      "trades": 469,
+      "winPct": 42.6,
+      "avgWinPct": 9.6,
+      "avgLossPct": -6.4,
+      "avgDays": 9.2,
+      "profitFactor": 1.12,
+      "expectancyPct": 0.43,
+      "byYearPct": {
+       "2017": 29.5,
+       "2018": -19.3,
+       "2019": -8.8,
+       "2020": 39.3
+      },
+      "benchTotalPct": 40.6,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8
+      }
+     },
+     "val": {
+      "totalPct": 39.3,
+      "cagrPct": 11.8,
+      "mddPct": -18.1,
+      "trades": 298,
+      "winPct": 46.0,
+      "avgWinPct": 10.8,
+      "avgLossPct": -6.6,
+      "avgDays": 9.1,
+      "profitFactor": 1.4,
+      "expectancyPct": 1.43,
+      "byYearPct": {
+       "2021": 6.6,
+       "2022": 0.0,
+       "2023": 30.7
+      },
+      "benchTotalPct": -9.8,
+      "benchMddPct": -34.8,
+      "benchByYearPct": {
+       "2021": 1.1,
+       "2022": -24.9,
+       "2023": 18.7
+      }
+     },
+     "test": {
+      "totalPct": -10.7,
+      "cagrPct": -3.9,
+      "mddPct": -33.1,
+      "trades": 406,
+      "winPct": 42.1,
+      "avgWinPct": 9.8,
+      "avgLossPct": -7.0,
+      "avgDays": 8.7,
+      "profitFactor": 1.02,
+      "expectancyPct": 0.08,
+      "byYearPct": {
+       "2024": 8.2,
+       "2025": -2.5,
+       "2026": -15.3
+      },
+      "benchTotalPct": 111.6,
+      "benchMddPct": -40.0,
+      "benchByYearPct": {
+       "2024": -10.1,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     },
+     "full": {
+      "totalPct": 78.8,
+      "cagrPct": 6.1,
+      "mddPct": -33.1,
+      "trades": 1173,
+      "winPct": 43.3,
+      "avgWinPct": 10.0,
+      "avgLossPct": -6.7,
+      "avgDays": 9.0,
+      "profitFactor": 1.15,
+      "expectancyPct": 0.56,
+      "byYearPct": {
+       "2017": 29.5,
+       "2018": -19.3,
+       "2019": -8.8,
+       "2020": 39.3,
+       "2021": 13.7,
+       "2022": 0.0,
+       "2023": 30.7,
+       "2024": 9.8,
+       "2025": -2.5,
+       "2026": -15.3
+      },
+      "benchTotalPct": 176.4,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8,
+       "2021": 3.6,
+       "2022": -24.9,
+       "2023": 18.7,
+       "2024": -9.6,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     }
+    }
+   },
+   "control": {
+    "train": {
+     "totalPct": 34.5,
+     "cagrPct": 7.5,
+     "mddPct": -24.5
+    },
+    "val": {
+     "totalPct": 43.8,
+     "cagrPct": 10.6,
+     "mddPct": -25.1
+    },
+    "test": {
+     "totalPct": 16.4,
+     "cagrPct": 4.5,
+     "mddPct": -42.6
+    },
+    "full": {
+     "totalPct": 108.8,
+     "cagrPct": 7.6,
+     "mddPct": -46.4
+    }
+   }
+  },
+  {
+   "rank": 2,
+   "config": {
+    "rs": 50,
+    "trend": 0,
+    "atrMin": 0.03,
+    "atrMax": 0.08,
+    "emaLo": -9,
+    "emaHi": 0.1,
+    "highMin": -0.2,
+    "rsiLo": 40,
+    "rsiHi": 101,
+    "vol": 2.0,
+    "breakout": 0,
+    "ret20Min": -9,
+    "riskMax": 25,
+    "regime": 200,
+    "exit": "H10_S6"
+   },
+   "searchScore": 2.79,
+   "signals": 6503,
+   "bySlip": {
+    "0.0": {
+     "train": {
+      "totalPct": 26.4,
+      "cagrPct": 6.1,
+      "mddPct": -32.0,
+      "trades": 486,
+      "winPct": 40.5,
+      "avgWinPct": 9.6,
+      "avgLossPct": -5.8,
+      "avgDays": 8.4,
+      "profitFactor": 1.12,
+      "expectancyPct": 0.42,
+      "byYearPct": {
+       "2017": 1.1,
+       "2018": -18.0,
+       "2019": -7.2,
+       "2020": 64.5
+      },
+      "benchTotalPct": 40.6,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8
+      }
+     },
+     "val": {
+      "totalPct": 62.9,
+      "cagrPct": 17.8,
+      "mddPct": -18.3,
+      "trades": 298,
+      "winPct": 46.0,
+      "avgWinPct": 10.1,
+      "avgLossPct": -5.5,
+      "avgDays": 8.7,
+      "profitFactor": 1.57,
+      "expectancyPct": 1.69,
+      "byYearPct": {
+       "2021": 18.5,
+       "2022": 0.0,
+       "2023": 37.4
+      },
+      "benchTotalPct": -9.8,
+      "benchMddPct": -34.8,
+      "benchByYearPct": {
+       "2021": 1.1,
+       "2022": -24.9,
+       "2023": 18.7
+      }
+     },
+     "test": {
+      "totalPct": 75.2,
+      "cagrPct": 21.9,
+      "mddPct": -28.7,
+      "trades": 396,
+      "winPct": 43.9,
+      "avgWinPct": 11.6,
+      "avgLossPct": -6.6,
+      "avgDays": 8.3,
+      "profitFactor": 1.39,
+      "expectancyPct": 1.42,
+      "byYearPct": {
+       "2024": 24.4,
+       "2025": 33.4,
+       "2026": 5.6
+      },
+      "benchTotalPct": 111.6,
+      "benchMddPct": -40.0,
+      "benchByYearPct": {
+       "2024": -10.1,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     },
+     "full": {
+      "totalPct": 289.1,
+      "cagrPct": 14.8,
+      "mddPct": -32.0,
+      "trades": 1180,
+      "winPct": 43.1,
+      "avgWinPct": 10.4,
+      "avgLossPct": -6.0,
+      "avgDays": 8.4,
+      "profitFactor": 1.32,
+      "expectancyPct": 1.08,
+      "byYearPct": {
+       "2017": 1.1,
+       "2018": -18.0,
+       "2019": -7.2,
+       "2020": 64.5,
+       "2021": 23.1,
+       "2022": 0.0,
+       "2023": 37.4,
+       "2024": 29.2,
+       "2025": 33.4,
+       "2026": 5.6
+      },
+      "benchTotalPct": 176.4,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8,
+       "2021": 3.6,
+       "2022": -24.9,
+       "2023": 18.7,
+       "2024": -9.6,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     }
+    },
+    "0.001": {
+     "train": {
+      "totalPct": 25.7,
+      "cagrPct": 5.9,
+      "mddPct": -31.9,
+      "trades": 482,
+      "winPct": 40.7,
+      "avgWinPct": 9.7,
+      "avgLossPct": -6.0,
+      "avgDays": 8.4,
+      "profitFactor": 1.11,
+      "expectancyPct": 0.4,
+      "byYearPct": {
+       "2017": -7.5,
+       "2018": -13.6,
+       "2019": -6.7,
+       "2020": 68.7
+      },
+      "benchTotalPct": 40.6,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8
+      }
+     },
+     "val": {
+      "totalPct": 31.1,
+      "cagrPct": 9.5,
+      "mddPct": -19.7,
+      "trades": 302,
+      "winPct": 44.0,
+      "avgWinPct": 9.8,
+      "avgLossPct": -5.7,
+      "avgDays": 8.5,
+      "profitFactor": 1.36,
+      "expectancyPct": 1.13,
+      "byYearPct": {
+       "2021": 11.4,
+       "2022": 0.0,
+       "2023": 17.7
+      },
+      "benchTotalPct": -9.8,
+      "benchMddPct": -34.8,
+      "benchByYearPct": {
+       "2021": 1.1,
+       "2022": -24.9,
+       "2023": 18.7
+      }
+     },
+     "test": {
+      "totalPct": 41.0,
+      "cagrPct": 12.9,
+      "mddPct": -31.4,
+      "trades": 399,
+      "winPct": 43.4,
+      "avgWinPct": 11.1,
+      "avgLossPct": -6.8,
+      "avgDays": 8.2,
+      "profitFactor": 1.25,
+      "expectancyPct": 0.97,
+      "byYearPct": {
+       "2024": 13.2,
+       "2025": 28.2,
+       "2026": -2.8
+      },
+      "benchTotalPct": 111.6,
+      "benchMddPct": -40.0,
+      "benchByYearPct": {
+       "2024": -10.1,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     },
+     "full": {
+      "totalPct": 151.2,
+      "cagrPct": 9.8,
+      "mddPct": -31.9,
+      "trades": 1183,
+      "winPct": 42.4,
+      "avgWinPct": 10.2,
+      "avgLossPct": -6.2,
+      "avgDays": 8.4,
+      "profitFactor": 1.22,
+      "expectancyPct": 0.78,
+      "byYearPct": {
+       "2017": -7.5,
+       "2018": -13.6,
+       "2019": -6.7,
+       "2020": 68.7,
+       "2021": 16.0,
+       "2022": 0.0,
+       "2023": 17.7,
+       "2024": 17.5,
+       "2025": 28.2,
+       "2026": -2.8
+      },
+      "benchTotalPct": 176.4,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8,
+       "2021": 3.6,
+       "2022": -24.9,
+       "2023": 18.7,
+       "2024": -9.6,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     }
+    },
+    "0.003": {
+     "train": {
+      "totalPct": 5.1,
+      "cagrPct": 1.3,
+      "mddPct": -40.9,
+      "trades": 480,
+      "winPct": 39.2,
+      "avgWinPct": 10.1,
+      "avgLossPct": -6.3,
+      "avgDays": 8.4,
+      "profitFactor": 1.03,
+      "expectancyPct": 0.13,
+      "byYearPct": {
+       "2017": -9.4,
+       "2018": -17.7,
+       "2019": -10.5,
+       "2020": 57.6
+      },
+      "benchTotalPct": 40.6,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8
+      }
+     },
+     "val": {
+      "totalPct": 16.1,
+      "cagrPct": 5.1,
+      "mddPct": -25.7,
+      "trades": 302,
+      "winPct": 42.4,
+      "avgWinPct": 10.0,
+      "avgLossPct": -6.0,
+      "avgDays": 8.5,
+      "profitFactor": 1.24,
+      "expectancyPct": 0.81,
+      "byYearPct": {
+       "2021": 6.0,
+       "2022": 0.0,
+       "2023": 9.5
+      },
+      "benchTotalPct": -9.8,
+      "benchMddPct": -34.8,
+      "benchByYearPct": {
+       "2021": 1.1,
+       "2022": -24.9,
+       "2023": 18.7
+      }
+     },
+     "test": {
+      "totalPct": 7.9,
+      "cagrPct": 2.7,
+      "mddPct": -32.7,
+      "trades": 398,
+      "winPct": 41.2,
+      "avgWinPct": 11.0,
+      "avgLossPct": -7.0,
+      "avgDays": 8.1,
+      "profitFactor": 1.1,
+      "expectancyPct": 0.41,
+      "byYearPct": {
+       "2024": -0.7,
+       "2025": 17.6,
+       "2026": -7.6
+      },
+      "benchTotalPct": 111.6,
+      "benchMddPct": -40.0,
+      "benchByYearPct": {
+       "2024": -10.1,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     },
+     "full": {
+      "totalPct": 43.4,
+      "cagrPct": 3.7,
+      "mddPct": -40.9,
+      "trades": 1180,
+      "winPct": 40.7,
+      "avgWinPct": 10.4,
+      "avgLossPct": -6.5,
+      "avgDays": 8.3,
+      "profitFactor": 1.1,
+      "expectancyPct": 0.4,
+      "byYearPct": {
+       "2017": -9.4,
+       "2018": -17.7,
+       "2019": -10.5,
+       "2020": 57.6,
+       "2021": 11.2,
+       "2022": 0.0,
+       "2023": 9.5,
+       "2024": 3.0,
+       "2025": 17.6,
+       "2026": -7.6
+      },
+      "benchTotalPct": 176.4,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8,
+       "2021": 3.6,
+       "2022": -24.9,
+       "2023": 18.7,
+       "2024": -9.6,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     }
+    }
+   },
+   "control": {
+    "train": {
+     "totalPct": 15.5,
+     "cagrPct": 3.3,
+     "mddPct": -31.8
+    },
+    "val": {
+     "totalPct": 37.8,
+     "cagrPct": 10.3,
+     "mddPct": -19.5
+    },
+    "test": {
+     "totalPct": -8.2,
+     "cagrPct": -3.2,
+     "mddPct": -38.4
+    },
+    "full": {
+     "totalPct": 42.8,
+     "cagrPct": 3.6,
+     "mddPct": -38.4
+    }
+   }
+  },
+  {
+   "rank": 3,
+   "config": {
+    "rs": 50,
+    "trend": 0,
+    "atrMin": 0.02,
+    "atrMax": 0.08,
+    "emaLo": 0.0,
+    "emaHi": 9,
+    "highMin": -0.2,
+    "rsiLo": 50,
+    "rsiHi": 101,
+    "vol": 1.5,
+    "breakout": 0,
+    "ret20Min": -9,
+    "riskMax": 25,
+    "regime": 150,
+    "exit": "H10_S6"
+   },
+   "searchScore": 2.72,
+   "signals": 17390,
+   "bySlip": {
+    "0.0": {
+     "train": {
+      "totalPct": 119.0,
+      "cagrPct": 21.7,
+      "mddPct": -14.2,
+      "trades": 522,
+      "winPct": 45.2,
+      "avgWinPct": 9.7,
+      "avgLossPct": -5.8,
+      "avgDays": 8.5,
+      "profitFactor": 1.38,
+      "expectancyPct": 1.22,
+      "byYearPct": {
+       "2017": 18.1,
+       "2018": 5.7,
+       "2019": 9.1,
+       "2020": 60.8
+      },
+      "benchTotalPct": 40.6,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8
+      }
+     },
+     "val": {
+      "totalPct": 48.5,
+      "cagrPct": 14.2,
+      "mddPct": -18.1,
+      "trades": 316,
+      "winPct": 45.9,
+      "avgWinPct": 9.9,
+      "avgLossPct": -5.8,
+      "avgDays": 8.4,
+      "profitFactor": 1.46,
+      "expectancyPct": 1.43,
+      "byYearPct": {
+       "2021": -4.1,
+       "2022": -0.4,
+       "2023": 55.5
+      },
+      "benchTotalPct": -9.8,
+      "benchMddPct": -34.8,
+      "benchByYearPct": {
+       "2021": 1.1,
+       "2022": -24.9,
+       "2023": 18.7
+      }
+     },
+     "test": {
+      "totalPct": 47.3,
+      "cagrPct": 14.6,
+      "mddPct": -31.8,
+      "trades": 441,
+      "winPct": 42.2,
+      "avgWinPct": 11.6,
+      "avgLossPct": -6.9,
+      "avgDays": 8.0,
+      "profitFactor": 1.23,
+      "expectancyPct": 0.9,
+      "byYearPct": {
+       "2024": 22.3,
+       "2025": 11.8,
+       "2026": 7.8
+      },
+      "benchTotalPct": 111.6,
+      "benchMddPct": -40.0,
+      "benchByYearPct": {
+       "2024": -10.1,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     },
+     "full": {
+      "totalPct": 396.8,
+      "cagrPct": 17.7,
+      "mddPct": -31.8,
+      "trades": 1279,
+      "winPct": 44.3,
+      "avgWinPct": 10.4,
+      "avgLossPct": -6.2,
+      "avgDays": 8.3,
+      "profitFactor": 1.34,
+      "expectancyPct": 1.16,
+      "byYearPct": {
+       "2017": 18.1,
+       "2018": 5.7,
+       "2019": 9.1,
+       "2020": 60.8,
+       "2021": 0.1,
+       "2022": -0.4,
+       "2023": 55.5,
+       "2024": 21.5,
+       "2025": 11.8,
+       "2026": 7.8
+      },
+      "benchTotalPct": 176.4,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8,
+       "2021": 3.6,
+       "2022": -24.9,
+       "2023": 18.7,
+       "2024": -9.6,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     }
+    },
+    "0.001": {
+     "train": {
+      "totalPct": 135.3,
+      "cagrPct": 23.9,
+      "mddPct": -14.3,
+      "trades": 516,
+      "winPct": 45.7,
+      "avgWinPct": 9.8,
+      "avgLossPct": -5.8,
+      "avgDays": 8.6,
+      "profitFactor": 1.44,
+      "expectancyPct": 1.37,
+      "byYearPct": {
+       "2017": 46.3,
+       "2018": 0.6,
+       "2019": 6.3,
+       "2020": 50.5
+      },
+      "benchTotalPct": 40.6,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8
+      }
+     },
+     "val": {
+      "totalPct": 45.2,
+      "cagrPct": 13.3,
+      "mddPct": -14.1,
+      "trades": 315,
+      "winPct": 44.4,
+      "avgWinPct": 10.2,
+      "avgLossPct": -5.8,
+      "avgDays": 8.4,
+      "profitFactor": 1.41,
+      "expectancyPct": 1.31,
+      "byYearPct": {
+       "2021": -2.1,
+       "2022": -0.8,
+       "2023": 49.5
+      },
+      "benchTotalPct": -9.8,
+      "benchMddPct": -34.8,
+      "benchByYearPct": {
+       "2021": 1.1,
+       "2022": -24.9,
+       "2023": 18.7
+      }
+     },
+     "test": {
+      "totalPct": 21.7,
+      "cagrPct": 7.2,
+      "mddPct": -32.5,
+      "trades": 439,
+      "winPct": 40.5,
+      "avgWinPct": 11.5,
+      "avgLossPct": -7.0,
+      "avgDays": 8.0,
+      "profitFactor": 1.13,
+      "expectancyPct": 0.55,
+      "byYearPct": {
+       "2024": 11.6,
+       "2025": 7.0,
+       "2026": 1.9
+      },
+      "benchTotalPct": 111.6,
+      "benchMddPct": -40.0,
+      "benchByYearPct": {
+       "2024": -10.1,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     },
+     "full": {
+      "totalPct": 328.5,
+      "cagrPct": 16.0,
+      "mddPct": -32.5,
+      "trades": 1270,
+      "winPct": 43.6,
+      "avgWinPct": 10.5,
+      "avgLossPct": -6.2,
+      "avgDays": 8.3,
+      "profitFactor": 1.31,
+      "expectancyPct": 1.07,
+      "byYearPct": {
+       "2017": 46.3,
+       "2018": 0.6,
+       "2019": 6.3,
+       "2020": 50.5,
+       "2021": 1.6,
+       "2022": -0.8,
+       "2023": 49.5,
+       "2024": 10.8,
+       "2025": 7.0,
+       "2026": 1.9
+      },
+      "benchTotalPct": 176.4,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8,
+       "2021": 3.6,
+       "2022": -24.9,
+       "2023": 18.7,
+       "2024": -9.6,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     }
+    },
+    "0.003": {
+     "train": {
+      "totalPct": 22.0,
+      "cagrPct": 5.1,
+      "mddPct": -25.9,
+      "trades": 522,
+      "winPct": 42.7,
+      "avgWinPct": 9.1,
+      "avgLossPct": -6.2,
+      "avgDays": 8.5,
+      "profitFactor": 1.1,
+      "expectancyPct": 0.34,
+      "byYearPct": {
+       "2017": -4.6,
+       "2018": -2.7,
+       "2019": 0.9,
+       "2020": 30.4
+      },
+      "benchTotalPct": 40.6,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8
+      }
+     },
+     "val": {
+      "totalPct": 9.8,
+      "cagrPct": 3.2,
+      "mddPct": -26.3,
+      "trades": 317,
+      "winPct": 41.0,
+      "avgWinPct": 10.1,
+      "avgLossPct": -6.0,
+      "avgDays": 8.3,
+      "profitFactor": 1.17,
+      "expectancyPct": 0.59,
+      "byYearPct": {
+       "2021": -19.3,
+       "2022": -1.6,
+       "2023": 38.3
+      },
+      "benchTotalPct": -9.8,
+      "benchMddPct": -34.8,
+      "benchByYearPct": {
+       "2021": 1.1,
+       "2022": -24.9,
+       "2023": 18.7
+      }
+     },
+     "test": {
+      "totalPct": 4.7,
+      "cagrPct": 1.6,
+      "mddPct": -33.9,
+      "trades": 436,
+      "winPct": 40.6,
+      "avgWinPct": 11.2,
+      "avgLossPct": -7.2,
+      "avgDays": 8.0,
+      "profitFactor": 1.06,
+      "expectancyPct": 0.27,
+      "byYearPct": {
+       "2024": 6.7,
+       "2025": -1.8,
+       "2026": -0.1
+      },
+      "benchTotalPct": 111.6,
+      "benchMddPct": -40.0,
+      "benchByYearPct": {
+       "2024": -10.1,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     },
+     "full": {
+      "totalPct": 44.5,
+      "cagrPct": 3.8,
+      "mddPct": -33.9,
+      "trades": 1275,
+      "winPct": 41.6,
+      "avgWinPct": 10.0,
+      "avgLossPct": -6.5,
+      "avgDays": 8.3,
+      "profitFactor": 1.1,
+      "expectancyPct": 0.38,
+      "byYearPct": {
+       "2017": -4.6,
+       "2018": -2.7,
+       "2019": 0.9,
+       "2020": 30.4,
+       "2021": -16.3,
+       "2022": -1.6,
+       "2023": 38.3,
+       "2024": 5.9,
+       "2025": -1.8,
+       "2026": -0.1
+      },
+      "benchTotalPct": 176.4,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8,
+       "2021": 3.6,
+       "2022": -24.9,
+       "2023": 18.7,
+       "2024": -9.6,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     }
+    }
+   },
+   "control": {
+    "train": {
+     "totalPct": -3.2,
+     "cagrPct": -1.0,
+     "mddPct": -40.9
+    },
+    "val": {
+     "totalPct": 7.9,
+     "cagrPct": 2.5,
+     "mddPct": -32.5
+    },
+    "test": {
+     "totalPct": 32.3,
+     "cagrPct": 9.5,
+     "mddPct": -42.2
+    },
+    "full": {
+     "totalPct": 36.0,
+     "cagrPct": 3.2,
+     "mddPct": -45.9
+    }
+   }
+  },
+  {
+   "rank": 4,
+   "config": {
+    "rs": 60,
+    "trend": 0,
+    "atrMin": 0.02,
+    "atrMax": 9,
+    "emaLo": -0.05,
+    "emaHi": 9,
+    "highMin": -0.2,
+    "rsiLo": 50,
+    "rsiHi": 101,
+    "vol": 2.0,
+    "breakout": 0,
+    "ret20Min": -0.1,
+    "riskMax": 25,
+    "regime": 150,
+    "exit": "H10_S8"
+   },
+   "searchScore": 2.68,
+   "signals": 7643,
+   "bySlip": {
+    "0.0": {
+     "train": {
+      "totalPct": 83.9,
+      "cagrPct": 16.5,
+      "mddPct": -26.8,
+      "trades": 480,
+      "winPct": 45.0,
+      "avgWinPct": 9.7,
+      "avgLossPct": -5.9,
+      "avgDays": 9.1,
+      "profitFactor": 1.34,
+      "expectancyPct": 1.11,
+      "byYearPct": {
+       "2017": 50.5,
+       "2018": -9.9,
+       "2019": -0.9,
+       "2020": 36.8
+      },
+      "benchTotalPct": 40.6,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8
+      }
+     },
+     "val": {
+      "totalPct": 69.3,
+      "cagrPct": 19.3,
+      "mddPct": -14.2,
+      "trades": 285,
+      "winPct": 50.5,
+      "avgWinPct": 8.5,
+      "avgLossPct": -5.4,
+      "avgDays": 9.3,
+      "profitFactor": 1.62,
+      "expectancyPct": 1.64,
+      "byYearPct": {
+       "2021": 20.1,
+       "2022": -4.0,
+       "2023": 47.0
+      },
+      "benchTotalPct": -9.8,
+      "benchMddPct": -34.8,
+      "benchByYearPct": {
+       "2021": 1.1,
+       "2022": -24.9,
+       "2023": 18.7
+      }
+     },
+     "test": {
+      "totalPct": 78.1,
+      "cagrPct": 22.6,
+      "mddPct": -25.4,
+      "trades": 349,
+      "winPct": 47.3,
+      "avgWinPct": 11.0,
+      "avgLossPct": -6.9,
+      "avgDays": 8.9,
+      "profitFactor": 1.43,
+      "expectancyPct": 1.57,
+      "byYearPct": {
+       "2024": 24.0,
+       "2025": 20.9,
+       "2026": 18.9
+      },
+      "benchTotalPct": 111.6,
+      "benchMddPct": -40.0,
+      "benchByYearPct": {
+       "2024": -10.1,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     },
+     "full": {
+      "totalPct": 468.2,
+      "cagrPct": 19.3,
+      "mddPct": -26.8,
+      "trades": 1114,
+      "winPct": 47.1,
+      "avgWinPct": 9.8,
+      "avgLossPct": -6.1,
+      "avgDays": 9.1,
+      "profitFactor": 1.43,
+      "expectancyPct": 1.39,
+      "byYearPct": {
+       "2017": 50.5,
+       "2018": -9.9,
+       "2019": -0.9,
+       "2020": 36.8,
+       "2021": 22.5,
+       "2022": -4.0,
+       "2023": 47.0,
+       "2024": 24.5,
+       "2025": 20.9,
+       "2026": 18.9
+      },
+      "benchTotalPct": 176.4,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8,
+       "2021": 3.6,
+       "2022": -24.9,
+       "2023": 18.7,
+       "2024": -9.6,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     }
+    },
+    "0.001": {
+     "train": {
+      "totalPct": 36.0,
+      "cagrPct": 8.0,
+      "mddPct": -30.3,
+      "trades": 474,
+      "winPct": 42.2,
+      "avgWinPct": 9.3,
+      "avgLossPct": -5.7,
+      "avgDays": 9.2,
+      "profitFactor": 1.19,
+      "expectancyPct": 0.62,
+      "byYearPct": {
+       "2017": 21.2,
+       "2018": -11.2,
+       "2019": -3.4,
+       "2020": 30.8
+      },
+      "benchTotalPct": 40.6,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8
+      }
+     },
+     "val": {
+      "totalPct": 55.2,
+      "cagrPct": 15.9,
+      "mddPct": -18.1,
+      "trades": 289,
+      "winPct": 47.8,
+      "avgWinPct": 9.1,
+      "avgLossPct": -5.7,
+      "avgDays": 9.2,
+      "profitFactor": 1.46,
+      "expectancyPct": 1.38,
+      "byYearPct": {
+       "2021": 11.2,
+       "2022": -4.4,
+       "2023": 46.0
+      },
+      "benchTotalPct": -9.8,
+      "benchMddPct": -34.8,
+      "benchByYearPct": {
+       "2021": 1.1,
+       "2022": -24.9,
+       "2023": 18.7
+      }
+     },
+     "test": {
+      "totalPct": 50.7,
+      "cagrPct": 15.6,
+      "mddPct": -25.9,
+      "trades": 350,
+      "winPct": 45.7,
+      "avgWinPct": 11.0,
+      "avgLossPct": -7.1,
+      "avgDays": 8.8,
+      "profitFactor": 1.31,
+      "expectancyPct": 1.19,
+      "byYearPct": {
+       "2024": 11.9,
+       "2025": 15.5,
+       "2026": 16.7
+      },
+      "benchTotalPct": 111.6,
+      "benchMddPct": -40.0,
+      "benchByYearPct": {
+       "2024": -10.1,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     },
+     "full": {
+      "totalPct": 229.1,
+      "cagrPct": 12.9,
+      "mddPct": -30.3,
+      "trades": 1113,
+      "winPct": 44.7,
+      "avgWinPct": 9.8,
+      "avgLossPct": -6.1,
+      "avgDays": 9.1,
+      "profitFactor": 1.29,
+      "expectancyPct": 1.0,
+      "byYearPct": {
+       "2017": 21.2,
+       "2018": -11.2,
+       "2019": -3.4,
+       "2020": 30.8,
+       "2021": 14.6,
+       "2022": -4.4,
+       "2023": 46.0,
+       "2024": 12.3,
+       "2025": 15.5,
+       "2026": 16.7
+      },
+      "benchTotalPct": 176.4,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8,
+       "2021": 3.6,
+       "2022": -24.9,
+       "2023": 18.7,
+       "2024": -9.6,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     }
+    },
+    "0.003": {
+     "train": {
+      "totalPct": 1.4,
+      "cagrPct": 0.3,
+      "mddPct": -40.2,
+      "trades": 470,
+      "winPct": 40.0,
+      "avgWinPct": 9.0,
+      "avgLossPct": -5.9,
+      "avgDays": 9.2,
+      "profitFactor": 1.01,
+      "expectancyPct": 0.05,
+      "byYearPct": {
+       "2017": 18.1,
+       "2018": -15.4,
+       "2019": -11.7,
+       "2020": 15.0
+      },
+      "benchTotalPct": 40.6,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8
+      }
+     },
+     "val": {
+      "totalPct": 51.0,
+      "cagrPct": 14.8,
+      "mddPct": -19.6,
+      "trades": 287,
+      "winPct": 49.8,
+      "avgWinPct": 8.9,
+      "avgLossPct": -6.0,
+      "avgDays": 9.2,
+      "profitFactor": 1.47,
+      "expectancyPct": 1.42,
+      "byYearPct": {
+       "2021": 10.5,
+       "2022": -5.1,
+       "2023": 44.0
+      },
+      "benchTotalPct": -9.8,
+      "benchMddPct": -34.8,
+      "benchByYearPct": {
+       "2021": 1.1,
+       "2022": -24.9,
+       "2023": 18.7
+      }
+     },
+     "test": {
+      "totalPct": 5.1,
+      "cagrPct": 1.8,
+      "mddPct": -27.0,
+      "trades": 349,
+      "winPct": 44.4,
+      "avgWinPct": 10.2,
+      "avgLossPct": -7.5,
+      "avgDays": 8.8,
+      "profitFactor": 1.09,
+      "expectancyPct": 0.36,
+      "byYearPct": {
+       "2024": -5.7,
+       "2025": 2.8,
+       "2026": 8.4
+      },
+      "benchTotalPct": 111.6,
+      "benchMddPct": -40.0,
+      "benchByYearPct": {
+       "2024": -10.1,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     },
+     "full": {
+      "totalPct": 64.5,
+      "cagrPct": 5.2,
+      "mddPct": -40.2,
+      "trades": 1106,
+      "winPct": 43.9,
+      "avgWinPct": 9.4,
+      "avgLossPct": -6.4,
+      "avgDays": 9.1,
+      "profitFactor": 1.14,
+      "expectancyPct": 0.5,
+      "byYearPct": {
+       "2017": 18.1,
+       "2018": -15.4,
+       "2019": -11.7,
+       "2020": 15.0,
+       "2021": 12.5,
+       "2022": -5.1,
+       "2023": 44.0,
+       "2024": -5.3,
+       "2025": 2.8,
+       "2026": 8.4
+      },
+      "benchTotalPct": 176.4,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8,
+       "2021": 3.6,
+       "2022": -24.9,
+       "2023": 18.7,
+       "2024": -9.6,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     }
+    }
+   },
+   "control": {
+    "train": {
+     "totalPct": 32.3,
+     "cagrPct": 6.9,
+     "mddPct": -25.4
+    },
+    "val": {
+     "totalPct": 22.6,
+     "cagrPct": 6.9,
+     "mddPct": -19.8
+    },
+    "test": {
+     "totalPct": 6.6,
+     "cagrPct": 2.1,
+     "mddPct": -32.4
+    },
+    "full": {
+     "totalPct": 76.9,
+     "cagrPct": 5.8,
+     "mddPct": -35.0
+    }
+   }
+  },
+  {
+   "rank": 5,
+   "config": {
+    "rs": 50,
+    "trend": 0,
+    "atrMin": 0.03,
+    "atrMax": 0.08,
+    "emaLo": -0.02,
+    "emaHi": 9,
+    "highMin": -0.2,
+    "rsiLo": 30,
+    "rsiHi": 101,
+    "vol": 1.5,
+    "breakout": 0,
+    "ret20Min": -0.1,
+    "riskMax": 25,
+    "regime": 150,
+    "exit": "H10_S8"
+   },
+   "searchScore": 2.62,
+   "signals": 13238,
+   "bySlip": {
+    "0.0": {
+     "train": {
+      "totalPct": 117.5,
+      "cagrPct": 21.5,
+      "mddPct": -24.8,
+      "trades": 495,
+      "winPct": 43.2,
+      "avgWinPct": 10.5,
+      "avgLossPct": -6.0,
+      "avgDays": 9.1,
+      "profitFactor": 1.35,
+      "expectancyPct": 1.17,
+      "byYearPct": {
+       "2017": 42.6,
+       "2018": -1.6,
+       "2019": -5.8,
+       "2020": 64.4
+      },
+      "benchTotalPct": 40.6,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8
+      }
+     },
+     "val": {
+      "totalPct": 22.5,
+      "cagrPct": 7.1,
+      "mddPct": -21.0,
+      "trades": 298,
+      "winPct": 47.3,
+      "avgWinPct": 9.6,
+      "avgLossPct": -6.4,
+      "avgDays": 9.0,
+      "profitFactor": 1.35,
+      "expectancyPct": 1.19,
+      "byYearPct": {
+       "2021": -7.0,
+       "2022": -2.8,
+       "2023": 35.5
+      },
+      "benchTotalPct": -9.8,
+      "benchMddPct": -34.8,
+      "benchByYearPct": {
+       "2021": 1.1,
+       "2022": -24.9,
+       "2023": 18.7
+      }
+     },
+     "test": {
+      "totalPct": 37.3,
+      "cagrPct": 11.8,
+      "mddPct": -33.3,
+      "trades": 419,
+      "winPct": 43.9,
+      "avgWinPct": 11.4,
+      "avgLossPct": -7.5,
+      "avgDays": 8.6,
+      "profitFactor": 1.2,
+      "expectancyPct": 0.83,
+      "byYearPct": {
+       "2024": 13.8,
+       "2025": 22.0,
+       "2026": -1.2
+      },
+      "benchTotalPct": 111.6,
+      "benchMddPct": -40.0,
+      "benchByYearPct": {
+       "2024": -10.1,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     },
+     "full": {
+      "totalPct": 286.7,
+      "cagrPct": 14.7,
+      "mddPct": -33.3,
+      "trades": 1212,
+      "winPct": 44.5,
+      "avgWinPct": 10.6,
+      "avgLossPct": -6.6,
+      "avgDays": 8.9,
+      "profitFactor": 1.29,
+      "expectancyPct": 1.06,
+      "byYearPct": {
+       "2017": 42.6,
+       "2018": -1.6,
+       "2019": -5.8,
+       "2020": 64.4,
+       "2021": -1.5,
+       "2022": -2.8,
+       "2023": 35.5,
+       "2024": 13.6,
+       "2025": 22.0,
+       "2026": -1.2
+      },
+      "benchTotalPct": 176.4,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8,
+       "2021": 3.6,
+       "2022": -24.9,
+       "2023": 18.7,
+       "2024": -9.6,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     }
+    },
+    "0.001": {
+     "train": {
+      "totalPct": 61.7,
+      "cagrPct": 12.8,
+      "mddPct": -29.3,
+      "trades": 495,
+      "winPct": 42.6,
+      "avgWinPct": 10.1,
+      "avgLossPct": -6.3,
+      "avgDays": 9.1,
+      "profitFactor": 1.19,
+      "expectancyPct": 0.69,
+      "byYearPct": {
+       "2017": 23.7,
+       "2018": -7.7,
+       "2019": -6.0,
+       "2020": 50.7
+      },
+      "benchTotalPct": 40.6,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8
+      }
+     },
+     "val": {
+      "totalPct": 15.0,
+      "cagrPct": 4.8,
+      "mddPct": -25.9,
+      "trades": 299,
+      "winPct": 47.2,
+      "avgWinPct": 9.9,
+      "avgLossPct": -6.9,
+      "avgDays": 8.8,
+      "profitFactor": 1.28,
+      "expectancyPct": 1.03,
+      "byYearPct": {
+       "2021": -14.6,
+       "2022": -3.2,
+       "2023": 39.0
+      },
+      "benchTotalPct": -9.8,
+      "benchMddPct": -34.8,
+      "benchByYearPct": {
+       "2021": 1.1,
+       "2022": -24.9,
+       "2023": 18.7
+      }
+     },
+     "test": {
+      "totalPct": 33.7,
+      "cagrPct": 10.8,
+      "mddPct": -34.0,
+      "trades": 416,
+      "winPct": 44.5,
+      "avgWinPct": 11.2,
+      "avgLossPct": -7.6,
+      "avgDays": 8.6,
+      "profitFactor": 1.18,
+      "expectancyPct": 0.77,
+      "byYearPct": {
+       "2024": 19.1,
+       "2025": 17.1,
+       "2026": -4.1
+      },
+      "benchTotalPct": 111.6,
+      "benchMddPct": -40.0,
+      "benchByYearPct": {
+       "2024": -10.1,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     },
+     "full": {
+      "totalPct": 162.5,
+      "cagrPct": 10.3,
+      "mddPct": -34.0,
+      "trades": 1210,
+      "winPct": 44.4,
+      "avgWinPct": 10.4,
+      "avgLossPct": -6.9,
+      "avgDays": 8.9,
+      "profitFactor": 1.21,
+      "expectancyPct": 0.8,
+      "byYearPct": {
+       "2017": 23.7,
+       "2018": -7.7,
+       "2019": -6.0,
+       "2020": 50.7,
+       "2021": -9.6,
+       "2022": -3.2,
+       "2023": 39.0,
+       "2024": 18.9,
+       "2025": 17.1,
+       "2026": -4.1
+      },
+      "benchTotalPct": 176.4,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8,
+       "2021": 3.6,
+       "2022": -24.9,
+       "2023": 18.7,
+       "2024": -9.6,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     }
+    },
+    "0.003": {
+     "train": {
+      "totalPct": 16.3,
+      "cagrPct": 3.9,
+      "mddPct": -37.7,
+      "trades": 490,
+      "winPct": 40.4,
+      "avgWinPct": 9.9,
+      "avgLossPct": -6.4,
+      "avgDays": 9.1,
+      "profitFactor": 1.05,
+      "expectancyPct": 0.2,
+      "byYearPct": {
+       "2017": 11.1,
+       "2018": -5.2,
+       "2019": -15.8,
+       "2020": 31.2
+      },
+      "benchTotalPct": 40.6,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8
+      }
+     },
+     "val": {
+      "totalPct": 13.7,
+      "cagrPct": 4.4,
+      "mddPct": -26.4,
+      "trades": 295,
+      "winPct": 45.8,
+      "avgWinPct": 10.1,
+      "avgLossPct": -6.9,
+      "avgDays": 8.9,
+      "profitFactor": 1.24,
+      "expectancyPct": 0.89,
+      "byYearPct": {
+       "2021": -10.4,
+       "2022": -3.9,
+       "2023": 32.1
+      },
+      "benchTotalPct": -9.8,
+      "benchMddPct": -34.8,
+      "benchByYearPct": {
+       "2021": 1.1,
+       "2022": -24.9,
+       "2023": 18.7
+      }
+     },
+     "test": {
+      "totalPct": 15.1,
+      "cagrPct": 5.1,
+      "mddPct": -35.3,
+      "trades": 412,
+      "winPct": 43.0,
+      "avgWinPct": 11.4,
+      "avgLossPct": -7.7,
+      "avgDays": 8.7,
+      "profitFactor": 1.12,
+      "expectancyPct": 0.51,
+      "byYearPct": {
+       "2024": 12.0,
+       "2025": 9.5,
+       "2026": -6.2
+      },
+      "benchTotalPct": 111.6,
+      "benchMddPct": -40.0,
+      "benchByYearPct": {
+       "2024": -10.1,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     },
+     "full": {
+      "totalPct": 58.0,
+      "cagrPct": 4.8,
+      "mddPct": -37.7,
+      "trades": 1197,
+      "winPct": 42.6,
+      "avgWinPct": 10.5,
+      "avgLossPct": -6.9,
+      "avgDays": 8.9,
+      "profitFactor": 1.12,
+      "expectancyPct": 0.48,
+      "byYearPct": {
+       "2017": 11.1,
+       "2018": -5.2,
+       "2019": -15.8,
+       "2020": 31.2,
+       "2021": -6.9,
+       "2022": -3.9,
+       "2023": 32.1,
+       "2024": 11.9,
+       "2025": 9.5,
+       "2026": -6.2
+      },
+      "benchTotalPct": 176.4,
+      "benchMddPct": -43.9,
+      "benchByYearPct": {
+       "2017": 20.7,
+       "2018": -17.3,
+       "2019": 7.7,
+       "2020": 30.8,
+       "2021": 3.6,
+       "2022": -24.9,
+       "2023": 18.7,
+       "2024": -9.6,
+       "2025": 75.6,
+       "2026": 34.0
+      }
+     }
+    }
+   },
+   "control": {
+    "train": {
+     "totalPct": 36.8,
+     "cagrPct": 7.7,
+     "mddPct": -24.4
+    },
+    "val": {
+     "totalPct": -2.3,
+     "cagrPct": -1.1,
+     "mddPct": -27.8
+    },
+    "test": {
+     "totalPct": 45.5,
+     "cagrPct": 11.0,
+     "mddPct": -39.2
+    },
+    "full": {
+     "totalPct": 85.7,
+     "cagrPct": 5.6,
+     "mddPct": -44.1
+    }
+   }
+  }
+ ]
+}

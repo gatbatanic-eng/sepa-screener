@@ -2,7 +2,7 @@ import unittest
 import subprocess
 from unittest.mock import patch
 from datetime import datetime, timezone
-from collection_health import route, latest_closed_session, caught_up
+from collection_health import route, latest_closed_session, caught_up, apply_floor, weekday_floor
 
 class CollectionHealthTests(unittest.TestCase):
     def test_source_provenance_uses_checkout_not_delayed_event(self):
@@ -36,5 +36,14 @@ class CollectionHealthTests(unittest.TestCase):
         self.assertEqual(latest_closed_session(payload,'KR',datetime(2026,10,6,5,tzinfo=timezone.utc)),'2026-10-02')
         self.assertEqual(latest_closed_session(payload,'KR',datetime(2026,10,6,11,tzinfo=timezone.utc)),'2026-10-06')
         self.assertEqual(latest_closed_session(payload,'US',datetime(2026,10,6,11,tzinfo=timezone.utc)),'2026-10-05')
+    def test_lagging_index_is_raised_to_last_closed_weekday(self):
+        late = datetime(2026,11,2,20,43,tzinfo=timezone.utc)  # 11/3 05:43 KST
+        self.assertEqual(weekday_floor('KR', late), '2026-11-02')
+        self.assertEqual(apply_floor('2026-10-30', 'KR', late), '2026-11-02')
+        self.assertEqual(apply_floor('2026-11-02', 'KR', late), '2026-11-02')
+        self.assertIsNone(apply_floor(None, 'KR', late))
+        sat = datetime(2026,10,31,11,tzinfo=timezone.utc)
+        self.assertEqual(apply_floor('2026-10-30', 'KR', sat), '2026-10-30')
+        self.assertEqual(weekday_floor('US', datetime(2026,11,2,20,53,tzinfo=timezone.utc)), '2026-10-30')
 
 if __name__ == '__main__':unittest.main()

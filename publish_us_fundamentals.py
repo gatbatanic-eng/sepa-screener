@@ -55,7 +55,7 @@ def select_quarter(rows,start,end):
     reported=[r for r in exact if r.get('method')=='reported']
     return choose(reported or exact)
 
-def normalize(data,today):
+def normalize(data,today,last=8):
     source={k:facts_for(data,k,today) for k in TAGS}
     qs={k:quarter_facts(v,k!='eps') for k,v in source.items() if k not in ('cash','liabilities','equity')}
     # Income periods anchor the calendar. CF-only periods do not create quarters.
@@ -86,7 +86,7 @@ def normalize(data,today):
             same=rec['provenance'].get(k,{}).get('tag')==prior.get('provenance',{}).get(k,{}).get('tag')
             rec[k+'YoY']=growth(rec[k],prior.get(k) if same else None)
         result.append(rec)
-    return result[-8:]
+    return result[-last:] if last else result
 
 def fetch(url):
     ua=os.environ.get('SEC_USER_AGENT','').strip()

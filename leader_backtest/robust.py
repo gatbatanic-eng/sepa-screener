@@ -90,10 +90,15 @@ def rule_masks(p: pd.DataFrame) -> dict[str, pd.Series]:
     return {k: v.fillna(False) for k, v in m.items()}
 
 
+OOS_START = "2026-10-10"
+
+
 def periods(p: pd.DataFrame) -> dict[str, pd.Series]:
     d = sorted(p["date"].unique())
     a, b = d[len(d) // 3], d[2 * len(d) // 3]
-    return {"ALL": pd.Series(True, index=p.index), "T1": p["date"] < a, "T2": (p["date"] >= a) & (p["date"] < b), "T3": p["date"] >= b}
+    cut = pd.Timestamp(OOS_START)  # 규칙 고정일(2026-10-10). PRE=고정 전(탐색 구간), OOS=고정 후(표본 밖 검증). PASS 판정은 T1~T3만 쓴다.
+    return {"ALL": pd.Series(True, index=p.index), "T1": p["date"] < a, "T2": (p["date"] >= a) & (p["date"] < b), "T3": p["date"] >= b,
+            "PRE": p["date"] < cut, "OOS": p["date"] >= cut}
 
 
 def good_flag(p: pd.DataFrame, g: str) -> pd.Series:

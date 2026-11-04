@@ -1,0 +1,1070 @@
+{
+ "ranAt": "2026-11-03T16:52:44.167218+00:00",
+ "nConfigs": 100000,
+ "nullReps": 40,
+ "markets": {
+  "kr": {
+   "market": "kr",
+   "configs": 100000,
+   "validConfigs": 49093,
+   "rows": 1359968,
+   "dates": 2405,
+   "nullReplicates": 40,
+   "realityCheckP": 0.024390243902439025,
+   "bonferroniPValidN": null,
+   "nullMaxScores": [
+    2.3,
+    2.24,
+    2.28,
+    2.16,
+    2.26,
+    2.02,
+    2.28,
+    2.18,
+    2.09,
+    2.1,
+    2.49,
+    2.72,
+    2.71,
+    1.74,
+    2.28,
+    2.97,
+    2.26,
+    2.07,
+    2.29,
+    1.98,
+    2.16,
+    2.37,
+    2.01,
+    2.01,
+    2.39,
+    2.53,
+    2.21,
+    2.57,
+    1.87,
+    2.41,
+    2.36,
+    1.99,
+    2.03,
+    2.3,
+    2.55,
+    2.16,
+    2.63,
+    2.25,
+    2.29,
+    2.0
+   ],
+   "nullScoreQuantiles": {
+    "0.5": -0.77,
+    "0.9": 0.36,
+    "0.99": 1.1,
+    "0.999": 1.58
+   },
+   "realScoreQuantiles": {
+    "0.5": 0.21,
+    "0.9": 1.25,
+    "0.99": 1.99,
+    "0.999": 2.49
+   },
+   "positiveTestShareAmongTop20": 1.0,
+   "top": [
+    {
+     "rank": 1,
+     "config": {
+      "rs": 0,
+      "trend": 0,
+      "regime": 150,
+      "vol": 1.5,
+      "breakout": 0,
+      "highMin": -0.2,
+      "atrMin": 0.02,
+      "exit": "H60_S8",
+      "revYoY": -9,
+      "opYoY": -9,
+      "opMargin": 0,
+      "dMargin": 0,
+      "accel": 0,
+      "turn": 0,
+      "netPos": 1,
+      "de": 200,
+      "recent": 999
+     },
+     "score": 3.19,
+     "nullTail": 5.092373101881581e-07,
+     "bonferroniP": 0.0509237310188158,
+     "bonferroniPValidN": 0.024999987269067242,
+     "periods": {
+      "train": {
+       "t": 3.186,
+       "signals": 7261,
+       "dates": 485,
+       "excessPct": 2.506,
+       "meanPct": 6.08
+      },
+      "val": {
+       "t": 3.447,
+       "signals": 5675,
+       "dates": 337,
+       "excessPct": 2.836,
+       "meanPct": 4.809
+      },
+      "test": {
+       "t": 1.087,
+       "signals": 8578,
+       "dates": 464,
+       "excessPct": 0.331,
+       "meanPct": 5.179
+      }
+     }
+    },
+    {
+     "rank": 2,
+     "config": {
+      "rs": 0,
+      "trend": 1,
+      "regime": 200,
+      "vol": 1.5,
+      "breakout": 1,
+      "highMin": -0.2,
+      "atrMin": 0,
+      "exit": "H40_S8",
+      "revYoY": 0,
+      "opYoY": -9,
+      "opMargin": 5,
+      "dMargin": 0,
+      "accel": 0,
+      "turn": 0,
+      "netPos": 0,
+      "de": 200,
+      "recent": 120
+     },
+     "score": 3.06,
+     "nullTail": 5.092373101881581e-07,
+     "bonferroniP": 0.0509237310188158,
+     "bonferroniPValidN": 0.024999987269067242,
+     "periods": {
+      "train": {
+       "t": 3.061,
+       "signals": 653,
+       "dates": 293,
+       "excessPct": 3.247,
+       "meanPct": 4.838
+      },
+      "val": {
+       "t": 3.324,
+       "signals": 547,
+       "dates": 240,
+       "excessPct": 3.652,
+       "meanPct": 4.297
+      },
+      "test": {
+       "t": 0.475,
+       "signals": 764,
+       "dates": 313,
+       "excessPct": 1.567,
+       "meanPct": 3.909
+      }
+     }
+    },
+    {
+     "rank": 3,
+     "config": {
+      "rs": 80,
+      "trend": 1,
+      "regime": 150,
+      "vol": 1.5,
+      "breakout": 0,
+      "highMin": -0.1,
+      "atrMin": 0.02,
+      "exit": "H20_S6",
+      "revYoY": 30,
+      "opYoY": 20,
+      "opMargin": -9,
+      "dMargin": 0,
+      "accel": 0,
+      "turn": 0,
+      "netPos": 1,
+      "de": 200,
+      "recent": 120
+     },
+     "score": 3.06,
+     "nullTail": 5.092373101881581e-07,
+     "bonferroniP": 0.0509237310188158,
+     "bonferroniPValidN": 0.024999987269067242,
+     "periods": {
+      "train": {
+       "t": 3.059,
+       "signals": 901,
+       "dates": 360,
+       "excessPct": 3.717,
+       "meanPct": 3.442
+      },
+      "val": {
+       "t": 3.133,
+       "signals": 591,
+       "dates": 233,
+       "excessPct": 3.668,
+       "meanPct": 3.435
+      },
+      "test": {
+       "t": 0.239,
+       "signals": 817,
+       "dates": 340,
+       "excessPct": 1.845,
+       "meanPct": 2.97
+      }
+     }
+    },
+    {
+     "rank": 4,
+     "config": {
+      "rs": 0,
+      "trend": 1,
+      "regime": 150,
+      "vol": 1.5,
+      "breakout": 0,
+      "highMin": -0.2,
+      "atrMin": 0.02,
+      "exit": "H60_S12",
+      "revYoY": 0,
+      "opYoY": 20,
+      "opMargin": 0,
+      "dMargin": 0,
+      "accel": 1,
+      "turn": 0,
+      "netPos": 1,
+      "de": 999,
+      "recent": 120
+     },
+     "score": 2.92,
+     "nullTail": 1.0184746203763161e-06,
+     "bonferroniP": 0.1018474620376316,
+     "bonferroniPValidN": 0.049999974538134484,
+     "periods": {
+      "train": {
+       "t": 2.918,
+       "signals": 1866,
+       "dates": 368,
+       "excessPct": 5.544,
+       "meanPct": 8.362
+      },
+      "val": {
+       "t": 3.427,
+       "signals": 2207,
+       "dates": 307,
+       "excessPct": 5.42,
+       "meanPct": 6.172
+      },
+      "test": {
+       "t": 1.433,
+       "signals": 3099,
+       "dates": 447,
+       "excessPct": 4.849,
+       "meanPct": 9.453
+      }
+     }
+    },
+    {
+     "rank": 5,
+     "config": {
+      "rs": 50,
+      "trend": 1,
+      "regime": 150,
+      "vol": 1.5,
+      "breakout": 0,
+      "highMin": -0.1,
+      "atrMin": 0.02,
+      "exit": "H20",
+      "revYoY": 30,
+      "opYoY": 20,
+      "opMargin": 10,
+      "dMargin": 0,
+      "accel": 0,
+      "turn": 0,
+      "netPos": 1,
+      "de": 200,
+      "recent": 120
+     },
+     "score": 2.87,
+     "nullTail": 1.0184746203763161e-06,
+     "bonferroniP": 0.1018474620376316,
+     "bonferroniPValidN": 0.049999974538134484,
+     "periods": {
+      "train": {
+       "t": 2.871,
+       "signals": 856,
+       "dates": 345,
+       "excessPct": 2.854,
+       "meanPct": 4.07
+      },
+      "val": {
+       "t": 3.099,
+       "signals": 589,
+       "dates": 247,
+       "excessPct": 3.838,
+       "meanPct": 4.353
+      },
+      "test": {
+       "t": 0.914,
+       "signals": 904,
+       "dates": 343,
+       "excessPct": 4.407,
+       "meanPct": 5.659
+      }
+     }
+    },
+    {
+     "rank": 6,
+     "config": {
+      "rs": 0,
+      "trend": 0,
+      "regime": 150,
+      "vol": 0,
+      "breakout": 0,
+      "highMin": -0.3,
+      "atrMin": 0.03,
+      "exit": "H60",
+      "revYoY": 20,
+      "opYoY": -9,
+      "opMargin": 5,
+      "dMargin": 0,
+      "accel": 0,
+      "turn": 0,
+      "netPos": 1,
+      "de": 300,
+      "recent": 999
+     },
+     "score": 2.85,
+     "nullTail": 1.0184746203763161e-06,
+     "bonferroniP": 0.1018474620376316,
+     "bonferroniPValidN": 0.049999974538134484,
+     "periods": {
+      "train": {
+       "t": 3.82,
+       "signals": 18494,
+       "dates": 487,
+       "excessPct": 3.556,
+       "meanPct": 9.254
+      },
+      "val": {
+       "t": 2.847,
+       "signals": 15388,
+       "dates": 347,
+       "excessPct": 5.47,
+       "meanPct": 8.985
+      },
+      "test": {
+       "t": 2.906,
+       "signals": 20147,
+       "dates": 466,
+       "excessPct": 6.994,
+       "meanPct": 14.421
+      }
+     }
+    },
+    {
+     "rank": 7,
+     "config": {
+      "rs": 0,
+      "trend": 0,
+      "regime": 150,
+      "vol": 0,
+      "breakout": 0,
+      "highMin": -0.2,
+      "atrMin": 0.03,
+      "exit": "H40",
+      "revYoY": 20,
+      "opYoY": -9,
+      "opMargin": -9,
+      "dMargin": -9,
+      "accel": 1,
+      "turn": 0,
+      "netPos": 1,
+      "de": 999,
+      "recent": 120
+     },
+     "score": 2.82,
+     "nullTail": 1.0184746203763161e-06,
+     "bonferroniP": 0.1018474620376316,
+     "bonferroniPValidN": 0.049999974538134484,
+     "periods": {
+      "train": {
+       "t": 2.922,
+       "signals": 11434,
+       "dates": 422,
+       "excessPct": 4.496,
+       "meanPct": 6.794
+      },
+      "val": {
+       "t": 2.82,
+       "signals": 11175,
+       "dates": 347,
+       "excessPct": 4.5,
+       "meanPct": 6.405
+      },
+      "test": {
+       "t": 2.475,
+       "signals": 15139,
+       "dates": 480,
+       "excessPct": 4.842,
+       "meanPct": 11.596
+      }
+     }
+    },
+    {
+     "rank": 8,
+     "config": {
+      "rs": 0,
+      "trend": 0,
+      "regime": 150,
+      "vol": 1.0,
+      "breakout": 0,
+      "highMin": -0.1,
+      "atrMin": 0,
+      "exit": "SMA50X",
+      "revYoY": 0,
+      "opYoY": 50,
+      "opMargin": -9,
+      "dMargin": 0,
+      "accel": 0,
+      "turn": 0,
+      "netPos": 0,
+      "de": 999,
+      "recent": 120
+     },
+     "score": 2.81,
+     "nullTail": 1.0184746203763161e-06,
+     "bonferroniP": 0.1018474620376316,
+     "bonferroniPValidN": 0.049999974538134484,
+     "periods": {
+      "train": {
+       "t": 3.674,
+       "signals": 5646,
+       "dates": 476,
+       "excessPct": 5.374,
+       "meanPct": 6.84
+      },
+      "val": {
+       "t": 2.809,
+       "signals": 4266,
+       "dates": 336,
+       "excessPct": 3.416,
+       "meanPct": 3.056
+      },
+      "test": {
+       "t": 2.021,
+       "signals": 6832,
+       "dates": 447,
+       "excessPct": 4.966,
+       "meanPct": 5.279
+      }
+     }
+    },
+    {
+     "rank": 9,
+     "config": {
+      "rs": 0,
+      "trend": 1,
+      "regime": 150,
+      "vol": 1.5,
+      "breakout": 0,
+      "highMin": -0.1,
+      "atrMin": 0,
+      "exit": "H40",
+      "revYoY": 20,
+      "opYoY": 20,
+      "opMargin": 0,
+      "dMargin": 0,
+      "accel": 1,
+      "turn": 0,
+      "netPos": 0,
+      "de": 100,
+      "recent": 120
+     },
+     "score": 2.76,
+     "nullTail": 1.0184746203763161e-06,
+     "bonferroniP": 0.1018474620376316,
+     "bonferroniPValidN": 0.049999974538134484,
+     "periods": {
+      "train": {
+       "t": 3.145,
+       "signals": 658,
+       "dates": 277,
+       "excessPct": 5.521,
+       "meanPct": 7.548
+      },
+      "val": {
+       "t": 2.761,
+       "signals": 734,
+       "dates": 267,
+       "excessPct": 7.187,
+       "meanPct": 10.317
+      },
+      "test": {
+       "t": 0.283,
+       "signals": 999,
+       "dates": 368,
+       "excessPct": 4.139,
+       "meanPct": 8.714
+      }
+     }
+    },
+    {
+     "rank": 10,
+     "config": {
+      "rs": 50,
+      "trend": 0,
+      "regime": 150,
+      "vol": 1.5,
+      "breakout": 0,
+      "highMin": -0.1,
+      "atrMin": 0.02,
+      "exit": "H20_S6",
+      "revYoY": 20,
+      "opYoY": 0,
+      "opMargin": 0,
+      "dMargin": 0,
+      "accel": 0,
+      "turn": 0,
+      "netPos": 1,
+      "de": 100,
+      "recent": 120
+     },
+     "score": 2.75,
+     "nullTail": 1.0184746203763161e-06,
+     "bonferroniP": 0.1018474620376316,
+     "bonferroniPValidN": 0.049999974538134484,
+     "periods": {
+      "train": {
+       "t": 3.104,
+       "signals": 1420,
+       "dates": 406,
+       "excessPct": 2.504,
+       "meanPct": 2.56
+      },
+      "val": {
+       "t": 2.75,
+       "signals": 985,
+       "dates": 289,
+       "excessPct": 2.147,
+       "meanPct": 2.28
+      },
+      "test": {
+       "t": -0.035,
+       "signals": 1494,
+       "dates": 414,
+       "excessPct": 0.869,
+       "meanPct": 2.554
+      }
+     }
+    },
+    {
+     "rank": 11,
+     "config": {
+      "rs": 0,
+      "trend": 1,
+      "regime": 200,
+      "vol": 1.0,
+      "breakout": 1,
+      "highMin": -0.3,
+      "atrMin": 0.03,
+      "exit": "H10_S12",
+      "revYoY": 0,
+      "opYoY": 0,
+      "opMargin": 0,
+      "dMargin": 0,
+      "accel": 0,
+      "turn": 0,
+      "netPos": 1,
+      "de": 999,
+      "recent": 60
+     },
+     "score": 2.71,
+     "nullTail": 2.0369492407526322e-06,
+     "bonferroniP": 0.2036949240752632,
+     "bonferroniPValidN": 0.09999994907626897,
+     "periods": {
+      "train": {
+       "t": 2.896,
+       "signals": 604,
+       "dates": 233,
+       "excessPct": 2.231,
+       "meanPct": 2.583
+      },
+      "val": {
+       "t": 2.714,
+       "signals": 528,
+       "dates": 194,
+       "excessPct": 1.995,
+       "meanPct": 2.342
+      },
+      "test": {
+       "t": 0.835,
+       "signals": 871,
+       "dates": 261,
+       "excessPct": 0.716,
+       "meanPct": 2.306
+      }
+     }
+    },
+    {
+     "rank": 12,
+     "config": {
+      "rs": 50,
+      "trend": 1,
+      "regime": 150,
+      "vol": 1.5,
+      "breakout": 0,
+      "highMin": -9,
+      "atrMin": 0.02,
+      "exit": "H60",
+      "revYoY": -9,
+      "opYoY": 0,
+      "opMargin": -9,
+      "dMargin": 0,
+      "accel": 1,
+      "turn": 0,
+      "netPos": 1,
+      "de": 999,
+      "recent": 120
+     },
+     "score": 2.71,
+     "nullTail": 2.0369492407526322e-06,
+     "bonferroniP": 0.2036949240752632,
+     "bonferroniPValidN": 0.09999994907626897,
+     "periods": {
+      "train": {
+       "t": 2.709,
+       "signals": 2140,
+       "dates": 383,
+       "excessPct": 5.132,
+       "meanPct": 11.116
+      },
+      "val": {
+       "t": 2.824,
+       "signals": 2335,
+       "dates": 310,
+       "excessPct": 5.794,
+       "meanPct": 8.512
+      },
+      "test": {
+       "t": 1.247,
+       "signals": 3453,
+       "dates": 450,
+       "excessPct": 4.709,
+       "meanPct": 14.268
+      }
+     }
+    },
+    {
+     "rank": 13,
+     "config": {
+      "rs": 70,
+      "trend": 1,
+      "regime": 150,
+      "vol": 0,
+      "breakout": 1,
+      "highMin": -0.3,
+      "atrMin": 0,
+      "exit": "H10_S8",
+      "revYoY": 10,
+      "opYoY": 0,
+      "opMargin": 5,
+      "dMargin": -9,
+      "accel": 1,
+      "turn": 0,
+      "netPos": 0,
+      "de": 999,
+      "recent": 120
+     },
+     "score": 2.71,
+     "nullTail": 2.0369492407526322e-06,
+     "bonferroniP": 0.2036949240752632,
+     "bonferroniPValidN": 0.09999994907626897,
+     "periods": {
+      "train": {
+       "t": 2.709,
+       "signals": 487,
+       "dates": 241,
+       "excessPct": 2.448,
+       "meanPct": 2.632
+      },
+      "val": {
+       "t": 2.953,
+       "signals": 378,
+       "dates": 207,
+       "excessPct": 2.358,
+       "meanPct": 1.747
+      },
+      "test": {
+       "t": 0.141,
+       "signals": 783,
+       "dates": 326,
+       "excessPct": 1.147,
+       "meanPct": 1.574
+      }
+     }
+    },
+    {
+     "rank": 14,
+     "config": {
+      "rs": 70,
+      "trend": 1,
+      "regime": 200,
+      "vol": 0,
+      "breakout": 0,
+      "highMin": -0.3,
+      "atrMin": 0.03,
+      "exit": "H20_S6",
+      "revYoY": 10,
+      "opYoY": -9,
+      "opMargin": 0,
+      "dMargin": -9,
+      "accel": 1,
+      "turn": 0,
+      "netPos": 1,
+      "de": 300,
+      "recent": 120
+     },
+     "score": 2.7,
+     "nullTail": 2.0369492407526322e-06,
+     "bonferroniP": 0.2036949240752632,
+     "bonferroniPValidN": 0.09999994907626897,
+     "periods": {
+      "train": {
+       "t": 2.847,
+       "signals": 7911,
+       "dates": 404,
+       "excessPct": 2.125,
+       "meanPct": 2.595
+      },
+      "val": {
+       "t": 2.703,
+       "signals": 7790,
+       "dates": 362,
+       "excessPct": 2.4,
+       "meanPct": 1.746
+      },
+      "test": {
+       "t": 1.317,
+       "signals": 12036,
+       "dates": 504,
+       "excessPct": 1.149,
+       "meanPct": 2.934
+      }
+     }
+    },
+    {
+     "rank": 15,
+     "config": {
+      "rs": 0,
+      "trend": 1,
+      "regime": 200,
+      "vol": 1.5,
+      "breakout": 1,
+      "highMin": -0.2,
+      "atrMin": 0.02,
+      "exit": "H60_S12",
+      "revYoY": 0,
+      "opYoY": 0,
+      "opMargin": 0,
+      "dMargin": 0,
+      "accel": 0,
+      "turn": 0,
+      "netPos": 1,
+      "de": 999,
+      "recent": 999
+     },
+     "score": 2.69,
+     "nullTail": 2.0369492407526322e-06,
+     "bonferroniP": 0.2036949240752632,
+     "bonferroniPValidN": 0.09999994907626897,
+     "periods": {
+      "train": {
+       "t": 2.692,
+       "signals": 777,
+       "dates": 326,
+       "excessPct": 3.78,
+       "meanPct": 5.523
+      },
+      "val": {
+       "t": 2.851,
+       "signals": 692,
+       "dates": 267,
+       "excessPct": 5.388,
+       "meanPct": 6.446
+      },
+      "test": {
+       "t": 0.94,
+       "signals": 995,
+       "dates": 342,
+       "excessPct": 2.585,
+       "meanPct": 7.204
+      }
+     }
+    },
+    {
+     "rank": 16,
+     "config": {
+      "rs": 80,
+      "trend": 1,
+      "regime": 150,
+      "vol": 1.0,
+      "breakout": 0,
+      "highMin": -0.2,
+      "atrMin": 0.03,
+      "exit": "H60_S12",
+      "revYoY": 0,
+      "opYoY": -9,
+      "opMargin": -9,
+      "dMargin": -9,
+      "accel": 1,
+      "turn": 0,
+      "netPos": 1,
+      "de": 999,
+      "recent": 120
+     },
+     "score": 2.66,
+     "nullTail": 2.0369492407526322e-06,
+     "bonferroniP": 0.2036949240752632,
+     "bonferroniPValidN": 0.09999994907626897,
+     "periods": {
+      "train": {
+       "t": 2.704,
+       "signals": 3089,
+       "dates": 401,
+       "excessPct": 4.193,
+       "meanPct": 6.039
+      },
+      "val": {
+       "t": 2.656,
+       "signals": 2519,
+       "dates": 322,
+       "excessPct": 4.702,
+       "meanPct": 6.164
+      },
+      "test": {
+       "t": 1.57,
+       "signals": 4282,
+       "dates": 461,
+       "excessPct": 6.222,
+       "meanPct": 9.628
+      }
+     }
+    },
+    {
+     "rank": 17,
+     "config": {
+      "rs": 0,
+      "trend": 1,
+      "regime": 150,
+      "vol": 1.0,
+      "breakout": 0,
+      "highMin": -0.2,
+      "atrMin": 0.03,
+      "exit": "H60",
+      "revYoY": -9,
+      "opYoY": 0,
+      "opMargin": -9,
+      "dMargin": 0,
+      "accel": 1,
+      "turn": 0,
+      "netPos": 0,
+      "de": 200,
+      "recent": 999
+     },
+     "score": 2.65,
+     "nullTail": 2.0369492407526322e-06,
+     "bonferroniP": 0.2036949240752632,
+     "bonferroniPValidN": 0.09999994907626897,
+     "periods": {
+      "train": {
+       "t": 2.811,
+       "signals": 3702,
+       "dates": 411,
+       "excessPct": 6.901,
+       "meanPct": 11.271
+      },
+      "val": {
+       "t": 2.645,
+       "signals": 4269,
+       "dates": 321,
+       "excessPct": 5.358,
+       "meanPct": 8.672
+      },
+      "test": {
+       "t": 2.277,
+       "signals": 7025,
+       "dates": 466,
+       "excessPct": 5.853,
+       "meanPct": 15.467
+      }
+     }
+    },
+    {
+     "rank": 18,
+     "config": {
+      "rs": 50,
+      "trend": 0,
+      "regime": 200,
+      "vol": 1.5,
+      "breakout": 0,
+      "highMin": -9,
+      "atrMin": 0.03,
+      "exit": "H60_S8",
+      "revYoY": 0,
+      "opYoY": 0,
+      "opMargin": 0,
+      "dMargin": 0,
+      "accel": 1,
+      "turn": 0,
+      "netPos": 1,
+      "de": 999,
+      "recent": 120
+     },
+     "score": 2.63,
+     "nullTail": 2.0369492407526322e-06,
+     "bonferroniP": 0.2036949240752632,
+     "bonferroniPValidN": 0.09999994907626897,
+     "periods": {
+      "train": {
+       "t": 2.634,
+       "signals": 3246,
+       "dates": 396,
+       "excessPct": 3.465,
+       "meanPct": 7.62
+      },
+      "val": {
+       "t": 2.855,
+       "signals": 3194,
+       "dates": 346,
+       "excessPct": 4.226,
+       "meanPct": 5.703
+      },
+      "test": {
+       "t": 1.461,
+       "signals": 4664,
+       "dates": 460,
+       "excessPct": 2.0,
+       "meanPct": 5.813
+      }
+     }
+    },
+    {
+     "rank": 19,
+     "config": {
+      "rs": 70,
+      "trend": 1,
+      "regime": 150,
+      "vol": 1.0,
+      "breakout": 0,
+      "highMin": -0.2,
+      "atrMin": 0.03,
+      "exit": "H60",
+      "revYoY": 20,
+      "opYoY": 0,
+      "opMargin": 0,
+      "dMargin": 0,
+      "accel": 1,
+      "turn": 0,
+      "netPos": 1,
+      "de": 200,
+      "recent": 999
+     },
+     "score": 2.63,
+     "nullTail": 2.5461865509407906e-06,
+     "bonferroniP": 0.25461865509407905,
+     "bonferroniPValidN": 0.12499993634533624,
+     "periods": {
+      "train": {
+       "t": 2.632,
+       "signals": 1874,
+       "dates": 405,
+       "excessPct": 6.801,
+       "meanPct": 9.453
+      },
+      "val": {
+       "t": 2.85,
+       "signals": 1639,
+       "dates": 306,
+       "excessPct": 5.669,
+       "meanPct": 9.961
+      },
+      "test": {
+       "t": 2.112,
+       "signals": 2850,
+       "dates": 453,
+       "excessPct": 8.943,
+       "meanPct": 15.711
+      }
+     }
+    },
+    {
+     "rank": 20,
+     "config": {
+      "rs": 0,
+      "trend": 0,
+      "regime": 150,
+      "vol": 0,
+      "breakout": 0,
+      "highMin": -0.3,
+      "atrMin": 0.03,
+      "exit": "H60_S8",
+      "revYoY": 10,
+      "opYoY": 20,
+      "opMargin": 5,
+      "dMargin": 2,
+      "accel": 1,
+      "turn": 0,
+      "netPos": 0,
+      "de": 300,
+      "recent": 120
+     },
+     "score": 2.63,
+     "nullTail": 3.0554238611289485e-06,
+     "bonferroniP": 0.30554238611289486,
+     "bonferroniPValidN": 0.14999992361440348,
+     "periods": {
+      "train": {
+       "t": 2.715,
+       "signals": 11584,
+       "dates": 416,
+       "excessPct": 2.52,
+       "meanPct": 6.688
+      },
+      "val": {
+       "t": 2.627,
+       "signals": 10950,
+       "dates": 347,
+       "excessPct": 2.95,
+       "meanPct": 4.318
+      },
+      "test": {
+       "t": 2.286,
+       "signals": 16815,
+       "dates": 466,
+       "excessPct": 5.382,
+       "meanPct": 8.572
+      }
+     }
+    }
+   ],
+   "avgExcessPctByPeriodAllValid": {
+    "train": 3.17,
+    "val": 1.377,
+    "test": 4.593
+   },
+   "fundCoverage": {
+    "revYoY": 0.815,
+    "opYoY": 0.646,
+    "turn": 0.834,
+    "opMargin": 0.884,
+    "dMargin": 0.811,
+    "accel": 0.777,
+    "netPos": 0.9,
+    "de": 0.925,
+    "daysSince": 0.931
+   }
+  }
+ }
+}

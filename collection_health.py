@@ -32,6 +32,25 @@ def latest_closed_session(payload, market, now):
         raise ValueError('완결 지수 일봉 없음')
     return max(days)
 
+def weekday_floor(market, now):
+    """공휴일을 모르는 대신 '평일 마감 후면 그 평일 자료가 있어야 한다'는 하한. 기준지수가 이보다 뒤처지면 지수 소스 지연으로 본다."""
+    zone = ZoneInfo('Asia/Seoul' if market == 'KR' else 'America/New_York')
+    local = now.astimezone(zone)
+    cutoff = (15, 40) if market == 'KR' else (16, 10)
+    day = local.date()
+    if (local.hour, local.minute) < cutoff:
+        day = day.fromordinal(day.toordinal() - 1)
+    while day.weekday() >= 5:
+        day = day.fromordinal(day.toordinal() - 1)
+    return day.isoformat()
+
+def apply_floor(expected, market, now):
+    """지수 소스가 마감된 직전 평일보다 뒤처지면 그 평일을 기준일로 쓴다(Yahoo 지연 시 수집 누락 방지).
+    공휴일이면 불필요한 재수집이 생길 뿐 자료는 같다."""
+    if not expected:
+        return expected
+    return max(expected, weekday_floor(market, now))
+
 def probe(market, now):
     symbol = '%5EKS11' if market == 'KR' else '%5EGSPC'
     url = 'https://query1.finance.yahoo.com/v8/finance/chart/' + symbol + '?range=1mo&interval=1d'
@@ -74,7 +93,7 @@ def main():
         expected, errors = {}, {}
         for m in ('KR', 'US'):
             try:
-                expected[m] = probe(m, now)
+                expected[m] = apply_floor(probe(m, now), m, now)
             except Exception as exc:
                 expected[m] = None
                 errors[m] = type(exc).__name__ + ': 기준지수 완결일 확인 실패'
