@@ -1,6 +1,7 @@
 """S&P500 편입일 수집·적용. 설계는 2026-11-04에 결과를 보기 전에 고정했다. python -m leader_backtest.sp500_members
 목적: 유니버스가 '현재 S&P500 구성종목'이라서 지수에 편입되기 전(주로 성장하던) 구간의 신호가 들어 있는 편향을 줄인다.
-규칙: 종목은 편입일(위키백과 현재 구성종목 표의 'Date added') 이전에는 신호 대상에서 뺀다. 편입일을 모르면 처음부터 구성종목으로 본다.
+규칙: 종목은 편입일(위키백과 현재 구성종목 표의 'Date added') 이전에는 신호 대상에서 뺀다. 표에 있으나 편입일이 비어 있으면 처음부터 구성종목으로 보고,
+표에 아예 없는 종목(S&P500 구성종목이 아닌 유니버스 종목)은 전 구간 제외한다.
 한계: 편출·상장폐지 종목은 여전히 빠져 있고(생존편향 일부 잔존), 한 번 빠졌다 재편입된 종목의 공백은 반영하지 않으며, 편입일은 위키백과 값이다."""
 from __future__ import annotations
 
@@ -42,9 +43,9 @@ def fetch() -> pd.DataFrame:
 
 
 def eligibility(dates: np.ndarray, didx: np.ndarray, cidx: np.ndarray, codes: np.ndarray, members: pd.DataFrame) -> np.ndarray:
-    """행별 불리언: 해당 날짜가 종목의 편입일 이후(편입일 모르면 항상 참)인가. dates 는 정렬된 np.datetime64 배열."""
+    """행별 불리언: 해당 날짜가 종목의 편입일 이후인가. 표에 있으나 편입일이 비면 항상 참, 표에 없는 종목은 항상 거짓. dates 는 정렬된 np.datetime64 배열."""
     added = members.set_index("symbol")["date_added"]
-    start = np.array([np.datetime64(added.get(c)) if (c in added.index and pd.notna(added.get(c))) else np.datetime64("1900-01-01") for c in codes], dtype="datetime64[ns]")
+    start = np.array([(np.datetime64(added.get(c)) if pd.notna(added.get(c)) else np.datetime64("1900-01-01")) if c in added.index else np.datetime64("2262-01-01") for c in codes], dtype="datetime64[ns]")
     return dates[didx] >= start[cidx]
 
 

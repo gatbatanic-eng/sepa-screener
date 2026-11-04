@@ -31,6 +31,8 @@ class MembersTest(unittest.TestCase):
         members = pd.DataFrame({"symbol": ["A", "B"], "date_added": pd.to_datetime(["2021-06-01", None])})
         e = M.eligibility(dates, didx, cidx, np.array(["A", "B"]), members)
         self.assertEqual(list(e), [False, False, True, True, True, True])
+        e2 = M.eligibility(dates, didx, cidx, np.array(["A", "ZZZ"]), members)          # 표에 없는 종목은 전 구간 제외
+        self.assertEqual(list(e2), [False, False, True, False, False, False])
 
     def test_apply_restricts_signals_and_rebuilds_baseline(self):
         d = tiny_data(0.0, n_stocks=10)
