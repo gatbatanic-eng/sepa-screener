@@ -56,6 +56,7 @@ class FundData(S.Data):
 
     def mask(self, c: dict, strict: bool = True) -> np.ndarray:
         m = (self.valid[c["exit"]] if strict else self.ok) & self.regime[c["regime"]]
+        if self.elig is not None: m = m & self.elig
         if c["trend"]: m = m & self.trend
         for key in PRICE_KEYS:
             mk = self.masks.get((key, c[key]))

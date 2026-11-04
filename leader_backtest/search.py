@@ -106,6 +106,7 @@ class Data:
         self.cidx = np.searchsorted(self.codes, p["code"].to_numpy()).astype(np.int32)
         self.mats = {k: p.pivot(index="date", columns="code", values=v).reindex(index=self.dates, columns=self.codes) for k, v in (("close", "close"), ("sma50", "sma50"), ("rs", "rs"))}
         self.bench = None
+        self.elig = None                       # 편입일 기준 적격 여부(선택). None 이면 제한 없음
         self.D = len(self.dates)
         a = lambda k: p[k].to_numpy(np.float32)
         self.ok = p["ok"].to_numpy(bool)
@@ -143,6 +144,7 @@ class Data:
     def mask(self, c: dict, strict: bool = True) -> np.ndarray:
         """strict=True: 청산 결과가 확정된 행만(탐색용). False: 지표 계산 가능한 모든 행(포트폴리오 시뮬레이션용; 끝까지 보유 중인 포지션을 마지막 종가로 평가)."""
         m = (self.valid[c["exit"]] if strict else self.ok) & self.regime[c["regime"]]
+        if self.elig is not None: m = m & self.elig
         if c["trend"]: m = m & self.trend
         for key in ("rs", "atrMin", "atrMax", "emaLo", "emaHi", "highMin", "rsiLo", "rsiHi", "vol", "ret20Min", "riskMax"):
             mk = self.masks.get((key, c[key]))
@@ -203,7 +205,7 @@ def run_all(data: Data, cfgs: list[dict], null_reps: int, workers: int) -> tuple
             lo, hi = starts[dd], starts[dd + 1]
             perm[lo:hi] = lo + rng.permutation(hi - lo)
         outs = {k: np.nan_to_num(v[perm], nan=0.0) for k, v in data.out.items()}
-        nulls.append((outs, {k: data._date_mean(outs[k], data.valid[k]) for k in EXITS}))
+        nulls.append((outs, {k: data._date_mean(outs[k], data.valid[k] & (data.elig if data.elig is not None else True)) for k in EXITS}))
     _G.update(data=data, cfgs=cfgs, nulls=nulls)
     chunks = [(a, min(a + 2000, len(cfgs))) for a in range(0, len(cfgs), 2000)]
     ctx = mp.get_context("fork")
@@ -242,6 +244,8 @@ def build_data(market: str, universe: list[dict], idx_sym: str, start_fetch: str
         panel = panel_hook(panel)
     d = (data_cls or Data)(panel, regimes, extra=extra) if data_cls else Data(panel, regimes, extra=extra)
     d.bench = ic
+    from .sp500_members import apply_to
+    apply_to(d, market)
     return d
 
 

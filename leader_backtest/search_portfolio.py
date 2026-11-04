@@ -60,7 +60,7 @@ def run_config(data, cfg: dict, cost: float, slips=(0.0,), ctrl=False) -> dict:
     for sl in slips:
         out["bySlip"][str(sl)] = _equity_report(data, sig, cfg["exit"], cost + sl)
     if ctrl:                                           # 무작위 대조군: 같은 날 신호 수만큼, 같은 시장 필터(지표 계산 가능 행) 안에서 무작위
-        pool = (data.ok & data.regime[cfg["regime"]])
+        pool = (data.ok & data.regime[cfg["regime"]]) & (data.elig if data.elig is not None else True)
         per_day = sig.values.sum(axis=1)
         reps = []
         for seed in CTRL_SEEDS:

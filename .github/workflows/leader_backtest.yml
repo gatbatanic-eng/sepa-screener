@@ -11,7 +11,7 @@ on:
         description: "평가 시작일"
         default: "2024-09-02"
       only:
-        description: "all=기존 백테스트+robust+운용형, ops=운용형만, index=지수 필터만, search=대규모 규칙 탐색, portfolio=탐색 한국 상위 후보 포트폴리오 재검증, fundcollect=분기 재무(PIT) 수집, searchfund=재무 신호 대규모 탐색"
+        description: "all=기존 백테스트+robust+운용형, ops=운용형만, index=지수 필터만, search=대규모 규칙 탐색, portfolio=탐색 한국 상위 후보 포트폴리오 재검증, fundcollect=분기 재무(PIT) 수집, searchfund=재무 신호 대규모 탐색, members=S&P500 편입일 수집"
         default: "all"
       search_n:
         description: "search: 탐색 조합 수"
@@ -40,6 +40,9 @@ on:
       sf_markets:
         description: "searchfund: 시장 선택(us,kr)"
         default: "us,kr"
+      use_members:
+        description: "1이면 S&P500 편입일 이전 구간을 신호 대상에서 제외(미국, search/searchfund/portfolio)"
+        default: ""
       out_name:
         description: "결과 하위 폴더(비우면 기존 파일 덮어씀)"
         default: ""
@@ -65,7 +68,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Unit tests
-        run: python -m unittest tests.test_leader_backtest tests.test_leader_ops tests.test_leader_index_filter tests.test_leader_search tests.test_leader_fund_pit tests.test_leader_search_fund -v
+        run: python -m unittest tests.test_leader_backtest tests.test_leader_ops tests.test_leader_index_filter tests.test_leader_search tests.test_leader_fund_pit tests.test_leader_search_fund tests.test_leader_members -v
       - name: Run backtest
         if: inputs.only == 'all'
         env:
@@ -99,6 +102,7 @@ jobs:
           LB_FETCH_START: "2015-06-01"
           SEARCH_N: ${{ inputs.search_n }}
           SEARCH_NULL_REPS: ${{ inputs.null_reps }}
+          MEMBERS_CSV: ${{ inputs.use_members == '1' && 'research/leader_backtest/sp500_members.csv' || '' }}
         run: python -m leader_backtest.search
       - name: Run portfolio re-validation of search candidates
         if: inputs.only == 'portfolio'
@@ -110,6 +114,7 @@ jobs:
           SP_SLIP: ${{ inputs.sp_slip }}
           SP_MARKET: ${{ inputs.sp_market }}
           SP_FUND: ${{ inputs.sp_fund }}
+          MEMBERS_CSV: ${{ inputs.use_members == '1' && 'research/leader_backtest/sp500_members.csv' || '' }}
         run: python -m leader_backtest.search_portfolio
       - name: Collect point-in-time quarterly fundamentals (DART, SEC)
         if: inputs.only == 'fundcollect'
@@ -127,7 +132,11 @@ jobs:
           SEARCH_N: ${{ inputs.search_n }}
           SEARCH_NULL_REPS: ${{ inputs.null_reps }}
           SF_MARKETS: ${{ inputs.sf_markets }}
+          MEMBERS_CSV: ${{ inputs.use_members == '1' && 'research/leader_backtest/sp500_members.csv' || '' }}
         run: python -m leader_backtest.search_fund
+      - name: Fetch S&P500 membership dates
+        if: inputs.only == 'members'
+        run: python -m leader_backtest.sp500_members
       - name: Save
         if: always()
         run: |
