@@ -56,7 +56,12 @@ def main():
         if d is None:
             failed.append(name)
             continue
-        d.round(6).to_csv(os.path.join(OUT, f"{name}.csv"))
+        path = os.path.join(OUT, f"{name}.csv")
+        if os.path.exists(path):
+            # 소스가 가끔 최근 며칠이 빠진 데이터를 준다. 기존 파일과 합쳐 날짜가 뒤로 밀리지 않게 한다 (겹치면 새 값)
+            old = pd.read_csv(path, index_col=0, parse_dates=True)
+            d = pd.concat([old[~old.index.isin(d.index)], d]).sort_index()
+        d.round(6).to_csv(path)
         print(f"{name:7s} {src:3s} {len(d):6d}행 {d.index[0].date()} ~ {d.index[-1].date()}")
     if "TQQQ" in failed:
         sys.exit("TQQQ 수집 실패")
