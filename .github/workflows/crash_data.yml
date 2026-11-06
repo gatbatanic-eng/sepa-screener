@@ -1,0 +1,48 @@
+name: Crash Study Data
+
+# 폭락 이후 흐름 연구용 지수 일봉(^IXIC 1971~, ^NDX)을 받아 crash_study/data 에 커밋하고
+# 결과(crash_study/results)를 다시 계산한다.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/crash_data.yml
+      - crash_study/fetch_data.py
+
+permissions:
+  contents: write
+
+concurrency:
+  group: crash-data-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install pandas numpy yfinance finance-datareader
+      - name: Fetch prices
+        run: python -m crash_study.fetch_data
+      - name: Run study
+        run: |
+          python -m crash_study.study IXIC
+          python -m crash_study.study NDX
+      - name: Save data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add crash_study/data crash_study/results
+          git diff --cached --quiet && exit 0
+          git commit -m "폭락 이후 흐름 연구 데이터·결과 갱신 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+          for i in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && break
+            sleep $((i * 5))
+          done
