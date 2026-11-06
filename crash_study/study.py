@@ -45,12 +45,16 @@ def daily_events(close, thr):
     return idx
 
 
-def dd_events(close, thr):
-    peak = close.cummax()
+def dd_events(close, thr, window=None, rearm=-0.05):
+    """고점 대비 thr 를 처음 넘는 날.
+    window=None : 사상 최고가 기준, 신고가를 낼 때까지 같은 구간(구간당 1번)
+    window=N    : 최근 N거래일 최고가 기준, 낙폭이 rearm(-5%) 안쪽으로 회복하면 새 신호 허용.
+                  (2000년 고점이 2015년에야 회복돼, 사상 최고가 기준에서는 2008년이 별도 이벤트로 잡히지 않는 문제를 피한다)"""
+    peak = close.rolling(window, min_periods=1).max() if window else close.cummax()
     dd = close / peak - 1
     idx, armed = [], True
     for i, (v, p, pv) in enumerate(zip(dd.values, peak.values, close.values)):
-        if pv >= p:  # 신고가 → 새 구간 시작
+        if (window and v > rearm) or (not window and pv >= p):
             armed = True
         if armed and v <= thr:
             idx.append(i)
@@ -108,16 +112,17 @@ def post_low(close, idx, h=120):
     return a[:, 0], a[:, 1]
 
 
-def main(name="IXIC"):
+def main(name="IXIC", window=None):
+    suf = "_1y" if window else ""
     close, src = load(name)
     rng = np.random.default_rng(SEED)
     L = [f"# 나스닥 폭락 이후 흐름 ({name})", "",
          f"- 데이터: `{src}`, {close.index[0].date()} ~ {close.index[-1].date()} ({len(close):,}거래일)",
-         f"- 신호일 종가 기준 이후 N거래일 수익률(가격지수, 배당 제외). 일간 신호 쿨다운 {COOLDOWN}거래일, 누적 낙폭 신호는 하락 구간당 1번.",
+         f"- 신호일 종가 기준 이후 N거래일 수익률(가격지수, 배당 제외). 일간 신호 쿨다운 {COOLDOWN}거래일, 누적 낙폭 신호는 " + ("최근 252거래일 고점 기준, -5% 안쪽으로 회복하면 재신호." if window else "하락 구간당 1번(신고가 전까지)."),
          f"- \\*p값: 같은 개수의 무작위 날짜를 {NBOOT}번 뽑았을 때 평균 수익률이 폭락 후 평균 이상일 확률 (작을수록 폭락 후가 특별히 좋았다는 뜻).",
          "- 규칙에 따른 과거 통계이고 투자 권유가 아니다.", ""]
     defs = [("일간 -3% 이하", daily_events(close, -0.03)), ("일간 -5% 이하", daily_events(close, -0.05)),
-            ("고점 대비 -10% 첫 도달", dd_events(close, -0.10)), ("고점 대비 -20% 첫 도달", dd_events(close, -0.20))]
+            ("고점 대비 -10% 첫 도달", dd_events(close, -0.10, window)), ("고점 대비 -20% 첫 도달", dd_events(close, -0.20, window))]
     ev_rows = []
     for title, idx in defs:
         L += [f"## {title} — 이벤트 {len(idx)}회", "", table(close, idx, rng), ""]
@@ -131,7 +136,7 @@ def main(name="IXIC"):
                                    for h in HORIZONS}))
     ev = pd.DataFrame(ev_rows)
     os.makedirs(os.path.join(HERE, "results"), exist_ok=True)
-    ev.round(4).to_csv(os.path.join(HERE, "results", f"events_{name}.csv"), index=False)
+    ev.round(4).to_csv(os.path.join(HERE, "results", f"events_{name}{suf}.csv"), index=False)
 
     # 구간 나눠 보기: 결과가 특정 시기에 쏠리는지
     L += ["## 시기별로 나눠 보기 (고점 대비 -10% 첫 도달, 20일/60일 후)", "",
@@ -143,11 +148,11 @@ def main(name="IXIC"):
         if len(s):
             L.append(f"| {a}~{b} | {len(s)} | {pct(s.r20.mean())} | {pct(s.r60.mean())} | {(s.r60.dropna() > 0).mean()*100:.0f}% |")
     L.append("")
-    path = os.path.join(HERE, "results", f"RESULTS_{name}.md")
+    path = os.path.join(HERE, "results", f"RESULTS_{name}{suf}.md")
     open(path, "w", encoding="utf-8").write("\n".join(L))
     print("\n".join(L))
     print("저장:", path)
 
 
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else "IXIC")
+    main(sys.argv[1] if len(sys.argv) > 1 else "IXIC", 252 if "1y" in sys.argv[2:] else None)

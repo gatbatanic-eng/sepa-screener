@@ -37,6 +37,12 @@ jobs:
           python -m crash_study.study NDX
           python -m crash_study.tqqq_study IXIC
           python -m crash_study.tqqq_study NDX
+          for n in IXIC NDX; do
+            python -m crash_study.study $n 1y
+            python -m crash_study.tqqq_study $n 1y
+            python -m crash_study.combo_study $n
+            python -m crash_study.combo_study $n 1y
+          done
       - name: Save data
         run: |
           git config user.name "github-actions[bot]"

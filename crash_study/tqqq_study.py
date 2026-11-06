@@ -119,7 +119,8 @@ def pct(x):
     return f"{x*100:+.1f}%"
 
 
-def main(name="IXIC"):
+def main(name="IXIC", window=None):
+    suf = "_1y" if window else ""
     base = load_base(name)
     rate = rate_series(base.index)
     spread = lb.calibrate("NDX")
@@ -131,7 +132,7 @@ def main(name="IXIC"):
     idx = base.index
     rng = np.random.default_rng(7)
 
-    ev10, ev20 = dd_events(close, -0.10), dd_events(close, -0.20)
+    ev10, ev20 = dd_events(close, -0.10, window), dd_events(close, -0.20, window)
     ev5d = daily_events(close, -0.05)
     strategies = {}
     for H in (60, 120, 250):
@@ -185,7 +186,7 @@ def main(name="IXIC"):
     L += ["## 3. 개별 구간 성과 — 구간별 TQQQ 손익 (고점 회복까지 보유, -10% 도달 기준)", "",
           "| 신호일 | 진입 | 청산 | 거래일 | TQQQ 수익률 | 보유 중 최악 낙폭 |", "|---|---|---|---|---|---|"]
     v = close.values
-    peak = np.maximum.accumulate(v)
+    peak = (close.rolling(window, min_periods=1).max() if window else close.cummax()).values
     tv = tq.values
     trades = []
     for i in ev10:
@@ -206,11 +207,11 @@ def main(name="IXIC"):
           f"{len(tr)}번 중 수익 {int((tr > 0).sum())}번, 평균 {pct(tr.mean())}, 중앙값 {pct(np.median(tr))}, 최악 {pct(tr.min())}.", ""]
 
     os.makedirs(os.path.join(HERE, "results"), exist_ok=True)
-    path = os.path.join(HERE, "results", f"TQQQ_{name}.md")
+    path = os.path.join(HERE, "results", f"TQQQ_{name}{suf}.md")
     open(path, "w", encoding="utf-8").write("\n".join(L))
     print("\n".join(L))
     print("저장:", path)
 
 
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else "IXIC")
+    main(sys.argv[1] if len(sys.argv) > 1 else "IXIC", 252 if "1y" in sys.argv[2:] else None)
