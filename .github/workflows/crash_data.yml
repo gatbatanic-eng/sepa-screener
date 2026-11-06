@@ -35,6 +35,8 @@ jobs:
         run: |
           python -m crash_study.study IXIC
           python -m crash_study.study NDX
+          python -m crash_study.tqqq_study IXIC
+          python -m crash_study.tqqq_study NDX
       - name: Save data
         run: |
           git config user.name "github-actions[bot]"
