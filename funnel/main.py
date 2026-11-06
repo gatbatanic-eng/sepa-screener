@@ -123,6 +123,7 @@ def row_out(r: dict, res: dict, rank_no: int | None) -> dict:
         "high52Ratio": p.get("high52Ratio"), "ret6m": p.get("ret6m"), "ret36to6m": p.get("ret36to6m"),
         **res,
         "manual": r.get("manual"), "P1": r.get("P1"),
+        "filings": r.get("filings"),
     }
 
 
@@ -166,8 +167,8 @@ def write_report(path: Path, market: str, today: dt.date, top: list[dict], stats
              f"C 적자−흑자 {fmt_pct(heat['C_lossMinusProfit'])} · D 주식 수 증가율 중앙값 {fmt_pct(heat['D_shareGrowthMedian'])}, "
              f"증자·CB 공시 종목 비율 {fmt_pct(heat['D_dilutionEventShare'])}",
              "- 6개월 상위: " + ", ".join("{}({}) {}".format(m["symbol"], m["tier"], fmt_pct(m["ret6m"])) for m in heat["topMovers"][:5]),
-             "", "## 턴어라운드 상위 후보", "", "| # | 종목 | 시총 | 종합 | S1(이익 가속) | S2(이익의 질) | S6(자본 배분) | S4(소외도) | T1(타이밍) | 매출 YoY(최근→과거) | 근거 | P1(10배 산수) |",
-             "|---|---|---|---|---|---|---|---|---|---|---|---|"]
+             "", "## 턴어라운드 상위 후보", "", "| # | 종목 | 시총 | 종합 | S1(이익 가속) | S2(이익의 질) | S6(자본 배분) | S4(소외도) | T1(타이밍) | 매출 YoY(최근→과거) | 근거 | P1(10배 산수) | 공시 12개월(참고) |",
+             "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in top:
         s = r["scores"]
         yoy = " → ".join(fmt_pct(v) for v in r["metrics"]["revYoY"])
@@ -177,7 +178,18 @@ def write_report(path: Path, market: str, today: dt.date, top: list[dict], stats
         p1 = r["P1"]["multipleX"] if r.get("P1") and r["P1"].get("multipleX") is not None else "—"
         cell = lambda v: "—" if v is None else f"{v:.0f}"  # noqa: E731
         lines.append(f"| {r['rank']} | {r['name']} ({r['symbol']}){flag} | {fmt_cap(r['marcap'], market)} | {r['composite']:.0f} | "
-                     f"{cell(s['S1'])} | {cell(s['S2'])} | {cell(s['S6'])} | {cell(s['S4'])} | {r['T1']} | {yoy} | {why} | {p1} |")
+                     f"{cell(s['S1'])} | {cell(s['S2'])} | {cell(s['S6'])} | {cell(s['S4'])} | {r['T1']} | {yoy} | {why} | {p1} | "
+                     f"{(r.get('filings') or {}).get('line', '—')} |")
+    flagged = [r for r in top if (r.get("filings") or {}).get("items")
+               and any(i["severity"] in ("risk", "caution") for i in r["filings"]["items"])]
+    if flagged:
+        lines += ["", "## 후보별 주의 공시 (참고, 점수 미반영)", "",
+                  "제목만 분류한 것이라 금액·사유는 링크의 원문으로 확인해야 합니다.", ""]
+        for r in flagged:
+            lines.append(f"- **{r['name']} ({r['symbol']})**")
+            for i in r["filings"]["items"]:
+                if i["severity"] in ("risk", "caution"):
+                    lines.append(f"  - {i['date']} [{i['title']}]({i['url']})")
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -303,6 +315,14 @@ def run_market(market: str, args, today: dt.date) -> None:
     if not ranked:
         raise RuntimeError(f"{market}: 순위 대상 0종목 — 입력 데이터 이상으로 보고 결과를 기록하지 않음")
     ranks = {r["symbol"]: i + 1 for i, r in enumerate(ranked)}
+    if market == "kr":
+        # 2단계: 최종 후보(상위 + 수작업 추적)만 이벤트 공시를 읽는다. 점수·관문·스냅샷에는 반영하지 않는다.
+        from funnel import events_kr
+        finalists = {r["symbol"]: r for r in ranked[:args.top]}
+        finalists.update({r["symbol"]: r for r in records if r.get("manual")})
+        ev = events_kr.collect(api, list(finalists.values()), today)
+        if ev["failed"]:
+            degraded["filings"] = f"이벤트 공시 {ev['failed']}/{ev['asked']}종목을 읽지 못했습니다(해당 종목은 공시 칸이 비어 있음)"
     top = [row_out(r, results[r["symbol"]], ranks[r["symbol"]]) for r in ranked[:args.top]]
     stats = {
         "universe": len(records),
