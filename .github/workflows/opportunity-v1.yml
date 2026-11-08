@@ -9,7 +9,9 @@ on:
       - '.github/workflows/opportunity-v1.yml'
       - 'leader_backtest/opportunity_run.py'
       - 'leader_backtest/robustness.py'
+      - 'leader_backtest/opportunity_v2.py'
       - 'tests/test_robustness.py'
+      - 'tests/test_opportunity_v2.py'
   pull_request:
     paths:
       - 'leader_backtest/opportunity*.py'
