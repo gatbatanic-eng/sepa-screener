@@ -15,6 +15,7 @@ import pandas as pd
 from .main import ROOT, fetch_ohlcv
 from .rules import features, select
 from .opportunity import classify
+from .episodes import episode_metrics
 
 
 def _universe(market: str) -> dict[str, str]:
@@ -83,8 +84,9 @@ def run(market: str, start: str = "2023-01-01", evaluation: str = "2024-01-01",
                         "precision_pct": round(100 * tp / selected.sum(), 2) if selected.any() else None,
                         "mean_return20_pct": round(float(out.loc[selected, "return20"].mean()) * 100, 2)
                         if selected.any() else None}
+    episodes = episode_metrics(out, horizon=horizon)
     return {"market": market, "data_tickers": len(data), "matured_rows": len(out),
-            "good_rows": n_good, "period_start": evaluation, "groups": groups,
+            "good_rows": n_good, "period_start": evaluation, "groups": groups, "episodes": episodes,
             "limitations": ["Current-constituent survivorship bias",
                             "Overlapping signal-day observations, not independent trades",
                             "No trading cost, slippage, portfolio simulation, or liquidity constraints",
