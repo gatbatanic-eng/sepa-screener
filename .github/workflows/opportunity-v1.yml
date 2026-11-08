@@ -25,7 +25,7 @@ jobs:
       - run: pip install numpy pandas yfinance
       - run: python -m unittest discover -s tests -p 'test_opportunity.py'
   historical-research:
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event_name == 'pull_request'
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -35,7 +35,10 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install numpy pandas yfinance
-      - run: python -m leader_backtest.opportunity_run > opportunity_v1_run.log
+      - run: python -m leader_backtest.opportunity_run > opportunity_v1_run.log 2>&1
+        env:
+          OPP_FETCH_START: '2023-01-01'
+          OPP_EVAL_START: '2024-01-01'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
