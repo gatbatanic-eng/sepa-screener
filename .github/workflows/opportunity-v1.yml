@@ -10,6 +10,8 @@ on:
   pull_request:
     paths:
       - 'leader_backtest/opportunity*.py'
+      - 'leader_backtest/episodes.py'
+      - 'tests/test_episodes.py'
       - 'tests/test_opportunity.py'
       - '.github/workflows/opportunity-v1.yml'
 
@@ -24,6 +26,7 @@ jobs:
           python-version: '3.11'
       - run: pip install numpy pandas yfinance
       - run: python -m unittest discover -s tests -p 'test_opportunity.py'
+      - run: python -m unittest discover -s tests -p 'test_episodes.py'
   historical-research:
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event_name == 'pull_request'
     needs: validate
