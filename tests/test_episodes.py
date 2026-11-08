@@ -14,6 +14,9 @@ class EpisodeTests(unittest.TestCase):
         self.assertEqual(r["groups"]["opportunity"]["episodes"], 3)
         self.assertEqual(r["groups"]["opportunity"]["good_episodes"], 3)
         self.assertEqual(r["groups"]["opportunity"]["precision_pct"], 100.0)
+        self.assertEqual(r["groups"]["opportunity"]["median_return20_pct"], 20.0)
+        self.assertEqual(r["groups"]["opportunity"]["loss_rate_pct"], 0.0)
+        self.assertEqual(r["groups"]["opportunity"]["net_mean_50bp_cost_pct"], 19.5)
         self.assertEqual(r["groups"]["entry"]["episodes"], 0)
 
     def test_reject_duplicates(self):
