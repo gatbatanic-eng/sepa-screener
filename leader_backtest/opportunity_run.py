@@ -17,6 +17,7 @@ from .rules import features, select
 from .opportunity import classify
 from .episodes import episode_metrics
 from .segments import segment_episodes
+from .robustness import robustness
 
 
 def _universe(market: str) -> dict[str, str]:
@@ -107,8 +108,9 @@ def run(market: str, start: str = "2023-01-01", evaluation: str = "2024-01-01",
                         if selected.any() else None}
     episodes = episode_metrics(out, horizon=horizon)
     segments = segment_episodes(out, horizon=horizon)
+    robust = robustness(out, horizon=horizon)
     return {"market": market, "data_tickers": len(data), "matured_rows": len(out),
-            "good_rows": n_good, "period_start": evaluation, "groups": groups, "episodes": episodes, "segments": segments,
+            "good_rows": n_good, "period_start": evaluation, "groups": groups, "episodes": episodes, "segments": segments, "robustness": robust,
             "limitations": ["Current-constituent survivorship bias",
                             "Overlapping signal-day observations, not independent trades",
                             "No trading cost, slippage, portfolio simulation, or liquidity constraints",
