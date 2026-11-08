@@ -39,6 +39,14 @@ jobs:
         env:
           OPP_FETCH_START: '2023-01-01'
           OPP_EVAL_START: '2024-01-01'
+      - name: Print backtest summary to job log
+        if: always()
+        run: |
+          if [ -f research/leader_backtest/opportunity_v1_results.json ]; then
+            cat research/leader_backtest/opportunity_v1_results.json
+          else
+            tail -n 120 opportunity_v1_run.log || true
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
