@@ -18,6 +18,7 @@ from .opportunity import classify
 from .episodes import episode_metrics
 from .segments import segment_episodes
 from .robustness import robustness
+from .opportunity_v2 import candidate_filters
 
 
 def _universe(market: str) -> dict[str, str]:
@@ -65,6 +66,7 @@ def run(market: str, start: str = "2023-01-01", evaluation: str = "2024-01-01",
     old_v1 = select(panel)["V1"]
     classified = classify(panel)
     classified["v1"] = old_v1.to_numpy(bool)
+    classified = pd.concat([classified, candidate_filters(classified)], axis=1)
 
     # Evaluate on each stock's actual daily trading calendar, not a padded
     # calendar; no forward-fill of delisted/missing observations.
@@ -91,7 +93,9 @@ def run(market: str, start: str = "2023-01-01", evaluation: str = "2024-01-01",
             good = ret >= 0.15 and path[1:].min() / path[0] - 1 > -0.08
             result.append({"date": str(row.date.date()), "code": ticker, "good": bool(good),
                            "v1": bool(row.v1), "opportunity": bool(row.opportunity),
-                           "entry": bool(row.entry), "return20": float(ret),
+                           "entry": bool(row.entry),
+                           **{key: bool(getattr(row, key)) for key in ("v2_leader", "v2_breakout", "v2_pullback", "v2_controlled_risk")},
+                           "return20": float(ret),
                            "benchmark20": benchmark20})
     if not result:
         raise RuntimeError(f"{market}: no matured observations")
@@ -109,8 +113,12 @@ def run(market: str, start: str = "2023-01-01", evaluation: str = "2024-01-01",
     episodes = episode_metrics(out, horizon=horizon)
     segments = segment_episodes(out, horizon=horizon)
     robust = robustness(out, horizon=horizon)
+    v2 = {}
+    for name in ("v2_leader", "v2_breakout", "v2_pullback", "v2_controlled_risk"):
+        comparison = out.drop(columns=["opportunity"]).rename(columns={name: "opportunity"})
+        v2[name] = episode_metrics(comparison, horizon=horizon)["groups"]["opportunity"]
     return {"market": market, "data_tickers": len(data), "matured_rows": len(out),
-            "good_rows": n_good, "period_start": evaluation, "groups": groups, "episodes": episodes, "segments": segments, "robustness": robust,
+            "good_rows": n_good, "period_start": evaluation, "groups": groups, "episodes": episodes, "segments": segments, "robustness": robust, "v2_candidates": v2,
             "limitations": ["Current-constituent survivorship bias",
                             "Overlapping signal-day observations, not independent trades",
                             "No trading cost, slippage, portfolio simulation, or liquidity constraints",
