@@ -2,6 +2,11 @@ name: Opportunity Layer V1 Research
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - 'research/opportunity-layer-v1-20261108'
+    paths:
+      - '.github/workflows/opportunity-v1.yml'
   pull_request:
     paths:
       - 'leader_backtest/opportunity*.py'
@@ -20,7 +25,7 @@ jobs:
       - run: pip install numpy pandas yfinance
       - run: python -m unittest discover -s tests -p 'test_opportunity.py'
   historical-research:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 90
