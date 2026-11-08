@@ -7,11 +7,16 @@ on:
       - 'research/opportunity-layer-v1-20261108'
     paths:
       - '.github/workflows/opportunity-v1.yml'
+      - 'leader_backtest/opportunity_run.py'
+      - 'leader_backtest/robustness.py'
+      - 'tests/test_robustness.py'
   pull_request:
     paths:
       - 'leader_backtest/opportunity*.py'
       - 'leader_backtest/episodes.py'
       - 'leader_backtest/segments.py'
+      - 'leader_backtest/robustness.py'
+      - 'tests/test_robustness.py'
       - 'tests/test_segments.py'
       - 'tests/test_episodes.py'
       - 'tests/test_opportunity.py'
@@ -29,6 +34,7 @@ jobs:
       - run: pip install numpy pandas yfinance
       - run: python -m unittest discover -s tests -p 'test_opportunity.py'
       - run: python -m unittest discover -s tests -p 'test_episodes.py'
+      - run: python -m unittest discover -s tests -p 'test_robustness.py'
   historical-research:
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event_name == 'pull_request'
     needs: validate
