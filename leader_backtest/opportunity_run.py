@@ -35,6 +35,19 @@ def run(market: str, start: str = "2023-01-01", evaluation: str = "2024-01-01",
         horizon: int = 20) -> dict:
     tickers = _universe(market)
     data = fetch_ohlcv(list(tickers), start=start)
+    import yfinance as yf
+    symbols = {"kr": {"ks": "^KS11", "kq": "^KQ11"}, "us": {"us": "^GSPC"}}[market]
+    benchmarks = {}
+    for key, symbol in symbols.items():
+        raw = yf.download(symbol, start=start, interval="1d", auto_adjust=True, progress=False)
+        if raw.empty:
+            raise RuntimeError(f"{market}: missing benchmark {symbol}")
+        close = raw["Close"]
+        if isinstance(close, pd.DataFrame):
+            close = close.iloc[:, 0]
+        close.index = pd.DatetimeIndex(close.index).tz_localize(None)
+        benchmarks[key] = close.dropna()
+
     frames = []
     for ticker, bars in data.items():
         f = features(bars)
@@ -67,10 +80,17 @@ def run(market: str, start: str = "2023-01-01", evaluation: str = "2024-01-01",
             if len(path) != horizon + 1 or not np.isfinite(path).all() or path[0] <= 0:
                 continue
             ret = path[-1] / path[0] - 1
+            bkey = "us" if market == "us" else ("kq" if ticker.endswith(".KQ") else "ks")
+            b = benchmarks[bkey]
+            entry_day, exit_day = bars.index[i + 1], bars.index[i + horizon + 1]
+            if entry_day not in b.index or exit_day not in b.index:
+                continue
+            benchmark20 = float(b.loc[exit_day] / b.loc[entry_day] - 1)
             good = ret >= 0.15 and path[1:].min() / path[0] - 1 > -0.08
             result.append({"date": str(row.date.date()), "code": ticker, "good": bool(good),
                            "v1": bool(row.v1), "opportunity": bool(row.opportunity),
-                           "entry": bool(row.entry), "return20": float(ret)})
+                           "entry": bool(row.entry), "return20": float(ret),
+                           "benchmark20": benchmark20})
     if not result:
         raise RuntimeError(f"{market}: no matured observations")
     out = pd.DataFrame(result)
