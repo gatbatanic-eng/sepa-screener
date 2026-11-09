@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import pandas as pd
-from leader_backtest.opportunity_winners import episodes, label, holm, fit_rule, apply_rule, contrast
+from leader_backtest.opportunity_winners import episodes, label, holm, fit_rule, apply_rule, contrast, uplift
 from leader_backtest.rules import features
 
 class WinnerStudyTests(unittest.TestCase):
@@ -37,5 +37,10 @@ class WinnerStudyTests(unittest.TestCase):
         out=contrast(p,'rs',dates,n=100)
         self.assertEqual(out['difference'],20)
         self.assertEqual(out['ci95'],[20,20])
+
+    def test_paired_uplift_keeps_shared_dates(self):
+        dates=pd.bdate_range('2024-01-01',periods=80)
+        p=pd.DataFrame({'date':np.repeat(dates,2),'code':['a','b']*80,'excess':[4.,0.]*80})
+        self.assertEqual(uplift(p,p.code.eq('a'),dates)['difference'],2)
 
 if __name__=='__main__': unittest.main()

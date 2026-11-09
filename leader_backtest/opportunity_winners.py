@@ -51,7 +51,7 @@ def contrast(p, key, calendar, n=2000, block=20, ticker=False):
     Null-centered bootstrap p is approximate, not an exact randomization test.
     Empty calendar dates remain zero-count rows (no compressed time axis).
     """
-    q = p[p.group.isin(['winner', 'failure'])].copy()
+    q = p[p.group.isin(['winner', 'failure'])].copy().reset_index(drop=True)
     x = pd.to_numeric(q[key], errors='coerce').replace([np.inf, -np.inf], np.nan)
     q = q.loc[x.notna()].copy(); x = x.loc[q.index].astype(float)
     for group, prefix in [('winner', 'w'), ('failure', 'f')]:
