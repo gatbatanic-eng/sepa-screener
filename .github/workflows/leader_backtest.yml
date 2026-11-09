@@ -11,7 +11,7 @@ on:
         description: "평가 시작일"
         default: "2024-09-02"
       only:
-        description: "all=기존 백테스트+robust+운용형, ops=운용형만, index=지수 필터만, search=대규모 규칙 탐색, portfolio=탐색 한국 상위 후보 포트폴리오 재검증, fundcollect=분기 재무(PIT) 수집, searchfund=재무 신호 대규모 탐색, members=S&P500 편입일 수집"
+        description: "all=기존 백테스트+robust+운용형, ops=운용형만, index=지수 필터만, search=대규모 규칙 탐색, portfolio=탐색 한국 상위 후보 포트폴리오 재검증, fundcollect=분기 재무(PIT) 수집, searchfund=재무 신호 대규모 탐색, members=S&P500 편입일 수집, sepago=SEPA v2 GO 신호 백테스트(실제 sepa/ 판정 재생)"
         default: "all"
       search_n:
         description: "search: 탐색 조합 수"
@@ -68,7 +68,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Unit tests
-        run: python -m unittest tests.test_leader_backtest tests.test_leader_ops tests.test_leader_index_filter tests.test_leader_search tests.test_leader_fund_pit tests.test_leader_search_fund tests.test_leader_members -v
+        run: python -m unittest tests.test_leader_backtest tests.test_leader_ops tests.test_leader_index_filter tests.test_leader_search tests.test_leader_fund_pit tests.test_leader_search_fund tests.test_leader_members tests.test_leader_sepa_go -v
       - name: Run backtest
         if: inputs.only == 'all'
         env:
@@ -134,6 +134,13 @@ jobs:
           SF_MARKETS: ${{ inputs.sf_markets }}
           MEMBERS_CSV: ${{ inputs.use_members == '1' && 'research/leader_backtest/sp500_members.csv' || '' }}
         run: python -m leader_backtest.search_fund
+      - name: Run SEPA v2 GO signal backtest (replays sepa/ pipeline)
+        if: inputs.only == 'sepago'
+        env:
+          LB_FETCH_START: ${{ inputs.fetch_start }}
+          LB_EVAL_START: ${{ inputs.eval_start }}
+          LB_OUT: ${{ inputs.out_name }}
+        run: python -m leader_backtest.sepa_go
       - name: Fetch S&P500 membership dates
         if: inputs.only == 'members'
         run: python -m leader_backtest.sp500_members
