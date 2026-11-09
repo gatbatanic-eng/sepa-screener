@@ -660,7 +660,7 @@ const ENTRY_RANK = {
 };
 const GO_SET = new Set(["GO_BREAKOUT", "GO_PULLBACK"]);
 // SETUP_READY 하드 조건(sepa/config.py SetupConfig 와 같은 값). 근접후보 탭의 "부족한 조건" 표시용.
-const SETUP_LIMITS = { base: 20, contractions: 2, atr: 0.75, dryup: 0.70 };
+const SETUP_LIMITS = { base: 20, contractions: 2, atr: 0.90, dryup: 0.70 };
 function code6(r) { return String(r.code).padStart(6, "0"); }
 function reboundInfo() { return DATA[currentMarket].rebound || null; }
 function hasRebound() { const R = reboundInfo(); return !!(R && R.members); }
@@ -839,7 +839,7 @@ function getCols() {
       { key: "rsChange20d", label: "RS Δ20d", fmt: v => fmtSigned(v, 1) },
       { key: "highProximity", label: "52W거리", fmt: (v, r) => w52DistCell(r) },
       { key: "setupQuality", label: "Setup Q", fmt: v => setupQualityBadge(v) },
-      { key: "atrContraction", label: "ATR수축", fmt: v => ratioCell(v, 0.75) },
+      { key: "atrContraction", label: "ATR수축", fmt: v => ratioCell(v, 0.90) },
       { key: "volDryup", label: "Dry-up", fmt: v => ratioCell(v, 0.70) },
       { key: "pivotDist", label: "피벗거리", fmt: v => { const n = toNum(v); return n == null ? "-" : (n > 0 ? "+" : "") + n.toFixed(1) + "%"; } },
       { key: "setupReady", label: "Setup", fmt: v => toBool(v) ? `<span class="es es-setup">READY</span>` : "-" },

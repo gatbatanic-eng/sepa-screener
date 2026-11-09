@@ -37,7 +37,8 @@ def replay_checklist(row):
                        **{key:row[field] for key,field in MAP.items()},
                        v2=dict(entry_state=row.get('entryState'),recent_breakout_days_ago=row.get('boDaysAgo'),
                                pivot_distance_pct=row.get('pivotDist')))
-    count,verdict,_=compute_entry_checklist(result)
+    # 아카이브는 기록 당시 규칙(시장게이트 포함 6항목)으로 재현한다.
+    count,verdict,_=compute_entry_checklist(result,legacy_market_gate=True)
     return dict(status='MATCH' if verdict==row.get('entryVerdict') and count==row.get('entryChecklistCount') else 'MISMATCH',
                 storedVerdict=row.get('entryVerdict'),replayedVerdict=verdict,
                 storedCount=row.get('entryChecklistCount'),replayedCount=count)

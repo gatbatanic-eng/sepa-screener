@@ -115,7 +115,15 @@ class SetupConfig:
     max_base_length: int = 120             # base_length 상한 (지나치게 긴 횡보 방지 / 계산 캡)
     atr_fast: int = 20
     atr_slow: int = 60
-    atr_contraction_max: float = 0.75     # ATR20 / ATR60 <= 0.75
+    # ATR 수축 = (TR/전일종가)의 Wilder ATR20 ÷ ATR60, 즉 ATR% 기준.
+    # 예전 값 0.75 는 원화/달러 절대값 ATR 기준이었는데, Wilder 지수평활에서는 ATR20 과
+    # ATR60 이 크게 겹쳐 비율이 0.85 아래로 거의 내려가지 않는다. 8/8 통과 주도주 54종목의
+    # 1년치(2026-11 대시보드 차트 데이터)에서 0.75 이하인 날 0%, ATR% 기준 하위 10% ≈ 0.91.
+    # → "평소보다 확실히 조용해진 구간" = 하위 10% 수준인 0.90 으로 재보정.
+    atr_normalize: bool = True            # True: ATR% 비율(주가 상승에 따른 ATR 금액 증가 제거)
+    atr_contraction_max: float = 0.90     # ATR%20 / ATR%60 <= 0.90
+    atr_quality_lo: float = 0.85          # quality score: 이 이하면 만점
+    atr_quality_hi: float = 1.05          # quality score: 이 이상이면 0점
     vol_dryup_fast: int = 10
     vol_dryup_mid: int = 20
     vol_dryup_slow: int = 50

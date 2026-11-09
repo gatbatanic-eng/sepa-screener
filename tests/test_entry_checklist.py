@@ -4,7 +4,7 @@ import screening as S
 
 
 def _r(**kw) -> S.StockResult:
-    """8/8 통과 + 6개 항목 중 시장게이트·RS·52주고점·Dryup·셋업이 전부 충족인 기본 종목."""
+    """8/8 통과 + 5개 항목 중 RS·52주고점·Dryup·셋업이 충족인 기본 종목(트리거는 각 테스트가 지정)."""
     base = dict(
         code="000000", name="테스트", market="KOSPI",
         pass_all=True,
@@ -48,36 +48,38 @@ class EntryChecklistTest(unittest.TestCase):
     def test_go_is_reachable_with_pivot_near_trigger(self):
         # 예전 7항목 구조에서는 pivot_near와 breakout_signal이 동시에 참일 수 없어 GO가 불가능했다.
         count, verdict, reason = S.compute_entry_checklist(_r(pivot_near=True))
-        self.assertEqual((count, verdict), (6, S.ENTRY_VERDICT_GO))
+        self.assertEqual((count, verdict), (5, S.ENTRY_VERDICT_GO))
         self.assertIn("피벗임박", reason)
 
     def test_go_is_reachable_with_breakout_trigger(self):
         count, verdict, _ = S.compute_entry_checklist(_r(breakout_signal=True))
-        self.assertEqual((count, verdict), (6, S.ENTRY_VERDICT_GO))
+        self.assertEqual((count, verdict), (5, S.ENTRY_VERDICT_GO))
 
     def test_go_via_recent_breakout(self):
         r = _r(v2={"recent_breakout_days_ago": 3, "pivot_distance_pct": 0.5})
         count, verdict, reason = S.compute_entry_checklist(r)
-        self.assertEqual((count, verdict), (6, S.ENTRY_VERDICT_GO))
+        self.assertEqual((count, verdict), (5, S.ENTRY_VERDICT_GO))
         self.assertIn("최근돌파", reason)
 
     def test_watch_when_one_item_missing(self):
         count, verdict, _ = S.compute_entry_checklist(_r(pivot_near=True, dryup_ratio=0.9))
-        self.assertEqual((count, verdict), (5, S.ENTRY_VERDICT_WATCH))
+        self.assertEqual((count, verdict), (4, S.ENTRY_VERDICT_WATCH))
 
     def test_nogo_when_two_items_missing(self):
         count, verdict, _ = S.compute_entry_checklist(_r(pivot_near=True, dryup_ratio=0.9, setup_score=5.0))
-        self.assertEqual((count, verdict), (4, S.ENTRY_VERDICT_NOGO))
+        self.assertEqual((count, verdict), (3, S.ENTRY_VERDICT_NOGO))
 
-    def test_neutral_market_gate_caps_at_watch_and_is_explained(self):
-        r = _r(pivot_near=True, market_gate_status=S.MARKET_GATE_NEUTRAL)
-        count, verdict, reason = S.compute_entry_checklist(r)
-        self.assertEqual((count, verdict), (5, S.ENTRY_VERDICT_WATCH))
-        self.assertIn("시장게이트 중립", reason)
+    def test_market_gate_no_longer_vetoes_go_but_is_explained(self):
+        # 시장게이트는 개수에서 빠졌다(비중은 v2 레짐 sizeFactor 가 담당). 근거에는 계속 표시.
+        for gate in (S.MARKET_GATE_NEUTRAL, S.MARKET_GATE_UNFAVORABLE):
+            r = _r(pivot_near=True, market_gate_status=gate)
+            count, verdict, reason = S.compute_entry_checklist(r)
+            self.assertEqual((count, verdict), (5, S.ENTRY_VERDICT_GO), gate)
+            self.assertIn(f"시장게이트 {gate}", reason)
 
-    def test_no_trigger_is_nogo_not_go(self):
+    def test_no_trigger_is_not_go(self):
         count, verdict, reason = S.compute_entry_checklist(_r())
-        self.assertEqual((count, verdict), (5, S.ENTRY_VERDICT_WATCH))
+        self.assertEqual((count, verdict), (4, S.ENTRY_VERDICT_WATCH))
         self.assertIn("트리거 없음", reason)
 
     def test_v2_go_state_promotes_to_go_even_if_items_missing(self):
@@ -95,7 +97,7 @@ class EntryChecklistTest(unittest.TestCase):
     def test_missing_values_do_not_count_as_satisfied(self):
         count, verdict, _ = S.compute_entry_checklist(
             _r(pivot_near=True, rs_percentile=None, high52w_position=None, dryup_ratio=None, setup_score=None))
-        self.assertEqual(count, 2)
+        self.assertEqual(count, 1)
         self.assertEqual(verdict, S.ENTRY_VERDICT_NOGO)
 
 

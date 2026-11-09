@@ -166,8 +166,12 @@ MARKET_GATE_UNFAVORABLE = "비우호적"
 # 예전에는 "피벗임박(피벗 아래)"과 "돌파(피벗 위)"를 별개 항목 2개로 세서 7/7이
 # 원리적으로 불가능했다(2주간 8/8 통과 1,056종목-일 중 동시 충족 0건 → GO 0건).
 # 지금은 이 둘을 "진입 위치/트리거" 하나로 합쳤다.
-GO_MIN_COUNT = 6
-WATCH_MIN_COUNT = 5
+# 2026-11: 시장게이트를 개수에서 뺐다(5개 항목). 게이트가 '우호적'이 아니면 나머지를 다
+# 채워도 GO가 원리적으로 불가능했고(8/17~11/7 KR GO 1건·US 5건), 시장 상태는 이미 v2
+# 레짐 sizeFactor 로 비중을 줄이는 데 쓰이므로 진입 거부권까지 주면 이중 처벌이다.
+# 게이트 상태는 근거 문자열에 계속 표시한다.
+GO_MIN_COUNT = 5
+WATCH_MIN_COUNT = 4
 GO_RECENT_BREAKOUT_DAYS = 3            # 최근 N거래일 내 v2 '확인된 돌파'가 있었으면 트리거로 인정
 GO_RECENT_BREAKOUT_DIST_MIN_PCT = -5.0  # 그 뒤 v2 피벗거리(%)가 이 범위 안이어야 "유효 구간"
 GO_RECENT_BREAKOUT_DIST_MAX_PCT = 5.0   # (하한은 pivot_near 하한과 같고, 상한은 v2 LATE 경계)
@@ -1218,10 +1222,11 @@ def entry_trigger(r: "StockResult") -> Optional[str]:
     return None
 
 
-def compute_entry_checklist(r: "StockResult") -> tuple[Optional[int], Optional[str], Optional[str]]:
+def compute_entry_checklist(r: "StockResult", *, legacy_market_gate: bool = False
+                            ) -> tuple[Optional[int], Optional[str], Optional[str]]:
     """
     B. 종목별 진입 체크리스트: 8/8 통과 종목에만 계산한다(그 외에는 None, None, None).
-    6개 항목 중 충족 개수로 GO(6)/WATCH(5)/NO-GO(4이하)를 판정하고, v2 진입상태가
+    5개 항목 중 충족 개수로 GO(5)/WATCH(4)/NO-GO(3이하)를 판정하고(시장게이트는 근거에만 표시), v2 진입상태가
     GO_BREAKOUT/GO_PULLBACK이면 (8/8 통과 종목 한정) 개수와 무관하게 GO로 승격한다.
     8개 조건 판정과는 무관한 참고 지표이며 매수 신호가 아니다. 반환: (개수, 판정, 근거).
     """
@@ -1230,17 +1235,21 @@ def compute_entry_checklist(r: "StockResult") -> tuple[Optional[int], Optional[s
 
     trigger = entry_trigger(r)
     checks = [
-        r.market_gate_status == MARKET_GATE_FAVORABLE,
         trigger is not None,
         r.rs_percentile is not None and r.rs_percentile >= GO_RS_THRESHOLD,
         r.high52w_position is not None and r.high52w_position >= GO_HIGH52W_POSITION_MIN,
         r.dryup_ratio is not None and r.dryup_ratio <= GO_DRYUP_MAX,
         r.setup_score is not None and r.setup_score >= GO_SETUP_SCORE_MIN,
     ]
+    go_min, watch_min = GO_MIN_COUNT, WATCH_MIN_COUNT
+    if legacy_market_gate:
+        # 2026-11 이전 아카이브 재현용(entry_lab/audit.py): 시장게이트 포함 6항목, GO 6 / WATCH 5.
+        checks.insert(0, r.market_gate_status == MARKET_GATE_FAVORABLE)
+        go_min, watch_min = GO_MIN_COUNT + 1, WATCH_MIN_COUNT + 1
     count = sum(checks)
-    if count >= GO_MIN_COUNT:
+    if count >= go_min:
         verdict = ENTRY_VERDICT_GO
-    elif count >= WATCH_MIN_COUNT:
+    elif count >= watch_min:
         verdict = ENTRY_VERDICT_WATCH
     else:
         verdict = ENTRY_VERDICT_NOGO

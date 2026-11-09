@@ -14,7 +14,7 @@ contraction_count, contraction_widths, setup_quality_score(0~100), setup_ready
 
 SETUP_READY (hard 조건)
 -----------------------
-trend_ok AND base_length>=20 AND atr_contraction_ratio<=0.75
+trend_ok AND base_length>=20 AND atr_contraction_ratio<=0.90 (ATR% 기준)
 AND volume_dryup_ratio<=0.70 AND contraction_count>=2
 (range_10 은 기본적으로 quality factor. cfg.setup.range10_hard_filter=True 면 hard)
 
@@ -40,7 +40,7 @@ import numpy as np
 import pandas as pd
 
 from sepa.config import SepaConfig
-from sepa.indicators import atr, rolling_high, rolling_low, rolling_mean
+from sepa.indicators import atr, rolling_high, rolling_low, rolling_mean, true_range
 from sepa.pivot import compute_pivot
 from sepa.swings import detect_contractions
 
@@ -142,13 +142,23 @@ def evaluate_setup(ohlcv: pd.DataFrame, cfg: SepaConfig, *,
                 r.range_10_pct = round((hh / ll - 1.0) * 100.0, 2)
 
         # --- ATR 수축 ---
+        # atr20/atr60 은 표시·손절 계산용으로 금액 단위를 그대로 남기고, 수축 비율만 ATR%
+        # (봉마다 TR/전일종가)로 계산한다. 금액 ATR 비율은 주가가 오른 만큼 ATR20 이 커져
+        # 상승 추세 종목일수록 수축 판정에서 불리해지는 편향이 있다.
         a_fast = atr(high, low, close, s.atr_fast)
         a_slow = atr(high, low, close, s.atr_slow)
         af, asl = a_fast.iloc[setup_pos], a_slow.iloc[setup_pos]
         if not pd.isna(af) and not pd.isna(asl) and asl > 0:
             r.atr20 = round(float(af), 4)
             r.atr60 = round(float(asl), 4)
-            r.atr_contraction_ratio = round(r.atr20 / r.atr60, 3)
+            if s.atr_normalize:
+                trp = true_range(high, low, close) / close.shift(1)
+                pf = trp.ewm(alpha=1.0 / s.atr_fast, adjust=False, min_periods=s.atr_fast).mean().iloc[setup_pos]
+                ps = trp.ewm(alpha=1.0 / s.atr_slow, adjust=False, min_periods=s.atr_slow).mean().iloc[setup_pos]
+                if not pd.isna(pf) and not pd.isna(ps) and ps > 0:
+                    r.atr_contraction_ratio = round(float(pf) / float(ps), 3)
+            else:
+                r.atr_contraction_ratio = round(r.atr20 / r.atr60, 3)
 
         # --- 거래량 dry-up ---
         vol_window = volume.iloc[max(0, setup_pos - s.vol_dryup_slow + 1): setup_pos + 1]
@@ -215,7 +225,8 @@ def _quality_score(r: SetupResult, cfg: SepaConfig,
     if high_proximity_ratio is not None:
         subs["high_proximity"] = _lin(high_proximity_ratio, 0.70, 1.00)
     if r.atr_contraction_ratio is not None:
-        subs["atr_contraction"] = _lin(r.atr_contraction_ratio, 1.0, 0.5)
+        subs["atr_contraction"] = _lin(r.atr_contraction_ratio,
+                                       cfg.setup.atr_quality_hi, cfg.setup.atr_quality_lo)
     if r.volume_dryup_ratio is not None:
         subs["vol_dryup"] = _lin(r.volume_dryup_ratio, 1.0, 0.4)
     if r.contraction_count is not None:
