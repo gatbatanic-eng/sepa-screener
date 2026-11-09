@@ -10,6 +10,8 @@ on:
       - 'leader_backtest/opportunity_run.py'
       - 'leader_backtest/robustness.py'
       - 'leader_backtest/opportunity_v2.py'
+      - 'leader_backtest/opportunity_winners.py'
+      - 'tests/test_opportunity_winners.py'
       - 'tests/test_robustness.py'
       - 'tests/test_opportunity_v2.py'
   pull_request:
@@ -37,6 +39,7 @@ jobs:
       - run: python -m unittest discover -s tests -p 'test_opportunity.py'
       - run: python -m unittest discover -s tests -p 'test_episodes.py'
       - run: python -m unittest discover -s tests -p 'test_robustness.py'
+      - run: python -m unittest discover -s tests -p 'test_opportunity_winners.py'
   historical-research:
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event_name == 'pull_request'
     needs: validate
@@ -52,6 +55,10 @@ jobs:
         env:
           OPP_FETCH_START: '2023-01-01'
           OPP_EVAL_START: '2024-01-01'
+      - run: python -m leader_backtest.opportunity_winners > opportunity_winners_run.log 2>&1
+      - name: Print winner study
+        if: always()
+        run: cat research/leader_backtest/opportunity_winners/results.json || tail -n 100 opportunity_winners_run.log
       - name: Print backtest summary to job log
         if: always()
         run: |
@@ -67,3 +74,5 @@ jobs:
           path: |
             research/leader_backtest/opportunity_v1_results.json
             opportunity_v1_run.log
+            research/leader_backtest/opportunity_winners/
+            opportunity_winners_run.log
