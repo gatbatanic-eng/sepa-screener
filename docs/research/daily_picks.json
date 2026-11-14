@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "generatedAt": "2026-11-14T14:32:14.368038+00:00",
+ "generatedAt": "2026-11-14T22:56:36.227760+00:00",
  "latest": {
   "kr": {
    "market": "kr",
@@ -205,7 +205,7 @@
       },
       {
        "kind": "sector",
-       "text": "업종 제약 중간: 50일선 위 31%, 평균 RS 42, 18개 업종 중 10위 (점수 +0)"
+       "text": "업종 제약 중간: 50일선 위 30%, 평균 RS 42, 18개 업종 중 10위 (점수 +0)"
       },
       {
        "kind": "market",
@@ -214,53 +214,6 @@
       {
        "kind": "consensus",
        "text": "컨센서스(네이버, 11/14): 2026년 EPS 추정 6,141원 · 평균 목표가 291,579원 (현재가 대비 +36%) · 투자의견 평균 4.0/5 (참고, 점수 아님)"
-      },
-      {
-       "kind": "macro",
-       "text": "매크로 리스크오프 (VIX 18.7, 달러지수 103.1, 원/달러 1,331, 미 10년 4.98%) — 참고, 점수 아님"
-      }
-     ]
-    },
-    {
-     "code": "109860",
-     "name": "동일금속",
-     "market": "KOSDAQ",
-     "price": 6950.0,
-     "score": 2,
-     "strategies": {
-      "funnel": 46
-     },
-     "funnelRank": 46,
-     "entry": {
-      "riskPct": 5.07,
-      "riskSource": "기술적",
-      "verdict": null,
-      "chase": [],
-      "liquidityOk": null,
-      "zone": null
-     },
-     "v2": {
-      "score": 1,
-      "sector": null,
-      "sectorAdj": 0,
-      "marketAdj": -1
-     },
-     "why": [
-      {
-       "kind": "strategy",
-       "text": "실적 턴어라운드 46위 선정 (v1 점수 2)"
-      },
-      {
-       "kind": "entry",
-       "text": "손절폭 5.07%(기술적), 추격·NO-GO·유동성 조건 통과"
-      },
-      {
-       "kind": "sector",
-       "text": "업종을 알 수 없어 섹터 점수 0"
-      },
-      {
-       "kind": "market",
-       "text": "시장 KOSDAQ RED (점수 -1)"
       },
       {
        "kind": "macro",
@@ -303,7 +256,7 @@
       },
       {
        "kind": "sector",
-       "text": "업종 금융 약세: 50일선 위 14%, 평균 RS 45, 18개 업종 중 14위 (점수 -1)"
+       "text": "업종 금융 약세: 50일선 위 14%, 평균 RS 44, 18개 업종 중 16위 (점수 -1)"
       },
       {
        "kind": "market",
@@ -312,6 +265,53 @@
       {
        "kind": "consensus",
        "text": "컨센서스(네이버, 11/14): 2026년 EPS 추정 449원 · 평균 목표가 3,650원 (현재가 대비 +62%) · 투자의견 평균 4.0/5 (참고, 점수 아님)"
+      },
+      {
+       "kind": "macro",
+       "text": "매크로 리스크오프 (VIX 18.7, 달러지수 103.1, 원/달러 1,331, 미 10년 4.98%) — 참고, 점수 아님"
+      }
+     ]
+    },
+    {
+     "code": "109860",
+     "name": "동일금속",
+     "market": "KOSDAQ",
+     "price": 6950.0,
+     "score": 2,
+     "strategies": {
+      "funnel": 46
+     },
+     "funnelRank": 46,
+     "entry": {
+      "riskPct": 5.07,
+      "riskSource": "기술적",
+      "verdict": null,
+      "chase": [],
+      "liquidityOk": null,
+      "zone": null
+     },
+     "v2": {
+      "score": 0,
+      "sector": "금속",
+      "sectorAdj": -1,
+      "marketAdj": -1
+     },
+     "why": [
+      {
+       "kind": "strategy",
+       "text": "실적 턴어라운드 46위 선정 (v1 점수 2)"
+      },
+      {
+       "kind": "entry",
+       "text": "손절폭 5.07%(기술적), 추격·NO-GO·유동성 조건 통과"
+      },
+      {
+       "kind": "sector",
+       "text": "업종 금속 약세: 50일선 위 17%, 평균 RS 41, 18개 업종 중 15위 (점수 -1)"
+      },
+      {
+       "kind": "market",
+       "text": "시장 KOSDAQ RED (점수 -1)"
       },
       {
        "kind": "macro",
@@ -366,7 +366,7 @@
       },
       {
        "kind": "sector",
-       "text": "업종 IT 서비스 강세: 50일선 위 50%, 평균 RS 57, 18개 업종 중 2위 (점수 +1)"
+       "text": "업종 IT 서비스 강세: 50일선 위 54%, 평균 RS 56, 18개 업종 중 3위 (점수 +1)"
       },
       {
        "kind": "market",
@@ -424,7 +424,7 @@
       },
       {
        "kind": "sector",
-       "text": "업종 일반서비스 강세: 50일선 위 40%, 평균 RS 49, 18개 업종 중 5위 (점수 +1)"
+       "text": "업종 일반서비스 강세: 50일선 위 42%, 평균 RS 51, 18개 업종 중 5위 (점수 +1)"
       },
       {
        "kind": "market",
@@ -485,7 +485,7 @@
       },
       {
        "kind": "sector",
-       "text": "업종 일반서비스 강세: 50일선 위 40%, 평균 RS 49, 18개 업종 중 5위 (점수 +1)"
+       "text": "업종 일반서비스 강세: 50일선 위 42%, 평균 RS 51, 18개 업종 중 5위 (점수 +1)"
       },
       {
        "kind": "market",
@@ -538,75 +538,75 @@
      "candidates": 80
     },
     "sectorCoverage": {
-     "known": 70,
+     "known": 77,
      "candidates": 80
     },
     "sectors": [
      {
-      "sector": "오락·문화",
-      "n": 8,
-      "above50Pct": 62.5,
-      "avgRs": 47.0,
-      "strength": 54.7,
+      "sector": "운송·창고",
+      "n": 12,
+      "above50Pct": 50.0,
+      "avgRs": 64.1,
+      "strength": 57.0,
       "rank": 1,
       "of": 18,
       "adj": 1
      },
      {
-      "sector": "IT 서비스",
-      "n": 42,
-      "above50Pct": 50.0,
-      "avgRs": 57.0,
-      "strength": 53.5,
+      "sector": "오락·문화",
+      "n": 9,
+      "above50Pct": 66.7,
+      "avgRs": 46.0,
+      "strength": 56.3,
       "rank": 2,
       "of": 18,
       "adj": 1
      },
      {
-      "sector": "비금속",
-      "n": 5,
-      "above50Pct": 40.0,
-      "avgRs": 65.9,
-      "strength": 53.0,
+      "sector": "IT 서비스",
+      "n": 57,
+      "above50Pct": 54.4,
+      "avgRs": 56.2,
+      "strength": 55.3,
       "rank": 3,
       "of": 18,
       "adj": 1
      },
      {
-      "sector": "운송·창고",
-      "n": 10,
-      "above50Pct": 40.0,
-      "avgRs": 59.6,
-      "strength": 49.8,
+      "sector": "비금속",
+      "n": 8,
+      "above50Pct": 37.5,
+      "avgRs": 72.5,
+      "strength": 55.0,
       "rank": 4,
       "of": 18,
       "adj": 1
      },
      {
       "sector": "일반서비스",
-      "n": 38,
-      "above50Pct": 39.5,
-      "avgRs": 49.3,
-      "strength": 44.4,
+      "n": 43,
+      "above50Pct": 41.9,
+      "avgRs": 50.7,
+      "strength": 46.3,
       "rank": 5,
       "of": 18,
       "adj": 1
      },
      {
       "sector": "건설",
-      "n": 13,
-      "above50Pct": 30.8,
-      "avgRs": 57.8,
-      "strength": 44.3,
+      "n": 14,
+      "above50Pct": 28.6,
+      "avgRs": 59.7,
+      "strength": 44.2,
       "rank": 6,
       "of": 18,
       "adj": 1
      },
      {
       "sector": "기계·장비",
-      "n": 75,
-      "above50Pct": 24.0,
-      "avgRs": 57.4,
+      "n": 82,
+      "above50Pct": 24.4,
+      "avgRs": 56.9,
       "strength": 40.7,
       "rank": 7,
       "of": 18,
@@ -614,51 +614,31 @@
      },
      {
       "sector": "화학",
-      "n": 51,
-      "above50Pct": 31.4,
-      "avgRs": 45.1,
-      "strength": 38.2,
+      "n": 58,
+      "above50Pct": 32.8,
+      "avgRs": 44.8,
+      "strength": 38.8,
       "rank": 8,
       "of": 18,
       "adj": 0
      },
      {
       "sector": "전기·전자",
-      "n": 119,
-      "above50Pct": 17.6,
-      "avgRs": 55.1,
-      "strength": 36.4,
+      "n": 137,
+      "above50Pct": 20.4,
+      "avgRs": 54.4,
+      "strength": 37.4,
       "rank": 9,
       "of": 18,
       "adj": 0
      },
      {
       "sector": "제약",
-      "n": 32,
-      "above50Pct": 31.2,
-      "avgRs": 41.6,
-      "strength": 36.4,
+      "n": 40,
+      "above50Pct": 30.0,
+      "avgRs": 42.3,
+      "strength": 36.1,
       "rank": 10,
-      "of": 18,
-      "adj": 0
-     },
-     {
-      "sector": "의료·정밀기기",
-      "n": 13,
-      "above50Pct": 15.4,
-      "avgRs": 55.6,
-      "strength": 35.5,
-      "rank": 11,
-      "of": 18,
-      "adj": 0
-     },
-     {
-      "sector": "유통",
-      "n": 26,
-      "above50Pct": 19.2,
-      "avgRs": 50.6,
-      "strength": 34.9,
-      "rank": 12,
       "of": 18,
       "adj": 0
      },
@@ -668,46 +648,66 @@
       "above50Pct": 11.1,
       "avgRs": 57.0,
       "strength": 34.1,
+      "rank": 11,
+      "of": 18,
+      "adj": 0
+     },
+     {
+      "sector": "유통",
+      "n": 29,
+      "above50Pct": 17.2,
+      "avgRs": 50.5,
+      "strength": 33.9,
+      "rank": 12,
+      "of": 18,
+      "adj": 0
+     },
+     {
+      "sector": "의료·정밀기기",
+      "n": 18,
+      "above50Pct": 16.7,
+      "avgRs": 50.3,
+      "strength": 33.5,
       "rank": 13,
       "of": 18,
       "adj": -1
      },
      {
-      "sector": "금융",
-      "n": 44,
-      "above50Pct": 13.6,
-      "avgRs": 45.3,
-      "strength": 29.5,
+      "sector": "음식료·담배",
+      "n": 11,
+      "above50Pct": 18.2,
+      "avgRs": 40.0,
+      "strength": 29.1,
       "rank": 14,
       "of": 18,
       "adj": -1
      },
      {
       "sector": "금속",
-      "n": 29,
-      "above50Pct": 17.2,
-      "avgRs": 41.3,
-      "strength": 29.3,
+      "n": 30,
+      "above50Pct": 16.7,
+      "avgRs": 41.4,
+      "strength": 29.0,
       "rank": 15,
       "of": 18,
       "adj": -1
      },
      {
-      "sector": "운송장비·부품",
-      "n": 23,
-      "above50Pct": 17.4,
-      "avgRs": 33.7,
-      "strength": 25.6,
+      "sector": "금융",
+      "n": 52,
+      "above50Pct": 13.5,
+      "avgRs": 44.1,
+      "strength": 28.8,
       "rank": 16,
       "of": 18,
       "adj": -1
      },
      {
-      "sector": "음식료·담배",
-      "n": 9,
-      "above50Pct": 11.1,
-      "avgRs": 39.9,
-      "strength": 25.5,
+      "sector": "운송장비·부품",
+      "n": 30,
+      "above50Pct": 23.3,
+      "avgRs": 34.1,
+      "strength": 28.7,
       "rank": 17,
       "of": 18,
       "adj": -1
