@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import sys
+from dataclasses import replace as dc_replace
 from datetime import date
 from pathlib import Path
 
@@ -20,7 +21,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from sepa import states  # noqa: E402
-from sepa.config import CONFIG  # noqa: E402
+from sepa.config import CONFIG, FLAGS  # noqa: E402
 from sepa.entry import classify_pivot_zone, evaluate_entry  # noqa: E402
 from sepa.exit import Position, detect_exit_warnings, evaluate_exit, structural_stop  # noqa: E402
 from sepa.indicators import atr, ema, rolling_high, sma  # noqa: E402
@@ -28,7 +29,7 @@ from sepa.pivot import compute_pivot  # noqa: E402
 from sepa.regime import market_regime  # noqa: E402
 from sepa.rs import compute_rs_v2, excess_returns  # noqa: E402
 from sepa.setup import evaluate_setup  # noqa: E402
-from sepa.swings import detect_swings  # noqa: E402
+from sepa.swings import detect_contractions, detect_swings  # noqa: E402
 from sepa import pipeline  # noqa: E402
 
 APPROX = 1e-6
@@ -431,6 +432,92 @@ def test_run_screening_offline_integration():
     downs = df[df["종목코드"].str.startswith("DOWN")]
     assert (downs["EntryState"] == states.TREND_FAIL).all() or (downs["상태"] == "확인불가").all()
     assert df["시장국면_v2"].notna().any()
+
+
+# ---------------------------------------------------------------------------
+# 9. 깃발(표시용): 엄격 수축 / 느슨한 마지막 수축 / SMA200 과열
+# ---------------------------------------------------------------------------
+_FLAG_KEYS = ("contraction_worst_ratio", "strict_contraction", "last_contraction_days",
+              "wide_and_loose", "sma200_extension_pct", "overextended_sma200")
+
+
+def _contr(legs, level=200.0):
+    """legs = [(pullback %, 하락 봉 수), ...] 를 순서대로 그린 base 의 수축 탐지 결과."""
+    lead = 30
+    c = list(np.linspace(150, level, lead))
+    for pb, seg in legs:
+        c += list(np.linspace(level, level * (1 - pb / 100), seg + 1))[1:]
+        c += list(np.linspace(level * (1 - pb / 100), level, 8))[1:]
+    c += [level * 0.99] * 5          # 마지막 스윙이 확정되도록 우측 봉 확보
+    df = _mk(c)
+    cfg = dc_replace(CONFIG.swing, base_lookback=len(c) - lead + 5)
+    return detect_contractions(df["High"], df["Low"], cfg)
+
+
+def test_flag_strict_contraction_true_when_each_leg_shrinks_25pct():
+    r = _contr([(20, 8), (12, 8), (6, 8)])       # 비율 0.60, 0.50
+    assert r.count == 3, r
+    assert r.strict_contraction is True, r
+    assert r.worst_shrink_ratio <= FLAGS.strict_shrink_ratio, r
+
+
+def test_flag_strict_contraction_false_but_count_unchanged():
+    # 12 → 11 → 12: 기존 규칙(1.15배 허용)으로는 3다리 수축, 엄격 기준으로는 탈락
+    r = _contr([(12, 8), (11, 8), (12, 8)])
+    assert r.count == 3 and r.tightening is True, r
+    assert r.strict_contraction is False, r
+    assert r.worst_shrink_ratio > 1.0, r
+
+
+def test_flag_strict_contraction_none_with_single_leg():
+    r = _contr([(10, 8)])
+    assert r.count == 1 and r.strict_contraction is None and r.worst_shrink_ratio is None, r
+
+
+def test_flag_wide_and_loose():
+    deep_short = _contr([(10, 8), (18, 6)])      # 마지막 다리 18%, 6일
+    assert deep_short.wide_and_loose is True and deep_short.last_leg_days < 10, deep_short
+    deep_long = _contr([(10, 8), (18, 14)])      # 깊지만 14일 → 해당 없음
+    assert deep_long.wide_and_loose is False, deep_long
+    shallow = _contr([(10, 8), (6, 6)])
+    assert shallow.wide_and_loose is False, shallow
+
+
+def _run_v2(closes):
+    return pipeline.evaluate_stock_v2(_mk(closes), CONFIG, cond_1_7=[True] * 7,
+                                      close_today=float(closes[-1]),
+                                      high_52w=float(max(closes[-252:])), rs=None)
+
+
+def test_flag_sma200_extension():
+    calm = _run_v2(list(np.linspace(100, 130, 320)))
+    assert calm["overextended_sma200"] is False, calm["sma200_extension_pct"]
+    hot = _run_v2(list(np.linspace(100, 110, 200)) + list(np.linspace(110, 260, 120)))
+    assert hot["sma200_extension_pct"] > FLAGS.sma200_extension_max_pct
+    assert hot["overextended_sma200"] is True
+    for k in _FLAG_KEYS:
+        assert k in calm and k in hot, k
+
+
+def test_flags_do_not_change_strategy_series_id():
+    """깃발 임계값은 SepaConfig 밖에 있어야 한다 — 안에 넣으면 성과 추적 계열이 끊긴다."""
+    from dataclasses import asdict, fields
+    cfg = asdict(CONFIG)
+    for f in fields(FLAGS):
+        for group in cfg.values():
+            assert f.name not in group, f.name
+
+
+def test_flags_are_causal():
+    """미래 봉을 붙여도 과거 시점의 깃발 값은 변하지 않는다."""
+    c = list(_uptrend_then_base())
+    full = c + list(np.linspace(c[-1], c[-1] * 1.3, 30))
+    kw = dict(cond_1_7=[True] * 7, close_today=float(c[-1]),
+              high_52w=float(max(c[-252:])), rs=None)
+    a = pipeline.evaluate_stock_v2(_mk(c), CONFIG, **kw)
+    b = pipeline.evaluate_stock_v2(_mk(full).iloc[:len(c)], CONFIG, **kw)
+    for k in _FLAG_KEYS:
+        assert a[k] == b[k], (k, a[k], b[k])
 
 
 def _run_all() -> int:

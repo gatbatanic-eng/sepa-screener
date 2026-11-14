@@ -22,7 +22,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from sepa.config import SwingConfig
+from sepa.config import FLAGS, FlagConfig, SwingConfig
 
 
 @dataclass(frozen=True)
@@ -82,10 +82,15 @@ class ContractionResult:
     widths: list[float]              # 최근→과거 순서의 pullback 폭(%) 목록 (분석 대상 전체)
     base_start_idx: int | None       # base(수축 구간) 시작으로 볼 positional 인덱스
     tightening: bool                 # 최근 다리들이 순차 감소 중인지
+    # --- 깃발(표시용). count / tightening 판정과 독립 ---
+    worst_shrink_ratio: float | None = None   # 수축으로 센 다리들의 (나중 폭/이전 폭) 중 최댓값
+    strict_contraction: bool | None = None    # worst_shrink_ratio <= FLAGS.strict_shrink_ratio (다리 2개 미만이면 None)
+    last_leg_days: int | None = None          # 마지막 다리의 고점→저점 거래일 수
+    wide_and_loose: bool | None = None        # 마지막 다리가 깊고(> depth) 짧음(< max_days)
 
 
 def detect_contractions(high: pd.Series, low: pd.Series,
-                        cfg: SwingConfig) -> ContractionResult:
+                        cfg: SwingConfig, flags: FlagConfig = FLAGS) -> ContractionResult:
     """
     최근 ``cfg.base_lookback`` 거래일 안에서 스윙을 잡고, 스윙 고점→다음 스윙
     저점으로의 pullback 폭을 계산한다. 최근 다리부터 거꾸로 보며
@@ -111,10 +116,12 @@ def detect_contractions(high: pd.Series, low: pd.Series,
     # pullback 다리: 스윙 고점 뒤에 스윙 저점이 오는 쌍
     legs: list[float] = []          # (고점가, 저점가) → 폭%
     leg_hi_idx: list[int] = []
+    leg_days: list[int] = []        # 고점→저점 거래일 수
     for a, b in zip(seq, seq[1:]):
         if a.kind == "H" and b.kind == "L" and a.price > 0:
             legs.append((a.price - b.price) / a.price * 100.0)
             leg_hi_idx.append(a.idx)
+            leg_days.append(b.idx - a.idx)
 
     if not legs:
         return ContractionResult(count=0, widths=[], base_start_idx=None, tightening=False)
@@ -136,9 +143,25 @@ def detect_contractions(high: pd.Series, low: pd.Series,
     base_start_idx = hi_idx_recent_first[min(count, len(hi_idx_recent_first)) - 1]
     tightening = count >= cfg.min_contraction_count
 
+    # --- 깃발(표시용): 엄격 수축 비율 ---
+    # 수축으로 센 다리(최근 count 개) 안에서 (나중 폭 / 이전 폭) 의 최댓값.
+    ratios = [legs_recent_first[k - 1] / legs_recent_first[k]
+              for k in range(1, count) if legs_recent_first[k] > 0]
+    worst = max(ratios) if ratios else None
+    strict = None if worst is None else bool(worst <= flags.strict_shrink_ratio)
+
+    # --- 깃발(표시용): 느슨한 마지막 수축 (깊고 짧음) ---
+    last_days = int(leg_days[-1])
+    wide_loose = bool(legs_recent_first[0] > flags.wide_loose_depth_pct
+                      and last_days < flags.wide_loose_max_days)
+
     return ContractionResult(
         count=count,
         widths=[round(w, 2) for w in legs_recent_first[:cfg.max_legs]],
         base_start_idx=int(base_start_idx),
         tightening=tightening,
+        worst_shrink_ratio=None if worst is None else round(worst, 3),
+        strict_contraction=strict,
+        last_leg_days=last_days,
+        wide_and_loose=wide_loose,
     )

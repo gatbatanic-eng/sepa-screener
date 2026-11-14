@@ -16,9 +16,10 @@ from __future__ import annotations
 import pandas as pd
 
 from sepa import states
-from sepa.config import SepaConfig
+from sepa.config import FLAGS, SepaConfig
 from sepa.entry import evaluate_entry, recent_confirmed_breakout
 from sepa.exit import detect_exit_warnings
+from sepa.indicators import sma
 from sepa.pivot import compute_pivot
 from sepa.rs import RsV2, compute_rs_v2  # noqa: F401  (screening.py 가 여기서 import)
 from sepa.setup import evaluate_setup
@@ -60,6 +61,10 @@ _V2_KEYS = (
     "entry_state", "entry_state_reason",
     "exit_state", "exit_warnings", "exit_state_reason",
     "structural_stop_price", "swing_low_price", "initial_risk_pct", "entry_risk_flag",
+    # 깃발(표시용) — 어떤 판정(TREND/SETUP/ENTRY/EXIT)에도 쓰이지 않는다
+    "contraction_worst_ratio", "strict_contraction",
+    "last_contraction_days", "wide_and_loose",
+    "sma200_extension_pct", "overextended_sma200",
 )
 
 
@@ -83,7 +88,9 @@ def evaluate_stock_v2(ohlcv: pd.DataFrame, cfg: SepaConfig, *,
       recent_breakout_days_ago, pullback,
       entry_state, entry_state_reason,
       exit_state, exit_warnings, exit_state_reason,
-      structural_stop_price, swing_low_price, initial_risk_pct, entry_risk_flag
+      structural_stop_price, swing_low_price, initial_risk_pct, entry_risk_flag,
+      contraction_worst_ratio, strict_contraction, last_contraction_days,
+      wide_and_loose, sma200_extension_pct, overextended_sma200  (깃발 — 판정 미사용)
     """
     out: dict = {k: None for k in _V2_KEYS}
     out["contraction_widths"] = []
@@ -142,6 +149,19 @@ def evaluate_stock_v2(ohlcv: pd.DataFrame, cfg: SepaConfig, *,
                contraction_count=setup.contraction_count,
                contraction_widths=setup.contraction_widths,
                setup_ready=setup.setup_ready, setup_quality_score=setup.setup_quality_score)
+
+    # --- 깃발(표시용): 수축 품질 / 장기 과열. 아래 ENTRY·EXIT 판정에는 넘기지 않는다 ---
+    s200 = sma(close, cfg.trend.sma_slow).iloc[-1]
+    ext = None
+    if not pd.isna(s200) and s200 > 0:
+        ext = round((float(close.iloc[-1]) / float(s200) - 1.0) * 100.0, 2)
+    out.update(contraction_worst_ratio=setup.contraction_worst_ratio,
+               strict_contraction=setup.strict_contraction,
+               last_contraction_days=setup.last_contraction_days,
+               wide_and_loose=setup.wide_and_loose,
+               sma200_extension_pct=ext,
+               overextended_sma200=None if ext is None
+               else bool(ext > FLAGS.sma200_extension_max_pct))
 
     # --- ENTRY ---
     entry = evaluate_entry(ohlcv, cfg, trend_ok=trend_ok, setup_ready=setup.setup_ready,

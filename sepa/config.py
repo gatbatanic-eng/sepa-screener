@@ -238,6 +238,27 @@ class UniverseConfig:
 
 
 # ---------------------------------------------------------------------------
+# 깃발(표시용) 임계값 — 어떤 판정(TREND/SETUP/ENTRY/EXIT)에도 쓰이지 않는다
+# ---------------------------------------------------------------------------
+# ⚠️ 일부러 SepaConfig 의 필드로 넣지 않았다. research_tracker.strategy_series_id 가
+# asdict(SepaConfig) 의 해시라서, 여기에 필드를 추가하면 판정이 그대로여도 성과 추적
+# 계열(strategySeriesId)이 새로 시작돼 기존 관측이 끊기고 신호가 중복 등록된다.
+# 이 값들을 판정에 쓰기로 결정하는 시점에 SepaConfig 로 옮길 것(그때는 계열이 바뀌는 게 맞다).
+@dataclass(frozen=True)
+class FlagConfig:
+    # 엄격 수축: 수축으로 센 다리마다 (나중 폭 / 이전 폭) <= 이 값이어야 strict_contraction=True
+    strict_shrink_ratio: float = 0.75
+    # 느슨한 마지막 수축: 마지막 다리 폭(%) > depth AND 고점→저점 거래일 수 < max_days
+    wide_loose_depth_pct: float = 15.0
+    wide_loose_max_days: int = 10
+    # 장기 과열: (Close / SMA200 - 1) * 100 이 이 값을 넘으면 overextended_sma200=True
+    sma200_extension_max_pct: float = 50.0
+
+
+FLAGS: FlagConfig = FlagConfig()
+
+
+# ---------------------------------------------------------------------------
 # 최상위
 # ---------------------------------------------------------------------------
 @dataclass(frozen=True)

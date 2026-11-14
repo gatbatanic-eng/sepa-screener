@@ -214,6 +214,10 @@ V2_COLUMN_MAP: dict[str, str] = {
     "structural_stop_price": "구조적손절가", "swing_low_price": "스윙저점",
     "initial_risk_pct": "초기리스크_pct", "entry_risk_flag": "진입리스크플래그",
     "market_regime": "시장국면_v2", "breadth_50": "breadth50", "entry_size_factor": "권장진입비중",
+    # 깃발(표시용, 판정 미사용) — 기존 컬럼 위치가 밀리지 않도록 맨 끝에 둔다
+    "contraction_worst_ratio": "수축비율_최대", "strict_contraction": "수축엄격통과",
+    "last_contraction_days": "마지막수축_일수", "wide_and_loose": "느슨한수축",
+    "sma200_extension_pct": "SMA200이격_pct", "overextended_sma200": "SMA200과열",
 }
 
 

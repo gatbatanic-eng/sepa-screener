@@ -101,6 +101,23 @@ hard rule 을 대체하지 않는다**.
 국면(변동성 확장기) 때문일 가능성이 높다 — `tests/test_sepa_v2.py::
 test_setup_lag_excludes_breakout_day_self_sabotage` 참고.
 
+## 깃발 컬럼 (표시용 — 판정 미사용)
+
+미너비니 VCP 정의에 더 가까운 기준 세 가지를 **컬럼으로만** 내보낸다. `contraction_count`
+· `setup_ready` · `setup_quality_score` · `entry_state` 는 전혀 바뀌지 않는다. 실데이터에서
+분포를 본 뒤 판정에 쓸지 결정하기 위한 것.
+
+| 컬럼 (CSV/시트) | 키 | 정의 |
+|---|---|---|
+| `수축엄격통과` / `수축비율_최대` | `strict_contraction` / `contraction_worst_ratio` | 수축으로 센 다리들의 (나중 폭 / 이전 폭) 최댓값이 0.75 이하. 기존 규칙은 1.15배까지 "감소"로 인정하므로 12%→11%→12% 도 3회 수축으로 세지만 이 깃발은 False. 다리 2개 미만이면 None |
+| `느슨한수축` / `마지막수축_일수` | `wide_and_loose` / `last_contraction_days` | 마지막 다리 폭 > 15% AND 고점→저점 < 10거래일 (깊고 짧은 급락) |
+| `SMA200과열` / `SMA200이격_pct` | `overextended_sma200` / `sma200_extension_pct` | (Close / SMA200 − 1)·100 > 50 |
+
+임계값은 `config.py::FlagConfig`(싱글턴 `FLAGS`)에 있다. **`SepaConfig` 필드가 아니다** —
+`research_tracker.strategy_series_id` 가 `asdict(SepaConfig)` 해시라서, 거기에 넣으면 판정이
+같아도 성과 추적 계열이 새로 시작된다. 판정에 쓰기로 하면 그때 `SepaConfig` 로 옮긴다.
+대시보드(`generate_dashboard.py`)에는 아직 연결하지 않았다.
+
 ## Pivot
 
 `config.pivot.min_bars_ago`(기본 1) 만큼 전까지의 데이터로만 계산. 우선순위:

@@ -72,6 +72,11 @@ class SetupResult:
     pivot_source: str | None = None
     contraction_count: int | None = None
     contraction_widths: list[float] = field(default_factory=list)
+    # 깃발(표시용) — setup_ready / setup_quality_score 에 영향 없음
+    contraction_worst_ratio: float | None = None
+    strict_contraction: bool | None = None
+    last_contraction_days: int | None = None
+    wide_and_loose: bool | None = None
     setup_quality_score: float | None = None
     setup_ready: bool | None = None
     reasons: list[str] = field(default_factory=list)
@@ -125,6 +130,10 @@ def evaluate_setup(ohlcv: pd.DataFrame, cfg: SepaConfig, *,
     contr = detect_contractions(high, low, cfg.swing)
     r.contraction_count = contr.count
     r.contraction_widths = contr.widths
+    r.contraction_worst_ratio = contr.worst_shrink_ratio
+    r.strict_contraction = contr.strict_contraction
+    r.last_contraction_days = contr.last_leg_days
+    r.wide_and_loose = contr.wide_and_loose
 
     # --- base 길이 ---
     r.base_length = _base_length(high, r.pivot_price, contr.base_start_idx, s.max_base_length)
