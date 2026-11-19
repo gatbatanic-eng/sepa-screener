@@ -1,0 +1,1633 @@
+{
+  "schemaVersion": 2,
+  "source": "NHPLUG",
+  "exchange": "KRX",
+  "mode": "REST polling",
+  "startedAt": "2026-11-19T13:35:27.741016+09:00",
+  "generatedAt": "2026-11-19T13:35:37.675630+09:00",
+  "requestedCount": 2,
+  "receivedCount": 2,
+  "universeCount": 701,
+  "runId": "44459305672",
+  "maxQuoteAgeSeconds": 300,
+  "status": "ok",
+  "quotes": [
+    {
+      "code": "007810",
+      "name": "코리아써키트",
+      "market": "KRX",
+      "observedAt": "2026-11-19T13:35:28.729309+09:00",
+      "quoteTime": "2026-11-19T13:35:28+09:00",
+      "quoteDateVerified": true,
+      "quoteAgeSeconds": 9.67563,
+      "price": 96000.0,
+      "previousClose": 92700.0,
+      "changePct": 3.56,
+      "changePctRaw": 3.56,
+      "directionCode": "",
+      "directionMethod": "same-response price/base consistency",
+      "open": 93700.0,
+      "high": 97800.0,
+      "low": 91000.0,
+      "volume": 665566.0,
+      "turnoverKRW": 63567000000.0,
+      "turnoverRaw": 63567.0,
+      "turnoverMultiplier": 1000000,
+      "turnoverUnitMethod": "inferred by OHLC/VWAP consistency",
+      "vwap": 95508.18401180349,
+      "distanceFromHighPct": -1.8404907975460127,
+      "rangePosition": 0.7352941176470589,
+      "sector": "코스피 전기·전자",
+      "sectorCode": "KGS09P",
+      "warnings": [],
+      "quoteDateVerificationMethod": "same-symbol daily bar queried after quote"
+    },
+    {
+      "code": "353200",
+      "name": "대덕전자",
+      "market": "KRX",
+      "observedAt": "2026-11-19T13:35:31.081003+09:00",
+      "quoteTime": "2026-11-19T13:35:30+09:00",
+      "quoteDateVerified": true,
+      "quoteAgeSeconds": 7.67563,
+      "price": 79900.0,
+      "previousClose": 81200.0,
+      "changePct": -1.6,
+      "changePctRaw": 1.6,
+      "directionCode": "",
+      "directionMethod": "same-response price/base consistency",
+      "open": 82000.0,
+      "high": 82500.0,
+      "low": 77900.0,
+      "volume": 432109.0,
+      "turnoverKRW": 34518000000.0,
+      "turnoverRaw": 34518.0,
+      "turnoverMultiplier": 1000000,
+      "turnoverUnitMethod": "inferred by OHLC/VWAP consistency",
+      "vwap": 79882.62220874826,
+      "distanceFromHighPct": -3.1515151515151496,
+      "rangePosition": 0.43478260869565216,
+      "sector": "코스피 전기·전자",
+      "sectorCode": "KGS09P",
+      "warnings": [],
+      "quoteDateVerificationMethod": "same-symbol daily bar queried after quote"
+    }
+  ],
+  "errors": [],
+  "details": {
+    "007810": {
+      "queryDate": "20261119",
+      "queryTime": "133533",
+      "barTimeNote": "API labels may be interval end; latest bar is not necessarily complete",
+      "bars5m": [
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "134000",
+          "stck_oprc": "96100",
+          "stck_hgpr": "96100",
+          "stck_lwpr": "95900",
+          "stck_prpr": "96000",
+          "vol": "1157",
+          "tr_pbmn": "111072000",
+          "completeByQueryTime": false
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "133500",
+          "stck_oprc": "96400",
+          "stck_hgpr": "96700",
+          "stck_lwpr": "96000",
+          "stck_prpr": "96100",
+          "vol": "9483",
+          "tr_pbmn": "913379700",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "133000",
+          "stck_oprc": "97100",
+          "stck_hgpr": "97200",
+          "stck_lwpr": "96300",
+          "stck_prpr": "96500",
+          "vol": "7343",
+          "tr_pbmn": "709549050",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "132500",
+          "stck_oprc": "96800",
+          "stck_hgpr": "97300",
+          "stck_lwpr": "96800",
+          "stck_prpr": "97100",
+          "vol": "8451",
+          "tr_pbmn": "821015100",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "132000",
+          "stck_oprc": "97000",
+          "stck_hgpr": "97100",
+          "stck_lwpr": "96300",
+          "stck_prpr": "96900",
+          "vol": "10619",
+          "tr_pbmn": "1025746500",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "131500",
+          "stck_oprc": "97500",
+          "stck_hgpr": "97600",
+          "stck_lwpr": "96800",
+          "stck_prpr": "97200",
+          "vol": "12152",
+          "tr_pbmn": "1180432900",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "131000",
+          "stck_oprc": "97300",
+          "stck_hgpr": "97800",
+          "stck_lwpr": "97200",
+          "stck_prpr": "97600",
+          "vol": "21306",
+          "tr_pbmn": "2079649200",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "130500",
+          "stck_oprc": "97000",
+          "stck_hgpr": "97300",
+          "stck_lwpr": "96600",
+          "stck_prpr": "97200",
+          "vol": "15215",
+          "tr_pbmn": "1475391600",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "130000",
+          "stck_oprc": "96300",
+          "stck_hgpr": "97000",
+          "stck_lwpr": "96300",
+          "stck_prpr": "96900",
+          "vol": "10655",
+          "tr_pbmn": "1030283500",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "125500",
+          "stck_oprc": "96500",
+          "stck_hgpr": "96500",
+          "stck_lwpr": "96100",
+          "stck_prpr": "96300",
+          "vol": "4423",
+          "tr_pbmn": "425996400",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "125000",
+          "stck_oprc": "96000",
+          "stck_hgpr": "96700",
+          "stck_lwpr": "96000",
+          "stck_prpr": "96500",
+          "vol": "9140",
+          "tr_pbmn": "881129300",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "124500",
+          "stck_oprc": "95800",
+          "stck_hgpr": "96100",
+          "stck_lwpr": "95700",
+          "stck_prpr": "96100",
+          "vol": "3193",
+          "tr_pbmn": "306530000",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "124000",
+          "stck_oprc": "96000",
+          "stck_hgpr": "96100",
+          "stck_lwpr": "95600",
+          "stck_prpr": "95800",
+          "vol": "2629",
+          "tr_pbmn": "251854100",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "123500",
+          "stck_oprc": "95600",
+          "stck_hgpr": "96000",
+          "stck_lwpr": "95500",
+          "stck_prpr": "96000",
+          "vol": "4024",
+          "tr_pbmn": "385806300",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "123000",
+          "stck_oprc": "95600",
+          "stck_hgpr": "95800",
+          "stck_lwpr": "95300",
+          "stck_prpr": "95700",
+          "vol": "3238",
+          "tr_pbmn": "309584500",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "122500",
+          "stck_oprc": "95200",
+          "stck_hgpr": "95800",
+          "stck_lwpr": "95200",
+          "stck_prpr": "95600",
+          "vol": "4069",
+          "tr_pbmn": "389068900",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "122000",
+          "stck_oprc": "95200",
+          "stck_hgpr": "95300",
+          "stck_lwpr": "95100",
+          "stck_prpr": "95300",
+          "vol": "1679",
+          "tr_pbmn": "159906700",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "121500",
+          "stck_oprc": "94900",
+          "stck_hgpr": "95500",
+          "stck_lwpr": "94700",
+          "stck_prpr": "95400",
+          "vol": "3608",
+          "tr_pbmn": "343335200",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "121000",
+          "stck_oprc": "95000",
+          "stck_hgpr": "95100",
+          "stck_lwpr": "94700",
+          "stck_prpr": "95000",
+          "vol": "3281",
+          "tr_pbmn": "311630700",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "120500",
+          "stck_oprc": "95400",
+          "stck_hgpr": "95500",
+          "stck_lwpr": "94400",
+          "stck_prpr": "95100",
+          "vol": "14645",
+          "tr_pbmn": "1388847300",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "120000",
+          "stck_oprc": "96300",
+          "stck_hgpr": "96400",
+          "stck_lwpr": "95200",
+          "stck_prpr": "95500",
+          "vol": "5851",
+          "tr_pbmn": "559136300",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "115500",
+          "stck_oprc": "95500",
+          "stck_hgpr": "96400",
+          "stck_lwpr": "95200",
+          "stck_prpr": "96400",
+          "vol": "5739",
+          "tr_pbmn": "550910000",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "115000",
+          "stck_oprc": "95400",
+          "stck_hgpr": "95700",
+          "stck_lwpr": "95100",
+          "stck_prpr": "95500",
+          "vol": "6028",
+          "tr_pbmn": "575248600",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "114500",
+          "stck_oprc": "95500",
+          "stck_hgpr": "95900",
+          "stck_lwpr": "95300",
+          "stck_prpr": "95300",
+          "vol": "4304",
+          "tr_pbmn": "410942800",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "114000",
+          "stck_oprc": "95800",
+          "stck_hgpr": "96000",
+          "stck_lwpr": "95300",
+          "stck_prpr": "95500",
+          "vol": "4315",
+          "tr_pbmn": "411892000",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "113500",
+          "stck_oprc": "95500",
+          "stck_hgpr": "95800",
+          "stck_lwpr": "95200",
+          "stck_prpr": "95800",
+          "vol": "9540",
+          "tr_pbmn": "910743900",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "113000",
+          "stck_oprc": "96500",
+          "stck_hgpr": "96600",
+          "stck_lwpr": "95600",
+          "stck_prpr": "95600",
+          "vol": "9907",
+          "tr_pbmn": "949516500",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "112500",
+          "stck_oprc": "97100",
+          "stck_hgpr": "97200",
+          "stck_lwpr": "96000",
+          "stck_prpr": "96500",
+          "vol": "11342",
+          "tr_pbmn": "1093834300",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "112000",
+          "stck_oprc": "97300",
+          "stck_hgpr": "97400",
+          "stck_lwpr": "96500",
+          "stck_prpr": "97100",
+          "vol": "11405",
+          "tr_pbmn": "1107108500",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "111500",
+          "stck_oprc": "95800",
+          "stck_hgpr": "97500",
+          "stck_lwpr": "95700",
+          "stck_prpr": "97300",
+          "vol": "20101",
+          "tr_pbmn": "1949561600",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "111000",
+          "stck_oprc": "95900",
+          "stck_hgpr": "96900",
+          "stck_lwpr": "95700",
+          "stck_prpr": "95800",
+          "vol": "10139",
+          "tr_pbmn": "975904500",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "110500",
+          "stck_oprc": "96800",
+          "stck_hgpr": "96900",
+          "stck_lwpr": "95500",
+          "stck_prpr": "95900",
+          "vol": "15357",
+          "tr_pbmn": "1475129400",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "110000",
+          "stck_oprc": "95300",
+          "stck_hgpr": "97300",
+          "stck_lwpr": "95300",
+          "stck_prpr": "96800",
+          "vol": "31110",
+          "tr_pbmn": "3006962500",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "105500",
+          "stck_oprc": "95700",
+          "stck_hgpr": "96000",
+          "stck_lwpr": "95200",
+          "stck_prpr": "95300",
+          "vol": "10569",
+          "tr_pbmn": "1009352600",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "105000",
+          "stck_oprc": "96200",
+          "stck_hgpr": "96200",
+          "stck_lwpr": "95000",
+          "stck_prpr": "95800",
+          "vol": "11927",
+          "tr_pbmn": "1141664200",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "104500",
+          "stck_oprc": "95400",
+          "stck_hgpr": "96800",
+          "stck_lwpr": "95200",
+          "stck_prpr": "96200",
+          "vol": "39936",
+          "tr_pbmn": "3838667100",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "104000",
+          "stck_oprc": "93800",
+          "stck_hgpr": "95500",
+          "stck_lwpr": "93800",
+          "stck_prpr": "95500",
+          "vol": "25943",
+          "tr_pbmn": "2470722700",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "103500",
+          "stck_oprc": "93900",
+          "stck_hgpr": "94600",
+          "stck_lwpr": "93500",
+          "stck_prpr": "93800",
+          "vol": "12749",
+          "tr_pbmn": "1196148400",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "103000",
+          "stck_oprc": "95300",
+          "stck_hgpr": "95300",
+          "stck_lwpr": "93100",
+          "stck_prpr": "94000",
+          "vol": "23591",
+          "tr_pbmn": "2219356300",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "102500",
+          "stck_oprc": "94800",
+          "stck_hgpr": "95500",
+          "stck_lwpr": "93700",
+          "stck_prpr": "95300",
+          "vol": "33293",
+          "tr_pbmn": "3148511500",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "102000",
+          "stck_oprc": "96600",
+          "stck_hgpr": "96600",
+          "stck_lwpr": "94100",
+          "stck_prpr": "94900",
+          "vol": "48478",
+          "tr_pbmn": "4618454300",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "101500",
+          "stck_oprc": "92500",
+          "stck_hgpr": "97800",
+          "stck_lwpr": "92500",
+          "stck_prpr": "96500",
+          "vol": "85461",
+          "tr_pbmn": "8215215200",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "101000",
+          "stck_oprc": "93100",
+          "stck_hgpr": "93700",
+          "stck_lwpr": "91000",
+          "stck_prpr": "92500",
+          "vol": "20863",
+          "tr_pbmn": "1918082900",
+          "completeByQueryTime": true
+        }
+      ],
+      "investor": {
+        "message": {
+          "code": "00000",
+          "text": "조회가 완료되었습니다."
+        },
+        "responseKeys": [
+          "Output_0",
+          "rsp_cd",
+          "rsp_msg"
+        ],
+        "rows": [
+          {
+            "bsop_date1": "20261119",
+            "invest": 20000,
+            "gigwan": 2000,
+            "person": 0,
+            "program": 29669,
+            "stck_prpr": 95900,
+            "acml_vol": 665657
+          },
+          {
+            "bsop_date1": "20261118",
+            "invest": -61023,
+            "gigwan": 4922,
+            "person": 61084,
+            "program": -71293,
+            "stck_prpr": 94600,
+            "acml_vol": 981392
+          },
+          {
+            "bsop_date1": "20261117",
+            "invest": 17883,
+            "gigwan": 6071,
+            "person": -37010,
+            "program": 58266,
+            "stck_prpr": 91700,
+            "acml_vol": 1302333
+          },
+          {
+            "bsop_date1": "20261116",
+            "invest": 17984,
+            "gigwan": -5228,
+            "person": -14706,
+            "program": 26169,
+            "stck_prpr": 87700,
+            "acml_vol": 755243
+          },
+          {
+            "bsop_date1": "20261113",
+            "invest": -18998,
+            "gigwan": 8095,
+            "person": 19474,
+            "program": -10381,
+            "stck_prpr": 91400,
+            "acml_vol": 1358696
+          },
+          {
+            "bsop_date1": "20261112",
+            "invest": 17959,
+            "gigwan": 61909,
+            "person": -87711,
+            "program": 111437,
+            "stck_prpr": 87300,
+            "acml_vol": 1292743
+          },
+          {
+            "bsop_date1": "20261111",
+            "invest": 33584,
+            "gigwan": 189200,
+            "person": -224651,
+            "program": 81647,
+            "stck_prpr": 88200,
+            "acml_vol": 1652624
+          },
+          {
+            "bsop_date1": "20261110",
+            "invest": -8530,
+            "gigwan": 94531,
+            "person": -80888,
+            "program": 30704,
+            "stck_prpr": 68300,
+            "acml_vol": 576074
+          },
+          {
+            "bsop_date1": "20261109",
+            "invest": 53087,
+            "gigwan": 92852,
+            "person": -146614,
+            "program": 62264,
+            "stck_prpr": 62000,
+            "acml_vol": 724975
+          },
+          {
+            "bsop_date1": "20261106",
+            "invest": -13293,
+            "gigwan": -19192,
+            "person": 31273,
+            "program": -60437,
+            "stck_prpr": 62400,
+            "acml_vol": 773506
+          },
+          {
+            "bsop_date1": "20261105",
+            "invest": -162551,
+            "gigwan": 4681,
+            "person": 156287,
+            "program": -169259,
+            "stck_prpr": 66600,
+            "acml_vol": 837985
+          },
+          {
+            "bsop_date1": "20261104",
+            "invest": 21704,
+            "gigwan": 265451,
+            "person": -282204,
+            "program": 36898,
+            "stck_prpr": 79000,
+            "acml_vol": 1377520
+          },
+          {
+            "bsop_date1": "20261103",
+            "invest": -92515,
+            "gigwan": 60634,
+            "person": 42802,
+            "program": -98122,
+            "stck_prpr": 72900,
+            "acml_vol": 1087126
+          },
+          {
+            "bsop_date1": "20261102",
+            "invest": -999,
+            "gigwan": 100265,
+            "person": -100216,
+            "program": 4701,
+            "stck_prpr": 73700,
+            "acml_vol": 560697
+          },
+          {
+            "bsop_date1": "20261030",
+            "invest": -49823,
+            "gigwan": 77461,
+            "person": -23504,
+            "program": -41493,
+            "stck_prpr": 65900,
+            "acml_vol": 561153
+          },
+          {
+            "bsop_date1": "20261029",
+            "invest": -315647,
+            "gigwan": 98755,
+            "person": 208574,
+            "program": -319062,
+            "stck_prpr": 73600,
+            "acml_vol": 854146
+          },
+          {
+            "bsop_date1": "20261028",
+            "invest": -65936,
+            "gigwan": 3851,
+            "person": 52967,
+            "program": -69324,
+            "stck_prpr": 80600,
+            "acml_vol": 869189
+          },
+          {
+            "bsop_date1": "20261027",
+            "invest": 23735,
+            "gigwan": 99846,
+            "person": -124608,
+            "program": 30174,
+            "stck_prpr": 77100,
+            "acml_vol": 984797
+          },
+          {
+            "bsop_date1": "20261026",
+            "invest": 15223,
+            "gigwan": 55811,
+            "person": -72465,
+            "program": 15588,
+            "stck_prpr": 67700,
+            "acml_vol": 492132
+          },
+          {
+            "bsop_date1": "20261023",
+            "invest": -67284,
+            "gigwan": -13340,
+            "person": 78612,
+            "program": -66949,
+            "stck_prpr": 67000,
+            "acml_vol": 666603
+          },
+          {
+            "bsop_date1": "20261022",
+            "invest": -87051,
+            "gigwan": -16567,
+            "person": 98816,
+            "program": -91778,
+            "stck_prpr": 70900,
+            "acml_vol": 1280525
+          },
+          {
+            "bsop_date1": "20261021",
+            "invest": -140183,
+            "gigwan": 17550,
+            "person": 115369,
+            "program": -132133,
+            "stck_prpr": 72400,
+            "acml_vol": 637031
+          },
+          {
+            "bsop_date1": "20261020",
+            "invest": -108496,
+            "gigwan": 198082,
+            "person": -88764,
+            "program": -89098,
+            "stck_prpr": 70600,
+            "acml_vol": 2185665
+          },
+          {
+            "bsop_date1": "20261019",
+            "invest": 54202,
+            "gigwan": -12164,
+            "person": -41877,
+            "program": 53075,
+            "stck_prpr": 66900,
+            "acml_vol": 339410
+          },
+          {
+            "bsop_date1": "20261016",
+            "invest": -144558,
+            "gigwan": -47776,
+            "person": 192146,
+            "program": -139231,
+            "stck_prpr": 64100,
+            "acml_vol": 573585
+          },
+          {
+            "bsop_date1": "20261015",
+            "invest": 83792,
+            "gigwan": -20601,
+            "person": -56339,
+            "program": 86940,
+            "stck_prpr": 62300,
+            "acml_vol": 458161
+          },
+          {
+            "bsop_date1": "20261014",
+            "invest": 20617,
+            "gigwan": 69,
+            "person": -26143,
+            "program": 20477,
+            "stck_prpr": 74600,
+            "acml_vol": 354411
+          },
+          {
+            "bsop_date1": "20261013",
+            "invest": 61561,
+            "gigwan": -21955,
+            "person": -44720,
+            "program": 75647,
+            "stck_prpr": 80400,
+            "acml_vol": 611168
+          },
+          {
+            "bsop_date1": "20261012",
+            "invest": 91748,
+            "gigwan": -17409,
+            "person": -75518,
+            "program": 101881,
+            "stck_prpr": 79900,
+            "acml_vol": 483302
+          },
+          {
+            "bsop_date1": "20261008",
+            "invest": -44050,
+            "gigwan": -9579,
+            "person": 51648,
+            "program": -49981,
+            "stck_prpr": 87100,
+            "acml_vol": 414375
+          },
+          {
+            "bsop_date1": "20261007",
+            "invest": -16881,
+            "gigwan": 19436,
+            "person": 2893,
+            "program": -35721,
+            "stck_prpr": 86500,
+            "acml_vol": 720927
+          }
+        ]
+      }
+    },
+    "353200": {
+      "queryDate": "20261119",
+      "queryTime": "133536",
+      "barTimeNote": "API labels may be interval end; latest bar is not necessarily complete",
+      "bars5m": [
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "134000",
+          "stck_oprc": "79800",
+          "stck_hgpr": "79900",
+          "stck_lwpr": "79800",
+          "stck_prpr": "79800",
+          "vol": "742",
+          "tr_pbmn": "59211600",
+          "completeByQueryTime": false
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "133500",
+          "stck_oprc": "79900",
+          "stck_hgpr": "80500",
+          "stck_lwpr": "79800",
+          "stck_prpr": "79800",
+          "vol": "9327",
+          "tr_pbmn": "746419550",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "133000",
+          "stck_oprc": "80700",
+          "stck_hgpr": "80800",
+          "stck_lwpr": "79900",
+          "stck_prpr": "80000",
+          "vol": "11429",
+          "tr_pbmn": "917502400",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "132500",
+          "stck_oprc": "80700",
+          "stck_hgpr": "81200",
+          "stck_lwpr": "80600",
+          "stck_prpr": "80700",
+          "vol": "10075",
+          "tr_pbmn": "813516800",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "132000",
+          "stck_oprc": "81600",
+          "stck_hgpr": "81700",
+          "stck_lwpr": "80500",
+          "stck_prpr": "80750",
+          "vol": "13192",
+          "tr_pbmn": "1069458350",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "131500",
+          "stck_oprc": "81700",
+          "stck_hgpr": "81900",
+          "stck_lwpr": "81300",
+          "stck_prpr": "81600",
+          "vol": "14084",
+          "tr_pbmn": "1149461700",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "131000",
+          "stck_oprc": "81200",
+          "stck_hgpr": "81900",
+          "stck_lwpr": "81100",
+          "stck_prpr": "81700",
+          "vol": "21257",
+          "tr_pbmn": "1734648300",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "130500",
+          "stck_oprc": "80100",
+          "stck_hgpr": "81200",
+          "stck_lwpr": "80100",
+          "stck_prpr": "81100",
+          "vol": "9860",
+          "tr_pbmn": "797517100",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "130000",
+          "stck_oprc": "79900",
+          "stck_hgpr": "80400",
+          "stck_lwpr": "79900",
+          "stck_prpr": "80100",
+          "vol": "4410",
+          "tr_pbmn": "353717900",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "125500",
+          "stck_oprc": "80300",
+          "stck_hgpr": "80400",
+          "stck_lwpr": "79700",
+          "stck_prpr": "80000",
+          "vol": "7595",
+          "tr_pbmn": "607462600",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "125000",
+          "stck_oprc": "79900",
+          "stck_hgpr": "80500",
+          "stck_lwpr": "79800",
+          "stck_prpr": "80400",
+          "vol": "6447",
+          "tr_pbmn": "517337000",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "124500",
+          "stck_oprc": "79800",
+          "stck_hgpr": "80200",
+          "stck_lwpr": "79700",
+          "stck_prpr": "79900",
+          "vol": "7581",
+          "tr_pbmn": "606844800",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "124000",
+          "stck_oprc": "79700",
+          "stck_hgpr": "80000",
+          "stck_lwpr": "79500",
+          "stck_prpr": "79900",
+          "vol": "7675",
+          "tr_pbmn": "612692800",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "123500",
+          "stck_oprc": "79200",
+          "stck_hgpr": "79700",
+          "stck_lwpr": "79000",
+          "stck_prpr": "79700",
+          "vol": "7324",
+          "tr_pbmn": "582116200",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "123000",
+          "stck_oprc": "79000",
+          "stck_hgpr": "79300",
+          "stck_lwpr": "78900",
+          "stck_prpr": "79200",
+          "vol": "3066",
+          "tr_pbmn": "242624400",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "122500",
+          "stck_oprc": "78500",
+          "stck_hgpr": "79300",
+          "stck_lwpr": "78500",
+          "stck_prpr": "79000",
+          "vol": "5827",
+          "tr_pbmn": "460440700",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "122000",
+          "stck_oprc": "78500",
+          "stck_hgpr": "78700",
+          "stck_lwpr": "78400",
+          "stck_prpr": "78500",
+          "vol": "2982",
+          "tr_pbmn": "234056400",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "121500",
+          "stck_oprc": "78500",
+          "stck_hgpr": "78900",
+          "stck_lwpr": "78400",
+          "stck_prpr": "78500",
+          "vol": "3700",
+          "tr_pbmn": "290370700",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "121000",
+          "stck_oprc": "78800",
+          "stck_hgpr": "78800",
+          "stck_lwpr": "78500",
+          "stck_prpr": "78600",
+          "vol": "5487",
+          "tr_pbmn": "431192300",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "120500",
+          "stck_oprc": "79300",
+          "stck_hgpr": "79300",
+          "stck_lwpr": "78700",
+          "stck_prpr": "78800",
+          "vol": "4593",
+          "tr_pbmn": "361984400",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "120000",
+          "stck_oprc": "79500",
+          "stck_hgpr": "79500",
+          "stck_lwpr": "78900",
+          "stck_prpr": "79200",
+          "vol": "2776",
+          "tr_pbmn": "219738600",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "115500",
+          "stck_oprc": "78700",
+          "stck_hgpr": "79600",
+          "stck_lwpr": "78600",
+          "stck_prpr": "79500",
+          "vol": "3970",
+          "tr_pbmn": "314143100",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "115000",
+          "stck_oprc": "78800",
+          "stck_hgpr": "79100",
+          "stck_lwpr": "78600",
+          "stck_prpr": "78700",
+          "vol": "2789",
+          "tr_pbmn": "219848400",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "114500",
+          "stck_oprc": "78600",
+          "stck_hgpr": "79100",
+          "stck_lwpr": "78500",
+          "stck_prpr": "78800",
+          "vol": "3932",
+          "tr_pbmn": "309484600",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "114000",
+          "stck_oprc": "78800",
+          "stck_hgpr": "78900",
+          "stck_lwpr": "78600",
+          "stck_prpr": "78700",
+          "vol": "6262",
+          "tr_pbmn": "493252100",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "113500",
+          "stck_oprc": "79200",
+          "stck_hgpr": "79200",
+          "stck_lwpr": "78700",
+          "stck_prpr": "78800",
+          "vol": "7864",
+          "tr_pbmn": "619811300",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "113000",
+          "stck_oprc": "79300",
+          "stck_hgpr": "79500",
+          "stck_lwpr": "79200",
+          "stck_prpr": "79200",
+          "vol": "3129",
+          "tr_pbmn": "247928900",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "112500",
+          "stck_oprc": "79500",
+          "stck_hgpr": "79550",
+          "stck_lwpr": "79000",
+          "stck_prpr": "79400",
+          "vol": "3852",
+          "tr_pbmn": "305344100",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "112000",
+          "stck_oprc": "79900",
+          "stck_hgpr": "80000",
+          "stck_lwpr": "79300",
+          "stck_prpr": "79500",
+          "vol": "4583",
+          "tr_pbmn": "364459000",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "111500",
+          "stck_oprc": "79100",
+          "stck_hgpr": "80000",
+          "stck_lwpr": "79000",
+          "stck_prpr": "79900",
+          "vol": "4096",
+          "tr_pbmn": "325948800",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "111000",
+          "stck_oprc": "79300",
+          "stck_hgpr": "80000",
+          "stck_lwpr": "79000",
+          "stck_prpr": "79100",
+          "vol": "5379",
+          "tr_pbmn": "427417400",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "110500",
+          "stck_oprc": "80000",
+          "stck_hgpr": "80100",
+          "stck_lwpr": "79100",
+          "stck_prpr": "79300",
+          "vol": "8253",
+          "tr_pbmn": "656734800",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "110000",
+          "stck_oprc": "79200",
+          "stck_hgpr": "80500",
+          "stck_lwpr": "79100",
+          "stck_prpr": "79900",
+          "vol": "16430",
+          "tr_pbmn": "1314013900",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "105500",
+          "stck_oprc": "79100",
+          "stck_hgpr": "79600",
+          "stck_lwpr": "78800",
+          "stck_prpr": "79200",
+          "vol": "9985",
+          "tr_pbmn": "789933700",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "105000",
+          "stck_oprc": "79000",
+          "stck_hgpr": "79200",
+          "stck_lwpr": "78600",
+          "stck_prpr": "79100",
+          "vol": "8549",
+          "tr_pbmn": "674869700",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "104500",
+          "stck_oprc": "78800",
+          "stck_hgpr": "79500",
+          "stck_lwpr": "78500",
+          "stck_prpr": "79200",
+          "vol": "14339",
+          "tr_pbmn": "1133150000",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "104000",
+          "stck_oprc": "78000",
+          "stck_hgpr": "79300",
+          "stck_lwpr": "77900",
+          "stck_prpr": "78700",
+          "vol": "14989",
+          "tr_pbmn": "1179257200",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "103500",
+          "stck_oprc": "79100",
+          "stck_hgpr": "79200",
+          "stck_lwpr": "78000",
+          "stck_prpr": "78000",
+          "vol": "23021",
+          "tr_pbmn": "1803370650",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "103000",
+          "stck_oprc": "79800",
+          "stck_hgpr": "79900",
+          "stck_lwpr": "79000",
+          "stck_prpr": "79000",
+          "vol": "11670",
+          "tr_pbmn": "924071900",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "102500",
+          "stck_oprc": "79600",
+          "stck_hgpr": "80000",
+          "stck_lwpr": "79200",
+          "stck_prpr": "79900",
+          "vol": "9258",
+          "tr_pbmn": "735701500",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "102000",
+          "stck_oprc": "81600",
+          "stck_hgpr": "81700",
+          "stck_lwpr": "79500",
+          "stck_prpr": "79600",
+          "vol": "10805",
+          "tr_pbmn": "868337000",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "101500",
+          "stck_oprc": "79500",
+          "stck_hgpr": "82200",
+          "stck_lwpr": "79100",
+          "stck_prpr": "81800",
+          "vol": "25209",
+          "tr_pbmn": "2043556400",
+          "completeByQueryTime": true
+        },
+        {
+          "bsop_date": "20261119",
+          "bsop_time": "101000",
+          "stck_oprc": "80600",
+          "stck_hgpr": "80700",
+          "stck_lwpr": "78500",
+          "stck_prpr": "79500",
+          "vol": "38481",
+          "tr_pbmn": "3050125000",
+          "completeByQueryTime": true
+        }
+      ],
+      "investor": {
+        "message": {
+          "code": "00000",
+          "text": "조회가 완료되었습니다."
+        },
+        "responseKeys": [
+          "Output_0",
+          "rsp_cd",
+          "rsp_msg"
+        ],
+        "rows": [
+          {
+            "bsop_date1": "20261119",
+            "invest": -32000,
+            "gigwan": 3000,
+            "person": 0,
+            "program": -6997,
+            "stck_prpr": 79900,
+            "acml_vol": 432233
+          },
+          {
+            "bsop_date1": "20261118",
+            "invest": -70793,
+            "gigwan": -65575,
+            "person": 138838,
+            "program": -111870,
+            "stck_prpr": 82900,
+            "acml_vol": 1442489
+          },
+          {
+            "bsop_date1": "20261117",
+            "invest": -40859,
+            "gigwan": 21613,
+            "person": 15770,
+            "program": -54084,
+            "stck_prpr": 80300,
+            "acml_vol": 1207052
+          },
+          {
+            "bsop_date1": "20261116",
+            "invest": 172259,
+            "gigwan": -77767,
+            "person": -93234,
+            "program": 146359,
+            "stck_prpr": 81400,
+            "acml_vol": 1173911
+          },
+          {
+            "bsop_date1": "20261113",
+            "invest": -140278,
+            "gigwan": 78857,
+            "person": 57163,
+            "program": -119414,
+            "stck_prpr": 93100,
+            "acml_vol": 1695795
+          },
+          {
+            "bsop_date1": "20261112",
+            "invest": -152662,
+            "gigwan": 197210,
+            "person": -40034,
+            "program": -147411,
+            "stck_prpr": 92200,
+            "acml_vol": 2716804
+          },
+          {
+            "bsop_date1": "20261111",
+            "invest": -328719,
+            "gigwan": 268522,
+            "person": 57264,
+            "program": -316792,
+            "stck_prpr": 93500,
+            "acml_vol": 2212229
+          },
+          {
+            "bsop_date1": "20261110",
+            "invest": -202579,
+            "gigwan": 168134,
+            "person": 22707,
+            "program": -183356,
+            "stck_prpr": 79100,
+            "acml_vol": 1522298
+          },
+          {
+            "bsop_date1": "20261109",
+            "invest": -28993,
+            "gigwan": 256350,
+            "person": -225743,
+            "program": -55322,
+            "stck_prpr": 72700,
+            "acml_vol": 2212305
+          },
+          {
+            "bsop_date1": "20261106",
+            "invest": 218949,
+            "gigwan": -460544,
+            "person": 233681,
+            "program": 137157,
+            "stck_prpr": 74600,
+            "acml_vol": 2742966
+          },
+          {
+            "bsop_date1": "20261105",
+            "invest": 552014,
+            "gigwan": -1165347,
+            "person": 616760,
+            "program": 528363,
+            "stck_prpr": 80700,
+            "acml_vol": 3052670
+          },
+          {
+            "bsop_date1": "20261104",
+            "invest": 46777,
+            "gigwan": -385998,
+            "person": 334385,
+            "program": 72885,
+            "stck_prpr": 101400,
+            "acml_vol": 2264059
+          },
+          {
+            "bsop_date1": "20261103",
+            "invest": 368435,
+            "gigwan": -846918,
+            "person": 476903,
+            "program": 350163,
+            "stck_prpr": 104100,
+            "acml_vol": 2224931
+          },
+          {
+            "bsop_date1": "20261102",
+            "invest": -124780,
+            "gigwan": -23665,
+            "person": 156502,
+            "program": -119273,
+            "stck_prpr": 117400,
+            "acml_vol": 1331568
+          },
+          {
+            "bsop_date1": "20261030",
+            "invest": -442529,
+            "gigwan": -164717,
+            "person": 594449,
+            "program": -461057,
+            "stck_prpr": 116400,
+            "acml_vol": 2021238
+          },
+          {
+            "bsop_date1": "20261029",
+            "invest": -129917,
+            "gigwan": 56275,
+            "person": 71202,
+            "program": -123224,
+            "stck_prpr": 137900,
+            "acml_vol": 1014178
+          },
+          {
+            "bsop_date1": "20261028",
+            "invest": -210157,
+            "gigwan": 224277,
+            "person": -30264,
+            "program": -191682,
+            "stck_prpr": 140200,
+            "acml_vol": 1192536
+          },
+          {
+            "bsop_date1": "20261027",
+            "invest": 10008,
+            "gigwan": 45936,
+            "person": -76984,
+            "program": 1503,
+            "stck_prpr": 129700,
+            "acml_vol": 1075067
+          },
+          {
+            "bsop_date1": "20261026",
+            "invest": -25466,
+            "gigwan": 54150,
+            "person": -30129,
+            "program": 1792,
+            "stck_prpr": 119400,
+            "acml_vol": 674526
+          },
+          {
+            "bsop_date1": "20261023",
+            "invest": -71524,
+            "gigwan": 27003,
+            "person": 47674,
+            "program": -71293,
+            "stck_prpr": 122700,
+            "acml_vol": 847060
+          },
+          {
+            "bsop_date1": "20261022",
+            "invest": -207462,
+            "gigwan": 207620,
+            "person": -4901,
+            "program": -200091,
+            "stck_prpr": 127300,
+            "acml_vol": 1286421
+          },
+          {
+            "bsop_date1": "20261021",
+            "invest": -284000,
+            "gigwan": 81184,
+            "person": 193988,
+            "program": -299270,
+            "stck_prpr": 133100,
+            "acml_vol": 998474
+          },
+          {
+            "bsop_date1": "20261020",
+            "invest": -406349,
+            "gigwan": 213420,
+            "person": 189920,
+            "program": -381873,
+            "stck_prpr": 129500,
+            "acml_vol": 1520363
+          },
+          {
+            "bsop_date1": "20261019",
+            "invest": -37027,
+            "gigwan": 93419,
+            "person": -64476,
+            "program": -29085,
+            "stck_prpr": 137500,
+            "acml_vol": 978140
+          },
+          {
+            "bsop_date1": "20261016",
+            "invest": -175938,
+            "gigwan": 34199,
+            "person": 138408,
+            "program": -165710,
+            "stck_prpr": 128300,
+            "acml_vol": 1033976
+          },
+          {
+            "bsop_date1": "20261015",
+            "invest": 44989,
+            "gigwan": 30312,
+            "person": -74946,
+            "program": 112145,
+            "stck_prpr": 122700,
+            "acml_vol": 1333218
+          },
+          {
+            "bsop_date1": "20261014",
+            "invest": -205868,
+            "gigwan": 116006,
+            "person": 81482,
+            "program": -21428,
+            "stck_prpr": 143600,
+            "acml_vol": 952269
+          },
+          {
+            "bsop_date1": "20261013",
+            "invest": 21781,
+            "gigwan": 56722,
+            "person": -72582,
+            "program": 19746,
+            "stck_prpr": 147400,
+            "acml_vol": 1214170
+          },
+          {
+            "bsop_date1": "20261012",
+            "invest": 328497,
+            "gigwan": -361054,
+            "person": 35618,
+            "program": 323415,
+            "stck_prpr": 145000,
+            "acml_vol": 1260338
+          },
+          {
+            "bsop_date1": "20261008",
+            "invest": -7263,
+            "gigwan": 65347,
+            "person": -59809,
+            "program": -37545,
+            "stck_prpr": 157600,
+            "acml_vol": 1358366
+          },
+          {
+            "bsop_date1": "20261007",
+            "invest": -39056,
+            "gigwan": 12341,
+            "person": 25431,
+            "program": -55163,
+            "stck_prpr": 149800,
+            "acml_vol": 865457
+          }
+        ]
+      }
+    }
+  },
+  "summary": {
+    "eligibleQuotes": 2,
+    "advancing": 1,
+    "declining": 1,
+    "sectors": [],
+    "observationCandidates": [
+      "007810"
+    ],
+    "note": "감시 유니버스 표본. 후보는 검증 전 관찰용이며 매수 신호가 아님. 뉴스·익일 위험 별도 확인."
+  }
+}
