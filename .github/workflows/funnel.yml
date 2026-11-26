@@ -14,6 +14,10 @@ on:
     # 미국: 화~토 14:47 KST(전날 미국 장 마감 뒤, Yahoo 일봉 확정 05시 UTC 무렵), 예비 17:17 KST
     - cron: "47 5 * * 2-6"
     - cron: "17 8 * * 2-6"
+    # 미국 예비 2: GitHub 예약이 수 시간(2026-11 관측 약 10시간) 늦게 돌면 위 두 실행이 미국 장중(14:30~21:00 UTC)에 걸려
+    # "마감 확정 전"으로 건너뛴다. 장 마감 직후 시각을 더 두어, 제때 돌든 10시간쯤 밀리든 장 밖에서 한 번은 돌게 한다.
+    - cron: "17 22 * * 1-5"
+    - cron: "47 1 * * 2-6"
   push:
     branches: [master]
     paths:
@@ -50,7 +54,7 @@ jobs:
           if [ "$EVENT" = "schedule" ]; then
             case "$CRON" in
               "23 9 * * 1-5"|"47 11 * * 1-5") [ "$MARKET" = "kr" ] && run=true ;;
-              "47 5 * * 2-6"|"17 8 * * 2-6") [ "$MARKET" = "us" ] && run=true ;;
+              "47 5 * * 2-6"|"17 8 * * 2-6"|"17 22 * * 1-5"|"47 1 * * 2-6") [ "$MARKET" = "us" ] && run=true ;;
             esac
           elif [ "$EVENT" = "workflow_dispatch" ]; then
             if [ -z "$INPUT_MARKET" ] || [ "$INPUT_MARKET" = "all" ] || [ "$INPUT_MARKET" = "$MARKET" ]; then run=true; fi
