@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>섹터 강도</title>
+<style>
+  /* 데이터: ../data/sector_strength.json (sector_strength.py가 SEPA 실행 뒤 만든다) */
+  :root {
+    --bg: #f6f7f9; --panel: #fff; --text: #111827; --text-dim: #6b7280; --border: #e5e7eb; --accent: #2563eb;
+    --up: #16a34a; --down: #dc2626; --bar: #2563eb; --bar-bg: #e5e7eb; --row-hover: #f3f4f6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1115; --panel: #171a21; --text: #e5e7eb; --text-dim: #9ca3af; --border: #2a2f3a; --accent: #3b82f6;
+      --up: #22c55e; --down: #f87171; --bar: #3b82f6; --bar-bg: #2a2f3a; --row-hover: #1f232c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1115; --panel: #171a21; --text: #e5e7eb; --text-dim: #9ca3af; --border: #2a2f3a; --accent: #3b82f6;
+    --up: #22c55e; --down: #f87171; --bar: #3b82f6; --bar-bg: #2a2f3a; --row-hover: #1f232c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 system-ui, -apple-system, "Pretendard", "Noto Sans KR", sans-serif; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 20px 16px 40px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .subtitle { color: var(--text-dim); font-size: 13px; margin: 0 0 4px; }
+  .tabs { display: flex; gap: 8px; margin: 16px 0 12px; }
+  .tab { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel); color: var(--text); font: inherit; font-weight: 600; cursor: pointer; }
+  .tab[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .meta { color: var(--text-dim); font-size: 12px; margin: 0 0 10px; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 680px; }
+  th, td { padding: 9px 10px; border-bottom: 1px solid var(--border); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  th { font-size: 12px; font-weight: 600; color: var(--text-dim); background: var(--panel); position: sticky; top: 0; }
+  th.l, td.l { text-align: left; }
+  tbody tr.sec { cursor: pointer; }
+  tbody tr.sec:hover { background: var(--row-hover); }
+  tbody tr.sec.small td { color: var(--text-dim); }
+  .rank { font-weight: 700; }
+  .chg { font-size: 11px; margin-left: 4px; }
+  .up { color: var(--up); } .down { color: var(--down); } .flat { color: var(--text-dim); }
+  .name { font-weight: 600; }
+  .caret { display: inline-block; width: 12px; color: var(--text-dim); transition: transform .15s; }
+  tr.open .caret { transform: rotate(90deg); }
+  .rsbar { display: inline-flex; align-items: center; gap: 8px; justify-content: flex-end; }
+  .rsbar .track { width: 90px; height: 6px; border-radius: 3px; background: var(--bar-bg); overflow: hidden; }
+  .rsbar .fill { display: block; height: 100%; background: var(--bar); }
+  .spark { width: 72px; height: 20px; vertical-align: middle; }
+  .spark path { fill: none; stroke: var(--bar); stroke-width: 1.5; }
+  tr.detail td { background: var(--bg); padding: 8px 10px 12px 34px; text-align: left; white-space: normal; }
+  .leaders { display: flex; flex-wrap: wrap; gap: 6px; }
+  .leader { border: 1px solid var(--border); background: var(--panel); border-radius: 8px; padding: 5px 9px; font-size: 12px; }
+  .leader b { font-weight: 600; }
+  .leader .pass { color: var(--up); font-weight: 600; margin-left: 4px; }
+  .sep td { background: var(--bg); color: var(--text-dim); font-size: 12px; text-align: left; padding: 6px 10px; }
+  .notes { color: var(--text-dim); font-size: 12px; line-height: 1.7; margin-top: 14px; }
+  .notes b { color: var(--text); font-weight: 600; }
+  .empty { padding: 28px; text-align: center; color: var(--text-dim); }
+  @media (max-width: 640px) { h1 { font-size: 19px; } .rsbar .track { width: 56px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>섹터 강도</h1>
+  <p class="subtitle">SEPA 스크리너의 종목별 RS 점수를 섹터별로 모은 상대강도 순위입니다. 매수 신호가 아닌 참고 자료입니다.</p>
+  <nav id="gc-nav" data-page="sector"></nav><script src="../nav.js"></script>
+
+  <div class="tabs" role="tablist" id="tabs">
+    <button class="tab" role="tab" data-market="kr" aria-selected="true">한국</button>
+    <button class="tab" role="tab" data-market="us" aria-selected="false">미국 (S&amp;P500)</button>
+  </div>
+  <p class="meta" id="meta">불러오는 중…</p>
+
+  <div class="panel"><div class="scroll">
+    <table>
+      <thead><tr>
+        <th class="l">순위</th><th class="l">섹터</th><th>종목</th><th>섹터 RS</th><th>20일 변화</th>
+        <th title="섹터 안에서 RS 80 이상 종목 비율">RS 80+</th><th title="추세템플릿 8개 조건을 모두 통과한 종목 비율">8/8 통과</th><th>추이</th>
+      </tr></thead>
+      <tbody id="rows"><tr><td colspan="8" class="empty">불러오는 중…</td></tr></tbody>
+    </table>
+  </div></div>
+
+  <div class="notes">
+    <b>섹터 RS</b>: 섹터에 속한 종목 RS 점수(0~99, 시장 전체 대비 백분위)의 중앙값 · 순위 기준입니다.
+    <b>20일 변화</b>: 지금 섹터 RS − 20거래일 전 섹터 RS(오르면 그 섹터로 강도가 모이는 중).
+    <b>RS 80+</b>: 강한 종목 비율 · <b>8/8 통과</b>: 추세템플릿 전 조건 통과 비율.
+    순위 옆 ▲▼는 직전 기준일 대비 순위 변화, <b>추이</b>는 기록이 쌓인 날만큼의 섹터 RS 흐름입니다.
+    종목이 3개 미만인 섹터와 분류되지 않은 종목은 순위에서 빼고 아래에 따로 보입니다. 행을 누르면 섹터 안 RS 상위 종목이 나옵니다.
+    <br>섹터 분류 — 한국: KRX 업종(NH 시세), 일부는 표준산업분류로 보완 · 미국: S&amp;P500 GICS 섹터.
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var data = null, market = "kr";
+  try { market = localStorage.getItem("sectorMarket") || "kr"; } catch (e) { /* 기억 못 해도 기본값 */ }
+
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function num(v, d) { return v == null ? "—" : Number(v).toFixed(d == null ? 1 : d); }
+  function signed(v, unit) {
+    if (v == null) return '<span class="flat">—</span>';
+    var cls = v > 0 ? "up" : v < 0 ? "down" : "flat";
+    return '<span class="' + cls + '">' + (v > 0 ? "+" : "") + Number(v).toFixed(1) + (unit || "") + "</span>";
+  }
+  function rankChange(v) {
+    if (v == null || v === 0) return "";
+    return '<span class="chg ' + (v > 0 ? "up" : "down") + '">' + (v > 0 ? "▲" : "▼") + Math.abs(v) + "</span>";
+  }
+  function spark(history, name) {
+    var pts = history.map(function (h) { return h.rs[name]; }).filter(function (v) { return v != null; });
+    if (pts.length < 2) return '<span class="flat" title="기록이 쌓이면 보입니다">—</span>';
+    var w = 72, h = 20, min = Math.min.apply(null, pts), max = Math.max.apply(null, pts), r = max - min || 1;
+    var d = pts.map(function (v, i) { return (i ? "L" : "M") + (i / (pts.length - 1) * w).toFixed(1) + " " + (h - 2 - (v - min) / r * (h - 4)).toFixed(1); }).join(" ");
+    return '<svg class="spark" viewBox="0 0 ' + w + " " + h + '" aria-label="최근 ' + pts.length + '일 섹터 RS 추이"><path d="' + d + '"/></svg>';
+  }
+  function leaders(s) {
+    return '<div class="leaders">' + s.leaders.map(function (x) {
+      return '<span class="leader"><b>' + esc(x.name) + "</b> " + esc(x.code) + " · RS " + num(x.rs) +
+        (x.rsChange20d != null ? " (" + (x.rsChange20d > 0 ? "+" : "") + num(x.rsChange20d) + ")" : "") +
+        (x.passAll ? '<span class="pass" title="추세템플릿 8/8 통과">8/8</span>' : "") + "</span>";
+    }).join("") + "</div>";
+  }
+
+  function render() {
+    var tabs = document.querySelectorAll("#tabs .tab");
+    for (var i = 0; i < tabs.length; i++) tabs[i].setAttribute("aria-selected", String(tabs[i].getAttribute("data-market") === market));
+    var body = document.getElementById("rows"), meta = document.getElementById("meta");
+    var m = data && data.markets && data.markets[market];
+    if (!m) { body.innerHTML = '<tr><td colspan="8" class="empty">이 시장의 섹터 데이터가 아직 없습니다.</td></tr>'; meta.textContent = ""; return; }
+    meta.textContent = "기준일 " + m.date + " · 종목 " + m.stocks + "개 · 섹터 분류율 " + num(m.coveragePct) + "% · 기록 " + m.history.length + "일";
+    var html = "", sepDone = false;
+    m.sectors.forEach(function (s, idx) {
+      if (s.small && !sepDone) { html += '<tr class="sep"><td colspan="8">표본 적음(3종목 미만)·미분류 — 순위 제외</td></tr>'; sepDone = true; }
+      html += '<tr class="sec' + (s.small ? " small" : "") + '" data-i="' + idx + '" tabindex="0" aria-expanded="false">' +
+        '<td class="l"><span class="caret">›</span> <span class="rank">' + (s.rank || "—") + "</span>" + rankChange(s.rankChange) + "</td>" +
+        '<td class="l name">' + esc(s.sector) + "</td><td>" + s.n + "</td>" +
+        '<td><span class="rsbar"><span>' + num(s.rs) + '</span><span class="track"><span class="fill" style="width:' + Math.max(0, Math.min(100, s.rs)) + '%"></span></span></span></td>' +
+        "<td>" + signed(s.rsDelta) + "</td><td>" + num(s.strongPct) + "%</td><td>" + num(s.trendPct) + "%</td>" +
+        "<td>" + spark(m.history, s.sector) + "</td></tr>";
+    });
+    body.innerHTML = html;
+    body.querySelectorAll("tr.sec").forEach(function (tr) {
+      function toggle() {
+        var next = tr.nextElementSibling;
+        if (next && next.classList.contains("detail")) { next.remove(); tr.classList.remove("open"); tr.setAttribute("aria-expanded", "false"); return; }
+        var d = document.createElement("tr");
+        d.className = "detail";
+        d.innerHTML = '<td colspan="8">' + leaders(m.sectors[+tr.getAttribute("data-i")]) + "</td>";
+        tr.after(d); tr.classList.add("open"); tr.setAttribute("aria-expanded", "true");
+      }
+      tr.addEventListener("click", toggle);
+      tr.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } });
+    });
+  }
+
+  document.querySelectorAll("#tabs .tab").forEach(function (b) {
+    b.addEventListener("click", function () {
+      market = b.getAttribute("data-market");
+      try { localStorage.setItem("sectorMarket", market); } catch (e) { /* 무시 */ }
+      render();
+    });
+  });
+
+  fetch("../data/sector_strength.json", { cache: "no-store" })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (j) { data = j; if (!j.markets[market]) market = Object.keys(j.markets)[0] || "kr"; render(); })
+    .catch(function (e) {
+      document.getElementById("meta").textContent = "";
+      document.getElementById("rows").innerHTML = '<tr><td colspan="8" class="empty">섹터 데이터를 불러오지 못했습니다 (' + esc(e.message) + ").</td></tr>";
+    });
+})();
+</script>
+</body>
+</html>

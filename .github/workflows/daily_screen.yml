@@ -60,6 +60,7 @@ jobs:
           python tests/test_ai_tracker.py
           python -m unittest tests.test_rebound_screen -v
           python -m unittest tests.test_personas tests.test_personas_data -v
+          python -m unittest tests.test_sector_strength -v
 
       - name: 완결 거래일 확인 및 지연 시장 보완 계획
         id: market
@@ -116,6 +117,12 @@ jobs:
       - name: 대시보드(docs/index.html) 생성
         if: steps.market.outputs.needed == 'true'
         run: python generate_dashboard.py
+
+      - name: 섹터 강도 집계(docs/data/sector_strength.json)
+        if: steps.market.outputs.needed == 'true'
+        # 위에서 갱신한 latest_{kr,us}.json 의 종목별 RS를 섹터별로 묶는다. 실패해도 SEPA 결과 커밋은 막지 않는다.
+        continue-on-error: true
+        run: python sector_strength.py
 
       - name: 종목 상세 차트 갱신
         if: steps.market.outputs.needed == 'true'

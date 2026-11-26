@@ -21,6 +21,7 @@
     ] },
     { key: "screens", label: "스크리너", pages: [
       { key: "sepa", label: "SEPA 추세템플릿", path: "", board: ["sepa"] },
+      { key: "sector", label: "섹터 강도", path: "sector/" },
       { key: "technical", label: "기술적 신호", path: "technical/", board: ["technical"] },
       { key: "screener", label: "멀티팩터", path: "screener/", board: ["multifactor"] },
       { key: "range_vrebound", label: "RANGE · V-REBOUND", path: "range_vrebound/", board: ["range", "rebound"] },
