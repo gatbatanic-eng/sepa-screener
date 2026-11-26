@@ -5,6 +5,7 @@
  *   <script src="macro-card.js"></script>
  *
  * data-src 는 macro.json 경로. 생략하면 같은 폴더의 macro.json.
+ * data-collapsed 를 붙이면 국면 배지와 한 줄 결론만 보이고 "자세히 보기" 버튼으로 펼친다(펼침 여부는 보는 사람 브라우저에 기억).
  * 국면 태그(regime)는 window.MACRO_REGIME 에도 넣어두므로,
  * 스크리너 테이블에서 리스크오프일 때 "관망" 배지를 붙이는 데 쓸 수 있음.
  */
@@ -41,6 +42,10 @@
   .mc-tile .d b{font-weight:500;color:var(--mc-ink);white-space:nowrap}
   .mc-tile .pct{grid-column:1/3;grid-row:4;font-size:11px;color:var(--mc-ink3)}
   .mc-foot{margin-top:14px;font-size:11.5px;color:var(--mc-ink3)}
+  .mc.mc-folded .mc-sepa{margin-bottom:0}
+  .mc.mc-folded .mc-detail,.mc.mc-folded .mc-toggle{display:none}
+  .mc-more{background:none;border:1px solid var(--mc-line);border-radius:6px;color:var(--mc-ink2);font-size:12px;padding:3px 9px;cursor:pointer}
+  .mc.mc-folded .mc-more{margin-left:auto}
   .mc-toggle{background:none;border:1px solid var(--mc-line);border-radius:6px;color:var(--mc-ink2);font-size:12px;padding:3px 9px;cursor:pointer;margin-left:auto}
   .mc-table{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums;margin-top:8px}
   .mc-table th,.mc-table td{text-align:right;padding:5px 8px;border-bottom:1px solid var(--mc-line)}
@@ -99,8 +104,13 @@
     return `<table class="mc-table"><thead><tr><th>지표</th><th>현재</th><th>1일</th><th>1주</th><th>1개월</th><th>1년 백분위</th><th>기준일</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
 
+  const OPEN_KEY = "macroCardOpen";
+  function remembered() { try { return localStorage.getItem(OPEN_KEY) === "1"; } catch (e) { return false; } }
+  function remember(open) { try { localStorage.setItem(OPEN_KEY, open ? "1" : "0"); } catch (e) { /* 기억 못 해도 동작에는 지장 없음 */ } }
+
   function render(el, data) {
     const R = REGIME[data.regime] || REGIME.neutral;
+    const foldable = el.hasAttribute("data-collapsed");
     window.MACRO_REGIME = data.regime;
     window.MACRO_DATA = data;
     const signals = data.signals.length
@@ -116,15 +126,28 @@
         <span class="mc-badge" style="--c:${R.c}"><span class="dot"></span>${R.icon} ${data.regime_label} <span class="mc-score">(${data.score > 0 ? "+" : ""}${data.score})</span></span>
         <span class="mc-ts">${data.generated_at}${data.mock ? " · MOCK " + data.mock : ""}</span>
         <button class="mc-toggle" type="button">표로 보기</button>
+        ${foldable ? `<button class="mc-more" type="button" aria-expanded="false">자세히 보기</button>` : ""}
       </div>
       <div class="mc-sepa">${data.sepa_note}</div>
+      <div class="mc-detail">
       ${data.summary ? `<p class="mc-summary">${data.summary.replace(/\n/g, "<br>")}</p>` : ""}
       ${signals}
       <div class="mc-body">${groups}</div>
       <div class="mc-foot">변화: 금리류 bp, 그 외 %. 1년 백분위 = 현재값이 최근 1년 값 중 몇 %보다 높은지. 규칙은 rules.yaml 참조. 투자 판단의 참고 자료이며 매수·매도 신호가 아님.</div>
+      </div>
     </div>`;
     const body = el.querySelector(".mc-body"), btn = el.querySelector(".mc-toggle");
     let asTable = false;
+    if (foldable) {
+      const card = el.querySelector(".mc"), more = el.querySelector(".mc-more");
+      const setOpen = (open) => {
+        card.classList.toggle("mc-folded", !open);
+        more.textContent = open ? "접기" : "자세히 보기";
+        more.setAttribute("aria-expanded", String(open));
+      };
+      setOpen(remembered());
+      more.addEventListener("click", () => { const open = card.classList.contains("mc-folded"); setOpen(open); remember(open); });
+    }
     btn.addEventListener("click", () => {
       asTable = !asTable;
       body.innerHTML = asTable ? table(data.indicators) : groups;

@@ -528,7 +528,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     <nav id="gc-nav" data-page="sepa"></nav><script src="nav.js"></script>
   </header>
 
-  <div id="macro-card" data-src="macro.json"></div><script src="macro-card.js"></script>
+  <div id="macro-card" data-src="macro.json" data-collapsed></div><script src="macro-card.js"></script>
 
   <div class="tabs" id="tabs"></div>
 
