@@ -31,7 +31,9 @@
       { key: "performance", label: "전략 현황", path: "performance/" },
       { key: "agents", label: "에이전트 리그", path: "agents/" },
     ] },
-    { key: "lab", label: "연구실", pages: [
+    // 보관함: 자주 보지 않는 연구 페이지. 메뉴 맨 끝에 흐리게 두고 묶음 점은 달지 않는다(데이터 갱신은 그대로 계속된다).
+    // 다시 자주 보게 되면 페이지 줄을 위 묶음으로 옮기기만 하면 된다.
+    { key: "archive", label: "보관함", archived: true, note: "보관한 연구 · 데이터 갱신은 계속됨", pages: [
       { key: "fpd", label: "FPD 연구", path: "fpd/", board: ["fpd"] },
       { key: "accumulation", label: "매집 필터", path: "accumulation/", board: ["accumulation"] },
       { key: "disclosures", label: "공시 성장 검증", path: "disclosures/" },
@@ -76,6 +78,9 @@
       "#gc-nav .gc-group{appearance:none;background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:6px 10px;",
       "font:inherit;font-weight:600;color:inherit;opacity:.6;cursor:pointer}",
       "#gc-nav .gc-group:hover{opacity:1}",
+      "#gc-nav .gc-group.gc-archive{margin-left:auto;font-weight:500;opacity:.45}",
+      "#gc-nav .gc-group.gc-archive:hover,#gc-nav .gc-group.gc-archive[aria-selected=true]{opacity:.9}",
+      "#gc-nav .gc-note{align-self:center;font-size:11px;opacity:.55;margin-left:4px}",
       "#gc-nav .gc-group[aria-selected=true]{opacity:1;border-bottom-color:var(--accent,#2563eb)}",
       "#gc-nav .gc-page{display:inline-block;padding:5px 10px;border-radius:999px;text-decoration:none;color:inherit;opacity:.8;",
       "border:1px solid color-mix(in srgb,currentColor 22%,transparent);font-size:12px}",
@@ -128,7 +133,7 @@
         inGroup.push(health.pages[page.key]);
       });
       var w = worst(inGroup);
-      if (w) health.groups[group.key] = { status: w.status, text: group.label + " 묶음에서 가장 나쁜 상태: " + STATUS_TEXT[w.status] };
+      if (w && !group.archived) health.groups[group.key] = { status: w.status, text: group.label + " 묶음에서 가장 나쁜 상태: " + STATUS_TEXT[w.status] };
     });
   }
   mount.setAttribute("aria-label", "대시보드 메뉴");
@@ -154,12 +159,18 @@
       addDot(a, health.pages[page.key]);
       pageRow.appendChild(a);
     });
+    if (group.note) {
+      var note = document.createElement("span");
+      note.className = "gc-note";
+      note.textContent = group.note;
+      pageRow.appendChild(note);
+    }
   }
 
   GROUPS.forEach(function (group) {
     var b = document.createElement("button");
     b.type = "button";
-    b.className = "gc-group";
+    b.className = "gc-group" + (group.archived ? " gc-archive" : "");
     b.setAttribute("role", "tab");
     b.setAttribute("data-group", group.key);
     b.textContent = group.label;
