@@ -216,14 +216,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   <h1>기술적 신호 스크리너</h1>
   <div class="sub">이동평균 교차·MACD·RSI·스토캐스틱·볼린저밴드·OBV·ADX·이격도 — 추세템플릿/펀더멘털과 무관한 순수 기술적 지표. 전부 참고용이며 매수 신호가 아닙니다.</div>
 
-  <div class="nav">
-    <a href="../">SEPA 추세템플릿</a>
-    <a href="../range_vrebound/">RANGE-MR · V-REBOUND</a>
-    <a href="../screener/">멀티팩터</a>
-    <a class="here" href="./">기술적 신호</a>
-    <a href="../recovery/">계좌복구 공격매매</a>
-    <a href="../fpd/">FPD 연구</a><a href="../funnel/">실적 턴어라운드</a><a href="../performance/">전략 현황</a>
-  </div>
+  <nav id="gc-nav" data-page="technical"></nav><script src="../nav.js"></script>
 
   <div class="tabs" id="tabs"></div>
 

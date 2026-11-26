@@ -284,14 +284,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   <header>
     <h1>RANGE-MR / V-REBOUND 스크리너</h1>
     <div class="subtitle" id="subtitle">박스권 평균회귀(RANGE-MR) · 급락 후 반등(V-REBOUND) — 실전 매수 신호가 아닌 스크리닝 참고 자료</div>
-    <div class="nav">
-      <a href="../">SEPA 추세템플릿</a>
-      <a class="here" href="./">RANGE-MR · V-REBOUND</a>
-      <a href="../screener/">멀티팩터</a>
-      <a href="../technical/">기술적 신호</a>
-      <a href="../recovery/">계좌복구 공격매매</a>
-      <a href="../fpd/">FPD 연구</a><a href="../funnel/">실적 턴어라운드</a><a href="../performance/">전략 현황</a>
-    </div>
+    <nav id="gc-nav" data-page="range_vrebound"></nav><script src="../nav.js"></script>
   </header>
 
   <div class="tabs" id="tabs"></div>
