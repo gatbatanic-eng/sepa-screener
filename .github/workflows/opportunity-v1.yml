@@ -1,0 +1,78 @@
+name: Opportunity Layer V1 Research
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'research/opportunity-layer-v1-20261108'
+    paths:
+      - '.github/workflows/opportunity-v1.yml'
+      - 'leader_backtest/opportunity_run.py'
+      - 'leader_backtest/robustness.py'
+      - 'leader_backtest/opportunity_v2.py'
+      - 'leader_backtest/opportunity_winners.py'
+      - 'tests/test_opportunity_winners.py'
+      - 'tests/test_robustness.py'
+      - 'tests/test_opportunity_v2.py'
+  pull_request:
+    paths:
+      - 'leader_backtest/opportunity*.py'
+      - 'leader_backtest/episodes.py'
+      - 'leader_backtest/segments.py'
+      - 'leader_backtest/robustness.py'
+      - 'tests/test_robustness.py'
+      - 'tests/test_segments.py'
+      - 'tests/test_episodes.py'
+      - 'tests/test_opportunity.py'
+      - '.github/workflows/opportunity-v1.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install numpy pandas yfinance
+      - run: python -m unittest discover -s tests -p 'test_opportunity.py'
+      - run: python -m unittest discover -s tests -p 'test_episodes.py'
+      - run: python -m unittest discover -s tests -p 'test_robustness.py'
+      - run: python -m unittest discover -s tests -p 'test_opportunity_winners.py'
+  historical-research:
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event_name == 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install numpy pandas yfinance
+      - run: python -m leader_backtest.opportunity_run > opportunity_v1_run.log 2>&1
+        env:
+          OPP_FETCH_START: '2023-01-01'
+          OPP_EVAL_START: '2024-01-01'
+      - run: python -m leader_backtest.opportunity_winners > opportunity_winners_run.log 2>&1
+      - name: Print winner study
+        if: always()
+        run: cat research/leader_backtest/opportunity_winners/results.json || tail -n 100 opportunity_winners_run.log
+      - name: Print backtest summary to job log
+        if: always()
+        run: |
+          if [ -f research/leader_backtest/opportunity_v1_results.json ]; then
+            cat research/leader_backtest/opportunity_v1_results.json
+          else
+            tail -n 120 opportunity_v1_run.log || true
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: opportunity-v1-report
+          path: |
+            research/leader_backtest/opportunity_v1_results.json
+            opportunity_v1_run.log
+            research/leader_backtest/opportunity_winners/
+            opportunity_winners_run.log
